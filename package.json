@@ -1,11 +1,11 @@
 {
-  "name": "@madie/madie-frontend-template",
-  "version": "0.0.2",
+  "name": "@madie/madie-cql-library",
+  "version": "0.0.1",
   "files": [
     "dist/**/*"
   ],
   "scripts": {
-    "start": "webpack serve --port 8500",
+    "start": "webpack serve --port 8507",
     "build": "concurrently npm:build:*",
     "build:webpack": "webpack --mode=production",
     "analyze": "webpack --mode=production --env analyze",
@@ -76,7 +76,7 @@
     "single-spa": "^5.9.3",
     "single-spa-react": "^4.2.0"
   },
-  "types": "dist/madie-madie-frontend-template.d.ts",
+  "types": "dist/madie-madie-cql-library.d.ts",
   "browserslist": [
     "defaults",
     "not IE 11"
