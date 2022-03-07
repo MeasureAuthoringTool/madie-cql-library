@@ -1,5 +1,7 @@
 import React from "react";
 
 export default function Home() {
-  return <div>In Progress</div>;
+  return <div >
+    <p align="center">In Progress</p>
+    </div>;
 }
