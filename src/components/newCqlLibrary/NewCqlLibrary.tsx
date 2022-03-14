@@ -2,11 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 import "twin.macro";
 import "styled-components/macro";
 import { Divider, Tab, Tabs } from "@mui/material";
-import useCqlLibraryServiceApi from "../../api/userCqlLibraryServiceApi";
+import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 
-export const NewCqlLibrary = () => {
+const NewCqlLibrary = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
@@ -16,9 +16,7 @@ export const NewCqlLibrary = () => {
       const cqlLibraries = await cqlLibraryServiceApi.fetchCqlLibraries(
         activeTab === 0
       );
-      setCqlLibraryList(() =>
-        _.orderBy(cqlLibraries, ["lastModifiedAt"], ["desc"])
-      );
+      setCqlLibraryList(() => _.orderBy(cqlLibraries, ["createdAt"], ["desc"]));
     })();
   }, [activeTab, cqlLibraryServiceApi]);
 
@@ -55,3 +53,5 @@ export const NewCqlLibrary = () => {
     </div>
   );
 };
+
+export default NewCqlLibrary;

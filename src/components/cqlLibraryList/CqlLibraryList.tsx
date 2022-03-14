@@ -2,7 +2,7 @@ import React from "react";
 import "twin.macro";
 import "styled-components/macro";
 import { useHistory } from "react-router-dom";
-import CqlLibrary from "../../models/CalLibrary";
+import CqlLibrary from "../../models/CqlLibrary";
 
 export default function CqlLibraryList(props: {
   cqlLibraryList: CqlLibrary[];
@@ -10,7 +10,7 @@ export default function CqlLibraryList(props: {
   const history = useHistory();
 
   return (
-    <div data-testid="measure-list">
+    <div data-testid="cqlLibrary-list">
       <div tw="flex flex-col">
         <div tw="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div tw="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -33,7 +33,7 @@ export default function CqlLibraryList(props: {
                         <button
                           type="button"
                           onClick={() => history.push("#")}
-                          data-testid={`measure-button-${cqlLibrary.id}`}
+                          data-testid={`cqlLibrary-button-${cqlLibrary.id}`}
                         >
                           {cqlLibrary.cqlLibraryName}
                         </button>
@@ -42,7 +42,7 @@ export default function CqlLibraryList(props: {
                         <button
                           onClick={() => history.push("#")}
                           tw="text-blue-600 hover:text-blue-900"
-                          data-testid={`edit-measure-${cqlLibrary.id}`}
+                          data-testid={`edit-cqlLibrary-${cqlLibrary.id}`}
                         >
                           Edit
                         </button>

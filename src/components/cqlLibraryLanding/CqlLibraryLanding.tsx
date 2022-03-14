@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, Switch, BrowserRouter, Redirect } from "react-router-dom";
-import { NewCqlLibrary } from "../newCqlLibrary/NewCqlLibrary";
+import NewCqlLibrary from "../newCqlLibrary/NewCqlLibrary";
 
 export function CqlLibraryRoutes() {
   return (

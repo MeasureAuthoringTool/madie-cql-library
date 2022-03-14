@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
 import CqlLibraryLanding from "./cqlLibraryLanding/CqlLibraryLanding";
-import { ApiContextProvider, ServiceConfig } from "../api/ServiceContext";
+import { ApiContextProvider } from "../api/ServiceContext";
 import useGetServiceConfig from "./config/useGetServiceConfig";
 
 export default function Home() {

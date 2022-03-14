@@ -2,7 +2,7 @@ import axios from "axios";
 import useServiceConfig from "./useServiceConfig";
 import { ServiceConfig } from "./ServiceContext";
 import useOktaTokens from "../hooks/useOktaTokens";
-import CqlLibrary from "../models/CalLibrary";
+import CqlLibrary from "../models/CqlLibrary";
 
 export class CqlLibraryServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}

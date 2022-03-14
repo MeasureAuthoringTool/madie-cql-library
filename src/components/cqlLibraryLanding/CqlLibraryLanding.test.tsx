@@ -3,9 +3,9 @@ import "@testing-library/jest-dom";
 
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
-import ApiContextProvider from "../api/ServiceContext";
-import CqlLibraryLanding from "../components/cqlLibraryLanding/CqlLibraryLanding";
-import { CqlLibraryServiceApi } from "../api/useCqlLibraryServiceApi";
+import CqlLibraryLanding, { CqlLibraryRoutes } from "./CqlLibraryLanding";
+import { ServiceConfig } from "../../api/ServiceContext";
+import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 
 const cqlLibrary = [
   {
@@ -18,7 +18,19 @@ const cqlLibrary = [
   },
 ];
 
-jest.mock("../hooks/useOktaTokens", () => () => ({
+const serviceConfig: ServiceConfig = {
+  measureService: {
+    baseUrl: "example-service-url",
+  },
+  elmTranslationService: {
+    baseUrl: "test-elm-service",
+  },
+  cqlLibraryService: {
+    baseUrl: "example-service-url",
+  },
+};
+
+jest.mock("../../hooks/useOktaTokens", () => () => ({
   getAccessToken: () => "test.jwt",
 }));
 
@@ -26,11 +38,11 @@ const mockCqlLibraryServiceApi = {
   fetchCqlLibraries: jest.fn().mockResolvedValue(cqlLibrary),
 } as unknown as CqlLibraryServiceApi;
 
-jest.mock("../api/useCqlLibraryServiceApi", () =>
+jest.mock("../../api/useCqlLibraryServiceApi", () =>
   jest.fn(() => mockCqlLibraryServiceApi)
 );
 
-describe("Displaying CQL Landing component", () => {
+describe("CqlLibraryLanding", () => {
   test("shows the children when the checkbox is checked", async () => {
     render(
       <div id="main">
