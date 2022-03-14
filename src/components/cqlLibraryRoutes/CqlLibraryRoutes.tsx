@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch, Redirect, BrowserRouter } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import CqlLibraryLanding from "../cqlLibraryLanding/CqlLibraryLanding";
 
 export function CqlLibraryRoutes() {
