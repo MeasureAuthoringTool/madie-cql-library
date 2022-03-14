@@ -1,7 +1,7 @@
 import * as Yup from "yup";
 
 export const CqlLibrarySchemaValidator = Yup.object().shape({
-  libraryName: Yup.string()
+  cqlLibraryName: Yup.string()
     .max(255, "Library name cannot be more than 255 characters.")
     .required("Library name is required.")
     .matches(

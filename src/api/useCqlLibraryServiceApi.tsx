@@ -28,6 +28,14 @@ export class CqlLibraryServiceApi {
       throw new Error(message);
     }
   }
+
+  async createCqlLibrary(cqlLibrary: CqlLibrary): Promise<void> {
+    return await axios.post(`${this.baseUrl}/cql-libraries`, cqlLibrary, {
+      headers: {
+        Authorization: `Bearer ${this.getAccessToken()}`,
+      },
+    });
+  }
 }
 
 export default function useCqlLibraryServiceApi() {

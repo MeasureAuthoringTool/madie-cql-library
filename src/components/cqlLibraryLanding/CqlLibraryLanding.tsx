@@ -5,8 +5,10 @@ import { Divider, Tab, Tabs } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
+import { useHistory } from "react-router-dom";
 
 const NewCqlLibrary = () => {
+  const history = useHistory();
   const [activeTab, setActiveTab] = useState(0);
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
@@ -29,6 +31,12 @@ const NewCqlLibrary = () => {
       <section tw="flex flex-row my-2">
         <h1 tw="text-4xl font-light">CQL Library</h1>
         <span tw="flex-grow" />
+        <button
+          onClick={() => history.push("/cql-libraries/create")}
+          data-testid="create-new-cql-library-button"
+        >
+          New Cql Library
+        </button>
       </section>
       <section tw="flex flex-row">
         <div>
