@@ -3,9 +3,10 @@ import "@testing-library/jest-dom";
 
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
-import CqlLibraryLanding, { CqlLibraryRoutes } from "./CqlLibraryLanding";
-import { ServiceConfig } from "../../api/ServiceContext";
+import NewCqlLibrary from "./CqlLibraryLanding";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
+import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
+import userEvent from "@testing-library/user-event";
 
 const cqlLibrary = [
   {
@@ -42,16 +43,69 @@ jest.mock("../../api/useCqlLibraryServiceApi", () =>
   jest.fn(() => mockCqlLibraryServiceApi)
 );
 
-describe("CqlLibraryLanding", () => {
-  test("shows the children when the checkbox is checked", async () => {
-    render(
-      <div id="main">
-        <CqlLibraryLanding />
-      </div>
-    );
+describe("Cql Library Page", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-    expect(screen.getByTestId("browser-router")).toBeTruthy();
+  test("shows my Cql Libraries on page load", async () => {
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <NewCqlLibrary />
+      </ApiContextProvider>
+    );
     const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
     expect(cqlLibrary1).toBeInTheDocument();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+      true
+    );
+    const myCqlLibrariesTab = screen.getByRole("tab", {
+      name: "My CQL Libraries",
+    });
+    expect(myCqlLibrariesTab).toBeInTheDocument();
+    expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
+    const allCqlLibrariesTab = screen.getByRole("tab", {
+      name: "All CQL Libraries",
+    });
+    expect(allCqlLibrariesTab).toBeInTheDocument();
+    expect(allCqlLibrariesTab).not.toHaveClass("Mui-selected");
+  });
+
+  test("shows all Cql Libraries on tab click", async () => {
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <NewCqlLibrary />
+      </ApiContextProvider>
+    );
+    const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
+    expect(cqlLibrary1).toBeInTheDocument();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+      true
+    );
+    const myCqlLibrariesTab = screen.getByRole("tab", {
+      name: "My CQL Libraries",
+    });
+    expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
+    const allCqlLibrariesTab = screen.getByRole("tab", {
+      name: "All CQL Libraries",
+    });
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+      ...cqlLibrary,
+      {
+        id: "622e1f46d1fd3729d861e7cb",
+        cqlLibraryName: "TestCqlLibrary2",
+        createdAt: null,
+        createdBy: null,
+        lastModifiedAt: null,
+        lastModifiedBy: null,
+      },
+    ]);
+
+    userEvent.click(allCqlLibrariesTab);
+    const cqlLibrary2 = await screen.findByText("TestCqlLibrary2");
+    expect(cqlLibrary2).toBeInTheDocument();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+      false
+    );
   });
 });

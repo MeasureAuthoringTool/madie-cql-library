@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter } from "react-router-dom";
-import CqlLibraryLanding from "./cqlLibraryLanding/CqlLibraryLanding";
+import { CqlLibraryRoutes } from "./cqlLibraryRoutes/CqlLibraryRoutes";
 import { ApiContextProvider } from "../api/ServiceContext";
 import useGetServiceConfig from "./config/useGetServiceConfig";
 
@@ -10,11 +10,9 @@ export default function Home() {
   const loadingState = <div>Loading...</div>;
 
   const loadedState = (
-    <BrowserRouter>
-      <ApiContextProvider value={config}>
-        <CqlLibraryLanding />
-      </ApiContextProvider>
-    </BrowserRouter>
+    <ApiContextProvider value={config}>
+      <CqlLibraryRoutes />
+    </ApiContextProvider>
   );
   let result = config === null ? loadingState : loadedState;
   if (error) {
