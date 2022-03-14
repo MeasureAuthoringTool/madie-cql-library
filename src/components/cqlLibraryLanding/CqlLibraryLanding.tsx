@@ -6,7 +6,7 @@ import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 
-const NewCqlLibrary = () => {
+function CqlLibraryLanding() {
   const [activeTab, setActiveTab] = useState(0);
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
@@ -52,6 +52,6 @@ const NewCqlLibrary = () => {
       </div>
     </div>
   );
-};
+}
 
-export default NewCqlLibrary;
+export default CqlLibraryLanding;
