@@ -1,5 +1,4 @@
 import React from "react";
-import { BrowserRouter } from "react-router-dom";
 import { CqlLibraryRoutes } from "./cqlLibraryRoutes/CqlLibraryRoutes";
 import { ApiContextProvider } from "../api/ServiceContext";
 import useGetServiceConfig from "./config/useGetServiceConfig";
