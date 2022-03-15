@@ -77,4 +77,18 @@ declare module "@madie/madie-components" {
     rightIcon?: IconType;
   }
   export function TextInput(props: TextInputProps): JSX.Element;
+
+  export interface LabelProps
+    extends React.LabelHTMLAttributes<HTMLLabelElement> {
+    text: string;
+    cornerHint?: string;
+  }
+  export function Label(props: LabelProps): JSX.Element;
+
+  export interface HelperTextProps
+    extends React.HTMLAttributes<HTMLSpanElement> {
+    text: string;
+    isError?: boolean;
+  }
+  export function HelperText(props: HelperTextProps): JSX.Element;
 }

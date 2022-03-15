@@ -1,28 +1,45 @@
 import "@testing-library/jest-dom";
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import * as React from "react";
 import CqlLibraryRoutes from "./CqlLibraryRoutes";
-import TimeoutHandler from "../timeOutHandler/TimeoutHandler";
 
-jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => {
-  return (
-    <div id="main" data-testid="cql-library-landing-mocked">
-      Cql Library Landing
-    </div>
-  );
-});
+jest.mock("../timeOutHandler/TimeoutHandler", () => () => (
+  <div data-testid="timeout-handler-mocked" />
+));
 
-describe("testing routes", () => {
-  test("should redirect to Cql Landing component when /cql-libraries route is called", () => {
-    render(
+jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => (
+  <div data-testid="cql-library-landing-mocked" />
+));
+
+jest.mock("../createNewCqlLibrary/CreateNewCqlLibrary", () => () => (
+  <div data-testid="create-new-cql-library-mocked" />
+));
+
+beforeEach(cleanup);
+
+describe("CqlLibraryRoutes Component", () => {
+  it("should redirect to Cql Landing component", async () => {
+    const { getByTestId } = render(
       <MemoryRouter initialEntries={["/cql-libraries"]}>
         <CqlLibraryRoutes />
       </MemoryRouter>
     );
-    const landingComponent = screen.getByTestId("cql-library-landing-mocked");
-    expect(landingComponent).toBeInTheDocument();
-    const landingComponentText = screen.getByText("Cql Library Landing");
-    expect(landingComponentText).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(getByTestId("cql-library-landing-mocked")).toBeInTheDocument();
+    });
+  });
+
+  it("should redirect to create new cql library component", async () => {
+    const { getByTestId } = render(
+      <MemoryRouter initialEntries={["/cql-libraries/create"]}>
+        <CqlLibraryRoutes />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => {
+      expect(getByTestId("create-new-cql-library-mocked")).toBeInTheDocument();
+    });
   });
 });

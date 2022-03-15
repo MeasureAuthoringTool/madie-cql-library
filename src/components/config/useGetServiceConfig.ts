@@ -27,11 +27,7 @@ const useGetServiceConfig = () => {
     axios
       .get<ServiceConfig>("/env-config/serviceConfig.json")
       .then((res) => {
-        if (
-          !(
-            res?.data?.cqlLibraryService && res?.data?.cqlLibraryService.baseUrl
-          )
-        ) {
+        if (!res?.data?.cqlLibraryService?.baseUrl) {
           setError(new Error("Invalid Service Config"));
         }
         setConfig(res.data);

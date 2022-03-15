@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 
 import * as React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import NewCqlLibrary from "./CqlLibraryLanding";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
@@ -42,6 +42,15 @@ const mockCqlLibraryServiceApi = {
 jest.mock("../../api/useCqlLibraryServiceApi", () =>
   jest.fn(() => mockCqlLibraryServiceApi)
 );
+
+// mocking useHistory
+const mockPush = jest.fn();
+jest.mock("react-router-dom", () => ({
+  useHistory: () => {
+    const push = () => mockPush("/example");
+    return { push };
+  },
+}));
 
 describe("Cql Library Page", () => {
   afterEach(() => {
@@ -107,5 +116,11 @@ describe("Cql Library Page", () => {
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
       false
     );
+  });
+
+  it("should render create new cql library", function () {
+    const { getByTestId } = render(<NewCqlLibrary />);
+    fireEvent.click(getByTestId("create-new-cql-library-button"));
+    expect(mockPush).toHaveBeenCalledWith("/example");
   });
 });
