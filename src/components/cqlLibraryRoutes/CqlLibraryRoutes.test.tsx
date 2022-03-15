@@ -1,7 +1,6 @@
 import "@testing-library/jest-dom";
-import { render, waitFor, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
-import { Route } from "react-router-dom";
 import * as React from "react";
 import CqlLibraryRoutes from "./CqlLibraryRoutes";
 
@@ -11,8 +10,8 @@ jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => {
   );
 });
 
-describe("Router component", () => {
-  test("", () => {
+describe("testing routes", () => {
+  test("should redirect to Cql Landing component when /cql-libraries route is called", () => {
     render(
       <MemoryRouter initialEntries={["/cql-libraries"]}>
         <CqlLibraryRoutes />
