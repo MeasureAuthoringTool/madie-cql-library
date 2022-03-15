@@ -5,7 +5,7 @@ import Home from "./Home";
 import useGetServiceConfig from "./config/useGetServiceConfig";
 
 jest.mock("./cqlLibraryRoutes/CqlLibraryRoutes", () => () => (
-  <div data-testid="cql-library-browser-router" />
+  <div data-testid="cql-library-router-mocked" />
 ));
 
 jest.mock("./config/useGetServiceConfig");
@@ -22,7 +22,7 @@ beforeEach(cleanup);
 describe("Home component", () => {
   it("should render cql library routes component", () => {
     const { getByTestId } = render(<Home />);
-    expect(getByTestId("cql-library-browser-router")).toBeInTheDocument();
+    expect(getByTestId("cql-library-router-mocked")).toBeInTheDocument();
   });
 
   it("should render loading state of the component", () => {

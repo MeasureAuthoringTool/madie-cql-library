@@ -7,7 +7,7 @@ import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 import { useHistory } from "react-router-dom";
 
-const NewCqlLibrary = () => {
+function CqlLibraryLanding() {
   const history = useHistory();
   const [activeTab, setActiveTab] = useState(0);
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
@@ -60,6 +60,6 @@ const NewCqlLibrary = () => {
       </div>
     </div>
   );
-};
+}
 
-export default NewCqlLibrary;
+export default CqlLibraryLanding;
