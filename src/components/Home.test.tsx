@@ -1,45 +1,49 @@
-import "@testing-library/jest-dom";
-// NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
-
 import * as React from "react";
-import { render, screen } from "@testing-library/react";
-import ApiContextProvider from "../api/ServiceContext";
-import CqlLibraryRoutes from "./cqlLibraryRoutes/CqlLibraryRoutes";
-import { CqlLibraryServiceApi } from "../api/useCqlLibraryServiceApi";
+import "@testing-library/jest-dom";
+import { cleanup, render } from "@testing-library/react";
+import Home from "./Home";
+import useGetServiceConfig from "./config/useGetServiceConfig";
 
-const cqlLibrary = [
-  {
-    id: "622e1f46d1fd3729d861e6cb",
-    cqlLibraryName: "TestCqlLibrary1",
-    createdAt: null,
-    createdBy: null,
-    lastModifiedAt: null,
-    lastModifiedBy: null,
-  },
-];
+jest.mock("./cqlLibraryRoutes/CqlLibraryRoutes", () => () => (
+  <div data-testid="cql-library-browser-router" />
+));
 
-jest.mock("../hooks/useOktaTokens", () => () => ({
-  getAccessToken: () => "test.jwt",
-}));
+jest.mock("./config/useGetServiceConfig");
+const useGetServiceConfigMock = useGetServiceConfig as jest.Mock;
 
-const mockCqlLibraryServiceApi = {
-  fetchCqlLibraries: jest.fn().mockResolvedValue(cqlLibrary),
-} as unknown as CqlLibraryServiceApi;
+useGetServiceConfigMock.mockImplementation(() => {
+  return {
+    config: "configTest",
+  };
+});
 
-jest.mock("../api/useCqlLibraryServiceApi", () =>
-  jest.fn(() => mockCqlLibraryServiceApi)
-);
+beforeEach(cleanup);
 
-describe("Displaying CQL Library Routes component", () => {
-  test("shows the children when the checkbox is checked", async () => {
-    render(
-      <div id="main">
-        <CqlLibraryRoutes />
-      </div>
-    );
+describe("Home component", () => {
+  it("should render cql library routes component", () => {
+    const { getByTestId } = render(<Home />);
+    expect(getByTestId("cql-library-browser-router")).toBeInTheDocument();
+  });
 
-    expect(screen.getByTestId("browser-router")).toBeTruthy();
-    const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
-    expect(cqlLibrary1).toBeInTheDocument();
+  it("should render loading state of the component", () => {
+    useGetServiceConfigMock.mockImplementation(() => {
+      return {
+        config: null,
+      };
+    });
+
+    const { getByTestId } = render(<Home />);
+    expect(getByTestId("loading-state")).toBeInTheDocument();
+  });
+
+  it("should render config error", () => {
+    useGetServiceConfigMock.mockImplementation(() => {
+      return {
+        error: new Error("Invalid Service Config"),
+      };
+    });
+
+    const { getByTestId } = render(<Home />);
+    expect(getByTestId("service-config-error")).toBeInTheDocument();
   });
 });

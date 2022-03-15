@@ -11,6 +11,7 @@ const cqlLibrary = {
   id: "cql library ID",
 } as CqlLibrary;
 
+// mocking useCqlLibraryServiceApi
 jest.mock("../../api/useCqlLibraryServiceApi");
 const useCqlLibraryServiceApiMock =
   useCqlLibraryServiceApi as jest.Mock<CqlLibraryServiceApi>;
@@ -23,6 +24,7 @@ useCqlLibraryServiceApiMock.mockImplementation(() => {
   return serviceApiMockResolved;
 });
 
+// mocking useHistory
 const mockPush = jest.fn();
 jest.mock("react-router-dom", () => ({
   useHistory: () => {

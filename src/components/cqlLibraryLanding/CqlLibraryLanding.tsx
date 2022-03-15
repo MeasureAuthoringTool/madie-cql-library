@@ -55,7 +55,7 @@ const NewCqlLibrary = () => {
         <span tw="flex-grow" />
       </section>
 
-      <div tw="my-4">
+      <div tw="my-4" data-testid="cql-library-list">
         <CqlLibraryList cqlLibraryList={cqlLibraryList} />
       </div>
     </div>
