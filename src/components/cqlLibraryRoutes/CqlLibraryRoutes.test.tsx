@@ -3,10 +3,13 @@ import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import * as React from "react";
 import CqlLibraryRoutes from "./CqlLibraryRoutes";
+import TimeoutHandler from "../timeOutHandler/TimeoutHandler";
 
 jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => {
   return (
-    <div data-testid="cql-library-landing-mocked">Cql Library Landing</div>
+    <div id="main" data-testid="cql-library-landing-mocked">
+      Cql Library Landing
+    </div>
   );
 });
 
