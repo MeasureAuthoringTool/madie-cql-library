@@ -4,17 +4,17 @@ import { MemoryRouter } from "react-router";
 import * as React from "react";
 import CqlLibraryRoutes from "./CqlLibraryRoutes";
 
-jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => {
-  return <div data-testid="cql-library-landing-mocked">Landing Component</div>;
-});
+jest.mock("../timeOutHandler/TimeoutHandler", () => () => (
+  <div data-testid="timeout-handler-mocked" />
+));
 
-jest.mock("../createNewCqlLibrary/CreateNewCqlLibrary", () => () => {
-  return (
-    <div data-testid="create-new-cql-library-mocked">
-      create new library component
-    </div>
-  );
-});
+jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => (
+  <div data-testid="cql-library-landing-mocked" />
+));
+
+jest.mock("../createNewCqlLibrary/CreateNewCqlLibrary", () => () => (
+  <div data-testid="create-new-cql-library-mocked" />
+));
 
 beforeEach(cleanup);
 
@@ -31,12 +31,15 @@ describe("CqlLibraryRoutes Component", () => {
     });
   });
 
-  it("should redirect to create new cql library component", () => {
+  it("should redirect to create new cql library component", async () => {
     const { getByTestId } = render(
       <MemoryRouter initialEntries={["/cql-libraries/create"]}>
         <CqlLibraryRoutes />
       </MemoryRouter>
     );
-    expect(getByTestId("create-new-cql-library-mocked")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(getByTestId("create-new-cql-library-mocked")).toBeInTheDocument();
+    });
   });
 });
