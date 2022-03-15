@@ -32,6 +32,7 @@ function CqlLibraryLanding() {
         <h1 tw="text-4xl font-light">CQL Library</h1>
         <span tw="flex-grow" />
         <button
+          tw="bg-blue-700 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
           onClick={() => history.push("/cql-libraries/create")}
           data-testid="create-new-cql-library-button"
         >
