@@ -150,7 +150,6 @@ describe("Create New Cql Library Component", () => {
   });
 
   it("should display an error when model is not selected", async () => {
-    // jest.setTimeout(15000);
     render(<CreateNewCqlLibrary />);
     const input = screen.getByTestId(
       "cql-library-name-text-field"
@@ -166,39 +165,53 @@ describe("Create New Cql Library Component", () => {
     expect(qiCoreOption).toBeInTheDocument();
     userEvent.type(modelDropdown, "{esc}");
     userEvent.dblClick(input);
-    await waitFor(
-      () => {
-        expect(
-          screen.getByText("A CQL library model is required.")
-        ).toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
-    // const errorMessage = await screen.findByText(
-    //   "A CQL library model is required.", null, { timeout: 2000 }
-    // );
+    await waitFor(() => {
+      expect(
+        screen.getByText("A CQL library model is required.")
+      ).toBeInTheDocument();
+    });
     const saveButton = screen.getByTestId("create-new-cql-library-save-button");
     expect(saveButton).toBeDisabled();
-    // expect(errorMessage).toBeInTheDocument();
-  }, 15000);
+  });
 
-  // it.only("should have create button disabled until model is selected", async () => {
-  //   render(<CreateNewCqlLibrary />);
-  //   const input = screen.getByTestId(
-  //     "cql-library-name-text-field"
-  //   ) as HTMLInputElement;
-  //   userEvent.type(input, "TestingLibraryName12");
-  //   expect(input.value).toBe("TestingLibraryName12");
-  //   const modelDropdown = screen.getByRole("button", {
-  //     name: /select a model/i,
-  //   });
-  //   expect(modelDropdown).toBeInTheDocument();
-  //   screen.debug();
-  //   const saveButton = screen.getByTestId("create-new-cql-library-save-button");
-  //   await waitFor(() => {
-  //     expect(saveButton).toBeDisabled();
-  //   });
-  // });
+  it("should have create button disabled until form is valid", async () => {
+    render(<CreateNewCqlLibrary />);
+    expect(
+      screen.getByRole("button", {
+        name: "Create Cql Library",
+      })
+    ).toBeDisabled();
+    const input = screen.getByRole("textbox", {
+      name: "Cql Library Name",
+    }) as HTMLInputElement;
+    userEvent.type(input, "TestingLibraryName12");
+    expect(input.value).toBe("TestingLibraryName12");
+    // for some reason, immediately after editing the button is not disabled during the test
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: "Create Cql Library",
+        })
+      ).toBeDisabled();
+    });
+    userEvent.click(
+      screen.getByRole("button", {
+        name: /select a model/i,
+      })
+    );
+    const qiCoreOption = screen.getByText("QI-Core");
+    userEvent.click(qiCoreOption);
+    const selectedQiCoreDropdown = await screen.findByText("QI-Core");
+    expect(selectedQiCoreDropdown).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /qi-core/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Create Cql Library",
+      })
+    ).not.toBeDisabled();
+  });
 
   it("should handle post service call successfully and redirect user to landing page", async () => {
     const { getByTestId } = render(<CreateNewCqlLibrary />);
