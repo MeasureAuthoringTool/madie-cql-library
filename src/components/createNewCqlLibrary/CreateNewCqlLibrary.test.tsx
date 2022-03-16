@@ -298,8 +298,8 @@ describe("Create New Cql Library Component", () => {
     const qiCoreOption = screen.getByText("QI-Core");
     expect(qiCoreOption).toBeInTheDocument();
     userEvent.click(qiCoreOption);
-    const qiCore = await screen.findByText("QI-Core");
-    expect(qiCore).toBeInTheDocument();
+    const selectedQiCoreDropdown = await screen.findByText("QI-Core");
+    expect(selectedQiCoreDropdown).toBeInTheDocument();
     fireEvent.click(getByTestId("create-new-cql-library-save-button"));
     await waitFor(() => {
       expect(getByTestId("cql-library-server-error-alerts")).toHaveTextContent(
