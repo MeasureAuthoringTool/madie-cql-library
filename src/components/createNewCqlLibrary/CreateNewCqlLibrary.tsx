@@ -26,9 +26,7 @@ const CreateNewCqlLibrary = () => {
       model: "",
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
-    onSubmit: async (cqlLibrary: CqlLibrary) => {
-      await createCqlLibrary(cqlLibrary);
-    },
+    onSubmit: createCqlLibrary,
   });
 
   async function createCqlLibrary(cqlLibrary: CqlLibrary) {

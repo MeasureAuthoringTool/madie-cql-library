@@ -2,16 +2,18 @@ import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 
 import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import NewCqlLibrary from "./CqlLibraryLanding";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
+import { Model } from "../../models/Model";
 
 const cqlLibrary = [
   {
     id: "622e1f46d1fd3729d861e6cb",
     cqlLibraryName: "TestCqlLibrary1",
+    model: Model.QICORE,
     createdAt: null,
     createdBy: null,
     lastModifiedAt: null,
@@ -65,6 +67,8 @@ describe("Cql Library Page", () => {
     );
     const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
     expect(cqlLibrary1).toBeInTheDocument();
+    const cqlLibrary1Model = await screen.findByText("QI-Core");
+    expect(cqlLibrary1Model).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
       true
     );
@@ -103,6 +107,7 @@ describe("Cql Library Page", () => {
       {
         id: "622e1f46d1fd3729d861e7cb",
         cqlLibraryName: "TestCqlLibrary2",
+        model: Model.QICORE,
         createdAt: null,
         createdBy: null,
         lastModifiedAt: null,
@@ -118,8 +123,14 @@ describe("Cql Library Page", () => {
     );
   });
 
-  it("should render create new cql library", function () {
+  it("should render create new cql library", async function () {
     const { getByTestId } = render(<NewCqlLibrary />);
+    // add waitfor to avoid issue with jest / act
+    await waitFor(() => {
+      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+        true
+      );
+    });
     fireEvent.click(getByTestId("create-new-cql-library-button"));
     expect(mockPush).toHaveBeenCalledWith("/example");
   });
