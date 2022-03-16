@@ -33,6 +33,10 @@ const useGetServiceConfig = () => {
         setConfig(res.data);
       })
       .catch((err) => {
+        console.warn(
+          "An error occurred while loading the service config: ",
+          err
+        );
         setError(new Error("Invalid Service Config"));
       });
   }, []);
