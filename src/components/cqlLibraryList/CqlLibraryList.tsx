@@ -24,6 +24,12 @@ export default function CqlLibraryList(props: {
                     >
                       Name
                     </th>
+                    <th
+                      scope="col"
+                      tw="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Model
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -36,6 +42,15 @@ export default function CqlLibraryList(props: {
                           data-testid={`cqlLibrary-button-${cqlLibrary.id}`}
                         >
                           {cqlLibrary.cqlLibraryName}
+                        </button>
+                      </td>
+                      <td tw="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <button
+                          type="button"
+                          onClick={() => history.push("#")}
+                          data-testid={`cqlLibrary-button-${cqlLibrary.id}-model`}
+                        >
+                          {cqlLibrary.model}
                         </button>
                       </td>
                       <td tw="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

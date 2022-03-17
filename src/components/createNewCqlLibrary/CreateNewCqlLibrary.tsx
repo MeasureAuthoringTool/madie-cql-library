@@ -7,6 +7,10 @@ import CqlLibrary from "../../models/CqlLibrary";
 import { CqlLibrarySchemaValidator } from "../../models/CqlLibrarySchemaValidator";
 import { Button, HelperText, Label, TextInput } from "@madie/madie-components";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
+import FormControl from "@mui/material/FormControl";
+import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
+import { Model } from "../../models/Model";
 
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
 const FormRow = tw.div`mt-3`;
@@ -19,11 +23,10 @@ const CreateNewCqlLibrary = () => {
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: "",
+      model: "",
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
-    onSubmit: async (cqlLibrary: CqlLibrary) => {
-      await createCqlLibrary(cqlLibrary);
-    },
+    onSubmit: createCqlLibrary,
   });
 
   async function createCqlLibrary(cqlLibrary: CqlLibrary) {
@@ -80,6 +83,33 @@ const CreateNewCqlLibrary = () => {
             {formikErrorHandler("cqlLibraryName", true)}
           </TextInput>
         </FormRow>
+        <FormControl tw="w-72">
+          <Label text="CQL Library Model" />
+          <TextField
+            tw="w-full"
+            size="small"
+            select
+            InputLabelProps={{ shrink: false }}
+            label={formik.values.model === "" ? "Select a model" : ""}
+            data-testid="cql-library-model-select"
+            name={"model"}
+            {...formik.getFieldProps("model")}
+            error={formik.touched.model && Boolean(formik.errors.model)}
+            helperText={formik.touched.model && formik.errors.model}
+          >
+            {Object.keys(Model).map((modelKey) => {
+              return (
+                <MenuItem
+                  key={modelKey}
+                  value={Model[modelKey]}
+                  data-testid={`cql-library-model-option-${Model[modelKey]}`}
+                >
+                  {Model[modelKey]}
+                </MenuItem>
+              );
+            })}
+          </TextField>
+        </FormControl>
         <FormRow>
           <Button
             buttonTitle="Create Cql Library"

@@ -2,6 +2,8 @@ import * as React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import CqlLibrary from "../../models/CqlLibrary";
 import CqlLibraryList from "./CqlLibraryList";
+import { Model } from "../../models/Model";
+import userEvent from "@testing-library/user-event";
 
 const mockPush = jest.fn();
 jest.mock("react-router-dom", () => ({
@@ -15,6 +17,7 @@ const cqlLibrary: CqlLibrary[] = [
   {
     id: "622e1f46d1fd3729d861e6cb",
     cqlLibraryName: "testing1",
+    model: Model.QICORE,
     createdAt: null,
     createdBy: null,
     lastModifiedAt: null,
@@ -33,11 +36,19 @@ describe("CqlLibrary List component", () => {
         screen.getByTestId(`cqlLibrary-button-${c.id}`)
       ).toBeInTheDocument();
     });
+
+    const cqlLibraryModelButton = getByTestId(
+      `cqlLibrary-button-${cqlLibrary[0].id}-model`
+    );
+    expect(cqlLibraryModelButton).toBeInTheDocument();
+    userEvent.click(cqlLibraryModelButton);
+    expect(mockPush).toHaveBeenNthCalledWith(1, "/example");
+
     const cqlLibraryButton = getByTestId(
       `cqlLibrary-button-${cqlLibrary[0].id}`
     );
     fireEvent.click(cqlLibraryButton);
-    expect(mockPush).toHaveBeenCalledWith("/example");
+    expect(mockPush).toHaveBeenNthCalledWith(2, "/example");
 
     const editCqlLibraryButton = getByTestId(
       `edit-cqlLibrary-${cqlLibrary[0].id}`

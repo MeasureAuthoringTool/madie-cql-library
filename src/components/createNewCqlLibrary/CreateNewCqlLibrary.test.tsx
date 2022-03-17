@@ -1,6 +1,12 @@
 import * as React from "react";
 import CreateNewCqlLibrary from "./CreateNewCqlLibrary";
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  waitFor,
+  screen,
+} from "@testing-library/react";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../api/useCqlLibraryServiceApi";
@@ -118,6 +124,95 @@ describe("Create New Cql Library Component", () => {
     expect(mockPush).toHaveBeenCalledWith("/example");
   });
 
+  it("should render the model options when clicked", async () => {
+    render(<CreateNewCqlLibrary />);
+    const modelDropdown = screen.getByRole("button", {
+      name: /select a model/i,
+    });
+    userEvent.click(modelDropdown);
+    const qiCoreOption = screen.getByText("QI-Core");
+    expect(qiCoreOption).toBeInTheDocument();
+  });
+
+  it("should update the dropdown with the selected option", async () => {
+    render(<CreateNewCqlLibrary />);
+    const modelDropdown = screen.getByRole("button", {
+      name: /select a model/i,
+    });
+    userEvent.click(modelDropdown);
+    const qiCoreOption = screen.getByText("QI-Core");
+    expect(qiCoreOption).toBeInTheDocument();
+    userEvent.click(qiCoreOption);
+    const qiCore = await screen.findByText("QI-Core");
+    expect(qiCore).toBeInTheDocument();
+    const qiCoreButton = screen.getByRole("button", { name: /qi-core/i });
+    expect(qiCoreButton).toBeInTheDocument();
+  });
+
+  it("should display an error when model is not selected", async () => {
+    render(<CreateNewCqlLibrary />);
+    const input = screen.getByTestId(
+      "cql-library-name-text-field"
+    ) as HTMLInputElement;
+    userEvent.type(input, "TestingLibraryName12");
+    expect(input.value).toBe("TestingLibraryName12");
+    const modelDropdown = screen.getByRole("button", {
+      name: /select a model/i,
+    });
+    expect(modelDropdown).toBeInTheDocument();
+    userEvent.click(modelDropdown);
+    const qiCoreOption = screen.getByText("QI-Core");
+    expect(qiCoreOption).toBeInTheDocument();
+    userEvent.type(modelDropdown, "{esc}");
+    userEvent.dblClick(input);
+    await waitFor(() => {
+      expect(
+        screen.getByText("A CQL library model is required.")
+      ).toBeInTheDocument();
+    });
+    const saveButton = screen.getByTestId("create-new-cql-library-save-button");
+    expect(saveButton).toBeDisabled();
+  });
+
+  it("should have create button disabled until form is valid", async () => {
+    render(<CreateNewCqlLibrary />);
+    expect(
+      screen.getByRole("button", {
+        name: "Create Cql Library",
+      })
+    ).toBeDisabled();
+    const input = screen.getByRole("textbox", {
+      name: "Cql Library Name",
+    }) as HTMLInputElement;
+    userEvent.type(input, "TestingLibraryName12");
+    expect(input.value).toBe("TestingLibraryName12");
+    // for some reason, immediately after editing the button is not disabled during the test
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", {
+          name: "Create Cql Library",
+        })
+      ).toBeDisabled();
+    });
+    userEvent.click(
+      screen.getByRole("button", {
+        name: /select a model/i,
+      })
+    );
+    const qiCoreOption = screen.getByText("QI-Core");
+    userEvent.click(qiCoreOption);
+    const selectedQiCoreDropdown = await screen.findByText("QI-Core");
+    expect(selectedQiCoreDropdown).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /qi-core/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Create Cql Library",
+      })
+    ).not.toBeDisabled();
+  });
+
   it("should handle post service call successfully and redirect user to landing page", async () => {
     const { getByTestId } = render(<CreateNewCqlLibrary />);
     const input = getByTestId(
@@ -153,6 +248,15 @@ describe("Create New Cql Library Component", () => {
     ) as HTMLInputElement;
     userEvent.type(input, "TestingLibraryName12");
     expect(input.value).toBe("TestingLibraryName12");
+    const modelDropdown = screen.getByRole("button", {
+      name: /select a model/i,
+    });
+    userEvent.click(modelDropdown);
+    const qiCoreOption = screen.getByText("QI-Core");
+    expect(qiCoreOption).toBeInTheDocument();
+    userEvent.click(qiCoreOption);
+    const qiCore = await screen.findByText("QI-Core");
+    expect(qiCore).toBeInTheDocument();
     fireEvent.click(getByTestId("create-new-cql-library-save-button"));
     await waitFor(() => {
       expect(getByTestId("cql-library-server-error-alerts")).toHaveTextContent(
@@ -187,6 +291,15 @@ describe("Create New Cql Library Component", () => {
     ) as HTMLInputElement;
     userEvent.type(input, "TestingLibraryName12");
     expect(input.value).toBe("TestingLibraryName12");
+    const modelDropdown = screen.getByRole("button", {
+      name: /select a model/i,
+    });
+    userEvent.click(modelDropdown);
+    const qiCoreOption = screen.getByText("QI-Core");
+    expect(qiCoreOption).toBeInTheDocument();
+    userEvent.click(qiCoreOption);
+    const selectedQiCoreDropdown = await screen.findByText("QI-Core");
+    expect(selectedQiCoreDropdown).toBeInTheDocument();
     fireEvent.click(getByTestId("create-new-cql-library-save-button"));
     await waitFor(() => {
       expect(getByTestId("cql-library-server-error-alerts")).toHaveTextContent(
