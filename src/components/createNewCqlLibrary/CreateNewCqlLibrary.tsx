@@ -91,6 +91,7 @@ const CreateNewCqlLibrary = () => {
             select
             InputLabelProps={{ shrink: false }}
             label={formik.values.model === "" ? "Select a model" : ""}
+            id="cqlLibraryModel"
             data-testid="cql-library-model-select"
             name={"model"}
             {...formik.getFieldProps("model")}
@@ -112,6 +113,7 @@ const CreateNewCqlLibrary = () => {
         </FormControl>
         <FormRow>
           <Button
+            id="saveBtn"
             buttonTitle="Create Cql Library"
             type="submit"
             tw="mr-3"
@@ -119,6 +121,7 @@ const CreateNewCqlLibrary = () => {
             disabled={!(formik.isValid && formik.dirty)}
           />
           <Button
+            id="cancelBtn"
             buttonTitle="Cancel"
             type="button"
             variant="white"
