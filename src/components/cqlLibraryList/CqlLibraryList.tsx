@@ -38,7 +38,9 @@ export default function CqlLibraryList(props: {
                       <td tw="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         <button
                           type="button"
-                          onClick={() => history.push("#")}
+                          onClick={() =>
+                            history.push(`/cql-libraries/${cqlLibrary.id}/edit`)
+                          }
                           data-testid={`cqlLibrary-button-${cqlLibrary.id}`}
                         >
                           {cqlLibrary.cqlLibraryName}
@@ -47,7 +49,9 @@ export default function CqlLibraryList(props: {
                       <td tw="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         <button
                           type="button"
-                          onClick={() => history.push("#")}
+                          onClick={() =>
+                            history.push(`/cql-libraries/${cqlLibrary.id}/edit`)
+                          }
                           data-testid={`cqlLibrary-button-${cqlLibrary.id}-model`}
                         >
                           {cqlLibrary.model}
@@ -55,7 +59,9 @@ export default function CqlLibraryList(props: {
                       </td>
                       <td tw="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button
-                          onClick={() => history.push("#")}
+                          onClick={() =>
+                            history.push(`/cql-libraries/${cqlLibrary.id}/edit`)
+                          }
                           tw="text-blue-600 hover:text-blue-900"
                           data-testid={`edit-cqlLibrary-${cqlLibrary.id}`}
                         >
