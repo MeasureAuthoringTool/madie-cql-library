@@ -118,11 +118,7 @@ const CreateEditCqlLibrary = () => {
 
   return (
     <>
-      <div
-        tw="flex flex-wrap "
-        className="flex justify-center md:justify-end"
-        style={{ marginBottom: "-5.7rem" }}
-      >
+      <div tw="flex flex-wrap " style={{ marginBottom: "-5.7rem" }}>
         <div tw="flex-wrap max-w-xl">
           <div tw="ml-2">
             {serverError && (
@@ -183,7 +179,7 @@ const CreateEditCqlLibrary = () => {
                   buttonTitle={id ? "Update CQL Library" : "Create Cql Library"}
                   type="submit"
                   tw="mr-3"
-                  data-testid="create-new-cql-library-save-button"
+                  data-testid="cql-library-save-button"
                   disabled={
                     !(formik.isValid && formik.dirty) ||
                     (!!id &&
@@ -199,7 +195,7 @@ const CreateEditCqlLibrary = () => {
                   onClick={() => {
                     history.push("/cql-libraries");
                   }}
-                  data-testid="create-new-cql-library-cancel-button"
+                  data-testid="cql-library-cancel-button"
                 />
               </FormRow>
             </form>

@@ -151,7 +151,7 @@ describe("Create New Cql Library Component", () => {
 
   it("should navigate to cql library home page on cancel", async () => {
     const { getByTestId } = renderWithRouter();
-    fireEvent.click(getByTestId("create-new-cql-library-cancel-button"));
+    fireEvent.click(getByTestId("cql-library-cancel-button"));
     expect(mockPush).toHaveBeenCalledWith("/cql-libraries");
   });
 
@@ -201,7 +201,7 @@ describe("Create New Cql Library Component", () => {
         screen.getByText("A CQL library model is required.")
       ).toBeInTheDocument();
     });
-    const saveButton = screen.getByTestId("create-new-cql-library-save-button");
+    const saveButton = screen.getByTestId("cql-library-save-button");
     expect(saveButton).toBeDisabled();
   });
 
@@ -251,7 +251,7 @@ describe("Create New Cql Library Component", () => {
     ) as HTMLInputElement;
     userEvent.type(input, "TestingLibraryName12");
     expect(input.value).toBe("TestingLibraryName12");
-    fireEvent.click(getByTestId("create-new-cql-library-save-button"));
+    fireEvent.click(getByTestId("cql-library-save-button"));
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/cql-libraries");
     });
@@ -284,7 +284,7 @@ describe("Create New Cql Library Component", () => {
     userEvent.click(qiCoreOption);
     const qiCore = await screen.findByText("QI-Core");
     expect(qiCore).toBeInTheDocument();
-    fireEvent.click(getByTestId("create-new-cql-library-save-button"));
+    fireEvent.click(getByTestId("cql-library-save-button"));
     await waitFor(() => {
       expect(getByTestId("cql-library-server-error-alerts")).toHaveTextContent(
         "Error while creating a new library"
@@ -323,7 +323,7 @@ describe("Create New Cql Library Component", () => {
     userEvent.click(qiCoreOption);
     const selectedQiCoreDropdown = await screen.findByText("QI-Core");
     expect(selectedQiCoreDropdown).toBeInTheDocument();
-    fireEvent.click(getByTestId("create-new-cql-library-save-button"));
+    fireEvent.click(getByTestId("cql-library-save-button"));
     await waitFor(() => {
       expect(getByTestId("cql-library-server-error-alerts")).toHaveTextContent(
         "Error while creating a new library error1 : validation error 1 error2 : validation error 2"
