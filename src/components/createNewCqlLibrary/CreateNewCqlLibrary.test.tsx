@@ -12,6 +12,7 @@ import useCqlLibraryServiceApi, {
 } from "../../api/useCqlLibraryServiceApi";
 import CqlLibrary from "../../models/CqlLibrary";
 import userEvent from "@testing-library/user-event";
+import CqlLibraryEditor from "../cqlLibraryEditor/CqlLibraryEditor";
 
 const cqlLibrary = {
   id: "cql library ID",
@@ -42,6 +43,14 @@ jest.mock("react-router-dom", () => ({
 afterEach(cleanup);
 
 describe("Create New Cql Library Component", () => {
+  it("should render form and cql library editor", () => {
+    const { getByTestId } = render(<CreateNewCqlLibrary />);
+    const cqlLibraryEditor = getByTestId("cql-library-editor-component");
+    const form = getByTestId("create-new-cql-library-form");
+    expect(form).toBeInTheDocument();
+    expect(cqlLibraryEditor).toBeInTheDocument();
+  });
+
   it("should generate field level error for required Cql Library name", async () => {
     const { getByTestId } = render(<CreateNewCqlLibrary />);
     const input = getByTestId("cql-library-name-text-field");

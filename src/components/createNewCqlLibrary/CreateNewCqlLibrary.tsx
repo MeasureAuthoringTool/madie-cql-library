@@ -11,6 +11,7 @@ import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import { Model } from "../../models/Model";
+import CqlLibraryEditor from "../cqlLibraryEditor/CqlLibraryEditor";
 
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
 const FormRow = tw.div`mt-3`;
@@ -61,78 +62,95 @@ const CreateNewCqlLibrary = () => {
   }
 
   return (
-    <div tw="m-5">
-      {serverError && (
-        <ErrorAlert data-testid="cql-library-server-error-alerts" role="alert">
-          {serverError}
-        </ErrorAlert>
-      )}
-      <form
-        data-testid="create-new-cql-library-form"
-        onSubmit={formik.handleSubmit}
+    <>
+      <div
+        tw="flex flex-wrap "
+        className="flex justify-center md:justify-end"
+        style={{ marginBottom: "-5.7rem" }}
       >
-        <FormRow>
-          <TextInput
-            type="text"
-            id="cqlLibraryName"
-            {...formik.getFieldProps("cqlLibraryName")}
-            placeholder="Enter a Cql Library Name"
-            data-testid="cql-library-name-text-field"
-          >
-            <Label htmlFor="cqlLibraryName" text="Cql Library Name" />
-            {formikErrorHandler("cqlLibraryName", true)}
-          </TextInput>
-        </FormRow>
-        <FormControl tw="w-72">
-          <Label text="CQL Library Model" />
-          <TextField
-            tw="w-full"
-            size="small"
-            select
-            InputLabelProps={{ shrink: false }}
-            label={formik.values.model === "" ? "Select a model" : ""}
-            id="cqlLibraryModel"
-            data-testid="cql-library-model-select"
-            name={"model"}
-            {...formik.getFieldProps("model")}
-            error={formik.touched.model && Boolean(formik.errors.model)}
-            helperText={formik.touched.model && formik.errors.model}
-          >
-            {Object.keys(Model).map((modelKey) => {
-              return (
-                <MenuItem
-                  key={modelKey}
-                  value={Model[modelKey]}
-                  data-testid={`cql-library-model-option-${Model[modelKey]}`}
+        <div tw="flex-wrap max-w-xl">
+          <div tw="ml-2">
+            {serverError && (
+              <ErrorAlert
+                data-testid="cql-library-server-error-alerts"
+                role="alert"
+              >
+                {serverError}
+              </ErrorAlert>
+            )}
+            <form
+              data-testid="create-new-cql-library-form"
+              onSubmit={formik.handleSubmit}
+              tw="m-8"
+            >
+              <FormRow tw="w-72">
+                <TextInput
+                  type="text"
+                  id="cqlLibraryName"
+                  {...formik.getFieldProps("cqlLibraryName")}
+                  placeholder="Enter a Cql Library Name"
+                  data-testid="cql-library-name-text-field"
                 >
-                  {Model[modelKey]}
-                </MenuItem>
-              );
-            })}
-          </TextField>
-        </FormControl>
-        <FormRow>
-          <Button
-            id="saveBtn"
-            buttonTitle="Create Cql Library"
-            type="submit"
-            tw="mr-3"
-            data-testid="create-new-cql-library-save-button"
-            disabled={!(formik.isValid && formik.dirty)}
-          />
-          <Button
-            id="cancelBtn"
-            buttonTitle="Cancel"
-            type="button"
-            variant="white"
-            onClick={() => {
-              history.push("/cql-libraries");
-            }}
-            data-testid="create-new-cql-library-cancel-button"
-          />
-        </FormRow>
-      </form>
-    </div>
+                  <Label htmlFor="cqlLibraryName" text="Cql Library Name" />
+                  {formikErrorHandler("cqlLibraryName", true)}
+                </TextInput>
+              </FormRow>
+              <FormControl tw="w-72">
+                <Label text="CQL Library Model" />
+                <TextField
+                  tw="w-full"
+                  size="small"
+                  select
+                  InputLabelProps={{ shrink: false }}
+                  label={formik.values.model === "" ? "Select a model" : ""}
+                  id="cqlLibraryModel"
+                  data-testid="cql-library-model-select"
+                  name={"model"}
+                  {...formik.getFieldProps("model")}
+                  error={formik.touched.model && Boolean(formik.errors.model)}
+                  helperText={formik.touched.model && formik.errors.model}
+                >
+                  {Object.keys(Model).map((modelKey) => {
+                    return (
+                      <MenuItem
+                        key={modelKey}
+                        value={Model[modelKey]}
+                        data-testid={`cql-library-model-option-${Model[modelKey]}`}
+                      >
+                        {Model[modelKey]}
+                      </MenuItem>
+                    );
+                  })}
+                </TextField>
+              </FormControl>
+              <FormRow>
+                <Button
+                  id="saveBtn"
+                  buttonTitle="Create Cql Library"
+                  type="submit"
+                  tw="mr-3"
+                  data-testid="create-new-cql-library-save-button"
+                  disabled={!(formik.isValid && formik.dirty)}
+                />
+                <Button
+                  id="cancelBtn"
+                  buttonTitle="Cancel"
+                  type="button"
+                  variant="white"
+                  onClick={() => {
+                    history.push("/cql-libraries");
+                  }}
+                  data-testid="create-new-cql-library-cancel-button"
+                />
+              </FormRow>
+            </form>
+          </div>
+        </div>
+        <div tw="flex-grow " data-testid="cql-library-editor-component">
+          <CqlLibraryEditor />
+        </div>
+      </div>
+    </>
   );
 };
 
