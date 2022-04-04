@@ -1,6 +1,6 @@
 import React, { SetStateAction, Dispatch, useState } from "react";
 import "styled-components/macro";
-import { EditorAnnotation, MadieEditor } from "@madie/madie-editor";
+import { MadieEditor } from "@madie/madie-editor";
 
 const CqlLibraryEditor = () => {
   const [editorVal, setEditorVal]: [string, Dispatch<SetStateAction<string>>] =
