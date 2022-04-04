@@ -29,12 +29,42 @@ export class CqlLibraryServiceApi {
     }
   }
 
+  async fetchCqlLibrary(id: string): Promise<CqlLibrary> {
+    try {
+      const response = await axios.get<CqlLibrary>(
+        `${this.baseUrl}/cql-libraries/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      const message = `Unable to fetch cql libraries`;
+      console.error(message, err);
+      throw new Error(message);
+    }
+  }
+
   async createCqlLibrary(cqlLibrary: CqlLibrary): Promise<void> {
     return await axios.post(`${this.baseUrl}/cql-libraries`, cqlLibrary, {
       headers: {
         Authorization: `Bearer ${this.getAccessToken()}`,
       },
     });
+  }
+
+  async updateCqlLibrary(cqlLibrary: CqlLibrary): Promise<void> {
+    return await axios.put(
+      `${this.baseUrl}/cql-libraries/${cqlLibrary.id}`,
+      cqlLibrary,
+      {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      }
+    );
   }
 }
 
