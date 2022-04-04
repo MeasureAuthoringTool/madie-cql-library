@@ -1,9 +1,6 @@
 import * as React from "react";
 import CreateEditCqlLibrary from "./CreateEditCqlLibrary";
 import { fireEvent, render, waitFor, screen } from "@testing-library/react";
-import useCqlLibraryServiceApi, {
-  CqlLibraryServiceApi,
-} from "../../api/useCqlLibraryServiceApi";
 import CqlLibrary from "../../models/CqlLibrary";
 import { MemoryRouter, Route } from "react-router";
 import userEvent from "@testing-library/user-event";
@@ -14,24 +11,6 @@ import axios from "axios";
 const cqlLibrary = {
   id: "cql library ID",
 } as CqlLibrary;
-
-// mocking useCqlLibraryServiceApi
-// jest.mock("../../api/useCqlLibraryServiceApi");
-// const useCqlLibraryServiceApiMock =
-//   useCqlLibraryServiceApi as jest.Mock<CqlLibraryServiceApi>;
-//
-// const mockCreateCqlLibrary = jest.fn();
-// const mockFetchCqlLibrary = jest.fn();
-// const mockUpdateCqlLibrary = jest.fn();
-// const serviceApiMockResolved = {
-//   createCqlLibrary: () => mockCreateCqlLibrary(),
-//   fetchCqlLibrary: () => mockFetchCqlLibrary(),
-//   updateCqlLibrary: () => mockUpdateCqlLibrary(),
-// } as unknown as CqlLibraryServiceApi;
-
-// useCqlLibraryServiceApiMock.mockImplementation(() => {
-//   return serviceApiMockResolved;
-// });
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -317,8 +296,6 @@ describe("Create New Cql Library Component", () => {
       },
     };
 
-    // mockCreateCqlLibrary.mockClear();
-    // mockCreateCqlLibrary.mockRejectedValue(error);
     mockedAxios.post.mockClear();
     mockedAxios.post.mockRejectedValue(error);
 
@@ -525,15 +502,6 @@ describe("Create New Cql Library Component", () => {
       lastModifiedAt: "",
       lastModifiedBy: "",
     };
-    // mockFetchCqlLibrary.mockResolvedValue(cqlLibrary);
-    // mockUpdateCqlLibrary.mockResolvedValue({
-    //   data: { ...cqlLibrary, cqlLibraryName: "UpdatedName" },
-    // });
-    // renderWithRouter("/cql-libraries/:id/edit", [
-    //   "/cql-libraries/cql-lib-1234/edit",
-    // ]);
-    //
-    // expect(mockFetchCqlLibrary).toHaveBeenCalled();
 
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
@@ -546,7 +514,6 @@ describe("Create New Cql Library Component", () => {
       "/cql-libraries/cql-lib-1234/edit",
     ]);
 
-    // expect(mockFetchCqlLibrary).toHaveBeenCalled();
     expect(mockedAxios.get).toHaveBeenCalled();
 
     expect(
@@ -575,7 +542,6 @@ describe("Create New Cql Library Component", () => {
     userEvent.click(updateButton);
 
     await waitFor(() => expect(mockPush).toBeCalledWith("/cql-libraries"));
-    // expect(mockUpdateCqlLibrary).toHaveBeenCalled();
     expect(mockedAxios.put).toHaveBeenCalledWith(
       "/cql-libraries/cql-lib-1234",
       {
