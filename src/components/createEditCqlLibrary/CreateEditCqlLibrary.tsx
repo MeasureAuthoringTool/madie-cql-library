@@ -138,7 +138,7 @@ const CreateEditCqlLibrary = () => {
               onSubmit={formik.handleSubmit}
               tw="m-8"
             >
-              <FormRow>
+              <FormRow tw="w-72">
                 <TextInput
                   type="text"
                   id="cqlLibraryName"
