@@ -1,7 +1,7 @@
 import React from "react";
 import { Route, Switch } from "react-router-dom";
 import CqlLibraryLanding from "../cqlLibraryLanding/CqlLibraryLanding";
-import CreateNewCqlLibrary from "../createNewCqlLibrary/CreateNewCqlLibrary";
+import CreateEditCqlLibrary from "../createEditCqlLibrary/CreateEditCqlLibrary";
 import TimeoutHandler from "../timeOutHandler/TimeoutHandler";
 
 export function CqlLibraryRoutes() {
@@ -13,7 +13,12 @@ export function CqlLibraryRoutes() {
         <Route
           exact
           path="/cql-libraries/create"
-          component={CreateNewCqlLibrary}
+          component={CreateEditCqlLibrary}
+        />
+        <Route
+          exact
+          path="/cql-libraries/:id/edit"
+          component={CreateEditCqlLibrary}
         />
       </Switch>
     </>

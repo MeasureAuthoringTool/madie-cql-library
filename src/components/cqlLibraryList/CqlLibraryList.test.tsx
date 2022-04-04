@@ -8,7 +8,7 @@ import userEvent from "@testing-library/user-event";
 const mockPush = jest.fn();
 jest.mock("react-router-dom", () => ({
   useHistory: () => {
-    const push = () => mockPush("/example");
+    const push = (path: string) => mockPush(path);
     return { push };
   },
 }));
@@ -42,18 +42,27 @@ describe("CqlLibrary List component", () => {
     );
     expect(cqlLibraryModelButton).toBeInTheDocument();
     userEvent.click(cqlLibraryModelButton);
-    expect(mockPush).toHaveBeenNthCalledWith(1, "/example");
+    expect(mockPush).toHaveBeenNthCalledWith(
+      1,
+      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit"
+    );
 
     const cqlLibraryButton = getByTestId(
       `cqlLibrary-button-${cqlLibrary[0].id}`
     );
     fireEvent.click(cqlLibraryButton);
-    expect(mockPush).toHaveBeenNthCalledWith(2, "/example");
+    expect(mockPush).toHaveBeenNthCalledWith(
+      2,
+      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit"
+    );
 
     const editCqlLibraryButton = getByTestId(
       `edit-cqlLibrary-${cqlLibrary[0].id}`
     );
     fireEvent.click(editCqlLibraryButton);
-    expect(mockPush).toHaveBeenCalledWith("/example");
+    expect(mockPush).toHaveBeenNthCalledWith(
+      3,
+      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit"
+    );
   });
 });
