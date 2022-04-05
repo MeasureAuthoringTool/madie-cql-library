@@ -28,6 +28,7 @@ const CreateEditCqlLibrary = () => {
     initialValues: {
       cqlLibraryName: "",
       model: "",
+      cql: "",
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
     onSubmit: handleSubmit,
@@ -202,7 +203,10 @@ const CreateEditCqlLibrary = () => {
           </div>
         </div>
         <div tw="flex-grow " data-testid="cql-library-editor-component">
-          <CqlLibraryEditor />
+          <CqlLibraryEditor
+            value={formik.values.cql}
+            onChange={(val: string) => formik.setFieldValue("cql", val)}
+          />
         </div>
       </div>
     </>

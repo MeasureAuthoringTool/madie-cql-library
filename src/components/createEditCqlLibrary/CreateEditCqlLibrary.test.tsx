@@ -4,7 +4,6 @@ import { fireEvent, render, waitFor, screen } from "@testing-library/react";
 import CqlLibrary from "../../models/CqlLibrary";
 import { MemoryRouter, Route } from "react-router";
 import userEvent from "@testing-library/user-event";
-import CqlLibraryEditor from "../cqlLibraryEditor/CqlLibraryEditor";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { Model } from "../../models/Model";
 import axios from "axios";
@@ -69,8 +68,10 @@ describe("Create New Cql Library Component", () => {
     const { getByTestId } = renderWithRouter();
     const cqlLibraryEditor = getByTestId("cql-library-editor-component");
     const form = getByTestId("create-new-cql-library-form");
+    const input = getByTestId("cql-library-editor") as HTMLInputElement;
     expect(form).toBeInTheDocument();
     expect(cqlLibraryEditor).toBeInTheDocument();
+    expect(input.value).toEqual("");
   });
 
   it("should generate field level error for required Cql Library name", async () => {
@@ -336,6 +337,7 @@ describe("Create New Cql Library Component", () => {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
       model: Model.QICORE,
+      cql: "",
       createdAt: "",
       createdBy: "",
       lastModifiedAt: "",
@@ -439,6 +441,7 @@ describe("Create New Cql Library Component", () => {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
       model: Model.QICORE,
+      cql: "",
       createdAt: "",
       createdBy: "",
       lastModifiedAt: "",
@@ -506,6 +509,7 @@ describe("Create New Cql Library Component", () => {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
       model: Model.QICORE,
+      cql: "",
       createdAt: "",
       createdBy: "",
       lastModifiedAt: "",
@@ -544,6 +548,15 @@ describe("Create New Cql Library Component", () => {
         })
       ).toHaveValue("UpdatedName")
     );
+    const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
+    userEvent.type(
+      input,
+      "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.000'"
+    );
+    expect(input.value).toBe(
+      "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.000'"
+    );
+
     const updateButton = screen.getByRole("button", {
       name: "Update CQL Library",
     });
@@ -557,6 +570,7 @@ describe("Create New Cql Library Component", () => {
         id: "cql-lib-1234",
         cqlLibraryName: "UpdatedName",
         model: Model.QICORE,
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.000'",
         createdAt: "",
         createdBy: "",
         lastModifiedAt: "",
@@ -564,5 +578,46 @@ describe("Create New Cql Library Component", () => {
       },
       { headers: { Authorization: "Bearer test.jwt" } }
     );
+  });
+
+  it("should be able to show the input Cql Library on the editor", () => {
+    renderWithRouter();
+    const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
+    userEvent.type(input, "library testCql version '1.0.000'");
+    expect(input).toHaveValue("library testCql version '1.0.000'");
+  });
+
+  it("should render existing CQL in the editor", async () => {
+    const cqlLibrary: CqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      model: Model.QICORE,
+      cql: "library testCql version '1.0.000'",
+      createdAt: "",
+      createdBy: "",
+      lastModifiedAt: "",
+      lastModifiedBy: "",
+    };
+
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+
+    expect(mockedAxios.get).toHaveBeenCalled();
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Update CQL Library",
+      })
+    ).toBeInTheDocument();
+
+    const libraryNameInput = screen.getByRole("textbox", {
+      name: "Cql Library Name",
+    });
+    expect(libraryNameInput).toHaveValue("Library1");
+    const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
+    expect(input).toHaveValue("library testCql version '1.0.000'");
   });
 });

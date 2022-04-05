@@ -12,4 +12,5 @@ export const CqlLibrarySchemaValidator = Yup.object().shape({
   model: Yup.string()
     .oneOf(Object.values(Model))
     .required("A CQL library model is required."),
+  cql: Yup.string(),
 });
