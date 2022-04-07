@@ -522,7 +522,6 @@ describe("Create New Cql Library Component", () => {
     mockedAxios.put.mockResolvedValue({
       data: { ...cqlLibrary, cqlLibraryName: "UpdatedName" },
     });
-    // mockFetchCqlLibrary.mockResolvedValue(cqlLibrary);
     renderWithRouter("/cql-libraries/:id/edit", [
       "/cql-libraries/cql-lib-1234/edit",
     ]);
@@ -578,6 +577,56 @@ describe("Create New Cql Library Component", () => {
       },
       { headers: { Authorization: "Bearer test.jwt" } }
     );
+  });
+
+  it("should allow update when cql is null", async () => {
+    const cqlLibrary: CqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      model: Model.QICORE,
+      cql: null,
+      createdAt: "",
+      createdBy: "",
+      lastModifiedAt: "",
+      lastModifiedBy: "",
+    };
+
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockedAxios.put.mockClear();
+    mockedAxios.put.mockResolvedValue({
+      data: { ...cqlLibrary, cqlLibraryName: "UpdatedName" },
+    });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+
+    expect(mockedAxios.get).toHaveBeenCalled();
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Update CQL Library",
+      })
+    ).toBeInTheDocument();
+
+    const libraryNameInput = screen.getByRole("textbox", {
+      name: "Cql Library Name",
+    });
+    expect(libraryNameInput).toHaveValue("Library1");
+    userEvent.clear(libraryNameInput);
+    userEvent.type(libraryNameInput, "UpdatedName");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("textbox", {
+          name: "Cql Library Name",
+        })
+      ).toHaveValue("UpdatedName")
+    );
+
+    const updateButton = screen.getByRole("button", {
+      name: "Update CQL Library",
+    });
+    expect(updateButton).not.toBeDisabled();
   });
 
   it("should be able to show the input Cql Library on the editor", () => {
