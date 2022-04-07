@@ -14,6 +14,7 @@ import { Model } from "../../models/Model";
 import * as _ from "lodash";
 import CqlLibraryEditor from "../cqlLibraryEditor/CqlLibraryEditor";
 
+const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
 const FormRow = tw.div`mt-3`;
 
@@ -22,7 +23,10 @@ const CreateEditCqlLibrary = () => {
   const { id } = useParams();
   const [serverError, setServerError] = useState(undefined);
   const [loadedCqlLibrary, setLoadedCqlLibrary] = useState<CqlLibrary>(null);
+  const [displayAnnotations, setDisplayAnnotations] = useState<boolean>(false);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  const [elmTranslationError, setElmTranslationError] = useState(undefined);
+  const [successMessage, setSuccessMessage] = useState(undefined);
 
   const formik = useFormik({
     initialValues: {
@@ -37,6 +41,7 @@ const CreateEditCqlLibrary = () => {
 
   useEffect(() => {
     if (id && _.isNil(loadedCqlLibrary)) {
+      setDisplayAnnotations(true);
       cqlLibraryServiceApi
         .fetchCqlLibrary(id)
         .then((cqlLibrary) => {
@@ -59,18 +64,26 @@ const CreateEditCqlLibrary = () => {
     cqlLibraryServiceApi
       .createCqlLibrary(cqlLibrary)
       .then(() => {
-        history.push("/cql-libraries");
+        setSuccessMessage("Cql Library successfully created");
       })
       .catch((error) => {
-        let msg: string = error.response.data.message;
-        if (!!error.response.data.validationErrors) {
-          for (const erroredField in error.response.data.validationErrors) {
-            msg = msg.concat(
-              ` ${erroredField} : ${error.response.data.validationErrors[erroredField]}`
-            );
+        console.error(
+          "An error occurred while creating the CQL Library:",
+          error
+        );
+        if (error?.response) {
+          let msg: string = error.response.data.message;
+          if (!!error.response.data.validationErrors) {
+            for (const erroredField in error.response.data.validationErrors) {
+              msg = msg.concat(
+                ` ${erroredField} : ${error.response.data.validationErrors[erroredField]}`
+              );
+            }
           }
+          setServerError(msg);
+        } else {
+          setServerError("An error occurred while creating the CQL Library");
         }
-        setServerError(msg);
       });
   }
 
@@ -78,26 +91,36 @@ const CreateEditCqlLibrary = () => {
     cqlLibraryServiceApi
       .updateCqlLibrary(cqlLibrary)
       .then(() => {
-        history.push("/cql-libraries");
+        resetForm({
+          values: { ...cqlLibrary },
+        });
+        setSuccessMessage("Cql Library successfully updated");
       })
       .catch((error) => {
         console.error(
           "An error occurred while updating the CQL library: ",
           error
         );
-        let msg: string = error.response.data.message;
-        if (!!error.response.data.validationErrors) {
-          for (const erroredField in error.response.data.validationErrors) {
-            msg = msg.concat(
-              ` ${erroredField} : ${error.response.data.validationErrors[erroredField]}`
-            );
+        if (error?.response) {
+          let msg: string = error.response.data.message;
+          if (!!error.response.data.validationErrors) {
+            for (const erroredField in error.response.data.validationErrors) {
+              msg = msg.concat(
+                ` ${erroredField} : ${error.response.data.validationErrors[erroredField]}`
+              );
+            }
           }
+          setServerError(msg);
+        } else {
+          setServerError("An error occurred while updating the CQL library");
         }
-        setServerError(msg);
       });
   }
 
   async function handleSubmit(cqlLibrary: CqlLibrary) {
+    setDisplayAnnotations(true);
+    setSuccessMessage(undefined);
+    setServerError(undefined);
     if (id) {
       return updateCqlLibrary(cqlLibrary);
     } else {
@@ -129,6 +152,19 @@ const CreateEditCqlLibrary = () => {
               >
                 {serverError}
               </ErrorAlert>
+            )}
+            {elmTranslationError && displayAnnotations && (
+              <ErrorAlert
+                data-testid="cql-library-elm-translation-error-alerts"
+                role="alert"
+              >
+                {elmTranslationError}
+              </ErrorAlert>
+            )}
+            {successMessage && (
+              <SuccessText data-testid="cql-library-success-alert" role="alert">
+                {successMessage}
+              </SuccessText>
             )}
             <form
               data-testid="create-new-cql-library-form"
@@ -204,6 +240,10 @@ const CreateEditCqlLibrary = () => {
         </div>
         <div tw="flex-grow " data-testid="cql-library-editor-component">
           <CqlLibraryEditor
+            displayAnnotations={displayAnnotations}
+            setDisplayAnnotations={setDisplayAnnotations}
+            setElmTranslationError={setElmTranslationError}
+            setSuccessMessage={setSuccessMessage}
             value={formik.values.cql}
             onChange={(val: string) => formik.setFieldValue("cql", val)}
           />
