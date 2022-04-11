@@ -23,8 +23,6 @@ export class CqlLibraryServiceApi {
       return response.data;
     } catch (err) {
       const message = `Unable to fetch cql libraries`;
-      console.error(message);
-      console.error(err);
       throw new Error(message);
     }
   }
@@ -41,8 +39,7 @@ export class CqlLibraryServiceApi {
       );
       return response.data;
     } catch (err) {
-      const message = `Unable to fetch cql libraries`;
-      console.error(message, err);
+      const message = `Unable to fetch cql library`;
       throw new Error(message);
     }
   }
@@ -58,6 +55,30 @@ export class CqlLibraryServiceApi {
   async updateCqlLibrary(cqlLibrary: CqlLibrary): Promise<void> {
     return await axios.put(
       `${this.baseUrl}/cql-libraries/${cqlLibrary.id}`,
+      cqlLibrary,
+      {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      }
+    );
+  }
+
+  async createVersion(id: string, isMajor: boolean): Promise<void> {
+    return await axios.put(
+      `${this.baseUrl}/cql-libraries/version/${id}?isMajor=${isMajor}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+      }
+    );
+  }
+
+  async createDraft(cqlLibrary: CqlLibrary): Promise<CqlLibrary> {
+    return await axios.post(
+      `${this.baseUrl}/cql-libraries/draft/${cqlLibrary.id}`,
       cqlLibrary,
       {
         headers: {

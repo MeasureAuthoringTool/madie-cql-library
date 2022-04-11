@@ -5,8 +5,14 @@ export default interface CqlLibrary {
   cqlLibraryName: string;
   model: Model | "";
   cql: string;
+  version: string;
+  draft: boolean;
+  groupId: string;
   createdAt: string;
   createdBy: string;
   lastModifiedAt: string;
   lastModifiedBy: string;
+  publisher?: string;
+  description?: string;
+  experimental?: string;
 }

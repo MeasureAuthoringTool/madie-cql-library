@@ -6,6 +6,7 @@ import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 import { useHistory } from "react-router-dom";
+import CqlLibrary from "../../models/CqlLibrary";
 
 function CqlLibraryLanding() {
   const history = useHistory();
@@ -15,9 +16,8 @@ function CqlLibraryLanding() {
 
   useEffect(() => {
     (async () => {
-      const cqlLibraries = await cqlLibraryServiceApi.fetchCqlLibraries(
-        activeTab === 0
-      );
+      const cqlLibraries: CqlLibrary[] =
+        await cqlLibraryServiceApi.fetchCqlLibraries(activeTab === 0);
       setCqlLibraryList(() => _.orderBy(cqlLibraries, ["createdAt"], ["desc"]));
     })();
   }, [activeTab, cqlLibraryServiceApi]);
