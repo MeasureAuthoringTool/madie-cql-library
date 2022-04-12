@@ -1,5 +1,5 @@
 import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import CqlLibrary from "../../models/CqlLibrary";
 import CqlLibraryList from "./CqlLibraryList";
 import { Model } from "../../models/Model";
@@ -43,13 +43,6 @@ const useCqlLibraryServiceMockResolved = {
   createVersion: jest.fn().mockResolvedValue({}),
   createDraft: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
-
-jest.mock("../createDraftDialog/CreateDraftDialog", () => () => {
-  return <div data-testid="create-draft-dialog-mocked" />;
-});
-jest.mock("../createVersionDialog/CreateVersionDialog", () => () => {
-  return <div data-testid="create-version-dialog-mocked" />;
-});
 
 describe("CqlLibrary List component", () => {
   beforeEach(() => {
@@ -112,9 +105,7 @@ describe("CqlLibrary List component", () => {
       `create-new-version-${cqlLibrary[0].id}-button`
     );
     fireEvent.click(versionButton);
-    expect(
-      screen.getByTestId("create-version-dialog-mocked")
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
   });
 
   it("should display draft button for version libraries and on click should render dialog", () => {
@@ -143,8 +134,260 @@ describe("CqlLibrary List component", () => {
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
     fireEvent.click(draftButton);
-    expect(
-      screen.getByTestId("create-draft-dialog-mocked")
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
+  });
+
+  it("should successfully draft a cql library", async () => {
+    render(
+      <CqlLibraryList
+        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const draftButton = screen.getByTestId(
+      `create-new-draft-${cqlLibrary[0].id}-button`
+    );
+    fireEvent.click(draftButton);
+    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByTestId(
+      "cql-library-name-text-field"
+    );
+    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.clear(cqlLibraryNameInput);
+    userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    await waitFor(() => {
+      expect(loadCqlLibraries).toHaveBeenCalled();
+    });
+  });
+
+  it("should display bad request error while creating a draft a cql library", async () => {
+    const error = {
+      response: {
+        data: {
+          status: 400,
+        },
+      },
+    };
+    const useCqlLibraryServiceMockRejected = {
+      createDraft: jest.fn().mockRejectedValue(error),
+    } as unknown as CqlLibraryServiceApi;
+
+    useCqlLibraryServiceMock.mockImplementation(() => {
+      return useCqlLibraryServiceMockRejected;
+    });
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const draftButton = screen.getByTestId(
+      `create-new-draft-${cqlLibrary[0].id}-button`
+    );
+    fireEvent.click(draftButton);
+    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByTestId(
+      "cql-library-name-text-field"
+    );
+    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.clear(cqlLibraryNameInput);
+    userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-list-server-error-alerts")
+      ).toHaveTextContent("Requested Cql Library cannot be drafted");
+    });
+  });
+
+  it("should display unauthorized error while creating a draft a cql library", async () => {
+    const error = {
+      response: {
+        data: {
+          status: 403,
+        },
+      },
+    };
+    const useCqlLibraryServiceMockRejected = {
+      createDraft: jest.fn().mockRejectedValue(error),
+    } as unknown as CqlLibraryServiceApi;
+
+    useCqlLibraryServiceMock.mockImplementation(() => {
+      return useCqlLibraryServiceMockRejected;
+    });
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const draftButton = screen.getByTestId(
+      `create-new-draft-${cqlLibrary[0].id}-button`
+    );
+    fireEvent.click(draftButton);
+    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByTestId(
+      "cql-library-name-text-field"
+    );
+    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.clear(cqlLibraryNameInput);
+    userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-list-server-error-alerts")
+      ).toHaveTextContent("User is unauthorized to create a draft");
+    });
+  });
+
+  it("should display server error while creating a draft a cql library", async () => {
+    const error = {
+      response: {
+        data: {
+          status: 500,
+          message: "Internal server error",
+        },
+      },
+    };
+    const useCqlLibraryServiceMockRejected = {
+      createDraft: jest.fn().mockRejectedValue(error),
+    } as unknown as CqlLibraryServiceApi;
+
+    useCqlLibraryServiceMock.mockImplementation(() => {
+      return useCqlLibraryServiceMockRejected;
+    });
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const draftButton = screen.getByTestId(
+      `create-new-draft-${cqlLibrary[0].id}-button`
+    );
+    fireEvent.click(draftButton);
+    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByTestId(
+      "cql-library-name-text-field"
+    );
+    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.clear(cqlLibraryNameInput);
+    userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-list-server-error-alerts")
+      ).toHaveTextContent("Internal server error");
+    });
+  });
+
+  it("should display bad request error while creating a version of a cql library", async () => {
+    const error = {
+      response: {
+        data: {
+          status: 400,
+        },
+      },
+    };
+    const useCqlLibraryServiceMockRejected = {
+      createVersion: jest.fn().mockRejectedValue(error),
+    } as unknown as CqlLibraryServiceApi;
+
+    useCqlLibraryServiceMock.mockImplementation(() => {
+      return useCqlLibraryServiceMockRejected;
+    });
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const versionButton = screen.getByTestId(
+      `create-new-version-${cqlLibrary[0].id}-button`
+    );
+    fireEvent.click(versionButton);
+    fireEvent.click(screen.getByLabelText("Major"));
+    await waitFor(() => {
+      fireEvent.click(screen.getByTestId("create-version-continue-button"));
+      expect(
+        screen.getByTestId("cql-library-list-server-error-alerts")
+      ).toHaveTextContent("Requested Cql Library cannot be versioned");
+    });
+  });
+
+  it("should display unauthorized error while creating a version of a cql library", async () => {
+    const error = {
+      response: {
+        data: {
+          status: 403,
+        },
+      },
+    };
+    const useCqlLibraryServiceMockRejected = {
+      createVersion: jest.fn().mockRejectedValue(error),
+    } as unknown as CqlLibraryServiceApi;
+
+    useCqlLibraryServiceMock.mockImplementation(() => {
+      return useCqlLibraryServiceMockRejected;
+    });
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const versionButton = screen.getByTestId(
+      `create-new-version-${cqlLibrary[0].id}-button`
+    );
+    fireEvent.click(versionButton);
+    fireEvent.click(screen.getByLabelText("Major"));
+    await waitFor(() => {
+      fireEvent.click(screen.getByTestId("create-version-continue-button"));
+      expect(
+        screen.getByTestId("cql-library-list-server-error-alerts")
+      ).toHaveTextContent("User is unauthorized to create a version");
+    });
+  });
+
+  it("should display server error while creating a version of a cql library", async () => {
+    const error = {
+      response: {
+        data: {
+          status: 500,
+          message: "Internal server error",
+        },
+      },
+    };
+    const useCqlLibraryServiceMockRejected = {
+      createVersion: jest.fn().mockRejectedValue(error),
+    } as unknown as CqlLibraryServiceApi;
+
+    useCqlLibraryServiceMock.mockImplementation(() => {
+      return useCqlLibraryServiceMockRejected;
+    });
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const versionButton = screen.getByTestId(
+      `create-new-version-${cqlLibrary[0].id}-button`
+    );
+    fireEvent.click(versionButton);
+    fireEvent.click(screen.getByLabelText("Major"));
+    await waitFor(() => {
+      fireEvent.click(screen.getByTestId("create-version-continue-button"));
+      expect(
+        screen.getByTestId("cql-library-list-server-error-alerts")
+      ).toHaveTextContent("Internal server error");
+    });
   });
 });
