@@ -196,9 +196,9 @@ describe("CqlLibrary List component", () => {
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
     fireEvent.click(screen.getByTestId("create-draft-continue-button"));
     await waitFor(() => {
-      expect(
-        screen.getByTestId("cql-library-list-server-error-alerts")
-      ).toHaveTextContent("Requested Cql Library cannot be drafted");
+      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
+        "Requested Cql Library cannot be drafted"
+      );
     });
   });
 
@@ -237,9 +237,9 @@ describe("CqlLibrary List component", () => {
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
     fireEvent.click(screen.getByTestId("create-draft-continue-button"));
     await waitFor(() => {
-      expect(
-        screen.getByTestId("cql-library-list-server-error-alerts")
-      ).toHaveTextContent("User is unauthorized to create a draft");
+      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
+        "User is unauthorized to create a draft"
+      );
     });
   });
 
@@ -279,9 +279,9 @@ describe("CqlLibrary List component", () => {
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
     fireEvent.click(screen.getByTestId("create-draft-continue-button"));
     await waitFor(() => {
-      expect(
-        screen.getByTestId("cql-library-list-server-error-alerts")
-      ).toHaveTextContent("Internal server error");
+      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
+        "Internal server error"
+      );
     });
   });
 
@@ -332,9 +332,9 @@ describe("CqlLibrary List component", () => {
     fireEvent.click(screen.getByLabelText("Major"));
     await waitFor(() => {
       fireEvent.click(screen.getByTestId("create-version-continue-button"));
-      expect(
-        screen.getByTestId("cql-library-list-server-error-alerts")
-      ).toHaveTextContent("Requested Cql Library cannot be versioned");
+      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
+        "Requested Cql Library cannot be versioned"
+      );
     });
   });
 
@@ -367,9 +367,9 @@ describe("CqlLibrary List component", () => {
     fireEvent.click(screen.getByLabelText("Major"));
     await waitFor(() => {
       fireEvent.click(screen.getByTestId("create-version-continue-button"));
-      expect(
-        screen.getByTestId("cql-library-list-server-error-alerts")
-      ).toHaveTextContent("User is unauthorized to create a version");
+      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
+        "User is unauthorized to create a version"
+      );
     });
   });
 
@@ -403,9 +403,9 @@ describe("CqlLibrary List component", () => {
     fireEvent.click(screen.getByLabelText("Major"));
     await waitFor(() => {
       fireEvent.click(screen.getByTestId("create-version-continue-button"));
-      expect(
-        screen.getByTestId("cql-library-list-server-error-alerts")
-      ).toHaveTextContent("Internal server error");
+      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
+        "Internal server error"
+      );
     });
   });
 });

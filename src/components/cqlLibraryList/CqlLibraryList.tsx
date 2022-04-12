@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import tw from "twin.macro";
+import "twin.macro";
 import "styled-components/macro";
 import { useHistory } from "react-router-dom";
 import CqlLibrary from "../../models/CqlLibrary";
@@ -7,8 +7,15 @@ import { Button } from "@madie/madie-components";
 import CreatVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CreatDraftDialog from "../createDraftDialog/CreateDraftDialog";
+import Snackbar from "@mui/material/Snackbar";
+import MuiAlert, { AlertProps } from "@mui/material/Alert";
 
-const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const history = useHistory();
@@ -20,30 +27,61 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
     open: false,
     cqlLibrary: null,
   });
-  const [serverError, setServerError] = useState(undefined);
+  const [snackBar, setSnackBar] = useState({
+    message: "",
+    open: false,
+    severity: null,
+  });
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
 
-  const handleClose = () => {
+  const handleDialogClose = () => {
     setCreateVersionDialog({ open: false, cqlLibraryId: "" });
     setCreateDraftDialog({ open: false, cqlLibrary: null });
+  };
+
+  const handleSnackBarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackBar({ ...snackBar, open: false });
   };
 
   const createVersion = async (isMajor: boolean) => {
     await cqlLibraryServiceApi
       .createVersion(createVersionDialog.cqlLibraryId, isMajor)
       .then(async () => {
-        handleClose();
+        handleDialogClose();
         await onListUpdate();
+        setSnackBar({
+          message: "New version of CQL Library is Successfully created",
+          open: true,
+          severity: "success",
+        });
       })
       .catch((error) => {
-        handleClose();
+        handleDialogClose();
         const errorData = error?.response?.data;
         if (errorData?.status == 400) {
-          setServerError("Requested Cql Library cannot be versioned");
+          setSnackBar({
+            message: "Requested Cql Library cannot be versioned",
+            open: true,
+            severity: "error",
+          });
         } else if (errorData?.status == 403) {
-          setServerError("User is unauthorized to create a version");
+          setSnackBar({
+            message: "User is unauthorized to create a version",
+            open: true,
+            severity: "error",
+          });
         } else {
-          setServerError(errorData?.message);
+          setSnackBar({
+            message: errorData?.message,
+            open: true,
+            severity: "error",
+          });
         }
       });
   };
@@ -52,43 +90,66 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
     await cqlLibraryServiceApi
       .createDraft(cqlLibrary)
       .then(async () => {
-        handleClose();
+        handleDialogClose();
         await onListUpdate();
+        setSnackBar({
+          message: "New Draft of CQL Library is Successfully created",
+          open: true,
+          severity: "success",
+        });
       })
       .catch((error) => {
-        handleClose();
+        handleDialogClose();
         const errorData = error?.response?.data;
         if (errorData?.status == 400) {
-          setServerError("Requested Cql Library cannot be drafted");
+          setSnackBar({
+            message: "Requested Cql Library cannot be drafted",
+            open: true,
+            severity: "error",
+          });
         } else if (errorData?.status == 403) {
-          setServerError("User is unauthorized to create a draft");
+          setSnackBar({
+            message: "User is unauthorized to create a draft",
+            open: true,
+            severity: "error",
+          });
         } else {
-          setServerError(errorData?.message);
+          setSnackBar({
+            message: errorData?.message,
+            open: true,
+            severity: "error",
+          });
         }
       });
   };
 
   return (
     <div data-testid="cqlLibrary-list">
+      <Snackbar
+        open={snackBar.open}
+        autoHideDuration={6000}
+        onClose={handleSnackBarClose}
+        data-testid="cql-library-list-snackBar"
+      >
+        <Alert
+          onClose={handleSnackBarClose}
+          severity={snackBar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackBar.message}
+        </Alert>
+      </Snackbar>
       <CreatVersionDialog
         open={createVersionDialog.open}
-        onClose={handleClose}
+        onClose={handleDialogClose}
         onSubmit={createVersion}
       />
       <CreatDraftDialog
         open={createDraftDialog.open}
-        onClose={handleClose}
+        onClose={handleDialogClose}
         onSubmit={createDraft}
         cqlLibrary={createDraftDialog.cqlLibrary}
       />
-      {serverError && (
-        <ErrorAlert
-          data-testid="cql-library-list-server-error-alerts"
-          role="alert"
-        >
-          {serverError}
-        </ErrorAlert>
-      )}
       <div tw="flex flex-col">
         <div tw="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div tw="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">

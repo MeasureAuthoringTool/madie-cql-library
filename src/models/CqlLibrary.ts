@@ -14,5 +14,5 @@ export default interface CqlLibrary {
   lastModifiedBy: string;
   publisher?: string;
   description?: string;
-  experimental?: string;
+  experimental?: boolean;
 }

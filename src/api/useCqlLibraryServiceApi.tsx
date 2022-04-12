@@ -76,7 +76,7 @@ export class CqlLibraryServiceApi {
     );
   }
 
-  async createDraft(cqlLibrary: CqlLibrary): Promise<CqlLibrary> {
+  async createDraft(cqlLibrary: CqlLibrary): Promise<void> {
     return await axios.post(
       `${this.baseUrl}/cql-libraries/draft/${cqlLibrary.id}`,
       cqlLibrary,
