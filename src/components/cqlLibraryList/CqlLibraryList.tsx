@@ -10,9 +10,7 @@ import CreatDraftDialog from "../createDraftDialog/CreateDraftDialog";
 
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
 
-export default function CqlLibraryList(props: {
-  cqlLibraryList: CqlLibrary[];
-}) {
+export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const history = useHistory();
   const [createVersionDialog, setCreateVersionDialog] = useState({
     open: false,
@@ -33,9 +31,9 @@ export default function CqlLibraryList(props: {
   const createVersion = async (isMajor: boolean) => {
     await cqlLibraryServiceApi
       .createVersion(createVersionDialog.cqlLibraryId, isMajor)
-      .then(() => {
+      .then(async () => {
         handleClose();
-        history.go(0);
+        await onListUpdate();
       })
       .catch((error) => {
         handleClose();
@@ -53,9 +51,9 @@ export default function CqlLibraryList(props: {
   const createDraft = async (cqlLibrary: CqlLibrary) => {
     await cqlLibraryServiceApi
       .createDraft(cqlLibrary)
-      .then(() => {
+      .then(async () => {
         handleClose();
-        history.go(0);
+        await onListUpdate();
       })
       .catch((error) => {
         handleClose();
@@ -119,7 +117,7 @@ export default function CqlLibraryList(props: {
                   </tr>
                 </thead>
                 <tbody>
-                  {props.cqlLibraryList?.map((cqlLibrary) => (
+                  {cqlLibraryList?.map((cqlLibrary) => (
                     <tr key={cqlLibrary.id} tw="bg-white">
                       <td tw="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         <button
@@ -159,7 +157,7 @@ export default function CqlLibraryList(props: {
                               cqlLibraryId: cqlLibrary.id,
                             });
                           }}
-                          data-testid="create-new-measure-button"
+                          data-testid={`create-new-version-${cqlLibrary.id}-button`}
                         />
                       ) : (
                         <Button
@@ -171,7 +169,7 @@ export default function CqlLibraryList(props: {
                               cqlLibrary,
                             });
                           }}
-                          data-testid="create-new-measure-button"
+                          data-testid={`create-new-draft-${cqlLibrary.id}-button`}
                         />
                       )}
                       <td tw="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

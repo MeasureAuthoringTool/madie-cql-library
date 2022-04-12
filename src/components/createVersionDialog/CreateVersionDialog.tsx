@@ -77,8 +77,6 @@ interface VersionType {
   type: string;
 }
 
-// Todo a previous state is being rememebered for versionType
-// Open this dialog one and click cancel after selecting radio button, and then reopen it again even if you don't select an option there is a default
 const CreatVersionDialog = ({ open, onClose, onSubmit }) => {
   const formik = useFormik({
     initialValues: {
@@ -127,13 +125,14 @@ const CreatVersionDialog = ({ open, onClose, onSubmit }) => {
           <div className={flexEnd}>
             <Typography className={classes.info}>
               <span className={classes.asterisk}>*</span>
-              Indicates required field
+              Required field
             </Typography>
           </div>
           <div>
             <FormLabel id="radio-button-dialog">Select a version: </FormLabel>
             <RadioGroup
-              aria-labelledby="radio-button-dialog"
+              aria-labelledby="radio-button-group"
+              data-testid="radio-button-group"
               onChange={formik.handleChange}
             >
               <FormControlLabel

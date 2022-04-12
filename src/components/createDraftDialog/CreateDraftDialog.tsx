@@ -9,6 +9,7 @@ import {
   Divider,
   IconButton,
   Button,
+  Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -94,7 +95,8 @@ const CreatDraftDialog = ({ open, onClose, onSubmit, cqlLibrary }) => {
   });
 
   const classes = useStyles();
-  classNames(classes.row, classes.end);
+  const flexEnd = classNames(classes.row, classes.end);
+
   function formikErrorHandler(name: string, isError: boolean) {
     if (formik.touched[name] && formik.errors[name]) {
       return (
@@ -133,6 +135,12 @@ const CreatDraftDialog = ({ open, onClose, onSubmit, cqlLibrary }) => {
         </div>
         <Divider />
         <DialogContent>
+          <div className={flexEnd}>
+            <Typography className={classes.info}>
+              <span className={classes.asterisk}>*</span>
+              Required field
+            </Typography>
+          </div>
           <FormRow>
             <TextInput
               type="text"
