@@ -285,6 +285,24 @@ describe("CqlLibrary List component", () => {
     });
   });
 
+  it("should successfully version a cql library", async () => {
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const versionButton = screen.getByTestId(
+      `create-new-version-${cqlLibrary[0].id}-button`
+    );
+    fireEvent.click(versionButton);
+    fireEvent.click(screen.getByLabelText("Major"));
+    await waitFor(() => {
+      fireEvent.click(screen.getByTestId("create-version-continue-button"));
+      expect(loadCqlLibraries).toHaveBeenCalled();
+    });
+  });
+
   it("should display bad request error while creating a version of a cql library", async () => {
     const error = {
       response: {
