@@ -20,6 +20,7 @@ const FormRow = tw.div`mt-3`;
 
 const CreateEditCqlLibrary = () => {
   const history = useHistory();
+  // @ts-ignore
   const { id } = useParams();
   const [serverError, setServerError] = useState(undefined);
   const [loadedCqlLibrary, setLoadedCqlLibrary] = useState<CqlLibrary>(null);
@@ -51,10 +52,6 @@ const CreateEditCqlLibrary = () => {
           setLoadedCqlLibrary(cqlLibrary);
         })
         .catch((error) => {
-          console.error(
-            "An error occurred while fetching the CQL Library!",
-            error
-          );
           setServerError("An error occurred while fetching the CQL Library!");
         });
     }
@@ -67,10 +64,6 @@ const CreateEditCqlLibrary = () => {
         setSuccessMessage("Cql Library successfully created");
       })
       .catch((error) => {
-        console.error(
-          "An error occurred while creating the CQL Library:",
-          error
-        );
         if (error?.response) {
           let msg: string = error.response.data.message;
           if (!!error.response.data.validationErrors) {
@@ -97,10 +90,6 @@ const CreateEditCqlLibrary = () => {
         setSuccessMessage("Cql Library successfully updated");
       })
       .catch((error) => {
-        console.error(
-          "An error occurred while updating the CQL library: ",
-          error
-        );
         if (error?.response) {
           let msg: string = error.response.data.message;
           if (!!error.response.data.validationErrors) {

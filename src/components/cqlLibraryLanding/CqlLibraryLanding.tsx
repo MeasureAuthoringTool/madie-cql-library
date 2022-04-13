@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import "twin.macro";
 import "styled-components/macro";
 import { Divider, Tab, Tabs } from "@mui/material";
@@ -6,6 +6,7 @@ import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 import { useHistory } from "react-router-dom";
+import CqlLibrary from "../../models/CqlLibrary";
 
 function CqlLibraryLanding() {
   const history = useHistory();
@@ -13,14 +14,18 @@ function CqlLibraryLanding() {
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
 
-  useEffect(() => {
-    (async () => {
-      const cqlLibraries = await cqlLibraryServiceApi.fetchCqlLibraries(
-        activeTab === 0
-      );
-      setCqlLibraryList(() => _.orderBy(cqlLibraries, ["createdAt"], ["desc"]));
-    })();
+  // Libraries are fetched again, when a new draft or version is created
+  const loadCqlLibraries = useCallback(async () => {
+    const cqlLibraries: CqlLibrary[] =
+      await cqlLibraryServiceApi.fetchCqlLibraries(activeTab === 0);
+    return setCqlLibraryList(() =>
+      _.orderBy(cqlLibraries, ["createdAt"], ["desc"])
+    );
   }, [activeTab, cqlLibraryServiceApi]);
+
+  useEffect(() => {
+    (async () => await loadCqlLibraries())();
+  }, [activeTab, cqlLibraryServiceApi, loadCqlLibraries]);
 
   const handleTabChange = (event, nextTab) => {
     setActiveTab(nextTab);
@@ -57,7 +62,10 @@ function CqlLibraryLanding() {
       </section>
 
       <div tw="my-4" data-testid="cql-library-list">
-        <CqlLibraryList cqlLibraryList={cqlLibraryList} />
+        <CqlLibraryList
+          cqlLibraryList={cqlLibraryList}
+          onListUpdate={loadCqlLibraries}
+        />
       </div>
     </div>
   );
