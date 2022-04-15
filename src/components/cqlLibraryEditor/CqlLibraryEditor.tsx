@@ -14,6 +14,7 @@ export interface CqlLibraryEditorProps {
   setSuccessMessage: (val: string) => void;
   value: string;
   onChange: (val: string) => void;
+  readOnly?: boolean;
 }
 
 export const mapElmErrorsToAceAnnotations = (
@@ -38,6 +39,7 @@ const CqlLibraryEditor = ({
   setSuccessMessage,
   value,
   onChange,
+  readOnly,
 }: CqlLibraryEditorProps) => {
   const elmTranslationServiceApi = useElmTranslationServiceApi();
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
@@ -79,6 +81,7 @@ const CqlLibraryEditor = ({
         value={value}
         inboundAnnotations={displayAnnotations ? elmAnnotations : []}
         height="780px"
+        readOnly={readOnly}
       />
     </>
   );

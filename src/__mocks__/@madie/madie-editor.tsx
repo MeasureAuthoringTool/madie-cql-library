@@ -1,6 +1,11 @@
 import React, { ChangeEvent } from "react";
 
-export function MadieEditor({ onChange, value, inboundAnnotations }) {
+export function MadieEditor({
+  onChange,
+  value,
+  inboundAnnotations,
+  readOnly = false,
+}) {
   return (
     <>
       <input
@@ -9,6 +14,7 @@ export function MadieEditor({ onChange, value, inboundAnnotations }) {
         onChange={(e: ChangeEvent<HTMLInputElement>) => {
           onChange(e.target.value);
         }}
+        readOnly={readOnly}
       />
       {inboundAnnotations && inboundAnnotations.length > 0 ? (
         <span>{inboundAnnotations.length} issues found with CQL</span>
