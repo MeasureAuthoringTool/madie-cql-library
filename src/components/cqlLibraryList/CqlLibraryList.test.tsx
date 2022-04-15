@@ -285,6 +285,48 @@ describe("CqlLibrary List component", () => {
     });
   });
 
+  it("should display unique library name error for changing to already used name during draft a cql library", async () => {
+    const error = {
+      response: {
+        data: {
+          status: 400,
+          message: "Library name must be unique.",
+        },
+      },
+    };
+    const useCqlLibraryServiceMockRejected = {
+      createDraft: jest.fn().mockRejectedValue(error),
+    } as unknown as CqlLibraryServiceApi;
+
+    useCqlLibraryServiceMock.mockImplementation(() => {
+      return useCqlLibraryServiceMockRejected;
+    });
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const draftButton = screen.getByTestId(
+      `create-new-draft-${cqlLibrary[0].id}-button`
+    );
+    fireEvent.click(draftButton);
+    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByTestId(
+      "cql-library-name-text-field"
+    );
+    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.clear(cqlLibraryNameInput);
+    userEvent.type(cqlLibraryNameInput, "ExistingLibraryName");
+    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    await waitFor(() => {
+      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
+        "Requested Cql Library cannot be drafted. Library name must be unique."
+      );
+    });
+  });
+
   it("should successfully version a cql library", async () => {
     render(
       <CqlLibraryList
