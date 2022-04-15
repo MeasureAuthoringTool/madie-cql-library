@@ -15,6 +15,7 @@ declare module "@madie/madie-editor" {
     parseDebounceTime?: number;
     inboundAnnotations?: EditorAnnotation[];
     height?: string;
+    readOnly?: boolean;
   }>;
   export const bootstrap: LifeCycleFn<void>;
   export const mount: LifeCycleFn<void>;

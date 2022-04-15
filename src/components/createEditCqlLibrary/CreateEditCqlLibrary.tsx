@@ -16,6 +16,7 @@ import CqlLibraryEditor from "../cqlLibraryEditor/CqlLibraryEditor";
 
 const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
+const InfoAlert = tw.div`bg-blue-200 rounded-lg py-1 px-1 text-blue-900 mb-3`;
 const FormRow = tw.div`mt-3`;
 
 const CreateEditCqlLibrary = () => {
@@ -37,6 +38,7 @@ const CreateEditCqlLibrary = () => {
       cqlLibraryName: "",
       model: "",
       cql: "",
+      draft: !!_.isNil(id),
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
     onSubmit: handleSubmit,
@@ -160,7 +162,12 @@ const CreateEditCqlLibrary = () => {
     <>
       <div tw="flex flex-wrap " style={{ marginBottom: "-5.7rem" }}>
         <div tw="flex-wrap max-w-xl">
-          <div tw="ml-2">
+          <div tw="mx-2 mt-2">
+            {!formik.values.draft && (
+              <InfoAlert>
+                CQL Library is not a draft. Only drafts can be edited.
+              </InfoAlert>
+            )}
             {serverError && (
               <ErrorAlert
                 data-testid="cql-library-server-error-alerts"
@@ -192,6 +199,7 @@ const CreateEditCqlLibrary = () => {
                   type="text"
                   id="cqlLibraryName"
                   {...formik.getFieldProps("cqlLibraryName")}
+                  readOnly={!formik.values.draft}
                   placeholder="Enter a Cql Library Name"
                   data-testid="cql-library-name-text-field"
                 >
@@ -205,6 +213,9 @@ const CreateEditCqlLibrary = () => {
                   size="small"
                   select
                   InputLabelProps={{ shrink: false }}
+                  InputProps={{
+                    readOnly: !formik.values.draft,
+                  }}
                   label={formik.values.model === "" ? "Select a model" : " "}
                   id="cqlLibraryModel"
                   data-testid="cql-library-model-select"
@@ -237,7 +248,8 @@ const CreateEditCqlLibrary = () => {
                     !(formik.isValid && formik.dirty) ||
                     (!!id &&
                       (_.isNil(loadedCqlLibrary) ||
-                        _.isNil(loadedCqlLibrary.id)))
+                        _.isNil(loadedCqlLibrary.id))) ||
+                    !formik.values.draft
                   }
                 />
                 <Button
@@ -265,6 +277,7 @@ const CreateEditCqlLibrary = () => {
             handleClick={handleClick}
             value={formik.values.cql}
             onChange={(val: string) => formik.setFieldValue("cql", val)}
+            readOnly={!formik.values.draft}
           />
         </div>
       </div>

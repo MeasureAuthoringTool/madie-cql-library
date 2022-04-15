@@ -422,20 +422,14 @@ describe("Create New Cql Library Component", () => {
     const input = screen.getByRole("textbox", {
       name: "Cql Library Name",
     }) as HTMLInputElement;
-    userEvent.type(input, "TestingLibraryName12");
-    expect(input.value).toBe("TestingLibraryName12");
+    expect(input).toHaveAttribute("readonly");
     userEvent.click(
       screen.getByRole("button", {
         name: /select a model/i,
       })
     );
-    const qiCoreOption = screen.getByText("QI-Core");
-    userEvent.click(qiCoreOption);
-    const selectedQiCoreDropdown = await screen.findByText("QI-Core");
-    expect(selectedQiCoreDropdown).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /qi-core/i })
-    ).toBeInTheDocument();
+    expect(screen.queryByText("QI-Core")).not.toBeInTheDocument();
+
     expect(
       screen.getByRole("button", {
         name: "Update CQL Library",
@@ -710,5 +704,46 @@ describe("Create New Cql Library Component", () => {
     expect(libraryNameInput).toHaveValue("Library1");
     const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
     expect(input).toHaveValue("library testCql version '1.0.000'");
+  });
+
+  it("should render all fields in read-only mode when loaded library is not a draft", async () => {
+    const cqlLibrary: CqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      model: Model.QICORE,
+      draft: false,
+      version: null,
+      groupId: null,
+      publisher: null,
+      description: null,
+      experimental: null,
+      cql: "library testCql version '1.0.000'",
+      createdAt: "",
+      createdBy: "",
+      lastModifiedAt: "",
+      lastModifiedBy: "",
+    };
+
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+
+    expect(
+      await screen.findByText(
+        "CQL Library is not a draft. Only drafts can be edited."
+      )
+    ).toBeInTheDocument();
+
+    expect(screen.getByTestId("cql-library-editor")).toHaveAttribute(
+      "readonly"
+    );
+    expect(
+      screen.getByRole("textbox", { name: "Cql Library Name" })
+    ).toHaveAttribute("readonly");
+    expect(
+      screen.getByRole("button", { name: "Update CQL Library" })
+    ).toBeDisabled();
   });
 });
