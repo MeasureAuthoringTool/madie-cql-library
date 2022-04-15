@@ -28,6 +28,9 @@ const CreateEditCqlLibrary = () => {
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [elmTranslationError, setElmTranslationError] = useState(undefined);
   const [successMessage, setSuccessMessage] = useState(undefined);
+  const [cqlErrors, setCqlErrors] = useState<boolean>(undefined);
+  const [library, setLibrary] = useState<CqlLibrary>(null);
+  const [handleClick, setHandleClick] = useState<boolean>(undefined);
 
   const formik = useFormik({
     initialValues: {
@@ -51,70 +54,94 @@ const CreateEditCqlLibrary = () => {
           });
           setLoadedCqlLibrary(cqlLibrary);
         })
-        .catch((error) => {
+        .catch(() => {
           setServerError("An error occurred while fetching the CQL Library!");
         });
     }
   }, [id, resetForm, loadedCqlLibrary, cqlLibraryServiceApi]);
 
+  useEffect(() => {
+    if (library) {
+      if (id) {
+        updateCqlLibrary(library);
+      } else if (cqlErrors !== undefined || cqlErrors === false) {
+        createCqlLibrary(library);
+      }
+    }
+  }, [cqlErrors, handleClick]);
+
   async function createCqlLibrary(cqlLibrary: CqlLibrary) {
-    cqlLibraryServiceApi
-      .createCqlLibrary(cqlLibrary)
-      .then(() => {
-        setSuccessMessage("Cql Library successfully created");
-      })
-      .catch((error) => {
-        if (error?.response) {
-          let msg: string = error.response.data.message;
-          if (!!error.response.data.validationErrors) {
-            for (const erroredField in error.response.data.validationErrors) {
-              msg = msg.concat(
-                ` ${erroredField} : ${error.response.data.validationErrors[erroredField]}`
-              );
+    if (handleClick) {
+      cqlLibrary = { ...cqlLibrary, cqlErrors: cqlErrors };
+      cqlLibraryServiceApi
+        .createCqlLibrary(cqlLibrary)
+        .then(() => {
+          setSuccessMessage("Cql Library successfully created");
+        })
+        .catch((error) => {
+          if (error?.response) {
+            let msg: string = error.response.data.message;
+            if (!!error.response.data.validationErrors) {
+              for (const erroredField in error.response.data.validationErrors) {
+                msg = msg.concat(
+                  ` ${erroredField} : ${error.response.data.validationErrors[erroredField]}`
+                );
+              }
             }
+            setServerError(msg);
+          } else {
+            setServerError("An error occurred while creating the CQL Library");
           }
-          setServerError(msg);
-        } else {
-          setServerError("An error occurred while creating the CQL Library");
-        }
-      });
+        });
+    }
   }
 
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
-    cqlLibraryServiceApi
-      .updateCqlLibrary(cqlLibrary)
-      .then(() => {
-        resetForm({
-          values: { ...cqlLibrary },
-        });
-        setSuccessMessage("Cql Library successfully updated");
-      })
-      .catch((error) => {
-        if (error?.response) {
-          let msg: string = error.response.data.message;
-          if (!!error.response.data.validationErrors) {
-            for (const erroredField in error.response.data.validationErrors) {
-              msg = msg.concat(
-                ` ${erroredField} : ${error.response.data.validationErrors[erroredField]}`
-              );
+    cqlLibrary = { ...cqlLibrary, cqlErrors: cqlErrors };
+    if (handleClick) {
+      cqlLibraryServiceApi
+        .updateCqlLibrary(cqlLibrary)
+        .then(() => {
+          resetForm({
+            values: { ...cqlLibrary },
+          });
+          setSuccessMessage("Cql Library successfully updated");
+        })
+        .catch((error) => {
+          if (error?.response) {
+            let msg: string = error.response.data.message;
+            if (!!error.response.data.validationErrors) {
+              for (const erroredField in error.response.data.validationErrors) {
+                msg = msg.concat(
+                  ` ${erroredField} : ${error.response.data.validationErrors[erroredField]}`
+                );
+              }
             }
+            setServerError(msg);
+          } else {
+            setServerError("An error occurred while updating the CQL library");
           }
-          setServerError(msg);
-        } else {
-          setServerError("An error occurred while updating the CQL library");
-        }
-      });
+        });
+    }
   }
 
   async function handleSubmit(cqlLibrary: CqlLibrary) {
-    setDisplayAnnotations(true);
+    setLibrary(cqlLibrary);
     setSuccessMessage(undefined);
     setServerError(undefined);
-    if (id) {
-      return updateCqlLibrary(cqlLibrary);
-    } else {
-      return createCqlLibrary(cqlLibrary);
-    }
+    setDisplayAnnotations(true);
+    setHandleClick(true);
+    setLibrary(cqlLibrary);
+    // if (id) {
+    //   setDisplayAnnotations(true);
+    //   setClick(true);
+    //   setLibrary(cqlLibrary);
+    //   //return updateCqlLibrary(cqlLibrary);
+    // } else {
+    //   setClick(true);
+    //   setDisplayAnnotations(true);
+    //   setLibrary(cqlLibrary);
+    // }
   }
 
   function formikErrorHandler(name: string, isError: boolean) {
@@ -232,7 +259,10 @@ const CreateEditCqlLibrary = () => {
             displayAnnotations={displayAnnotations}
             setDisplayAnnotations={setDisplayAnnotations}
             setElmTranslationError={setElmTranslationError}
+            setCqlErrors={setCqlErrors}
             setSuccessMessage={setSuccessMessage}
+            setHandleClick={setHandleClick}
+            handleClick={handleClick}
             value={formik.values.cql}
             onChange={(val: string) => formik.setFieldValue("cql", val)}
           />

@@ -4,6 +4,7 @@ export default interface CqlLibrary {
   id: string;
   cqlLibraryName: string;
   model: Model | "";
+  cqlErrors: boolean;
   cql: string;
   version: string;
   draft: boolean;

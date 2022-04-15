@@ -19,6 +19,7 @@ import classNames from "classnames";
 import { makeStyles } from "@mui/styles";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import tw from "twin.macro";
 
 const useStyles = makeStyles({
   row: {
@@ -77,7 +78,9 @@ interface VersionType {
   type: string;
 }
 
-const CreatVersionDialog = ({ open, onClose, onSubmit }) => {
+const CreatVersionDialog = ({ open, onClose, onSubmit, cqlLibraryError }) => {
+  const MessageText = tw.p`text-sm font-medium`;
+  const ErrorText = tw(MessageText)`text-red-800`;
   const formik = useFormik({
     initialValues: {
       type: "",
@@ -146,6 +149,11 @@ const CreatVersionDialog = ({ open, onClose, onSubmit }) => {
                 label="Minor"
               />
             </RadioGroup>
+            <ErrorText>
+              {cqlLibraryError
+                ? "Versioning cannot be done as the Cql has errors in it"
+                : ""}
+            </ErrorText>
           </div>
         </DialogContent>
         <Divider className={classes.dividerBottom} />
@@ -159,7 +167,11 @@ const CreatVersionDialog = ({ open, onClose, onSubmit }) => {
           <Button
             type="submit"
             data-testid="create-version-continue-button"
-            disabled={!(formik.isValid && formik.dirty)}
+            disabled={
+              cqlLibraryError
+                ? cqlLibraryError
+                : !(formik.isValid && formik.dirty)
+            }
             style={{ marginTop: 0 }}
           >
             <span>

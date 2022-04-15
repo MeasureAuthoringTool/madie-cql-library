@@ -11,7 +11,10 @@ export interface CqlLibraryEditorProps {
   displayAnnotations: boolean;
   setDisplayAnnotations: (val: boolean) => void;
   setElmTranslationError: (val: string) => void;
+  setCqlErrors: (val: boolean) => void;
   setSuccessMessage: (val: string) => void;
+  setHandleClick: (val: boolean) => void;
+  handleClick: boolean;
   value: string;
   onChange: (val: string) => void;
 }
@@ -35,7 +38,10 @@ const CqlLibraryEditor = ({
   displayAnnotations,
   setDisplayAnnotations,
   setElmTranslationError,
+  setCqlErrors,
   setSuccessMessage,
+  setHandleClick,
+  handleClick,
   value,
   onChange,
 }: CqlLibraryEditorProps) => {
@@ -49,21 +55,25 @@ const CqlLibraryEditor = ({
         data?.errorExceptions
       );
       setElmAnnotations(elmAnnotations);
+      setCqlErrors(true);
     } else {
       setElmAnnotations([]);
+      setCqlErrors(false);
     }
     return null;
   };
 
   useEffect(() => {
     if (displayAnnotations) {
-      updateElmAnnotations(value).catch((err) => {
-        console.error("An error occurred while translating CQL to ELM", err);
-        setElmTranslationError("Unable to translate CQL to ELM!");
-        setElmAnnotations([]);
-      });
+      updateElmAnnotations(value)
+        .then(() => setHandleClick(false))
+        .catch((err) => {
+          console.error("An error occurred while translating CQL to ELM", err);
+          setElmTranslationError("Unable to translate CQL to ELM!");
+          setElmAnnotations([]);
+        });
     }
-  }, [value, displayAnnotations]);
+  }, [value, displayAnnotations, handleClick]);
 
   const handleMadieEditorValue = (val: string) => {
     setElmTranslationError(undefined);
