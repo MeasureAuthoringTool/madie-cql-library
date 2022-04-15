@@ -107,8 +107,12 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
         handleDialogClose();
         const errorData = error?.response?.data;
         if (errorData?.status == 400) {
+          let message = "Requested Cql Library cannot be drafted.";
+          if (error?.response?.data?.message) {
+            message = `${message} ${error.response.data.message}`;
+          }
           setSnackBar({
-            message: "Requested Cql Library cannot be drafted",
+            message,
             open: true,
             severity: "error",
           });
