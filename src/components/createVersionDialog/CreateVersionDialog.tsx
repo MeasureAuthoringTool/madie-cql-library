@@ -78,9 +78,10 @@ interface VersionType {
   type: string;
 }
 
+const MessageText = tw.p`text-sm font-medium`;
+const ErrorText = tw(MessageText)`text-red-800`;
+
 const CreatVersionDialog = ({ open, onClose, onSubmit, cqlLibraryError }) => {
-  const MessageText = tw.p`text-sm font-medium`;
-  const ErrorText = tw(MessageText)`text-red-800`;
   const formik = useFormik({
     initialValues: {
       type: "",
