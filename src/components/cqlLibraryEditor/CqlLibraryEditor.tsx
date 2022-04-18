@@ -73,6 +73,8 @@ const CqlLibraryEditor = ({
           console.error("An error occurred while translating CQL to ELM", err);
           setElmTranslationError("Unable to translate CQL to ELM!");
           setElmAnnotations([]);
+          setCqlErrors(true);
+          setHandleClick(false);
         });
     }
   }, [value, displayAnnotations, handleClick]);
