@@ -150,7 +150,7 @@ const CreatVersionDialog = ({ open, onClose, onSubmit, cqlLibraryError }) => {
                 label="Minor"
               />
             </RadioGroup>
-            <ErrorText>
+            <ErrorText data-testid="create-version-error-message-for-cql-errors">
               {cqlLibraryError
                 ? "Versioning cannot be done as the Cql has errors in it"
                 : ""}
