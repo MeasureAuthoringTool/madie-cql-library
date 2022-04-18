@@ -55,6 +55,7 @@ const CreateEditCqlLibrary = () => {
             values: { ...cqlLibrary },
           });
           setLoadedCqlLibrary(cqlLibrary);
+          setHandleClick(true);
         })
         .catch(() => {
           setServerError("An error occurred while fetching the CQL Library!");
@@ -130,20 +131,10 @@ const CreateEditCqlLibrary = () => {
   async function handleSubmit(cqlLibrary: CqlLibrary) {
     setLibrary(cqlLibrary);
     setSuccessMessage(undefined);
+    setHandleClick(true);
     setServerError(undefined);
     setDisplayAnnotations(true);
-    setHandleClick(true);
     setLibrary(cqlLibrary);
-    // if (id) {
-    //   setDisplayAnnotations(true);
-    //   setClick(true);
-    //   setLibrary(cqlLibrary);
-    //   //return updateCqlLibrary(cqlLibrary);
-    // } else {
-    //   setClick(true);
-    //   setDisplayAnnotations(true);
-    //   setLibrary(cqlLibrary);
-    // }
   }
 
   function formikErrorHandler(name: string, isError: boolean) {

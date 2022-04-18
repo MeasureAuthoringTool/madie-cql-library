@@ -51,24 +51,28 @@ const CqlLibraryEditor = ({
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
 
   const updateElmAnnotations = async (cql: string): Promise<ElmTranslation> => {
-    if (cql && cql.trim().length > 0) {
-      const data = await elmTranslationServiceApi.translateCqlToElm(cql);
-      const elmAnnotations = mapElmErrorsToAceAnnotations(
-        data?.errorExceptions
-      );
-      setElmAnnotations(elmAnnotations);
-      setCqlErrors(true);
-    } else {
-      setElmAnnotations([]);
-      setCqlErrors(false);
+    if (handleClick) {
+      if (cql && cql.trim().length > 0) {
+        const data = await elmTranslationServiceApi.translateCqlToElm(cql);
+        const elmAnnotations = mapElmErrorsToAceAnnotations(
+          data?.errorExceptions
+        );
+        setElmAnnotations(elmAnnotations);
+        setCqlErrors(true);
+      } else {
+        setElmAnnotations([]);
+        setCqlErrors(false);
+      }
+      return null;
     }
-    return null;
   };
 
   useEffect(() => {
     if (displayAnnotations) {
       updateElmAnnotations(value)
-        .then(() => setHandleClick(false))
+        .then(() => {
+          setHandleClick(false);
+        })
         .catch((err) => {
           console.error("An error occurred while translating CQL to ELM", err);
           setElmTranslationError("Unable to translate CQL to ELM!");

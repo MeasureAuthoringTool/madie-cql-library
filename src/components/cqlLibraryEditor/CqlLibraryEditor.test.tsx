@@ -11,7 +11,7 @@ import axios from "axios";
 const cqlLibrary = {
   id: "",
   cqlLibraryName: "",
-  cqlErrors: false,
+  cqlErrors: true,
   cql: "library testCql version '1.0.000'",
   createdAt: "",
   createdBy: "",
@@ -132,26 +132,6 @@ describe("Create New Cql Library Component", () => {
       "cql-library-editor"
     )) as HTMLInputElement;
     expect(editorContainer.value).toEqual("");
-  });
-
-  it("runs ELM translation on initial load of component and generate annotations", async () => {
-    mockedAxios.put.mockImplementation((args) => {
-      if (args && args.startsWith(serviceConfig.cqlLibraryService.baseUrl)) {
-        return Promise.resolve({ data: cqlLibrary });
-      } else if (
-        args &&
-        args.startsWith(serviceConfig.elmTranslationService.baseUrl)
-      ) {
-        return Promise.resolve({
-          data: { json: JSON.stringify(elmTranslationWithErrors) },
-          status: 200,
-        });
-      }
-      return Promise.resolve(args);
-    });
-    renderEditor(cqlLibrary);
-    const issues = await screen.findByText("2 issues found with CQL");
-    expect(issues).toBeInTheDocument();
   });
 });
 
