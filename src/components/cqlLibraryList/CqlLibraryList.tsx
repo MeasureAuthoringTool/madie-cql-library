@@ -41,7 +41,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
       open: false,
       cqlLibraryId: "",
       cqlLibraryError: "",
-      checkCql: undefined,
+      checkCql: true,
     });
     setCreateDraftDialog({ open: false, cqlLibrary: null });
   };
