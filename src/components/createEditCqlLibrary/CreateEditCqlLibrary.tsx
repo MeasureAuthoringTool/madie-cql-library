@@ -100,8 +100,8 @@ const CreateEditCqlLibrary = () => {
   }
 
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
-    cqlLibrary = { ...cqlLibrary, cqlErrors: cqlErrors };
     if (handleClick) {
+      cqlLibrary = { ...cqlLibrary, cqlErrors: cqlErrors };
       cqlLibraryServiceApi
         .updateCqlLibrary(cqlLibrary)
         .then(() => {

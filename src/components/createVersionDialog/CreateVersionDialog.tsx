@@ -81,7 +81,13 @@ interface VersionType {
 const MessageText = tw.p`text-sm font-medium`;
 const ErrorText = tw(MessageText)`text-red-800`;
 
-const CreatVersionDialog = ({ open, onClose, onSubmit, cqlLibraryError }) => {
+const CreatVersionDialog = ({
+  open,
+  onClose,
+  onSubmit,
+  cqlLibraryError,
+  checkCql,
+}) => {
   const formik = useFormik({
     initialValues: {
       type: "",
@@ -150,9 +156,11 @@ const CreatVersionDialog = ({ open, onClose, onSubmit, cqlLibraryError }) => {
                 label="Minor"
               />
             </RadioGroup>
-            <ErrorText data-testid="create-version-error-message-for-cql-errors">
+            <ErrorText data-testid="create-version-error-message">
               {cqlLibraryError
                 ? "Versioning cannot be done as the Cql has errors in it"
+                : !checkCql
+                ? "Versioning cannot be done as there is no associated Cql with this library"
                 : ""}
             </ErrorText>
           </div>
@@ -169,9 +177,11 @@ const CreatVersionDialog = ({ open, onClose, onSubmit, cqlLibraryError }) => {
             type="submit"
             data-testid="create-version-continue-button"
             disabled={
-              cqlLibraryError
+              checkCql
                 ? cqlLibraryError
-                : !(formik.isValid && formik.dirty)
+                  ? cqlLibraryError
+                  : !(formik.isValid && formik.dirty)
+                : true
             }
             style={{ marginTop: 0 }}
           >

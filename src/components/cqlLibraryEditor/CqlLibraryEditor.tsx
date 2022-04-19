@@ -57,8 +57,13 @@ const CqlLibraryEditor = ({
         const elmAnnotations = mapElmErrorsToAceAnnotations(
           data?.errorExceptions
         );
-        setElmAnnotations(elmAnnotations);
-        setCqlErrors(true);
+        if (elmAnnotations.length > 0) {
+          setElmAnnotations(elmAnnotations);
+          setCqlErrors(true);
+        } else {
+          setElmAnnotations(elmAnnotations);
+          setCqlErrors(false);
+        }
       } else {
         setElmAnnotations([]);
         setCqlErrors(false);
