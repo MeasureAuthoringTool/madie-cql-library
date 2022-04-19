@@ -67,7 +67,7 @@ const CreateEditCqlLibrary = () => {
     if (library) {
       if (id) {
         updateCqlLibrary(library);
-      } else if (cqlErrors !== undefined || cqlErrors === false) {
+      } else if (cqlErrors === true || cqlErrors === false) {
         createCqlLibrary(library);
       }
     }

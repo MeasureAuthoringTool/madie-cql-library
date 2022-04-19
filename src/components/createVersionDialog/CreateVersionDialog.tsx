@@ -159,10 +159,16 @@ const CreatVersionDialog = ({
             <ErrorText data-testid="create-version-error-message">
               {cqlLibraryError
                 ? "Versioning cannot be done as the Cql has errors in it"
-                : !checkCql
-                ? "Versioning cannot be done as there is no associated Cql with this library"
                 : ""}
             </ErrorText>
+            {checkCql ? (
+              ""
+            ) : (
+              <ErrorText>
+                Versioning cannot be done as there is no associated Cql with
+                this library
+              </ErrorText>
+            )}
           </div>
         </DialogContent>
         <Divider className={classes.dividerBottom} />
