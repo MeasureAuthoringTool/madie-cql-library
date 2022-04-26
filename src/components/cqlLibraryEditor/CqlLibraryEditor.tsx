@@ -11,7 +11,10 @@ export interface CqlLibraryEditorProps {
   displayAnnotations: boolean;
   setDisplayAnnotations: (val: boolean) => void;
   setElmTranslationError: (val: string) => void;
+  setCqlErrors: (val: boolean) => void;
   setSuccessMessage: (val: string) => void;
+  setHandleClick: (val: boolean) => void;
+  handleClick: boolean;
   value: string;
   onChange: (val: string) => void;
   readOnly?: boolean;
@@ -36,7 +39,10 @@ const CqlLibraryEditor = ({
   displayAnnotations,
   setDisplayAnnotations,
   setElmTranslationError,
+  setCqlErrors,
   setSuccessMessage,
+  setHandleClick,
+  handleClick,
   value,
   onChange,
   readOnly,
@@ -45,27 +51,42 @@ const CqlLibraryEditor = ({
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
 
   const updateElmAnnotations = async (cql: string): Promise<ElmTranslation> => {
-    if (cql && cql.trim().length > 0) {
-      const data = await elmTranslationServiceApi.translateCqlToElm(cql);
-      const elmAnnotations = mapElmErrorsToAceAnnotations(
-        data?.errorExceptions
-      );
-      setElmAnnotations(elmAnnotations);
-    } else {
-      setElmAnnotations([]);
+    if (handleClick) {
+      if (cql && cql.trim().length > 0) {
+        const data = await elmTranslationServiceApi.translateCqlToElm(cql);
+        const elmAnnotations = mapElmErrorsToAceAnnotations(
+          data?.errorExceptions
+        );
+        if (elmAnnotations.length > 0) {
+          setElmAnnotations(elmAnnotations);
+          setCqlErrors(true);
+        } else {
+          setElmAnnotations(elmAnnotations);
+          setCqlErrors(false);
+        }
+      } else {
+        setElmAnnotations([]);
+        setCqlErrors(false);
+      }
+      return null;
     }
-    return null;
   };
 
   useEffect(() => {
     if (displayAnnotations) {
-      updateElmAnnotations(value).catch((err) => {
-        console.error("An error occurred while translating CQL to ELM", err);
-        setElmTranslationError("Unable to translate CQL to ELM!");
-        setElmAnnotations([]);
-      });
+      updateElmAnnotations(value)
+        .then(() => {
+          setHandleClick(false);
+        })
+        .catch((err) => {
+          console.error("An error occurred while translating CQL to ELM", err);
+          setElmTranslationError("Unable to translate CQL to ELM!");
+          setElmAnnotations([]);
+          setCqlErrors(true);
+          setHandleClick(false);
+        });
     }
-  }, [value, displayAnnotations]);
+  }, [value, displayAnnotations, handleClick]);
 
   const handleMadieEditorValue = (val: string) => {
     setElmTranslationError(undefined);

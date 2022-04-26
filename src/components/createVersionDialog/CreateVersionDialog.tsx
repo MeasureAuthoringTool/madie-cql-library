@@ -19,6 +19,7 @@ import classNames from "classnames";
 import { makeStyles } from "@mui/styles";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import tw from "twin.macro";
 
 const useStyles = makeStyles({
   row: {
@@ -77,7 +78,16 @@ interface VersionType {
   type: string;
 }
 
-const CreatVersionDialog = ({ open, onClose, onSubmit }) => {
+const MessageText = tw.p`text-sm font-medium`;
+const ErrorText = tw(MessageText)`text-red-800`;
+
+const CreatVersionDialog = ({
+  open,
+  onClose,
+  onSubmit,
+  cqlLibraryError,
+  checkCql,
+}) => {
   const formik = useFormik({
     initialValues: {
       type: "",
@@ -146,6 +156,19 @@ const CreatVersionDialog = ({ open, onClose, onSubmit }) => {
                 label="Minor"
               />
             </RadioGroup>
+            <ErrorText data-testid="create-version-error-message">
+              {cqlLibraryError
+                ? "Versioning cannot be done as the Cql has errors in it"
+                : ""}
+            </ErrorText>
+            {checkCql ? (
+              ""
+            ) : (
+              <ErrorText>
+                Versioning cannot be done as there is no associated Cql with
+                this library
+              </ErrorText>
+            )}
           </div>
         </DialogContent>
         <Divider className={classes.dividerBottom} />
@@ -159,7 +182,13 @@ const CreatVersionDialog = ({ open, onClose, onSubmit }) => {
           <Button
             type="submit"
             data-testid="create-version-continue-button"
-            disabled={!(formik.isValid && formik.dirty)}
+            disabled={
+              checkCql
+                ? cqlLibraryError
+                  ? cqlLibraryError
+                  : !(formik.isValid && formik.dirty)
+                : true
+            }
             style={{ marginTop: 0 }}
           >
             <span>

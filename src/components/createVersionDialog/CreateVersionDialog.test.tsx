@@ -20,6 +20,8 @@ describe("Create Version Dialog component", () => {
         open={true}
         onClose={jest.fn()}
         onSubmit={jest.fn()}
+        cqlLibraryError={false}
+        checkCql={true}
       />
     );
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
@@ -32,6 +34,8 @@ describe("Create Version Dialog component", () => {
         open={true}
         onClose={jest.fn()}
         onSubmit={jest.fn()}
+        cqlLibraryError={false}
+        checkCql={true}
       />
     );
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
@@ -48,6 +52,50 @@ describe("Create Version Dialog component", () => {
     ).not.toBeDisabled();
   });
 
+  it("should render version dialog and does not enable continue button when cql has errors, even after a selection", () => {
+    render(
+      <CreateVersionDialog
+        open={true}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+        cqlLibraryError={true}
+        checkCql={true}
+      />
+    );
+    expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
+    const majorRadio: HTMLInputElement = screen.getByLabelText("Major");
+    const minorRadio: HTMLInputElement = screen.getByLabelText("Minor");
+    expect(majorRadio.checked).toEqual(false);
+    act(() => {
+      fireEvent.click(majorRadio);
+    });
+    expect(majorRadio.checked).toEqual(true);
+    expect(minorRadio.checked).toEqual(false);
+    expect(screen.getByTestId("create-version-continue-button")).toBeDisabled();
+  });
+
+  it("should render version dialog and does not enable continue button when there is no cql, even after a selection", () => {
+    render(
+      <CreateVersionDialog
+        open={true}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+        cqlLibraryError={true}
+        checkCql={false}
+      />
+    );
+    expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
+    const majorRadio: HTMLInputElement = screen.getByLabelText("Major");
+    const minorRadio: HTMLInputElement = screen.getByLabelText("Minor");
+    expect(majorRadio.checked).toEqual(false);
+    act(() => {
+      fireEvent.click(majorRadio);
+    });
+    expect(majorRadio.checked).toEqual(true);
+    expect(minorRadio.checked).toEqual(false);
+    expect(screen.getByTestId("create-version-continue-button")).toBeDisabled();
+  });
+
   it("should navigate to cql library home page on cancel", async () => {
     const onCloseFn = jest.fn();
     render(
@@ -55,6 +103,8 @@ describe("Create Version Dialog component", () => {
         open={true}
         onClose={onCloseFn}
         onSubmit={jest.fn()}
+        cqlLibraryError={false}
+        checkCql={true}
       />
     );
     fireEvent.click(screen.getByTestId("create-version-cancel-button"));
@@ -68,6 +118,8 @@ describe("Create Version Dialog component", () => {
         open={true}
         onClose={jest.fn()}
         onSubmit={onSubmitFn}
+        cqlLibraryError={false}
+        checkCql={true}
       />
     );
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();

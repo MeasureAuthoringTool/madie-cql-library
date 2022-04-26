@@ -22,6 +22,8 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const [createVersionDialog, setCreateVersionDialog] = useState({
     open: false,
     cqlLibraryId: "",
+    cqlLibraryError: "",
+    checkCql: undefined,
   });
   const [createDraftDialog, setCreateDraftDialog] = useState({
     open: false,
@@ -35,7 +37,12 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
 
   const handleDialogClose = () => {
-    setCreateVersionDialog({ open: false, cqlLibraryId: "" });
+    setCreateVersionDialog({
+      open: false,
+      cqlLibraryId: "",
+      cqlLibraryError: "",
+      checkCql: true,
+    });
     setCreateDraftDialog({ open: false, cqlLibrary: null });
   };
 
@@ -147,6 +154,8 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
         open={createVersionDialog.open}
         onClose={handleDialogClose}
         onSubmit={createVersion}
+        cqlLibraryError={createVersionDialog.cqlLibraryError}
+        checkCql={createVersionDialog.checkCql}
       />
       <CreatDraftDialog
         open={createDraftDialog.open}
@@ -220,6 +229,9 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                             setCreateVersionDialog({
                               open: true,
                               cqlLibraryId: cqlLibrary.id,
+                              cqlLibraryError: cqlLibrary.cqlErrors,
+                              checkCql:
+                                cqlLibrary.cql?.length > 0 ? true : false,
                             });
                           }}
                           data-testid={`create-new-version-${cqlLibrary.id}-button`}

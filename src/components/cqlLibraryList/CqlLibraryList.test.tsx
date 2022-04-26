@@ -28,7 +28,8 @@ const cqlLibrary: CqlLibrary[] = [
     draft: true,
     version: "0.0.000",
     groupId: null,
-    cql: null,
+    cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+    cqlErrors: false,
   },
 ];
 
@@ -121,7 +122,8 @@ describe("CqlLibrary List component", () => {
         draft: false,
         version: "0.0.000",
         groupId: null,
-        cql: null,
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
       },
     ];
     render(

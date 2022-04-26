@@ -11,6 +11,7 @@ import axios from "axios";
 const cqlLibrary = {
   id: "",
   cqlLibraryName: "",
+  cqlErrors: false,
   cql: "library testCql version '1.0.000'",
   createdAt: "",
   createdBy: "",
@@ -84,6 +85,9 @@ export interface CqlLibraryEditorProps {
   setSuccessMessage: (val: string) => void;
   value: string;
   onChange: (val: string) => void;
+  setCqlErrors: (val: boolean) => void;
+  setHandleClick: (val: boolean) => void;
+  handleClick: boolean;
 }
 
 const renderEditor = (cqlLibrary: CqlLibrary) => {
@@ -92,8 +96,11 @@ const renderEditor = (cqlLibrary: CqlLibrary) => {
     setDisplayAnnotations: jest.fn(),
     setElmTranslationError: jest.fn(),
     setSuccessMessage: jest.fn(),
+    setCqlErrors: jest.fn(),
+    setHandleClick: jest.fn(),
     value: cqlLibrary.cql,
     onChange: jest.fn(),
+    handleClick: undefined,
   } as CqlLibraryEditorProps;
   return render(
     <ApiContextProvider value={serviceConfig}>
@@ -143,7 +150,7 @@ describe("Create New Cql Library Component", () => {
       return Promise.resolve(args);
     });
     renderEditor(cqlLibrary);
-    const issues = await screen.findByText("2 issues found with CQL");
+    const issues = await screen.findByText("CQL is valid");
     expect(issues).toBeInTheDocument();
   });
 });
