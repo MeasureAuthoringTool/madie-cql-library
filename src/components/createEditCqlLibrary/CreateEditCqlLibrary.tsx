@@ -30,6 +30,7 @@ const CreateEditCqlLibrary = () => {
   const [elmTranslationError, setElmTranslationError] = useState(undefined);
   const [successMessage, setSuccessMessage] = useState(undefined);
   const [cqlErrors, setCqlErrors] = useState<boolean>(undefined);
+  const [parseErrors, setParseErrors] = useState<boolean>(undefined);
   const [library, setLibrary] = useState<CqlLibrary>(null);
   const [handleClick, setHandleClick] = useState<boolean>(undefined);
 
@@ -64,21 +65,29 @@ const CreateEditCqlLibrary = () => {
   }, [id, resetForm, loadedCqlLibrary, cqlLibraryServiceApi]);
 
   useEffect(() => {
-    if (library) {
-      if (id) {
-        updateCqlLibrary(library);
-      } else if (cqlErrors === true || cqlErrors === false) {
-        createCqlLibrary(library);
+    if (parseErrors !== undefined) {
+      if (library) {
+        if (id) {
+          updateCqlLibrary(library);
+        } else if (cqlErrors === true || cqlErrors === false) {
+          createCqlLibrary(library);
+        }
       }
     }
-  }, [cqlErrors, handleClick]);
+  }, [cqlErrors, handleClick, parseErrors]);
 
   async function createCqlLibrary(cqlLibrary: CqlLibrary) {
     if (handleClick) {
-      cqlLibrary = { ...cqlLibrary, cqlErrors: cqlErrors };
+      if (parseErrors) {
+        cqlLibrary = { ...cqlLibrary, cqlErrors: parseErrors };
+      } else {
+        cqlLibrary = { ...cqlLibrary, cqlErrors: cqlErrors };
+      }
       cqlLibraryServiceApi
         .createCqlLibrary(cqlLibrary)
         .then(() => {
+          setHandleClick(undefined);
+          setParseErrors(undefined);
           setSuccessMessage("Cql Library successfully created");
         })
         .catch((error) => {
@@ -101,13 +110,19 @@ const CreateEditCqlLibrary = () => {
 
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
     if (handleClick) {
-      cqlLibrary = { ...cqlLibrary, cqlErrors: cqlErrors };
+      if (parseErrors) {
+        cqlLibrary = { ...cqlLibrary, cqlErrors: parseErrors };
+      } else {
+        cqlLibrary = { ...cqlLibrary, cqlErrors: cqlErrors };
+      }
       cqlLibraryServiceApi
         .updateCqlLibrary(cqlLibrary)
         .then(() => {
           resetForm({
             values: { ...cqlLibrary },
           });
+          setHandleClick(undefined);
+          setParseErrors(undefined);
           setSuccessMessage("Cql Library successfully updated");
         })
         .catch((error) => {
@@ -134,7 +149,6 @@ const CreateEditCqlLibrary = () => {
     setHandleClick(true);
     setServerError(undefined);
     setDisplayAnnotations(true);
-    setLibrary(cqlLibrary);
   }
 
   function formikErrorHandler(name: string, isError: boolean) {
@@ -265,6 +279,8 @@ const CreateEditCqlLibrary = () => {
             setCqlErrors={setCqlErrors}
             setSuccessMessage={setSuccessMessage}
             setHandleClick={setHandleClick}
+            setParseErrors={setParseErrors}
+            parseErrors={parseErrors}
             handleClick={handleClick}
             value={formik.values.cql}
             onChange={(val: string) => formik.setFieldValue("cql", val)}

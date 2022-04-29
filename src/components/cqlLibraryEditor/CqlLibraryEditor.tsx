@@ -14,6 +14,8 @@ export interface CqlLibraryEditorProps {
   setCqlErrors: (val: boolean) => void;
   setSuccessMessage: (val: string) => void;
   setHandleClick: (val: boolean) => void;
+  setParseErrors: (val: boolean) => void;
+  parseErrors: boolean;
   handleClick: boolean;
   value: string;
   onChange: (val: string) => void;
@@ -42,6 +44,8 @@ const CqlLibraryEditor = ({
   setCqlErrors,
   setSuccessMessage,
   setHandleClick,
+  setParseErrors,
+  parseErrors,
   handleClick,
   value,
   onChange,
@@ -74,25 +78,34 @@ const CqlLibraryEditor = ({
 
   useEffect(() => {
     if (displayAnnotations) {
-      updateElmAnnotations(value)
-        .then(() => {
-          setHandleClick(false);
-        })
-        .catch((err) => {
-          console.error("An error occurred while translating CQL to ELM", err);
-          setElmTranslationError("Unable to translate CQL to ELM!");
-          setElmAnnotations([]);
-          setCqlErrors(true);
-          setHandleClick(false);
-        });
+      if (value?.length === 0) {
+        setParseErrors(false);
+      }
+      if (parseErrors !== undefined) {
+        updateElmAnnotations(value)
+          .then(() => {
+            setHandleClick(false);
+          })
+          .catch((err) => {
+            console.error(
+              "An error occurred while translating CQL to ELM",
+              err
+            );
+            setElmTranslationError("Unable to translate CQL to ELM!");
+            setElmAnnotations([]);
+            setCqlErrors(true);
+            setHandleClick(false);
+          });
+      }
     }
-  }, [value, displayAnnotations, handleClick]);
+  }, [value, displayAnnotations, handleClick, parseErrors]);
 
   const handleMadieEditorValue = (val: string) => {
     setElmTranslationError(undefined);
     setDisplayAnnotations(false);
     setSuccessMessage(undefined);
     onChange(val);
+    setParseErrors(undefined);
   };
 
   return (
@@ -100,6 +113,8 @@ const CqlLibraryEditor = ({
       <MadieEditor
         onChange={(val: string) => handleMadieEditorValue(val)}
         value={value}
+        setParseErrors={setParseErrors}
+        handleClick={handleClick}
         inboundAnnotations={displayAnnotations ? elmAnnotations : []}
         height="780px"
         readOnly={readOnly}

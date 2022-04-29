@@ -562,14 +562,6 @@ describe("Create New Cql Library Component", () => {
         })
       ).toHaveValue("UpdatedName")
     );
-    const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
-    userEvent.type(
-      input,
-      "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.000'"
-    );
-    expect(input.value).toBe(
-      "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.000'"
-    );
 
     const updateButton = screen.getByRole("button", {
       name: "Update CQL Library",
@@ -591,7 +583,7 @@ describe("Create New Cql Library Component", () => {
         publisher: null,
         description: null,
         experimental: null,
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.000'",
+        cql: "",
         createdAt: "",
         createdBy: "",
         lastModifiedAt: "",
@@ -602,6 +594,7 @@ describe("Create New Cql Library Component", () => {
   });
 
   it("should allow update when cql is null", async () => {
+    const parseErrors = false;
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",

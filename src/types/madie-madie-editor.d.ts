@@ -12,6 +12,8 @@ declare module "@madie/madie-editor" {
   export const MadieEditor: FC<{
     value: string;
     onChange: (value: string) => void;
+    setParseErrors?: (value: boolean) => void;
+    handleClick?: boolean;
     parseDebounceTime?: number;
     inboundAnnotations?: EditorAnnotation[];
     height?: string;
