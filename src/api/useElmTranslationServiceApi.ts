@@ -33,6 +33,13 @@ export type ElmTranslation = {
   library: ElmTranslationLibrary;
 };
 
+export type ElmValueSet = {
+  localId: any;
+  locator: any;
+  name: any;
+  id: any;
+};
+
 export class ElmTranslationServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}
 
