@@ -158,11 +158,7 @@ const CqlLibraryEditor = ({
     let tgtValue = null;
     if (tgt) {
       let tgtObjFromLocalStorage = JSON.parse(tgt);
-      for (const [key, value] of Object.entries(tgtObjFromLocalStorage)) {
-        if (key === "TGT") {
-          tgtValue = value.toString();
-        }
-      }
+      tgtValue = tgtObjFromLocalStorage.TGT;
     }
     return tgtValue;
   };
@@ -195,10 +191,7 @@ const CqlLibraryEditor = ({
   };
 
   const getOid = (valueSet: ElmValueSet): string => {
-    const id = valueSet.id.split("").reverse().join("");
-    const index = id.indexOf("/");
-    const oid = id.substr(0, index).split("").reverse().join("");
-    return oid;
+    return valueSet.id.match(/[0-2](\.(0|[1-9][0-9]*))+/)[0];
   };
 
   const getStartLine = (locator: string): number => {
