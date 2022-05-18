@@ -144,7 +144,7 @@ const renderEditor = (cqlLibrary: CqlLibrary) => {
     setHandleClick: jest.fn(),
     value: cqlLibrary.cql,
     onChange: jest.fn(),
-    handleClick: true,
+    handleClick: undefined,
   } as CqlLibraryEditorProps;
   return render(
     <ApiContextProvider value={serviceConfig}>
