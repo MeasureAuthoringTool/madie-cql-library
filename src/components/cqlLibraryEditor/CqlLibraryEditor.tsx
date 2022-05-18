@@ -173,7 +173,7 @@ const CqlLibraryEditor = ({
   ): Promise<ElmTranslationError[]> => {
     const valuesetsErrorArray: ElmTranslationError[] = [];
     if (valuesetsArray && tgtValue) {
-      const results = await Promise.allSettled(
+      await Promise.allSettled(
         valuesetsArray.map(async (valueSet, i) => {
           const oid = getOid(valueSet);
           await terminologyServiceApi

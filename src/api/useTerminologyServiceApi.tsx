@@ -20,7 +20,7 @@ export class TerminologyServiceApi {
     locator: string
   ): Promise<FHIRValueSet> {
     let fhirValueset: FHIRValueSet = null;
-    const resp = await axios
+    await axios
       .get(`${this.baseUrl}/vsac/valueSet`, {
         headers: {
           Authorization: `Bearer ${this.getAccessToken()}`,
