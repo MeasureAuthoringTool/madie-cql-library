@@ -10,6 +10,9 @@ export interface ServiceConfig {
   cqlLibraryService: {
     baseUrl: string;
   };
+  terminologyService: {
+    baseUrl: string;
+  };
 }
 
 const ServiceContext = createContext<ServiceConfig>(null);
