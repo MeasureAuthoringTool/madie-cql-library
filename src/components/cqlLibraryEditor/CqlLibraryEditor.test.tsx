@@ -8,7 +8,7 @@ import {
   ElmTranslationLibrary,
 } from "../../api/useElmTranslationServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
-import CqlLibrary from "../../models/CqlLibrary";
+import { CqlLibrary } from "@madie/madie-models";
 import axios from "axios";
 import { FHIRValueSet } from "../../api/useTerminologyServiceApi";
 

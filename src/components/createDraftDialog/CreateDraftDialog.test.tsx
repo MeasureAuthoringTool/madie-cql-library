@@ -1,5 +1,5 @@
 import * as React from "react";
-import CqlLibrary from "../../models/CqlLibrary";
+import { CqlLibrary, Model } from "@madie/madie-models";
 import CreatDraftDialog from "./CreateDraftDialog";
 import {
   act,
@@ -8,7 +8,6 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { Model } from "../../models/Model";
 import userEvent from "@testing-library/user-event";
 import clearAllMocks = jest.clearAllMocks;
 
