@@ -4,7 +4,6 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { mergeWithRules } = require("webpack-merge");
 const singleSpaDefaults = require("webpack-config-single-spa-react-ts");
 const path = require("path");
-const styledComponents = require("styled-components");
 
 module.exports = (webpackConfigEnv, argv) => {
   const protocol = webpackConfigEnv.protocol
