@@ -6,7 +6,7 @@ import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 import { useHistory } from "react-router-dom";
-import { CqlLibrary, Model } from "@madie/madie-models";
+import { CqlLibrary } from "@madie/madie-models";
 
 function CqlLibraryLanding() {
   const history = useHistory();

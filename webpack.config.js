@@ -3,13 +3,9 @@
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { mergeWithRules } = require("webpack-merge");
 const singleSpaDefaults = require("webpack-config-single-spa-react-ts");
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 const path = require("path");
 
 module.exports = (webpackConfigEnv, argv) => {
-  // resolve: {
-  //   symlinks: false;
-  // }
   const protocol = webpackConfigEnv.protocol
     ? webpackConfigEnv.protocol
     : "http";
@@ -40,11 +36,11 @@ module.exports = (webpackConfigEnv, argv) => {
     webpackConfigEnv,
     argv,
     disableHtmlGeneration: true,
-    //orgPackagesAsExternal: false,
+    orgPackagesAsExternal: false,
   });
 
   const externalsConfig = {
-    externals: ["@madie/madie-components", "@madie/madie-models"],
+    externals: ["@madie/madie-components", "@madie/madie-editor"],
   };
 
   // We need to override the css loading rule from the parent configuration
@@ -102,18 +98,6 @@ module.exports = (webpackConfigEnv, argv) => {
     ],
   };
 
-  // node polyfills
-  const polyfillConfig = {
-    resolve: {
-      fallback: {
-        fs: false,
-        buffer: false,
-        timers: false,
-      },
-    },
-    plugins: [new NodePolyfillPlugin()],
-  };
-
   return mergeWithRules({
     module: {
       rules: {
@@ -122,5 +106,5 @@ module.exports = (webpackConfigEnv, argv) => {
       },
     },
     plugins: "append",
-  })(externalsConfig, polyfillConfig, defaultConfig, newCssRule);
+  })(externalsConfig, defaultConfig, newCssRule);
 };

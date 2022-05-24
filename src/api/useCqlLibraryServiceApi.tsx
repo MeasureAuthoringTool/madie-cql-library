@@ -1,7 +1,7 @@
 import axios from "axios";
 import useServiceConfig from "./useServiceConfig";
 import { ServiceConfig } from "./ServiceContext";
-import { CqlLibrary, Model } from "@madie/madie-models";
+import { CqlLibrary } from "@madie/madie-models";
 import useOktaTokens from "../hooks/useOktaTokens";
 
 export class CqlLibraryServiceApi {

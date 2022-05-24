@@ -17,7 +17,7 @@ import classNames from "classnames";
 import { makeStyles } from "@mui/styles";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { CqlLibrary, Model } from "@madie/madie-models";
+import { CqlLibrary } from "@madie/madie-models";
 import { HelperText, Label, TextInput } from "@madie/madie-components";
 
 const useStyles = makeStyles({

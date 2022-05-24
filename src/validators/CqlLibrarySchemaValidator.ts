@@ -1,5 +1,5 @@
 import * as Yup from "yup";
-import { CqlLibrary, Model } from "@madie/madie-models";
+import { Model } from "@madie/madie-models";
 
 export const CqlLibrarySchemaValidator = Yup.object().shape({
   cqlLibraryName: Yup.string()
