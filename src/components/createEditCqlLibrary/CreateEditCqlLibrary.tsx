@@ -3,14 +3,13 @@ import tw from "twin.macro";
 import "styled-components/macro";
 import { useHistory, useParams } from "react-router-dom";
 import { useFormik } from "formik";
-import CqlLibrary from "../../models/CqlLibrary";
-import { CqlLibrarySchemaValidator } from "../../models/CqlLibrarySchemaValidator";
+import { CqlLibrary, Model } from "@madie/madie-models";
+import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import { Button, HelperText, Label, TextInput } from "@madie/madie-components";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
-import { Model } from "../../models/Model";
 import * as _ from "lodash";
 import CqlLibraryEditor from "../cqlLibraryEditor/CqlLibraryEditor";
 

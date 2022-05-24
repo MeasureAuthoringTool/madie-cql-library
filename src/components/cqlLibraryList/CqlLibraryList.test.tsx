@@ -1,8 +1,7 @@
 import * as React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import CqlLibrary from "../../models/CqlLibrary";
+import { CqlLibrary, Model } from "@madie/madie-models";
 import CqlLibraryList from "./CqlLibraryList";
-import { Model } from "../../models/Model";
 import userEvent from "@testing-library/user-event";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,

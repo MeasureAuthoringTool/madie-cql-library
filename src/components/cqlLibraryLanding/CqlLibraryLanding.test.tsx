@@ -7,7 +7,7 @@ import NewCqlLibrary from "./CqlLibraryLanding";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
-import { Model } from "../../models/Model";
+import { Model } from "@madie/madie-models";
 
 const cqlLibrary = [
   {

@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import "twin.macro";
 import "styled-components/macro";
 import { useHistory } from "react-router-dom";
-import CqlLibrary from "../../models/CqlLibrary";
+import { CqlLibrary } from "@madie/madie-models";
 import { Button } from "@madie/madie-components";
 import CreatVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";

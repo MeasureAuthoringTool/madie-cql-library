@@ -1,11 +1,10 @@
 import * as React from "react";
 import CreateEditCqlLibrary from "./CreateEditCqlLibrary";
 import { fireEvent, render, waitFor, screen } from "@testing-library/react";
-import CqlLibrary from "../../models/CqlLibrary";
+import { CqlLibrary, Model } from "@madie/madie-models";
 import { MemoryRouter, Route } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
-import { Model } from "../../models/Model";
 import axios from "axios";
 
 const cqlLibrary = {
