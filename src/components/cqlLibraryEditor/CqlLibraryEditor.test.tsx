@@ -283,11 +283,6 @@ describe("Validate value sets", () => {
       }
       return Promise.resolve(args);
     });
-    const tgtObj = {
-      TGT: "Test-TGT",
-      tgtTimeStamp: new Date().getTime(),
-    };
-    window.localStorage.setItem("TGT", JSON.stringify(tgtObj));
 
     mockedAxios.get.mockImplementation((args) => {
       return Promise.resolve({
@@ -304,7 +299,7 @@ describe("Validate value sets", () => {
     expect(valueSetSuccess).toBeInTheDocument();
   });
 
-  it("Invalid value sets", async () => {
+  it("value sets error when not logged in to UMLS", async () => {
     mockedAxios.put.mockImplementation((args) => {
       if (args && args.startsWith(serviceConfig.cqlLibraryService.baseUrl)) {
         return Promise.resolve({ data: cqlLibrary });
@@ -323,11 +318,6 @@ describe("Validate value sets", () => {
       }
       return Promise.resolve(args);
     });
-    const tgtObj = {
-      TGT: "Test-TGT",
-      tgtTimeStamp: new Date().getTime(),
-    };
-    window.localStorage.setItem("TGT", JSON.stringify(tgtObj));
 
     mockedAxios.get.mockImplementation((args) => {
       return Promise.reject({
@@ -338,8 +328,12 @@ describe("Validate value sets", () => {
 
     renderEditorForValueSets(cqlLibrary);
 
-    const issues = await screen.findByText("4 issues found with CQL");
+    const issues = await screen.findByText("2 issues found with CQL");
     expect(issues).toBeInTheDocument();
+    const valueSetError = await screen.findByTestId("valueset-error");
+    expect(valueSetError).toBeInTheDocument();
+    const loginError = await screen.findByText("Please log in to UMLS!");
+    expect(loginError).toBeInTheDocument();
   });
 
   it("Validate Value Set error with no TGT", async () => {
@@ -361,11 +355,57 @@ describe("Validate value sets", () => {
       }
       return Promise.resolve(args);
     });
-    window.localStorage.removeItem("TGT");
 
     renderEditorForValueSets(cqlLibrary);
 
     const issues = await screen.findByText("Please log in to UMLS!");
     expect(issues).toBeInTheDocument();
+  });
+
+  it("Invalid value sets", async () => {
+    mockedAxios.put.mockImplementation((args) => {
+      if (args && args.startsWith(serviceConfig.cqlLibraryService.baseUrl)) {
+        return Promise.resolve({ data: cqlLibrary });
+      } else if (
+        args &&
+        args.startsWith(serviceConfig.elmTranslationService.baseUrl)
+      ) {
+        return Promise.resolve({
+          data: { json: JSON.stringify(elmTranslationWithValueSets) },
+          status: 200,
+        });
+      }
+      return Promise.resolve(args);
+    });
+
+    mockedAxios.get.mockImplementation((args) => {
+      if (
+        args.startsWith(serviceConfig.terminologyService.baseUrl) &&
+        args.endsWith("checkLogin")
+      ) {
+        return Promise.resolve({
+          data: true,
+          status: 200,
+        });
+      } else if (
+        args.startsWith(serviceConfig.terminologyService.baseUrl) &&
+        args.endsWith("valueSet")
+      ) {
+        return Promise.reject({
+          data: "failure",
+          status: 404,
+          error: { message: "not found" },
+        });
+      }
+    });
+
+    renderEditorForValueSets(cqlLibrary);
+
+    const valueSetValidation = await screen.findByText(
+      "2 issues found with CQL"
+    );
+    expect(valueSetValidation).toBeInTheDocument();
+    const valueSetSuccess = await screen.findByTestId("valueset-error");
+    expect(valueSetSuccess).toBeInTheDocument();
   });
 });
