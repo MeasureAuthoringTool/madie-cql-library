@@ -4,10 +4,6 @@ import { MemoryRouter } from "react-router";
 import * as React from "react";
 import CqlLibraryRoutes from "./CqlLibraryRoutes";
 
-jest.mock("../timeOutHandler/TimeoutHandler", () => () => (
-  <div data-testid="timeout-handler-mocked" />
-));
-
 jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => (
   <div data-testid="cql-library-landing-mocked" />
 ));
