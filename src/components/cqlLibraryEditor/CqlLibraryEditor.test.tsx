@@ -389,7 +389,7 @@ describe("Validate value sets", () => {
         });
       } else if (
         args.startsWith(serviceConfig.terminologyService.baseUrl) &&
-        args.endsWith("valueSet")
+        args.endsWith("valueset")
       ) {
         return Promise.reject({
           data: "failure",
