@@ -381,7 +381,7 @@ describe("Validate value sets", () => {
     mockedAxios.get.mockImplementation((args) => {
       if (
         args.startsWith(serviceConfig.terminologyService.baseUrl) &&
-        args.endsWith("checkLogin")
+        args.endsWith("umls-credentials/status")
       ) {
         return Promise.resolve({
           data: true,
