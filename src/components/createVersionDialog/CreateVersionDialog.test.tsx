@@ -21,7 +21,7 @@ describe("Create Version Dialog component", () => {
         onClose={jest.fn()}
         onSubmit={jest.fn()}
         cqlLibraryError={false}
-        checkCql={true}
+        isCqlPresent={true}
       />
     );
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
@@ -35,7 +35,7 @@ describe("Create Version Dialog component", () => {
         onClose={jest.fn()}
         onSubmit={jest.fn()}
         cqlLibraryError={false}
-        checkCql={true}
+        isCqlPresent={true}
       />
     );
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
@@ -59,7 +59,7 @@ describe("Create Version Dialog component", () => {
         onClose={jest.fn()}
         onSubmit={jest.fn()}
         cqlLibraryError={true}
-        checkCql={true}
+        isCqlPresent={true}
       />
     );
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
@@ -81,7 +81,7 @@ describe("Create Version Dialog component", () => {
         onClose={jest.fn()}
         onSubmit={jest.fn()}
         cqlLibraryError={true}
-        checkCql={false}
+        isCqlPresent={false}
       />
     );
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe("Create Version Dialog component", () => {
         onClose={onCloseFn}
         onSubmit={jest.fn()}
         cqlLibraryError={false}
-        checkCql={true}
+        isCqlPresent={true}
       />
     );
     fireEvent.click(screen.getByTestId("create-version-cancel-button"));
@@ -119,7 +119,7 @@ describe("Create Version Dialog component", () => {
         onClose={jest.fn()}
         onSubmit={onSubmitFn}
         cqlLibraryError={false}
-        checkCql={true}
+        isCqlPresent={true}
       />
     );
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
