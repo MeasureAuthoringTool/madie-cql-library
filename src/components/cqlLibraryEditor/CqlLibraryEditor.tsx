@@ -102,6 +102,7 @@ const CqlLibraryEditor = ({
 
       const elmAnnotations = mapElmErrorsToAceAnnotations(allErrorsArray);
       setElmAnnotations(elmAnnotations);
+      return data;
     } else {
       setElmAnnotations([]);
     }
