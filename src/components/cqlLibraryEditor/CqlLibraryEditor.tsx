@@ -17,6 +17,7 @@ import tw from "twin.macro";
 const MessageText = tw.p`text-sm font-medium`;
 const SuccessText = tw(MessageText)`text-green-800`;
 const ErrorText = tw(MessageText)`text-red-800`;
+
 export interface CqlLibraryEditorProps {
   setDisplayAnnotations: (val: boolean) => void;
   setElmTranslationError: (val: string) => void;
@@ -62,18 +63,19 @@ const CqlLibraryEditor = ({
   const terminologyServiceApi = useTerminologyServiceApi();
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState(true);
+  const [isLoggedInToUMLS, setIsLoggedInToUMLS] = useState<boolean>(false);
 
   const updateElmAnnotations = async (cql: string): Promise<ElmTranslation> => {
     if (cql && cql.trim().length > 0) {
       const data = await elmTranslationServiceApi.translateCqlToElm(cql);
+
       let valuesetsErrors = null;
-      const tgt = getTgt();
-      const tgtValue = getTgtValue(tgt);
+      const isLoggedIn = await Promise.resolve(checkLogin());
       if (data.library?.valueSets?.def !== null) {
-        if (tgt && tgtValue && tgtValue !== "") {
+        if (isLoggedIn) {
+          setIsLoggedInToUMLS(true);
           valuesetsErrors = await getValueSetErrors(
-            data.library?.valueSets?.def,
-            tgtValue
+            data.library?.valueSets?.def
           );
         } else {
           setValuesetMsg("Please log in to UMLS!");
@@ -87,11 +89,12 @@ const CqlLibraryEditor = ({
         : [];
 
       if (valuesetsErrors && valuesetsErrors.length > 0) {
+        setValuesetSuccess(false);
         valuesetsErrors.map((valueSet, i) => {
           allErrorsArray.push(valueSet);
         });
       } else {
-        if (tgtValue) {
+        if (isLoggedIn) {
           setValuesetSuccess(true);
           setValuesetMsg("Value Set is valid!");
         }
@@ -99,7 +102,6 @@ const CqlLibraryEditor = ({
 
       const elmAnnotations = mapElmErrorsToAceAnnotations(allErrorsArray);
       setElmAnnotations(elmAnnotations);
-      return data;
     } else {
       setElmAnnotations([]);
     }
@@ -142,30 +144,29 @@ const CqlLibraryEditor = ({
     setValuesetSuccess(false);
   };
 
-  const getTgt = (): any => {
-    return window.localStorage.getItem("TGT");
-  };
-
-  const getTgtValue = (tgt: any): any => {
-    let tgtValue = null;
-    if (tgt) {
-      let tgtObjFromLocalStorage = JSON.parse(tgt);
-      tgtValue = tgtObjFromLocalStorage.TGT;
-    }
-    return tgtValue;
+  const checkLogin = async (): Promise<Boolean> => {
+    let isLoggedIn = false;
+    await terminologyServiceApi
+      .checkLogin()
+      .then(() => {
+        isLoggedIn = true;
+      })
+      .catch((err) => {
+        isLoggedIn = false;
+      });
+    return isLoggedIn;
   };
 
   const getValueSetErrors = async (
-    valuesetsArray: ElmValueSet[],
-    tgtValue: string
+    valuesetsArray: ElmValueSet[]
   ): Promise<ElmTranslationError[]> => {
     const valuesetsErrorArray: ElmTranslationError[] = [];
-    if (valuesetsArray && tgtValue) {
+    if (valuesetsArray) {
       await Promise.allSettled(
         valuesetsArray.map(async (valueSet, i) => {
           const oid = getOid(valueSet);
           await terminologyServiceApi
-            .getValueSet(tgtValue, oid, valueSet.locator)
+            .getValueSet(oid, valueSet.locator)
             .then((response) => {
               if (response.errorMsg) {
                 const vsErrorForElmTranslationError: ElmTranslationError =
