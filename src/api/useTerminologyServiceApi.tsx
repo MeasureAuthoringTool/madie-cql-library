@@ -14,20 +14,35 @@ export type FHIRValueSet = {
 export class TerminologyServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}
 
-  async getValueSet(
-    tgt: string,
-    oid: string,
-    locator: string
-  ): Promise<FHIRValueSet> {
+  async checkLogin(): Promise<Boolean> {
+    const resp = await axios
+      .get(`${this.baseUrl}/vsac/umls-credentials/status`, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+          "Content-Type": "text/plain",
+        },
+        timeout: 15000,
+      })
+      .then((resp) => {
+        if (resp.status === 200) {
+          return true;
+        }
+      })
+      .catch((error) => {
+        throw error;
+      });
+    return false;
+  }
+
+  async getValueSet(oid: string, locator: string): Promise<FHIRValueSet> {
     let fhirValueset: FHIRValueSet = null;
     await axios
-      .get(`${this.baseUrl}/vsac/valueSet`, {
+      .get(`${this.baseUrl}/vsac/valueset`, {
         headers: {
           Authorization: `Bearer ${this.getAccessToken()}`,
           "Content-Type": "text/plain",
         },
         params: {
-          tgt: tgt,
           oid: oid,
         },
         timeout: 15000,
