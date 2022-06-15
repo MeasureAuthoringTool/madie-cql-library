@@ -63,7 +63,6 @@ const CqlLibraryEditor = ({
   const terminologyServiceApi = useTerminologyServiceApi();
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState(true);
-  const [isLoggedInToUMLS, setIsLoggedInToUMLS] = useState<boolean>(false);
 
   const updateElmAnnotations = async (cql: string): Promise<ElmTranslation> => {
     if (handleClick) {
@@ -74,7 +73,6 @@ const CqlLibraryEditor = ({
         const isLoggedIn = await Promise.resolve(checkLogin());
         if (data.library?.valueSets?.def !== null) {
           if (isLoggedIn) {
-            setIsLoggedInToUMLS(true);
             valuesetsErrors = await getValueSetErrors(
               data.library?.valueSets?.def
             );
