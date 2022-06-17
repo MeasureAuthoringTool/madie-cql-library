@@ -86,7 +86,7 @@ const CreatVersionDialog = ({
   onClose,
   onSubmit,
   cqlLibraryError,
-  checkCql,
+  isCqlPresent,
 }) => {
   const formik = useFormik({
     initialValues: {
@@ -161,7 +161,7 @@ const CreatVersionDialog = ({
                 ? "Versioning cannot be done as the Cql has errors in it"
                 : ""}
             </ErrorText>
-            {checkCql ? (
+            {isCqlPresent ? (
               ""
             ) : (
               <ErrorText>
@@ -183,7 +183,7 @@ const CreatVersionDialog = ({
             type="submit"
             data-testid="create-version-continue-button"
             disabled={
-              checkCql
+              isCqlPresent
                 ? cqlLibraryError
                   ? cqlLibraryError
                   : !(formik.isValid && formik.dirty)
