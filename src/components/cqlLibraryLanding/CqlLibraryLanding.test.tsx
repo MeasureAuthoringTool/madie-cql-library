@@ -122,16 +122,4 @@ describe("Cql Library Page", () => {
       false
     );
   });
-
-  it("should render create new cql library", async function () {
-    const { getByTestId } = render(<NewCqlLibrary />);
-    // add waitfor to avoid issue with jest / act
-    await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-        true
-      );
-    });
-    fireEvent.click(getByTestId("create-new-cql-library-button"));
-    expect(mockPush).toHaveBeenCalledWith("/example");
-  });
 });
