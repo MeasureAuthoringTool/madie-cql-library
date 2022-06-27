@@ -3,7 +3,7 @@ import "twin.macro";
 import "styled-components/macro";
 import { useHistory } from "react-router-dom";
 import { CqlLibrary } from "@madie/madie-models";
-import { Button } from "@madie/madie-components";
+import { Button } from "@madie/madie-design-system/dist/react";
 import CreatVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CreatDraftDialog from "../createDraftDialog/CreateDraftDialog";
@@ -226,8 +226,6 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                       <td>
                         {cqlLibrary.draft ? (
                           <Button
-                            buttonTitle="Version"
-                            tw="h-10"
                             onClick={() => {
                               setCreateVersionDialog({
                                 open: true,
@@ -241,11 +239,11 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                               });
                             }}
                             data-testid={`create-new-version-${cqlLibrary.id}-button`}
-                          />
+                          >
+                            Version
+                          </Button>
                         ) : (
                           <Button
-                            buttonTitle="Draft"
-                            tw="h-10"
                             onClick={() => {
                               setCreateDraftDialog({
                                 open: true,
@@ -253,19 +251,10 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                               });
                             }}
                             data-testid={`create-new-draft-${cqlLibrary.id}-button`}
-                          />
+                          >
+                            Draft
+                          </Button>
                         )}
-                        {/* <td tw="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() =>
-                            history.push(`/cql-libraries/${cqlLibrary.id}/edit`)
-                          }
-                          tw="text-blue-600 hover:text-blue-900"
-                          data-testid={`edit-cqlLibrary-${cqlLibrary.id}`}
-                        >
-                          Edit
-                        </button>
-                      </td> */}
                       </td>
                       <td>
                         <button
