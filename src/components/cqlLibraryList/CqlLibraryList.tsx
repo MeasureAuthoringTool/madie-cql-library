@@ -286,7 +286,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                                 ".btn-container": {
                                   display: "flex",
                                   flexDirection: "column",
-                                  paddingTop: "10px 0",
+                                  padding: "10px 0",
                                   button: {
                                     zIndex: 2,
                                     fontSize: 14,
