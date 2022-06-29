@@ -3,12 +3,13 @@ import "twin.macro";
 import "styled-components/macro";
 import { useHistory } from "react-router-dom";
 import { CqlLibrary } from "@madie/madie-models";
-import { Button } from "@madie/madie-components";
+import { Button } from "@madie/madie-design-system/dist/react";
 import CreatVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CreatDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -166,34 +167,35 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
       <div tw="flex flex-col">
         <div tw="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div tw="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div tw="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <table tw="min-w-full divide-y divide-gray-200">
-                <thead tw="bg-gray-50">
+            <div>
+              <table tw="min-w-full" style={{ borderTop: "solid 1px #DDD" }}>
+                <thead>
                   <tr>
-                    <th
-                      scope="col"
-                      tw="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th scope="col" className="col-header">
                       Name
                     </th>
-                    <th
-                      scope="col"
-                      tw="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th scope="col" className="col-header">
                       Model
                     </th>
-                    <th
-                      scope="col"
-                      tw="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th scope="col" className="col-header">
                       Version
+                    </th>
+                    <th scope="col" className="col-header">
+                      Version
+                    </th>
+                    <th scope="col" className="col-header">
+                      Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody>
-                  {cqlLibraryList?.map((cqlLibrary) => (
-                    <tr key={cqlLibrary.id} tw="bg-white">
-                      <td tw="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <tbody data-testid="table-body" className="table-body">
+                  {cqlLibraryList?.map((cqlLibrary, i) => (
+                    <tr
+                      key={cqlLibrary.id}
+                      data-testid="row-item"
+                      className={i % 2 === 0 ? "odd" : ""}
+                    >
+                      <td>
                         <button
                           type="button"
                           onClick={() =>
@@ -204,7 +206,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                           {cqlLibrary.cqlLibraryName}
                         </button>
                       </td>
-                      <td tw="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td>
                         <button
                           type="button"
                           onClick={() =>
@@ -215,51 +217,60 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                           {cqlLibrary.model}
                         </button>
                       </td>
-                      <td tw="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td>
                         <p>
                           {cqlLibrary.draft && "Draft "}
                           {cqlLibrary.version}
                         </p>
                       </td>
-                      {cqlLibrary.draft ? (
-                        <Button
-                          buttonTitle="Version"
-                          tw="h-10"
-                          onClick={() => {
-                            setCreateVersionDialog({
-                              open: true,
-                              cqlLibraryId: cqlLibrary.id,
-                              cqlLibraryError: cqlLibrary.cqlErrors,
-                              isCqlPresent:
-                                cqlLibrary && cqlLibrary.cql?.trim().length > 0
-                                  ? true
-                                  : false,
-                            });
-                          }}
-                          data-testid={`create-new-version-${cqlLibrary.id}-button`}
-                        />
-                      ) : (
-                        <Button
-                          buttonTitle="Draft"
-                          tw="h-10"
-                          onClick={() => {
-                            setCreateDraftDialog({
-                              open: true,
-                              cqlLibrary,
-                            });
-                          }}
-                          data-testid={`create-new-draft-${cqlLibrary.id}-button`}
-                        />
-                      )}
-                      <td tw="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td>
+                        {cqlLibrary.draft ? (
+                          <Button
+                            onClick={() => {
+                              setCreateVersionDialog({
+                                open: true,
+                                cqlLibraryId: cqlLibrary.id,
+                                cqlLibraryError: cqlLibrary.cqlErrors,
+                                isCqlPresent:
+                                  cqlLibrary &&
+                                  cqlLibrary.cql?.trim().length > 0
+                                    ? true
+                                    : false,
+                              });
+                            }}
+                            data-testid={`create-new-version-${cqlLibrary.id}-button`}
+                          >
+                            Version
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => {
+                              setCreateDraftDialog({
+                                open: true,
+                                cqlLibrary,
+                              });
+                            }}
+                            data-testid={`create-new-draft-${cqlLibrary.id}-button`}
+                          >
+                            Draft
+                          </Button>
+                        )}
+                      </td>
+                      <td>
                         <button
-                          onClick={() =>
-                            history.push(`/cql-libraries/${cqlLibrary.id}/edit`)
-                          }
+                          className="action-button"
+                          onClick={() => {
+                            history.push(
+                              `/cql-libraries/${cqlLibrary.id}/edit`
+                            );
+                          }}
                           tw="text-blue-600 hover:text-blue-900"
                           data-testid={`edit-cqlLibrary-${cqlLibrary.id}`}
                         >
-                          Edit
+                          <div className="action">View/Edit</div>
+                          <div className="chevron-container">
+                            <ExpandMoreIcon />
+                          </div>
                         </button>
                       </td>
                     </tr>

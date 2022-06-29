@@ -5,11 +5,9 @@ import { Divider, Tab, Tabs } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
-import { useHistory } from "react-router-dom";
 import { CqlLibrary } from "@madie/madie-models";
 
 function CqlLibraryLanding() {
-  const history = useHistory();
   const [activeTab, setActiveTab] = useState(0);
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
@@ -32,40 +30,61 @@ function CqlLibraryLanding() {
   };
 
   return (
-    <div tw="mx-12 mt-5">
-      <section tw="flex flex-row my-2">
-        <h1 tw="text-4xl font-light">CQL Library</h1>
-        <span tw="flex-grow" />
-        <button
-          tw="bg-blue-700 hover:bg-blue-700 text-white font-bold py-2 px-4 border border-blue-700 rounded"
-          onClick={() => history.push("/cql-libraries/create")}
-          data-testid="create-new-cql-library-button"
-        >
-          New Cql Library
-        </button>
-      </section>
-      <section tw="flex flex-row">
+    <div id="cql-library-landing" data-testid="cql-library-landing">
+      <div className="measure-table">
+        <section tw="flex flex-row">
+          <div>
+            <Tabs
+              value={activeTab}
+              onChange={handleTabChange}
+              sx={{
+                fontWeight: 700,
+                color: "#003366",
+                "& .MuiTabs-indicator": {
+                  height: "4px",
+                  backgroundColor: "#0073C8",
+                },
+                "& .Mui-selected": {
+                  fontWeight: 500,
+                  color: "#003366 !important",
+                },
+              }}
+            >
+              <Tab
+                sx={{
+                  padding: "24px 21px",
+                  fontFamily: "Rubik, sans serif",
+                  borderRadius: "6px 0 0 0",
+                  fontWeight: 400,
+                  color: "#003366",
+                }}
+                label={`My CQL Libraries`}
+                data-testid="my-cql-libraries-tab"
+              />
+              <Tab
+                sx={{
+                  padding: "24px 21px",
+                  fontFamily: "Rubik, sans serif",
+                  borderRadius: "0 6px 0 0",
+                  fontWeight: 400,
+                  color: "#003366",
+                }}
+                label="All CQL Libraries"
+                data-testid="all-cql-libraries-tab"
+              />
+            </Tabs>
+            <Divider />
+          </div>
+          <span tw="flex-grow" />
+        </section>
         <div>
-          <Tabs value={activeTab} onChange={handleTabChange} tw="flex flex-row">
-            <Tab
-              label={`My CQL Libraries`}
-              data-testid="my-cql-libraries-tab"
+          <div className="table">
+            <CqlLibraryList
+              cqlLibraryList={cqlLibraryList}
+              onListUpdate={loadCqlLibraries}
             />
-            <Tab
-              label="All CQL Libraries"
-              data-testid="all-cql-libraries-tab"
-            />
-          </Tabs>
-          <Divider />
+          </div>
         </div>
-        <span tw="flex-grow" />
-      </section>
-
-      <div tw="my-4" data-testid="cql-library-list">
-        <CqlLibraryList
-          cqlLibraryList={cqlLibraryList}
-          onListUpdate={loadCqlLibraries}
-        />
       </div>
     </div>
   );
