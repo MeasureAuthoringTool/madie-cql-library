@@ -7,6 +7,13 @@ import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../api/useCqlLibraryServiceApi";
 
+jest.mock("@madie/madie-util", () => ({
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => "testuser@example.com",
+  }),
+}));
+
 const mockPush = jest.fn();
 jest.mock("react-router-dom", () => ({
   useHistory: () => {
@@ -20,13 +27,27 @@ const cqlLibrary: CqlLibrary[] = [
     id: "622e1f46d1fd3729d861e6cb",
     cqlLibraryName: "testing1",
     model: Model.QICORE,
-    createdAt: null,
-    createdBy: null,
-    lastModifiedAt: null,
-    lastModifiedBy: null,
+    createdAt: "",
+    createdBy: "testuser@example.com",
+    lastModifiedAt: "",
+    lastModifiedBy: "",
     draft: true,
     version: "0.0.000",
-    groupId: null,
+    groupId: "",
+    cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+    cqlErrors: false,
+  },
+  {
+    id: "622e1f46d1fd3729d861e6c1",
+    cqlLibraryName: "testing2",
+    model: Model.QICORE,
+    createdAt: "",
+    createdBy: "anothertestuser@example.com",
+    lastModifiedAt: "",
+    lastModifiedBy: "null",
+    draft: true,
+    version: "0.0.000",
+    groupId: "",
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
   },
@@ -85,7 +106,7 @@ describe("CqlLibrary List component", () => {
     );
 
     const editCqlLibraryButton = getByTestId(
-      `edit-cqlLibrary-${cqlLibrary[0].id}`
+      `cqlLibrary-button-${cqlLibrary[0].id}`
     );
     fireEvent.click(editCqlLibraryButton);
     expect(mockPush).toHaveBeenNthCalledWith(
@@ -101,9 +122,15 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
+
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
+
     fireEvent.click(versionButton);
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
   });
@@ -114,13 +141,13 @@ describe("CqlLibrary List component", () => {
         id: "622e1f46d1fd3729d861e6cb",
         cqlLibraryName: "testing1",
         model: Model.QICORE,
-        createdAt: null,
-        createdBy: null,
-        lastModifiedAt: null,
-        lastModifiedBy: null,
+        createdAt: "",
+        createdBy: "",
+        lastModifiedAt: "",
+        lastModifiedBy: "",
         draft: false,
         version: "0.0.000",
-        groupId: null,
+        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -131,6 +158,11 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
+
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
@@ -145,6 +177,10 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
@@ -184,6 +220,11 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
+
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
@@ -225,6 +266,10 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
@@ -267,6 +312,11 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
+
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
@@ -309,6 +359,10 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
@@ -335,6 +389,10 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
@@ -368,6 +426,11 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
+
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
@@ -403,6 +466,10 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
@@ -439,6 +506,10 @@ describe("CqlLibrary List component", () => {
         onListUpdate={loadCqlLibraries}
       />
     );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
