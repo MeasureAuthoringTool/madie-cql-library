@@ -24,7 +24,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const [createVersionDialog, setCreateVersionDialog] = useState({
     open: false,
     cqlLibraryId: "",
-    cqlLibraryError: "",
+    cqlLibraryError: null,
     isCqlPresent: undefined,
   });
   const [createDraftDialog, setCreateDraftDialog] = useState({
@@ -139,9 +139,20 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   // Popover utilities
   const [optionsOpen, setOptionsOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const handleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+  const [selectedCQLLibrary, setSelectedCqlLibrary] =
+    useState<CqlLibrary>(null);
+  const handleOpen = (
+    selected: CqlLibrary,
+    event: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    setSelectedCqlLibrary(selected);
     setAnchorEl(event.currentTarget);
     setOptionsOpen(true);
+  };
+  const handleClose = () => {
+    setOptionsOpen(false);
+    setSelectedCqlLibrary(null);
+    setAnchorEl(null);
   };
   const { getUserName } = useOktaTokens();
   const userName = getUserName();
@@ -175,6 +186,110 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
         onSubmit={createDraft}
         cqlLibrary={createDraftDialog.cqlLibrary}
       />
+      <Popover
+        open={optionsOpen}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "left",
+        }}
+        sx={{
+          ".MuiPopover-paper": {
+            boxShadow: "none",
+            overflow: "visible",
+            ".popover-content": {
+              border: "solid 1px #979797",
+              position: "relative",
+              marginTop: "16px",
+              marginLeft: "-70px",
+              borderRadius: "6px",
+              background: "#F7F7F7",
+              width: "115px",
+              "&::before": {
+                borderWidth: "thin",
+                position: "absolute",
+                top: "-8px",
+                left: "calc(50% - 8px)",
+                height: "16px",
+                width: "16px",
+                background: "#F7F7F7",
+                borderColor: "#979797 transparent transparent #979797",
+                content: '""',
+                transform: "rotate(45deg)",
+              },
+              ".btn-container": {
+                display: "flex",
+                flexDirection: "column",
+                padding: "10px 0",
+                button: {
+                  zIndex: 2,
+                  fontSize: 14,
+                  padding: "0px 12px",
+                  textAlign: "left",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 0, 0, 0.5)",
+                  },
+                },
+              },
+            },
+          },
+        }}
+      >
+        {selectedCQLLibrary && (
+          <div className="popover-content" data-testid="popover-content">
+            <div className="btn-container">
+              <button
+                onClick={() => {
+                  history.push(`/cql-libraries/${selectedCQLLibrary.id}/edit`);
+                }}
+                data-testid={`edit-cql-library-button-${selectedCQLLibrary.id}-edit`}
+              >
+                {/* edit: must be draft and have ownership, else view only*/}
+                {selectedCQLLibrary.createdBy === userName &&
+                selectedCQLLibrary.draft
+                  ? "Edit"
+                  : "View"}
+              </button>
+              {selectedCQLLibrary.draft ? (
+                <button
+                  onClick={() => {
+                    setCreateVersionDialog({
+                      open: true,
+                      cqlLibraryId: selectedCQLLibrary.id,
+                      cqlLibraryError: selectedCQLLibrary.cqlErrors,
+                      isCqlPresent:
+                        selectedCQLLibrary &&
+                        selectedCQLLibrary.cql?.trim().length > 0
+                          ? true
+                          : false,
+                    });
+                  }}
+                  data-testid={`create-new-version-${selectedCQLLibrary.id}-button`}
+                >
+                  Version
+                </button>
+              ) : (
+                <button
+                  onClick={() => {
+                    setCreateDraftDialog({
+                      open: true,
+                      cqlLibrary: selectedCQLLibrary,
+                    });
+                  }}
+                  data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
+                >
+                  Draft
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </Popover>
       <div tw="flex flex-col">
         <div tw="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div tw="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -234,7 +349,9 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                       <td>
                         <button
                           className="action-button"
-                          onClick={handleOpen}
+                          onClick={(e) => {
+                            handleOpen(cqlLibrary, e);
+                          }}
                           tw="text-blue-600 hover:text-blue-900"
                           data-testid={`view/edit-cqlLibrary-button-${cqlLibrary.id}`}
                         >
@@ -243,115 +360,6 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                             <ExpandMoreIcon />
                           </div>
                         </button>
-                        <Popover
-                          open={optionsOpen}
-                          anchorEl={anchorEl}
-                          onClose={() => {
-                            setOptionsOpen(false);
-                            setAnchorEl(null);
-                          }}
-                          anchorOrigin={{
-                            vertical: "bottom",
-                            horizontal: "right",
-                          }}
-                          transformOrigin={{
-                            vertical: "top",
-                            horizontal: "left",
-                          }}
-                          sx={{
-                            ".MuiPopover-paper": {
-                              boxShadow: "none",
-                              overflow: "visible",
-                              ".popover-content": {
-                                border: "solid 1px #979797",
-                                position: "relative",
-                                marginTop: "16px",
-                                marginLeft: "-70px",
-                                borderRadius: "6px",
-                                background: "#F7F7F7",
-                                width: "115px",
-                                "&::before": {
-                                  borderWidth: "thin",
-                                  position: "absolute",
-                                  top: "-8px",
-                                  left: "calc(50% - 8px)",
-                                  height: "16px",
-                                  width: "16px",
-                                  backgroundColor: "#fff",
-                                  borderColor:
-                                    "#979797 transparent transparent #979797",
-                                  content: '""',
-                                  transform: "rotate(45deg)",
-                                },
-                                ".btn-container": {
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  padding: "10px 0",
-                                  button: {
-                                    zIndex: 2,
-                                    fontSize: 14,
-                                    padding: "0px 12px",
-                                    textAlign: "left",
-                                    "&:hover": {
-                                      backgroundColor: "rgba(0, 0, 0, 0.5)",
-                                    },
-                                  },
-                                },
-                              },
-                            },
-                          }}
-                        >
-                          <div
-                            className="popover-content"
-                            data-testid="popover-content"
-                          >
-                            <div className="btn-container">
-                              <button
-                                onClick={() => {
-                                  history.push(
-                                    `/cql-libraries/${cqlLibrary.id}/edit`
-                                  );
-                                }}
-                                data-testid={`edit-cql-library-button-${cqlLibrary.id}-edit`}
-                              >
-                                {cqlLibrary.createdBy === userName
-                                  ? "Edit"
-                                  : "View"}
-                              </button>
-                              {cqlLibrary.draft ? (
-                                <button
-                                  onClick={() => {
-                                    setCreateVersionDialog({
-                                      open: true,
-                                      cqlLibraryId: cqlLibrary.id,
-                                      cqlLibraryError: cqlLibrary.cqlErrors,
-                                      isCqlPresent:
-                                        cqlLibrary &&
-                                        cqlLibrary.cql?.trim().length > 0
-                                          ? true
-                                          : false,
-                                    });
-                                  }}
-                                  data-testid={`create-new-version-${cqlLibrary.id}-button`}
-                                >
-                                  Version
-                                </button>
-                              ) : (
-                                <button
-                                  onClick={() => {
-                                    setCreateDraftDialog({
-                                      open: true,
-                                      cqlLibrary,
-                                    });
-                                  }}
-                                  data-testid={`create-new-draft-${cqlLibrary.id}-button`}
-                                >
-                                  Draft
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </Popover>
                       </td>
                     </tr>
                   ))}
