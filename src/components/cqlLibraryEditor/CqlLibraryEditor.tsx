@@ -4,6 +4,7 @@ import {
   EditorAnnotation,
   MadieEditor,
   parseContent,
+  translateContent,
 } from "@madie/madie-editor";
 import * as _ from "lodash";
 import useElmTranslationServiceApi, {
@@ -11,7 +12,6 @@ import useElmTranslationServiceApi, {
   ElmTranslationError,
   ElmValueSet,
 } from "../../api/useElmTranslationServiceApi";
-import useTerminologyServiceApi from "../../api/useTerminologyServiceApi";
 import tw from "twin.macro";
 
 const MessageText = tw.p`text-sm font-medium`;
@@ -58,57 +58,14 @@ const CqlLibraryEditor = ({
   readOnly,
   executeCqlParsing,
 }: CqlLibraryEditorProps) => {
-  const elmTranslationServiceApi = useElmTranslationServiceApi();
-  const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
-  const terminologyServiceApi = useTerminologyServiceApi();
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState(true);
 
-  const updateElmAnnotations = async (cql: string): Promise<ElmTranslation> => {
-    if (cql && cql.trim().length > 0) {
-      const data = await elmTranslationServiceApi.translateCqlToElm(cql);
-
-      let valuesetsErrors = null;
-      const isLoggedIn = await Promise.resolve(checkLogin());
-      if (data.library?.valueSets?.def !== null) {
-        if (isLoggedIn) {
-          valuesetsErrors = await getValueSetErrors(
-            data.library?.valueSets?.def
-          );
-        } else {
-          setValuesetMsg("Please log in to UMLS!");
-          setValuesetSuccess(false);
-          window.localStorage.removeItem("TGT");
-        }
-      }
-
-      const allErrorsArray: ElmTranslationError[] = data?.errorExceptions
-        ? data?.errorExceptions
-        : [];
-
-      if (valuesetsErrors && valuesetsErrors.length > 0) {
-        setValuesetSuccess(false);
-        valuesetsErrors.map((valueSet, i) => {
-          allErrorsArray.push(valueSet);
-        });
-      } else {
-        if (isLoggedIn) {
-          setValuesetSuccess(true);
-          setValuesetMsg("Value Set is valid!");
-        }
-      }
-
-      const elmAnnotations = mapElmErrorsToAceAnnotations(allErrorsArray);
-      setElmAnnotations(elmAnnotations);
-      return data;
-    } else {
-      setElmAnnotations([]);
-    }
-    return null;
-  };
-
   const hasParserErrors = async (cql) => {
     return !!(parseContent(cql)?.length > 0);
+  };
+  const getTranslationResult = async (val) => {
+    return await translateContent(val);
   };
 
   useEffect(() => {
@@ -119,7 +76,7 @@ const CqlLibraryEditor = ({
 
   const executeCqlParsingForErrors = async (cql: string) => {
     const results = await Promise.allSettled([
-      updateElmAnnotations(cql),
+      getTranslationResult(cql),
       hasParserErrors(cql),
     ]);
     setErrorResults(results);
@@ -127,11 +84,12 @@ const CqlLibraryEditor = ({
   };
 
   useEffect(() => {
-    updateElmAnnotations(value).catch((err) => {
-      console.error("An error occurred while translating CQL to ELM", err);
-      setElmTranslationError("Unable to translate CQL to ELM!");
-      setElmAnnotations([]);
-    });
+    getTranslationResult(value)
+      .then((data) => {})
+      .catch((err) => {
+        console.error("An error occurred while translating CQL to ELM", err);
+        setElmTranslationError("Unable to translate CQL to ELM!");
+      });
   }, [displayAnnotations]);
 
   const handleMadieEditorValue = (val: string) => {
@@ -143,106 +101,11 @@ const CqlLibraryEditor = ({
     setValuesetSuccess(false);
   };
 
-  const checkLogin = async (): Promise<Boolean> => {
-    let isLoggedIn = false;
-    await terminologyServiceApi
-      .checkLogin()
-      .then(() => {
-        isLoggedIn = true;
-      })
-      .catch((err) => {
-        isLoggedIn = false;
-      });
-    return isLoggedIn;
-  };
-
-  const getValueSetErrors = async (
-    valuesetsArray: ElmValueSet[]
-  ): Promise<ElmTranslationError[]> => {
-    const valuesetsErrorArray: ElmTranslationError[] = [];
-    if (valuesetsArray) {
-      await Promise.allSettled(
-        valuesetsArray.map(async (valueSet, i) => {
-          const oid = getOid(valueSet);
-          await terminologyServiceApi
-            .getValueSet(oid, valueSet.locator)
-            .then((response) => {
-              if (response.errorMsg) {
-                const vsErrorForElmTranslationError: ElmTranslationError =
-                  processValueSetErrorForElmTranslationError(
-                    response.errorMsg.toString(),
-                    valueSet.locator
-                  );
-                valuesetsErrorArray.push(vsErrorForElmTranslationError);
-              }
-            });
-        })
-      );
-      return valuesetsErrorArray;
-    }
-  };
-
-  const getOid = (valueSet: ElmValueSet): string => {
-    return valueSet.id.match(/[0-2](\.(0|[1-9][0-9]*))+/)[0];
-  };
-
-  const getStartLine = (locator: string): number => {
-    const index = locator.indexOf(":");
-    const startLine = locator.substring(0, index);
-    return Number(startLine);
-  };
-
-  const getStartChar = (locator: string): number => {
-    const index = locator.indexOf(":");
-    const index2 = locator.indexOf("-");
-    const startChar = locator.substring(index + 1, index2);
-    return Number(startChar);
-  };
-
-  const getEndLine = (locator: string): number => {
-    const index = locator.indexOf("-");
-    const endLineAndChar = locator.substring(index + 1);
-    const index2 = locator.indexOf(":");
-    const endLine = endLineAndChar.substring(0, index2);
-    return Number(endLine);
-  };
-
-  const getEndChar = (locator: string): number => {
-    const index = locator.indexOf("-");
-    const endLineAndChar = locator.substring(index + 1);
-    const index2 = locator.indexOf(":");
-    const endLine = endLineAndChar.substring(index2 + 1);
-    return Number(endLine);
-  };
-
-  const processValueSetErrorForElmTranslationError = (
-    vsError: string,
-    valuesetLocator: string
-  ): ElmTranslationError => {
-    const startLine: number = getStartLine(valuesetLocator);
-    const startChar: number = getStartChar(valuesetLocator);
-    const endLine: number = getEndLine(valuesetLocator);
-    const endChar: number = getEndChar(valuesetLocator);
-    return {
-      startLine: startLine,
-      startChar: startChar,
-      endChar: endChar,
-      endLine: endLine,
-      errorSeverity: "Error",
-      errorType: "ValueSet",
-      message: vsError,
-      targetIncludeLibraryId: "",
-      targetIncludeLibraryVersionId: "",
-      type: "ValueSet",
-    };
-  };
-
   return (
     <>
       <MadieEditor
         onChange={(val: string) => handleMadieEditorValue(val)}
         value={value}
-        inboundAnnotations={displayAnnotations ? elmAnnotations : []}
         height="780px"
         readOnly={readOnly}
       />

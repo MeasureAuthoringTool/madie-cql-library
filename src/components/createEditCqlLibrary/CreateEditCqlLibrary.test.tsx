@@ -1,6 +1,12 @@
 import * as React from "react";
 import CreateEditCqlLibrary from "./CreateEditCqlLibrary";
-import { fireEvent, render, waitFor, screen } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  waitFor,
+  screen,
+  act,
+} from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import { MemoryRouter, Route } from "react-router";
 import userEvent from "@testing-library/user-event";
@@ -10,6 +16,24 @@ import axios from "axios";
 const cqlLibrary = {
   id: "cql library ID",
 } as CqlLibrary;
+
+const cqlLibraryData: CqlLibrary = {
+  id: "cql-lib-1234",
+  cqlLibraryName: "Library1",
+  model: Model.QICORE,
+  draft: true,
+  version: "",
+  groupId: "",
+  cqlErrors: false,
+  publisher: "",
+  description: "",
+  experimental: true,
+  cql: "",
+  createdAt: "",
+  createdBy: "",
+  lastModifiedAt: "",
+  lastModifiedBy: "",
+};
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -510,8 +534,8 @@ describe("Create New Cql Library Component", () => {
       ).toBeInTheDocument();
     });
   });
-
-  it("should update an existing cql library", async () => {
+  //Have to skip the test as there is no push with "/cql-libraries"
+  it.skip("should update an existing cql library", async () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
@@ -703,6 +727,7 @@ describe("Create New Cql Library Component", () => {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
       model: Model.QICORE,
+      cqlErrors: false,
       draft: false,
       version: null,
       groupId: null,
@@ -737,5 +762,220 @@ describe("Create New Cql Library Component", () => {
     expect(
       screen.getByRole("button", { name: "Update CQL Library" })
     ).toBeDisabled();
+  });
+
+  describe("Create and update CQL", () => {
+    it("should render success when creating library succeeds.", async () => {
+      mockedAxios.post.mockClear();
+      mockedAxios.post.mockResolvedValue({
+        data: { ...cqlLibraryData },
+      });
+
+      renderWithRouter();
+      expect(
+        screen.getByRole("button", {
+          name: "Create Cql Library",
+        })
+      ).toBeDisabled();
+      const input = screen.getByRole("textbox", {
+        name: "Cql Library Name",
+      }) as HTMLInputElement;
+      userEvent.type(input, "TestingLibraryName12");
+      expect(input.value).toBe("TestingLibraryName12");
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", {
+            name: "Create Cql Library",
+          })
+        ).toBeDisabled();
+      });
+      userEvent.click(
+        screen.getByRole("button", {
+          name: /select a model/i,
+        })
+      );
+      const qiCoreOption = screen.getByText("QI-Core");
+      userEvent.click(qiCoreOption);
+      const selectedQiCoreDropdown = await screen.findByText("QI-Core");
+      expect(selectedQiCoreDropdown).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /qi-core/i })
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByRole("button", {
+          name: "Create Cql Library",
+        })
+      ).not.toBeDisabled();
+
+      const createButton = screen.getByTestId("cql-library-save-button");
+      act(() => {
+        userEvent.click(createButton);
+      });
+
+      await waitFor(() =>
+        expect(
+          screen.getByTestId("cql-library-success-alert")
+        ).toBeInTheDocument()
+      );
+      await waitFor(() =>
+        expect(
+          screen.getByText("Cql Library successfully created")
+        ).toBeInTheDocument()
+      );
+    });
+
+    it("should render server error when creating library fails.", async () => {
+      mockedAxios.post.mockClear();
+      mockedAxios.post.mockRejectedValue({
+        data: { ...cqlLibraryData },
+      });
+
+      renderWithRouter();
+      expect(
+        screen.getByRole("button", {
+          name: "Create Cql Library",
+        })
+      ).toBeDisabled();
+      const input = screen.getByRole("textbox", {
+        name: "Cql Library Name",
+      }) as HTMLInputElement;
+      userEvent.type(input, "TestingLibraryName12");
+      expect(input.value).toBe("TestingLibraryName12");
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", {
+            name: "Create Cql Library",
+          })
+        ).toBeDisabled();
+      });
+      userEvent.click(
+        screen.getByRole("button", {
+          name: /select a model/i,
+        })
+      );
+      const qiCoreOption = screen.getByText("QI-Core");
+      userEvent.click(qiCoreOption);
+      const selectedQiCoreDropdown = await screen.findByText("QI-Core");
+      expect(selectedQiCoreDropdown).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: /qi-core/i })
+      ).toBeInTheDocument();
+
+      expect(
+        screen.getByRole("button", {
+          name: "Create Cql Library",
+        })
+      ).not.toBeDisabled();
+
+      const createButton = screen.getByTestId("cql-library-save-button");
+      act(() => {
+        userEvent.click(createButton);
+      });
+
+      await waitFor(() =>
+        expect(
+          screen.getByTestId("cql-library-server-error-alerts")
+        ).toBeInTheDocument()
+      );
+      await waitFor(() =>
+        expect(
+          screen.getByText("An error occurred while creating the CQL Library")
+        ).toBeInTheDocument()
+      );
+    });
+
+    it("should render success when updating library succeeds.", async () => {
+      mockedAxios.get.mockClear();
+      mockedAxios.get.mockResolvedValue({ data: { ...cqlLibraryData } });
+      mockedAxios.put.mockClear();
+      mockedAxios.put.mockResolvedValue({
+        data: { ...cqlLibraryData, cqlLibraryName: "UpdatedName" },
+      });
+      renderWithRouter("/cql-libraries/:id/edit", [
+        "/cql-libraries/cql-lib-1234/edit",
+      ]);
+
+      expect(mockedAxios.get).toHaveBeenCalled();
+
+      expect(
+        await screen.findByRole("button", {
+          name: "Update CQL Library",
+        })
+      ).toBeInTheDocument();
+
+      const libraryNameInput = screen.getByRole("textbox", {
+        name: "Cql Library Name",
+      });
+      expect(libraryNameInput).toHaveValue("Library1");
+      act(() => {
+        userEvent.clear(libraryNameInput);
+        userEvent.type(libraryNameInput, "UpdatedName");
+      });
+
+      const updateButton = screen.getByRole("button", {
+        name: "Update CQL Library",
+      });
+      expect(updateButton).not.toBeDisabled();
+      act(() => {
+        userEvent.click(updateButton);
+      });
+
+      await waitFor(() =>
+        expect(
+          screen.getByTestId("cql-library-success-alert")
+        ).toBeInTheDocument()
+      );
+      await waitFor(() =>
+        expect(
+          screen.getByText("Cql Library successfully updated")
+        ).toBeInTheDocument()
+      );
+    });
+
+    it("should render server error when updating library fails.", async () => {
+      mockedAxios.get.mockClear();
+      mockedAxios.get.mockResolvedValue({ data: { ...cqlLibraryData } });
+      mockedAxios.put.mockClear();
+      mockedAxios.put.mockRejectedValue({
+        data: { ...cqlLibraryData, cqlLibraryName: "UpdatedName" },
+      });
+      renderWithRouter("/cql-libraries/:id/edit", [
+        "/cql-libraries/cql-lib-1234/edit",
+      ]);
+
+      expect(mockedAxios.get).toHaveBeenCalled();
+
+      expect(
+        await screen.findByRole("button", {
+          name: "Update CQL Library",
+        })
+      ).toBeInTheDocument();
+
+      const libraryNameInput = screen.getByRole("textbox", {
+        name: "Cql Library Name",
+      });
+      expect(libraryNameInput).toHaveValue("Library1");
+      act(() => {
+        userEvent.clear(libraryNameInput);
+        userEvent.type(libraryNameInput, "UpdatedName");
+      });
+
+      const updateButton = screen.getByRole("button", {
+        name: "Update CQL Library",
+      });
+      expect(updateButton).not.toBeDisabled();
+      act(() => {
+        userEvent.click(updateButton);
+      });
+
+      await waitFor(() =>
+        expect(
+          screen.getByTestId("cql-library-server-error-alerts")
+        ).toBeInTheDocument()
+      );
+    });
   });
 });
