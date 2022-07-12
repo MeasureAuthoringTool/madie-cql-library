@@ -257,6 +257,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
               </button>
               {selectedCQLLibrary.draft ? (
                 <button
+                  data-testid={`create-new-version-${selectedCQLLibrary.id}-button`}
                   onClick={() => {
                     setCreateVersionDialog({
                       open: true,
@@ -268,20 +269,23 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                           ? true
                           : false,
                     });
+                    setOptionsOpen(false);
+                    setAnchorEl(null);
                   }}
-                  data-testid={`create-new-version-${selectedCQLLibrary.id}-button`}
                 >
                   Version
                 </button>
               ) : (
                 <button
+                  data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
                   onClick={() => {
                     setCreateDraftDialog({
                       open: true,
                       cqlLibrary: selectedCQLLibrary,
                     });
+                    setOptionsOpen(false);
+                    setAnchorEl(null);
                   }}
-                  data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
                 >
                   Draft
                 </button>
