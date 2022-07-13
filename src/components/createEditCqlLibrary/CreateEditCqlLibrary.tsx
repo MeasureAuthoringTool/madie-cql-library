@@ -12,6 +12,7 @@ import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import * as _ from "lodash";
 import CqlLibraryEditor from "../cqlLibraryEditor/CqlLibraryEditor";
+import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 
 const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
@@ -155,9 +156,35 @@ const CreateEditCqlLibrary = () => {
     }
   }
 
+  // Create Dialog utilities
+  const [createLibOpen, setCreateLibOpen] = useState<boolean>(false);
+  useEffect(() => {
+    const openCreateLibraryDialogListener = () => {
+      setCreateLibOpen(true);
+    };
+    window.addEventListener(
+      "openCreateLibraryDialog",
+      openCreateLibraryDialogListener,
+      false
+    );
+    return () => {
+      window.removeEventListener(
+        "openCreateLibraryDialog",
+        openCreateLibraryDialogListener,
+        false
+      );
+    };
+  }, []);
+
   return (
     <>
       <div tw="flex flex-wrap " style={{ marginBottom: "-5.7rem" }}>
+        <CreateNewLibraryDialog
+          open={createLibOpen}
+          onClose={() => {
+            setCreateLibOpen(false);
+          }}
+        />
         <div tw="flex-wrap max-w-xl">
           <div tw="mx-2 mt-2">
             {!formik.values.draft && (
