@@ -22,7 +22,23 @@ declare module "@madie/madie-editor" {
     message: string;
   }
 
+  export type ElmTranslationError = {
+    startLine: number;
+    startChar: number;
+    endChar: number;
+    endLine: number;
+    errorSeverity: string;
+    errorType: string;
+    message: string;
+    targetIncludeLibraryId: string;
+    targetIncludeLibraryVersionId: string;
+    type: string;
+  };
+
   export const parseContent: (content: string) => CqlError[];
+  export const validateContent: (
+    content: string
+  ) => Promise<ElmTranslationError[]>;
 
   export const MadieEditor: FC<{
     value: string;
