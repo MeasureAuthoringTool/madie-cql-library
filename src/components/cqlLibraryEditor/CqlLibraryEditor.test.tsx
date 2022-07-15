@@ -212,20 +212,36 @@ describe("Create New Cql Library Component", () => {
       if (args && args.startsWith(serviceConfig.cqlLibraryService.baseUrl)) {
         return Promise.resolve({ data: cqlLibrary });
       }
-      // else if (
-      //   args &&
-      //   args.startsWith(serviceConfig.elmTranslationService.baseUrl)
-      // ) {
-      //   return Promise.resolve({
-      //     data: { json: JSON.stringify(elmTranslationWithErrors) },
-      //     status: 200,
-      //   });
-      // }
-      // return Promise.resolve(args);
     });
     renderEditor(cqlLibrary);
     const issues = await screen.findByText("CQL is valid");
     expect(issues).toBeInTheDocument();
+  });
+  it("should display errors if not logged into umls", async () => {
+    const elmTransaltionErrorsUMLS: ElmTranslationError[] = [
+      {
+        startLine: 24,
+        startChar: 7,
+        endLine: 24,
+        endChar: 15,
+        errorSeverity: "Warning",
+        errorType: "ELM",
+        message: "Please log in to UMLS",
+        targetIncludeLibraryId: "TestLibrary_QICore",
+        targetIncludeLibraryVersionId: "5.0.000",
+        type: "VSAC",
+      },
+    ];
+
+    (validateContent as jest.Mock).mockClear().mockImplementation(() => {
+      return Promise.resolve(elmTransaltionErrorsUMLS);
+    });
+
+    renderEditor(cqlLibrary);
+    const issues = await screen.findByText("1 issues found with CQL");
+    expect(issues).toBeInTheDocument();
+    const loggedIn = await screen.findByText("Please log in to UMLS!");
+    expect(loggedIn).toBeInTheDocument();
   });
 });
 
@@ -274,175 +290,5 @@ describe("mapping Elm Errors to Ace Annotations", () => {
       type: "warning",
       text: `ELM: 7:15 | Test Warning 456`,
     });
-  });
-});
-
-describe("Validate value sets", () => {
-  // it("Valid value sets", async () => {
-  //   mockedAxios.put.mockImplementation((args) => {
-  //     if (args && args.startsWith(serviceConfig.cqlLibraryService.baseUrl)) {
-  //       return Promise.resolve({ data: cqlLibrary });
-  //     } else if (
-  //       args &&
-  //       args.startsWith(serviceConfig.elmTranslationService.baseUrl)
-  //     ) {
-  //       return Promise.resolve({
-  //         data: { json: JSON.stringify(elmTranslationWithValueSets) },
-  //         status: 200,
-  //       });
-  //     }
-  //     return Promise.resolve(args);
-  //   });
-
-  //   mockedAxios.get.mockImplementation((args) => {
-  //     return Promise.resolve({
-  //       data: { json: JSON.stringify(fhirValueset) },
-  //       status: 200,
-  //     });
-  //   });
-
-  //   renderEditorForValueSets(cqlLibrary);
-
-  //   const valueSetValidation = await screen.findByText("Value Set is valid!");
-  //   expect(valueSetValidation).toBeInTheDocument();
-  //   const valueSetSuccess = await screen.findByTestId("valueset-success");
-  //   expect(valueSetSuccess).toBeInTheDocument();
-  // });
-
-  // it("value sets error when not logged in to UMLS", async () => {
-  //   mockedAxios.put.mockImplementation((args) => {
-  //     if (args && args.startsWith(serviceConfig.cqlLibraryService.baseUrl)) {
-  //       return Promise.resolve({ data: cqlLibrary });
-  //     } else if (
-  //       args &&
-  //       args.startsWith(serviceConfig.elmTranslationService.baseUrl)
-  //     ) {
-  //       return Promise.resolve({
-  //         data: {
-  //           json: JSON.stringify(
-  //             elmTranslationWithValueSetAndTranslationErrors
-  //           ),
-  //         },
-  //         status: 200,
-  //       });
-  //     }
-  //     return Promise.resolve(args);
-  //   });
-
-  //   mockedAxios.get.mockImplementation((args) => {
-  //     return Promise.reject({
-  //       data: null,
-  //       status: 404,
-  //     });
-  //   });
-
-  //   renderEditorForValueSets(cqlLibrary);
-
-  //   const issues = await screen.findByText("2 issues found with CQL");
-  //   expect(issues).toBeInTheDocument();
-  //   const valueSetError = await screen.findByTestId("valueset-error");
-  //   expect(valueSetError).toBeInTheDocument();
-  //   const loginError = await screen.findByText("Please log in to UMLS!");
-  //   expect(loginError).toBeInTheDocument();
-  // });
-
-  // it("Validate Value Set error with no TGT", async () => {
-  //   mockedAxios.put.mockImplementation((args) => {
-  //     if (args && args.startsWith(serviceConfig.cqlLibraryService.baseUrl)) {
-  //       return Promise.resolve({ data: cqlLibrary });
-  //     } else if (
-  //       args &&
-  //       args.startsWith(serviceConfig.elmTranslationService.baseUrl)
-  //     ) {
-  //       return Promise.resolve({
-  //         data: {
-  //           json: JSON.stringify(
-  //             elmTranslationWithValueSetAndTranslationErrors
-  //           ),
-  //         },
-  //         status: 200,
-  //       });
-  //     }
-  //     return Promise.resolve(args);
-  //   });
-
-  //   renderEditorForValueSets(cqlLibrary);
-
-  //   const issues = await screen.findByText("Please log in to UMLS!");
-  //   expect(issues).toBeInTheDocument();
-  // });
-
-  // it("Invalid value sets", async () => {
-  //   mockedAxios.put.mockImplementation((args) => {
-  //     if (args && args.startsWith(serviceConfig.cqlLibraryService.baseUrl)) {
-  //       return Promise.resolve({ data: cqlLibrary });
-  //     } else if (
-  //       args &&
-  //       args.startsWith(serviceConfig.elmTranslationService.baseUrl)
-  //     ) {
-  //       return Promise.resolve({
-  //         data: { json: JSON.stringify(elmTranslationWithValueSets) },
-  //         status: 200,
-  //       });
-  //     }
-  //     return Promise.resolve(args);
-  //   });
-
-  //   mockedAxios.get.mockImplementation((args) => {
-  //     if (
-  //       args.startsWith(serviceConfig.terminologyService.baseUrl) &&
-  //       args.endsWith("umls-credentials/status")
-  //     ) {
-  //       return Promise.resolve({
-  //         data: true,
-  //         status: 200,
-  //       });
-  //     } else if (
-  //       args.startsWith(serviceConfig.terminologyService.baseUrl) &&
-  //       args.endsWith("valueset")
-  //     ) {
-  //       return Promise.reject({
-  //         data: "failure",
-  //         status: 404,
-  //         error: { message: "not found" },
-  //       });
-  //     }
-  //   });
-
-  //   renderEditorForValueSets(cqlLibrary);
-
-  //   const valueSetValidation = await screen.findByText(
-  //     "2 issues found with CQL"
-  //   );
-  //   expect(valueSetValidation).toBeInTheDocument();
-  //   const valueSetSuccess = await screen.findByTestId("valueset-error");
-  //   expect(valueSetSuccess).toBeInTheDocument();
-  // });
-
-  it("should display errors if not logged into umls", async () => {
-    const elmTransaltionErrorsUMLS: ElmTranslationError[] = [
-      {
-        startLine: 24,
-        startChar: 7,
-        endLine: 24,
-        endChar: 15,
-        errorSeverity: "Warning",
-        errorType: "ELM",
-        message: "Please log in to UMLS",
-        targetIncludeLibraryId: "TestLibrary_QICore",
-        targetIncludeLibraryVersionId: "5.0.000",
-        type: "VSAC",
-      },
-    ];
-
-    (validateContent as jest.Mock).mockClear().mockImplementation(() => {
-      return Promise.resolve(elmTransaltionErrorsUMLS);
-    });
-
-    renderEditor(cqlLibrary);
-    const issues = await screen.findByText("1 issues found with CQL");
-    expect(issues).toBeInTheDocument();
-    const loggedIn = await screen.findByText("Please log in to UMLS!");
-    expect(loggedIn).toBeInTheDocument();
   });
 });
