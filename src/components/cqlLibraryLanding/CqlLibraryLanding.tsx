@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import "twin.macro";
-import "styled-components/macro";
 import { Divider, Tab, Tabs } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 import { CqlLibrary } from "@madie/madie-models";
+import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 
 function CqlLibraryLanding() {
   const [activeTab, setActiveTab] = useState(0);
@@ -28,9 +27,35 @@ function CqlLibraryLanding() {
   const handleTabChange = (event, nextTab) => {
     setActiveTab(nextTab);
   };
+  // Create Dialog utilities
+  const [createLibOpen, setCreateLibOpen] = useState<boolean>(false);
+  useEffect(() => {
+    const openCreateLibraryDialogListener = () => {
+      setCreateLibOpen(true);
+    };
+    window.addEventListener(
+      "openCreateLibraryDialog",
+      openCreateLibraryDialogListener,
+      false
+    );
+    return () => {
+      window.removeEventListener(
+        "openCreateLibraryDialog",
+        openCreateLibraryDialogListener,
+        false
+      );
+    };
+  }, []);
 
   return (
     <div id="cql-library-landing" data-testid="cql-library-landing">
+      <CreateNewLibraryDialog
+        open={createLibOpen}
+        onSuccess={loadCqlLibraries}
+        onClose={() => {
+          setCreateLibOpen(false);
+        }}
+      />
       <div className="measure-table">
         <section tw="flex flex-row">
           <div>
