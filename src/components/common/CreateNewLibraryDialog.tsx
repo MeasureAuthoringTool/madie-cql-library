@@ -159,7 +159,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
             <TextField
               placeholder="Enter a Cql Library Name"
               required
-              label="Measure CQL Library Name"
+              label="Library Name"
               id="cqlLibraryName"
               data-testid="cql-library-name-text-field"
               inputProps={{
