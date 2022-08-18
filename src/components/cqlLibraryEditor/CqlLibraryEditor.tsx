@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "styled-components/macro";
 import {
+  AllErrorsResult,
   EditorAnnotation,
   MadieEditor,
   parseContent,
@@ -64,7 +65,7 @@ const CqlLibraryEditor = ({
     cql: string
   ): Promise<ElmTranslationError[]> => {
     if (cql && cql.trim().length > 0) {
-      const allErrorsArray = await validateContent(cql);
+      const { errors: allErrorsArray } = await validateContent(cql);
       if (isLoggedInUMLS(allErrorsArray)) {
         setValuesetMsg("Please log in to UMLS!");
       }
