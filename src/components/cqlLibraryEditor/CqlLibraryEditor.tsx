@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "styled-components/macro";
 import {
-  AllErrorsResult,
+  ValidationResult,
   EditorAnnotation,
   MadieEditor,
   parseContent,
