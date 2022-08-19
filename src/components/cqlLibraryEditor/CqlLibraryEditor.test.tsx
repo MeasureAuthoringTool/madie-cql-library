@@ -234,7 +234,7 @@ describe("Create New Cql Library Component", () => {
     ];
 
     (validateContent as jest.Mock).mockClear().mockImplementation(() => {
-      return Promise.resolve(elmTransaltionErrorsUMLS);
+      return Promise.resolve({ errors: elmTransaltionErrorsUMLS });
     });
 
     renderEditor(cqlLibrary);

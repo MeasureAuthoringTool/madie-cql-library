@@ -1,7 +1,9 @@
 import React, { ChangeEvent } from "react";
 
 export const parseContent = jest.fn().mockImplementation((content) => []);
-export const validateContent = jest.fn().mockImplementation((content) => []);
+export const validateContent = jest
+  .fn()
+  .mockImplementation((content) => ({ errors: [], translation: {} }));
 
 export function MadieEditor({
   onChange,
