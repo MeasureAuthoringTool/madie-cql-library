@@ -67,7 +67,7 @@ describe("Cql Library Page", () => {
     );
     const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
     expect(cqlLibrary1).toBeInTheDocument();
-    const cqlLibrary1Model = await screen.findByText("QI-Core");
+    const cqlLibrary1Model = await screen.findByText("QI-Core v4.1.1");
     expect(cqlLibrary1Model).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
       true

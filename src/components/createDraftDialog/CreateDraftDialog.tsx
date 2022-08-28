@@ -19,6 +19,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { CqlLibrary } from "@madie/madie-models";
 import { HelperText, Label, TextInput } from "@madie/madie-components";
+import { synchingEditorCqlContent } from "@madie/madie-editor";
 
 const useStyles = makeStyles({
   row: {
@@ -90,9 +91,20 @@ const CreatDraftDialog = ({ open, onClose, onSubmit, cqlLibrary }) => {
         ),
     }),
     enableReinitialize: true,
-    onSubmit: async ({ cqlLibraryName }) =>
-      onSubmit({ ...cqlLibrary, cqlLibraryName }),
+    onSubmit: async ({ cqlLibraryName }) => submitForm(cqlLibraryName),
   });
+
+  const submitForm = async (cqlLibraryName) => {
+    const inSyncCql = await synchingEditorCqlContent(
+      "",
+      cqlLibrary?.cql,
+      cqlLibraryName,
+      cqlLibrary?.cqlLibraryName,
+      cqlLibrary?.version,
+      "draftDialog"
+    );
+    return onSubmit({ ...cqlLibrary, cqlLibraryName, cql: inSyncCql });
+  };
 
   const classes = useStyles();
   const flexEnd = classNames(classes.row, classes.end);

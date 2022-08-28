@@ -13,6 +13,7 @@ import TextField from "@mui/material/TextField";
 import * as _ from "lodash";
 import CqlLibraryEditor from "../cqlLibraryEditor/CqlLibraryEditor";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
+import { synchingEditorCqlContent } from "@madie/madie-editor";
 
 const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
@@ -104,10 +105,18 @@ const CreateEditCqlLibrary = () => {
   }
 
   async function updateCqlLibrary(cqlLibrary: CqlLibrary, errorResults) {
+    const inSyncCql = await synchingEditorCqlContent(
+      formik.values.cql.trim(),
+      loadedCqlLibrary?.cql,
+      formik.values.cqlLibraryName,
+      loadedCqlLibrary?.cqlLibraryName,
+      loadedCqlLibrary?.version,
+      "updateCqlLibrary"
+    );
     const parseErrors = errorResults[1].value;
     const cqlElmErrors = !!(errorResults[0].value?.errorExceptions?.length > 0);
     const cqlErrors = parseErrors || cqlElmErrors;
-    cqlLibrary = { ...cqlLibrary, cql: formik.values.cql.trim(), cqlErrors };
+    cqlLibrary = { ...cqlLibrary, cql: inSyncCql, cqlErrors };
 
     cqlLibraryServiceApi
       .updateCqlLibrary(cqlLibrary)

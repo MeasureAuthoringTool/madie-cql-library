@@ -6,6 +6,7 @@ import { MemoryRouter, Route } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import axios from "axios";
+import { synchingEditorCqlContent } from "@madie/madie-editor";
 
 const cqlLibrary = {
   id: "cql library ID",
@@ -161,7 +162,7 @@ describe("Create New Cql Library Component", () => {
       name: /select a model/i,
     });
     userEvent.click(modelDropdown);
-    const qiCoreOption = screen.getByText("QI-Core");
+    const qiCoreOption = screen.getByText("QI-Core v4.1.1");
     expect(qiCoreOption).toBeInTheDocument();
   });
 
@@ -171,10 +172,10 @@ describe("Create New Cql Library Component", () => {
       name: /select a model/i,
     });
     userEvent.click(modelDropdown);
-    const qiCoreOption = screen.getByText("QI-Core");
+    const qiCoreOption = screen.getByText("QI-Core v4.1.1");
     expect(qiCoreOption).toBeInTheDocument();
     userEvent.click(qiCoreOption);
-    const qiCore = await screen.findByText("QI-Core");
+    const qiCore = await screen.findByText("QI-Core v4.1.1");
     expect(qiCore).toBeInTheDocument();
     const qiCoreButton = screen.getByRole("button", { name: /qi-core/i });
     expect(qiCoreButton).toBeInTheDocument();
@@ -192,7 +193,7 @@ describe("Create New Cql Library Component", () => {
     });
     expect(modelDropdown).toBeInTheDocument();
     userEvent.click(modelDropdown);
-    const qiCoreOption = screen.getByText("QI-Core");
+    const qiCoreOption = screen.getByText("QI-Core v4.1.1");
     expect(qiCoreOption).toBeInTheDocument();
     userEvent.type(modelDropdown, "{esc}");
     userEvent.dblClick(input);
@@ -230,9 +231,9 @@ describe("Create New Cql Library Component", () => {
         name: /select a model/i,
       })
     );
-    const qiCoreOption = screen.getByText("QI-Core");
+    const qiCoreOption = screen.getByText("QI-Core v4.1.1");
     userEvent.click(qiCoreOption);
-    const selectedQiCoreDropdown = await screen.findByText("QI-Core");
+    const selectedQiCoreDropdown = await screen.findByText("QI-Core v4.1.1");
     expect(selectedQiCoreDropdown).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /qi-core/i })
@@ -279,10 +280,10 @@ describe("Create New Cql Library Component", () => {
       name: /select a model/i,
     });
     userEvent.click(modelDropdown);
-    const qiCoreOption = screen.getByText("QI-Core");
+    const qiCoreOption = screen.getByText("QI-Core v4.1.1");
     expect(qiCoreOption).toBeInTheDocument();
     userEvent.click(qiCoreOption);
-    const qiCore = await screen.findByText("QI-Core");
+    const qiCore = await screen.findByText("QI-Core v4.1.1");
     expect(qiCore).toBeInTheDocument();
     fireEvent.click(getByTestId("cql-library-save-button"));
     await waitFor(() => {
@@ -318,10 +319,10 @@ describe("Create New Cql Library Component", () => {
       name: /select a model/i,
     });
     userEvent.click(modelDropdown);
-    const qiCoreOption = screen.getByText("QI-Core");
+    const qiCoreOption = screen.getByText("QI-Core v4.1.1");
     expect(qiCoreOption).toBeInTheDocument();
     userEvent.click(qiCoreOption);
-    const selectedQiCoreDropdown = await screen.findByText("QI-Core");
+    const selectedQiCoreDropdown = await screen.findByText("QI-Core v4.1.1");
     expect(selectedQiCoreDropdown).toBeInTheDocument();
     fireEvent.click(getByTestId("cql-library-save-button"));
     await waitFor(() => {
@@ -367,7 +368,7 @@ describe("Create New Cql Library Component", () => {
       ).toHaveValue("Library1");
     });
 
-    expect(screen.getByText("QI-Core")).toBeInTheDocument();
+    expect(screen.getByText("QI-Core v4.1.1")).toBeInTheDocument();
   });
 
   it("should display an error when existing cql library cannot be loaded", async () => {
@@ -533,8 +534,17 @@ describe("Create New Cql Library Component", () => {
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
     mockedAxios.put.mockClear();
+    (synchingEditorCqlContent as jest.Mock)
+      .mockClear()
+      .mockImplementation(() => {
+        return "library UpdateName version '1.0.000'";
+      });
     mockedAxios.put.mockResolvedValue({
-      data: { ...cqlLibrary, cqlLibraryName: "UpdatedName" },
+      data: {
+        ...cqlLibrary,
+        cqlLibraryName: "UpdatedName",
+        cql: synchingEditorCqlContent,
+      },
     });
     renderWithRouter("/cql-libraries/:id/edit", [
       "/cql-libraries/cql-lib-1234/edit",
@@ -561,6 +571,14 @@ describe("Create New Cql Library Component", () => {
         })
       ).toHaveValue("UpdatedName")
     );
+    const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
+    expect(input).toHaveValue("");
+
+    fireEvent.change(screen.getByTestId("cql-library-editor"), {
+      target: {
+        value: "library UpdatedNameTets versionsszz '0.0.000'",
+      },
+    });
 
     const updateButton = screen.getByRole("button", {
       name: "Update CQL Library",
@@ -582,7 +600,7 @@ describe("Create New Cql Library Component", () => {
         publisher: null,
         description: null,
         experimental: null,
-        cql: "",
+        cql: "library UpdateName version '1.0.000'",
         createdAt: "",
         createdBy: "",
         lastModifiedAt: "",
@@ -590,6 +608,12 @@ describe("Create New Cql Library Component", () => {
       },
       { headers: { Authorization: "Bearer test.jwt" } }
     );
+
+    const successMessage = screen.getByTestId("cql-library-success-alert");
+    expect(successMessage.textContent).toEqual(
+      "Cql Library successfully updated"
+    );
+    expect(mockedAxios.put).toHaveBeenCalledTimes(1);
   });
 
   it("should allow update when cql is null", async () => {
