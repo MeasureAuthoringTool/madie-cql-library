@@ -11,11 +11,20 @@ import FormControl from "@mui/material/FormControl";
 import MenuItem from "@mui/material/MenuItem";
 import TextField from "@mui/material/TextField";
 import * as _ from "lodash";
-import CqlLibraryEditor from "../cqlLibraryEditor/CqlLibraryEditor";
+import CqlLibraryEditor, {
+  mapElmErrorsToAceAnnotations,
+} from "../cqlLibraryEditor/CqlLibraryEditor";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
-import { synchingEditorCqlContent } from "@madie/madie-editor";
+import {
+  EditorAnnotation,
+  parseContent,
+  synchingEditorCqlContent,
+  validateContent,
+  ElmTranslationError,
+} from "@madie/madie-editor";
 
 const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
+const WarningText = tw.div`bg-yellow-200 rounded-lg py-3 px-3 text-yellow-800 mb-3`;
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
 const InfoAlert = tw.div`bg-blue-200 rounded-lg py-1 px-1 text-blue-900 mb-3`;
 const FormRow = tw.div`mt-3`;
@@ -26,16 +35,15 @@ const CreateEditCqlLibrary = () => {
   const { id } = useParams();
   const [serverError, setServerError] = useState(undefined);
   const [loadedCqlLibrary, setLoadedCqlLibrary] = useState<CqlLibrary>(null);
-  const [displayAnnotations, setDisplayAnnotations] = useState<boolean>(false);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [elmTranslationError, setElmTranslationError] = useState(undefined);
-  const [successMessage, setSuccessMessage] = useState(undefined);
-  const [library, setLibrary] = useState<CqlLibrary>(null);
-  const [handleClick, setHandleClick] = useState<boolean>(undefined);
-  const [executeCqlParsing, setExecuteCqlParsing] =
-    useState<boolean>(undefined);
-  const [errorResults, setErrorResults] = useState<object>(undefined);
-
+  const [successMessage, setSuccessMessage] = useState({
+    status: undefined,
+    message: undefined,
+  });
+  const [valuesetMsg, setValuesetMsg] = useState(null);
+  const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
+  const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: "",
@@ -47,7 +55,21 @@ const CreateEditCqlLibrary = () => {
     onSubmit: handleSubmit,
   });
   const { resetForm } = formik;
+  const handleAnnotations = async (value) => {
+    await updateElmAnnotations(value).catch((err) => {
+      console.error("An error occurred while translating CQL to ELM", err);
+      setElmTranslationError("Unable to translate CQL to ELM!");
+      setElmAnnotations([]);
+    });
+  };
 
+  const onChange = (value) => {
+    formik.setFieldValue("cql", value);
+    setElmTranslationError(undefined);
+    setSuccessMessage({ status: undefined, message: undefined });
+    setValuesetMsg(undefined);
+    setValuesetSuccess(false);
+  };
   useEffect(() => {
     if (id && _.isNil(loadedCqlLibrary)) {
       cqlLibraryServiceApi
@@ -56,7 +78,7 @@ const CreateEditCqlLibrary = () => {
           resetForm({
             values: { ...cqlLibrary },
           });
-          setDisplayAnnotations(true);
+          handleAnnotations(cqlLibrary.cql);
           setLoadedCqlLibrary(cqlLibrary);
         })
         .catch(() => {
@@ -65,27 +87,14 @@ const CreateEditCqlLibrary = () => {
     }
   }, [id, resetForm, loadedCqlLibrary, cqlLibraryServiceApi]);
 
-  useEffect(() => {
-    if (handleClick && errorResults) {
-      if (id) {
-        updateCqlLibrary(library, errorResults);
-      } else {
-        createCqlLibrary(library, errorResults);
-      }
-    }
-  }, [errorResults]);
-
-  async function createCqlLibrary(cqlLibrary: CqlLibrary, errorResults) {
-    const parseErrors = errorResults[1].value;
-    const cqlElmErrors = !!(errorResults[0].value?.errorExceptions?.length > 0);
-    const cqlErrors = parseErrors || cqlElmErrors;
-    cqlLibrary = { ...cqlLibrary, cql: formik.values.cql.trim(), cqlErrors };
-
+  async function createCqlLibrary(cqlLibrary: CqlLibrary) {
     cqlLibraryServiceApi
       .createCqlLibrary(cqlLibrary)
       .then(() => {
-        setHandleClick(undefined);
-        setSuccessMessage("Cql Library successfully created");
+        setSuccessMessage({
+          status: "success",
+          message: "Cql Library successfully created",
+        });
       })
       .catch((error) => {
         if (error?.response) {
@@ -104,7 +113,7 @@ const CreateEditCqlLibrary = () => {
       });
   }
 
-  async function updateCqlLibrary(cqlLibrary: CqlLibrary, errorResults) {
+  async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
     const inSyncCql = await synchingEditorCqlContent(
       formik.values.cql.trim(),
       loadedCqlLibrary?.cql,
@@ -113,19 +122,52 @@ const CreateEditCqlLibrary = () => {
       loadedCqlLibrary?.version,
       "updateCqlLibrary"
     );
-    const parseErrors = errorResults[1].value;
-    const cqlElmErrors = !!(errorResults[0].value?.errorExceptions?.length > 0);
-    const cqlErrors = parseErrors || cqlElmErrors;
-    cqlLibrary = { ...cqlLibrary, cql: inSyncCql, cqlErrors };
 
+    const results = await executeCqlParsingForErrors(inSyncCql);
+
+    if (results[0].status === "rejected") {
+      console.error(
+        "An error occurred while translating CQL to ELM",
+        results[0].reason
+      );
+      setElmTranslationError("Unable to translate CQL to ELM!");
+      setElmAnnotations([]);
+    } else if (results[1].status === "rejected") {
+      const rejection: PromiseRejectedResult = results[1];
+      console.error(
+        "An error occurred while parsing the CQL",
+        rejection.reason
+      );
+    }
+
+    const validationResult =
+      results[0].status === "fulfilled" ? results[0].value : "";
+    const parseErrors =
+      results[1].status === "fulfilled" ? results[1].value : true;
+    const cqlElmErrors = validationResult
+      ? !!(validationResult?.length > 0)
+      : true;
+    const cqlErrors = inSyncCql?.trim().length
+      ? parseErrors || cqlElmErrors
+      : false;
+    const synchedCqlLibrary = { ...cqlLibrary, cql: inSyncCql, cqlErrors };
     cqlLibraryServiceApi
-      .updateCqlLibrary(cqlLibrary)
+      .updateCqlLibrary(synchedCqlLibrary)
       .then(() => {
         resetForm({
-          values: { ...cqlLibrary },
+          values: { ...synchedCqlLibrary },
         });
-        setHandleClick(undefined);
-        setSuccessMessage("Cql Library successfully updated");
+
+        const successMessage =
+          inSyncCql !== cqlLibrary.cql
+            ? {
+                status: "warning",
+                message:
+                  "CQL updated successfully! Library Name and Version can be updated in the Details tab. MADiE has over written the updated Library Name and Version",
+              }
+            : { status: "success", message: "CQL saved successfully" };
+
+        setSuccessMessage(successMessage);
       })
       .catch((error) => {
         if (error?.response) {
@@ -145,13 +187,28 @@ const CreateEditCqlLibrary = () => {
   }
 
   async function handleSubmit(cqlLibrary: CqlLibrary) {
-    setLibrary(cqlLibrary);
-    setSuccessMessage(undefined);
-    setHandleClick(true);
+    setSuccessMessage({ status: undefined, message: undefined });
     setServerError(undefined);
-    setDisplayAnnotations(true);
-    setExecuteCqlParsing(true);
+    if (id) {
+      updateCqlLibrary(formik.values);
+    } else {
+      createCqlLibrary(formik.values);
+    }
   }
+  const hasParserErrors = async (cql) => {
+    return !!(parseContent(cql)?.length > 0);
+  };
+  const isLoggedInUMLS = (errors: ElmTranslationError[]) => {
+    return JSON.stringify(errors).includes("Please log in to UMLS");
+  };
+
+  const executeCqlParsingForErrors = async (cql: string) => {
+    const results = await Promise.allSettled([
+      updateElmAnnotations(cql),
+      hasParserErrors(cql),
+    ]);
+    return results;
+  };
 
   function formikErrorHandler(name: string, isError: boolean) {
     if (formik.touched[name] && formik.errors[name]) {
@@ -185,6 +242,22 @@ const CreateEditCqlLibrary = () => {
     };
   }, []);
 
+  const updateElmAnnotations = async (
+    cql: string
+  ): Promise<ElmTranslationError[]> => {
+    if (cql && cql.trim().length > 0) {
+      const { errors: allErrorsArray } = await validateContent(cql);
+      if (isLoggedInUMLS(allErrorsArray)) {
+        setValuesetMsg("Please log in to UMLS!");
+      }
+      const elmAnnotations = mapElmErrorsToAceAnnotations(allErrorsArray);
+      setElmAnnotations(elmAnnotations);
+      return allErrorsArray;
+    } else {
+      setElmAnnotations([]);
+    }
+    return null;
+  };
   return (
     <>
       <div tw="flex flex-wrap " style={{ marginBottom: "-5.7rem" }}>
@@ -209,7 +282,8 @@ const CreateEditCqlLibrary = () => {
                 {serverError}
               </ErrorAlert>
             )}
-            {elmTranslationError && displayAnnotations && (
+
+            {elmTranslationError && (
               <ErrorAlert
                 data-testid="cql-library-elm-translation-error-alerts"
                 role="alert"
@@ -217,10 +291,21 @@ const CreateEditCqlLibrary = () => {
                 {elmTranslationError}
               </ErrorAlert>
             )}
-            {successMessage && (
-              <SuccessText data-testid="cql-library-success-alert" role="alert">
-                {successMessage}
-              </SuccessText>
+            {successMessage.status ? (
+              successMessage?.status === "warning" ? (
+                <WarningText data-testid="cql-library-warning-alert">
+                  {successMessage.message}
+                </WarningText>
+              ) : (
+                <SuccessText
+                  data-testid="cql-library-success-alert"
+                  role="alert"
+                >
+                  {successMessage.message}
+                </SuccessText>
+              )
+            ) : (
+              ""
             )}
             <form
               data-testid="create-new-cql-library-form"
@@ -301,16 +386,12 @@ const CreateEditCqlLibrary = () => {
         </div>
         <div tw="flex-grow " data-testid="cql-library-editor-component">
           <CqlLibraryEditor
-            displayAnnotations={displayAnnotations}
-            setDisplayAnnotations={setDisplayAnnotations}
-            setElmTranslationError={setElmTranslationError}
-            setSuccessMessage={setSuccessMessage}
-            setErrorResults={setErrorResults}
             value={formik.values.cql}
-            onChange={(val: string) => formik.setFieldValue("cql", val)}
+            onChange={onChange}
             readOnly={!formik.values.draft}
-            executeCqlParsing={executeCqlParsing}
-            setExecuteCqlParsing={setExecuteCqlParsing}
+            valuesetSuccess={valuesetSuccess}
+            valuesetMsg={valuesetMsg}
+            inboundAnnotations={elmAnnotations}
           />
         </div>
       </div>

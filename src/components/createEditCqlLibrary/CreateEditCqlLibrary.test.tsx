@@ -512,7 +512,7 @@ describe("Create New Cql Library Component", () => {
     });
   });
 
-  it("should update an existing cql library", async () => {
+  it("should update an existing cql library with the synched cql library name, version and display a warning message", async () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
@@ -609,10 +609,112 @@ describe("Create New Cql Library Component", () => {
       { headers: { Authorization: "Bearer test.jwt" } }
     );
 
-    const successMessage = screen.getByTestId("cql-library-success-alert");
+    const successMessage = screen.getByTestId("cql-library-warning-alert");
     expect(successMessage.textContent).toEqual(
-      "Cql Library successfully updated"
+      "CQL updated successfully! Library Name and Version can be updated in the Details tab. MADiE has over written the updated Library Name and Version"
     );
+    expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+  });
+
+  it("should update an existing cql library and displaying success message", async () => {
+    const cqlLibrary: CqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      model: Model.QICORE,
+      draft: true,
+      version: null,
+      groupId: null,
+      cqlErrors: false,
+      publisher: null,
+      description: null,
+      experimental: null,
+      cql: "",
+      createdAt: "",
+      createdBy: "",
+      lastModifiedAt: "",
+      lastModifiedBy: "",
+    };
+
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockedAxios.put.mockClear();
+    (synchingEditorCqlContent as jest.Mock)
+      .mockClear()
+      .mockImplementation(() => {
+        return "library UpdateName version '1.0.000'";
+      });
+    mockedAxios.put.mockResolvedValue({
+      data: {
+        ...cqlLibrary,
+        cqlLibraryName: "UpdatedName",
+        cql: synchingEditorCqlContent,
+      },
+    });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+
+    expect(mockedAxios.get).toHaveBeenCalled();
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Update CQL Library",
+      })
+    ).toBeInTheDocument();
+
+    const libraryNameInput = screen.getByRole("textbox", {
+      name: "Cql Library Name",
+    });
+    expect(libraryNameInput).toHaveValue("Library1");
+    userEvent.clear(libraryNameInput);
+    userEvent.type(libraryNameInput, "UpdatedName");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("textbox", {
+          name: "Cql Library Name",
+        })
+      ).toHaveValue("UpdatedName")
+    );
+    const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
+    expect(input).toHaveValue("");
+
+    fireEvent.change(screen.getByTestId("cql-library-editor"), {
+      target: {
+        value: "library UpdateName version '1.0.000'",
+      },
+    });
+
+    const updateButton = screen.getByRole("button", {
+      name: "Update CQL Library",
+    });
+    expect(updateButton).not.toBeDisabled();
+    userEvent.click(updateButton);
+
+    await waitFor(() => expect(mockPush).toBeCalledWith("/cql-libraries"));
+    expect(mockedAxios.put).toHaveBeenCalledWith(
+      "/cql-libraries/cql-lib-1234",
+      {
+        id: "cql-lib-1234",
+        cqlLibraryName: "UpdatedName",
+        model: Model.QICORE,
+        draft: true,
+        version: null,
+        groupId: null,
+        cqlErrors: false,
+        publisher: null,
+        description: null,
+        experimental: null,
+        cql: "library UpdateName version '1.0.000'",
+        createdAt: "",
+        createdBy: "",
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+      },
+      { headers: { Authorization: "Bearer test.jwt" } }
+    );
+
+    const successMessage = screen.getByTestId("cql-library-success-alert");
+    expect(successMessage.textContent).toEqual("CQL saved successfully");
     expect(mockedAxios.put).toHaveBeenCalledTimes(1);
   });
 
