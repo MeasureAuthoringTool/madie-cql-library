@@ -512,7 +512,7 @@ describe("Create New Cql Library Component", () => {
     });
   });
 
-  it("should update an existing cql library", async () => {
+  it("should update an existing cql library with the synched cql library name, version and display a warning message", async () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
@@ -616,7 +616,7 @@ describe("Create New Cql Library Component", () => {
     expect(mockedAxios.put).toHaveBeenCalledTimes(1);
   });
 
-  it("should update an existing cql library", async () => {
+  it("should update an existing cql library and displaying success message", async () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
