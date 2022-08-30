@@ -35,7 +35,6 @@ const CreateEditCqlLibrary = () => {
   const { id } = useParams();
   const [serverError, setServerError] = useState(undefined);
   const [loadedCqlLibrary, setLoadedCqlLibrary] = useState<CqlLibrary>(null);
-  const [displayAnnotations, setDisplayAnnotations] = useState<boolean>(false);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [elmTranslationError, setElmTranslationError] = useState(undefined);
   const [successMessage, setSuccessMessage] = useState({
@@ -79,7 +78,6 @@ const CreateEditCqlLibrary = () => {
           resetForm({
             values: { ...cqlLibrary },
           });
-          setDisplayAnnotations(true);
           handleAnnotations(cqlLibrary.cql);
           setLoadedCqlLibrary(cqlLibrary);
         })
@@ -191,7 +189,6 @@ const CreateEditCqlLibrary = () => {
   async function handleSubmit(cqlLibrary: CqlLibrary) {
     setSuccessMessage({ status: undefined, message: undefined });
     setServerError(undefined);
-    setDisplayAnnotations(true);
     if (id) {
       updateCqlLibrary(formik.values);
     } else {
