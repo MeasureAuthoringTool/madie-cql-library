@@ -217,32 +217,6 @@ describe("Create New Cql Library Component", () => {
     const issues = await screen.findByText("CQL is valid");
     expect(issues).toBeInTheDocument();
   });
-  it("should display errors if not logged into umls", async () => {
-    const elmTransaltionErrorsUMLS: ElmTranslationError[] = [
-      {
-        startLine: 24,
-        startChar: 7,
-        endLine: 24,
-        endChar: 15,
-        errorSeverity: "Warning",
-        errorType: "ELM",
-        message: "Please log in to UMLS",
-        targetIncludeLibraryId: "TestLibrary_QICore",
-        targetIncludeLibraryVersionId: "5.0.000",
-        type: "VSAC",
-      },
-    ];
-
-    (validateContent as jest.Mock).mockClear().mockImplementation(() => {
-      return Promise.resolve({ errors: elmTransaltionErrorsUMLS });
-    });
-
-    renderEditor(cqlLibrary);
-    const issues = await screen.findByText("1 issues found with CQL");
-    expect(issues).toBeInTheDocument();
-    const loggedIn = await screen.findByText("Please log in to UMLS!");
-    expect(loggedIn).toBeInTheDocument();
-  });
 });
 
 describe("mapping Elm Errors to Ace Annotations", () => {
