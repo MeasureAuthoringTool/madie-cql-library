@@ -611,7 +611,7 @@ describe("Create New Cql Library Component", () => {
 
     const successMessage = screen.getByTestId("cql-library-warning-alert");
     expect(successMessage.textContent).toEqual(
-      "CQL updated successfully! Library Name and Version can be updated in the Details tab. MADiE has over written the updated Library Name and Version"
+      "CQL updated successfully! Library Name and/or Version can not be updated in the CQL Editor. MADiE has overwritten the updated Library Name and/or Version."
     );
     expect(mockedAxios.put).toHaveBeenCalledTimes(1);
   });
