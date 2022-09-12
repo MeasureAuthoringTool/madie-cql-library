@@ -96,13 +96,16 @@ const CreatVersionDialog = ({
       type: Yup.string().required("A version type is required."),
     }),
     enableReinitialize: true,
-    onSubmit: ({ type }) => onSubmit(type === "major"),
+    onSubmit: ({ type }) => {
+      formik.resetForm();
+      return onSubmit(type === "major");
+    },
   });
 
   const classes = useStyles();
   const flexEnd = classNames(classes.row, classes.end);
   const handleDialogClose = () => {
-    formik.resetForm({ values: { type: "" } });
+    formik.resetForm();
     onClose();
   };
 
@@ -110,7 +113,6 @@ const CreatVersionDialog = ({
     <Dialog
       open={open}
       data-testid="create-version-dialog"
-      onClose={handleDialogClose}
       maxWidth="sm"
       fullWidth
       classes={{
