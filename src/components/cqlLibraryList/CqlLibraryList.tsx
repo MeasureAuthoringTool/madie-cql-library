@@ -265,9 +265,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                       cqlLibraryError: selectedCQLLibrary.cqlErrors,
                       isCqlPresent:
                         selectedCQLLibrary &&
-                        selectedCQLLibrary.cql?.trim().length > 0
-                          ? true
-                          : false,
+                        selectedCQLLibrary.cql?.trim().length > 0,
                     });
                     setOptionsOpen(false);
                     setAnchorEl(null);

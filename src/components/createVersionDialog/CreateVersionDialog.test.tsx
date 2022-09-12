@@ -126,14 +126,21 @@ describe("Create Version Dialog component", () => {
     const majorRadio: HTMLInputElement = screen.getByLabelText("Major");
     expect(majorRadio.checked).toEqual(false);
 
-    fireEvent.click(majorRadio);
+    act(() => {
+      fireEvent.click(majorRadio);
+    });
 
     await waitFor(() => {
-      expect(majorRadio.checked).toEqual(true);
       expect(
         screen.getByTestId("create-version-continue-button")
-      ).not.toBeDisabled();
+      ).toBeEnabled();
+    });
+
+    act(() => {
       fireEvent.click(screen.getByTestId("create-version-continue-button"));
+    });
+
+    await waitFor(() => {
       expect(onSubmitFn).toHaveBeenCalled();
     });
   });
