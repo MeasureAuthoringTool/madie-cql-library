@@ -17,11 +17,13 @@ import CqlLibraryEditor, {
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import {
   EditorAnnotation,
+  ElmTranslationError,
   parseContent,
   synchingEditorCqlContent,
   validateContent,
-  ElmTranslationError,
+  ValidationResult,
 } from "@madie/madie-editor";
+import { Toast } from "@madie/madie-design-system/dist/react";
 
 const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
 const WarningText = tw.div`bg-yellow-200 rounded-lg py-3 px-3 text-yellow-800 mb-3`;
@@ -44,6 +46,22 @@ const CreateEditCqlLibrary = () => {
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
+
+  // toast utilities
+  const [toastOpen, setToastOpen] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string>("");
+  const [toastType, setToastType] = useState<string>("danger");
+  const onToastClose = () => {
+    setToastType(null);
+    setToastMessage("");
+    setToastOpen(false);
+  };
+  const handleToast = (type, message, open) => {
+    setToastType(type);
+    setToastMessage(message);
+    setToastOpen(open);
+  };
+
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: "",
@@ -140,13 +158,15 @@ const CreateEditCqlLibrary = () => {
       );
     }
 
-    const validationResult =
-      results[0].status === "fulfilled" ? results[0].value : "";
     const parseErrors =
       results[1].status === "fulfilled" ? results[1].value : true;
-    const cqlElmErrors = validationResult
-      ? !!(validationResult?.length > 0)
-      : true;
+
+    const validationResult =
+      results[0].status === "fulfilled" ? results[0].value : null;
+
+    const cqlElmErrors =
+      !_.isEmpty(validationResult?.errors) ||
+      !_.isEmpty(validationResult?.externalErrors);
     const cqlErrors = inSyncCql?.trim().length
       ? parseErrors || cqlElmErrors
       : false;
@@ -203,11 +223,10 @@ const CreateEditCqlLibrary = () => {
   };
 
   const executeCqlParsingForErrors = async (cql: string) => {
-    const results = await Promise.allSettled([
+    return await Promise.allSettled([
       updateElmAnnotations(cql),
       hasParserErrors(cql),
     ]);
-    return results;
   };
 
   function formikErrorHandler(name: string, isError: boolean) {
@@ -244,15 +263,18 @@ const CreateEditCqlLibrary = () => {
 
   const updateElmAnnotations = async (
     cql: string
-  ): Promise<ElmTranslationError[]> => {
+  ): Promise<ValidationResult> => {
     if (cql && cql.trim().length > 0) {
-      const { errors: allErrorsArray } = await validateContent(cql);
-      if (isLoggedInUMLS(allErrorsArray)) {
+      const result = await validateContent(cql);
+      const { errors, externalErrors } = result;
+      // right now we are only displaying the external errors related to included libraries
+      // and only the first error returned by elm translator
+      handleToast("danger", externalErrors[0]?.message, true);
+      if (isLoggedInUMLS(errors)) {
         setValuesetMsg("Please log in to UMLS!");
       }
-      const elmAnnotations = mapElmErrorsToAceAnnotations(allErrorsArray);
-      setElmAnnotations(elmAnnotations);
-      return allErrorsArray;
+      setElmAnnotations(mapElmErrorsToAceAnnotations(errors));
+      return result;
     } else {
       setElmAnnotations([]);
     }
@@ -395,6 +417,19 @@ const CreateEditCqlLibrary = () => {
           />
         </div>
       </div>
+      <Toast
+        toastKey="library-cql-editor-toast"
+        toastType={toastType}
+        testId={
+          toastType === "danger"
+            ? "edit-library-cql-generic-error-text"
+            : "edit-library-cql-success-text"
+        }
+        open={toastOpen}
+        message={toastMessage}
+        onClose={onToastClose}
+        autoHideDuration={6000}
+      />
     </>
   );
 };

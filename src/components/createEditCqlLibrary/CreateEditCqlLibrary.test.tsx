@@ -6,7 +6,11 @@ import { MemoryRouter, Route } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import axios from "axios";
-import { synchingEditorCqlContent } from "@madie/madie-editor";
+import {
+  ElmTranslationExternalError,
+  synchingEditorCqlContent,
+  validateContent,
+} from "@madie/madie-editor";
 
 const cqlLibrary = {
   id: "cql library ID",
@@ -36,6 +40,24 @@ const serviceConfig: ServiceConfig = {
     baseUrl: "",
   },
 };
+
+const cqlToElmExternalErrors: ElmTranslationExternalError[] = [
+  {
+    libraryId: "SupplementalDataElements",
+    libraryVersion: "1.0.000",
+    startLine: 14,
+    startChar: 1,
+    endLine: 14,
+    endChar: 52,
+    message:
+      "Could not resolve reference to library QICoreCommon, version 1.0.000 because version 2.0.000 is already loaded.",
+    errorType: "include",
+    errorSeverity: "Error",
+    targetIncludeLibraryId: "QICoreCommon",
+    targetIncludeLibraryVersionId: "1.0.000",
+    type: "CqlToElmError",
+  },
+];
 
 const renderWithRouter = (
   path = "/cql-libraries/create",
@@ -863,5 +885,78 @@ describe("Create New Cql Library Component", () => {
     expect(
       screen.getByRole("button", { name: "Update CQL Library" })
     ).toBeDisabled();
+  });
+
+  it("should display toast for external errors received from Cql to Elm translation", async () => {
+    const cqlLibrary: CqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      model: Model.QICORE,
+      draft: true,
+      version: null,
+      groupId: null,
+      cqlErrors: false,
+      publisher: null,
+      description: null,
+      experimental: null,
+      cql: "some cql string",
+      createdAt: "",
+      createdBy: "",
+      lastModifiedAt: "",
+      lastModifiedBy: "",
+    };
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+    (validateContent as jest.Mock).mockClear().mockImplementation(() => {
+      return Promise.resolve({
+        errors: [],
+        externalErrors: cqlToElmExternalErrors,
+      });
+    });
+
+    const toastMessage = await screen.findByText(
+      cqlToElmExternalErrors[0].message
+    );
+    expect(toastMessage).toBeInTheDocument();
+  });
+
+  it("should be able to close toast message", async () => {
+    const cqlLibrary: CqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      model: Model.QICORE,
+      draft: true,
+      version: null,
+      groupId: null,
+      cqlErrors: false,
+      publisher: null,
+      description: null,
+      experimental: null,
+      cql: "some cql string",
+      createdAt: "",
+      createdBy: "",
+      lastModifiedAt: "",
+      lastModifiedBy: "",
+    };
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+    (validateContent as jest.Mock).mockClear().mockImplementation(() => {
+      return Promise.resolve({
+        errors: [],
+        externalErrors: cqlToElmExternalErrors,
+      });
+    });
+    const toastCloseButton = await screen.findByRole("button", {
+      name: "close",
+    });
+    expect(toastCloseButton).toBeInTheDocument();
+    fireEvent.click(toastCloseButton);
+    expect(toastCloseButton).not.toBeInTheDocument();
   });
 });
