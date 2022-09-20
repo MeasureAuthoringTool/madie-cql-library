@@ -93,7 +93,7 @@ describe("CqlLibrary List component", () => {
     userEvent.click(cqlLibraryModelButton);
     expect(mockPush).toHaveBeenNthCalledWith(
       1,
-      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit"
+      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
     );
 
     const cqlLibraryButton = getByTestId(
@@ -102,7 +102,7 @@ describe("CqlLibrary List component", () => {
     fireEvent.click(cqlLibraryButton);
     expect(mockPush).toHaveBeenNthCalledWith(
       2,
-      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit"
+      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
     );
 
     const editCqlLibraryButton = getByTestId(
@@ -111,7 +111,7 @@ describe("CqlLibrary List component", () => {
     fireEvent.click(editCqlLibraryButton);
     expect(mockPush).toHaveBeenNthCalledWith(
       3,
-      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit"
+      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
     );
   });
 

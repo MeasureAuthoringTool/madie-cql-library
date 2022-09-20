@@ -245,7 +245,9 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
             <div className="btn-container">
               <button
                 onClick={() => {
-                  history.push(`/cql-libraries/${selectedCQLLibrary.id}/edit`);
+                  history.push(
+                    `/cql-libraries/${selectedCQLLibrary.id}/edit/details`
+                  );
                 }}
                 data-testid={`edit-cql-library-button-${selectedCQLLibrary.id}-edit`}
               >
@@ -324,7 +326,9 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                         <button
                           type="button"
                           onClick={() =>
-                            history.push(`/cql-libraries/${cqlLibrary.id}/edit`)
+                            history.push(
+                              `/cql-libraries/${cqlLibrary.id}/edit/details`
+                            )
                           }
                           data-testid={`cqlLibrary-button-${cqlLibrary.id}`}
                         >
@@ -335,7 +339,9 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                         <button
                           type="button"
                           onClick={() =>
-                            history.push(`/cql-libraries/${cqlLibrary.id}/edit`)
+                            history.push(
+                              `/cql-libraries/${cqlLibrary.id}/edit/details`
+                            )
                           }
                           data-testid={`cqlLibrary-button-${cqlLibrary.id}-model`}
                         >

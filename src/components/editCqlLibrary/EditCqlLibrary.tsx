@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import tw from "twin.macro";
 import "styled-components/macro";
-import { useHistory, useParams } from "react-router-dom";
+import { useHistory, useParams, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
-import { Button, HelperText, Label, TextInput } from "@madie/madie-components";
+import queryString from "query-string";
+import { HelperText, Label, TextInput } from "@madie/madie-components";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
-import FormControl from "@mui/material/FormControl";
-import MenuItem from "@mui/material/MenuItem";
-import TextField from "@mui/material/TextField";
+import { cqlLibraryStore } from "@madie/madie-util";
+// import TextField from "@mui/material/TextField";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
   mapElmErrorsToAceAnnotations,
@@ -23,20 +23,35 @@ import {
   validateContent,
   ValidationResult,
 } from "@madie/madie-editor";
-import { Toast } from "@madie/madie-design-system/dist/react";
+import {
+  Toast,
+  Button,
+  TextField,
+} from "@madie/madie-design-system/dist/react";
+import NavTabs from "./NavTabs";
+import "./EditCQLLibrary.scss";
 
 const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
 const WarningText = tw.div`bg-yellow-200 rounded-lg py-3 px-3 text-yellow-800 mb-3`;
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
 const InfoAlert = tw.div`bg-blue-200 rounded-lg py-1 px-1 text-blue-900 mb-3`;
-const FormRow = tw.div`mt-3`;
 
 const EditCqlLibrary = () => {
   const history = useHistory();
+  const { search } = useLocation();
+  const values = queryString.parse(search);
+  const activeTab: string = (values.tab && values.tab.toString()) || "details";
   // @ts-ignore
   const { id } = useParams();
-  const [serverError, setServerError] = useState(undefined);
   const [loadedCqlLibrary, setLoadedCqlLibrary] = useState<CqlLibrary>(null);
+  // on unmount forget library state.
+  useEffect(() => {
+    return () => {
+      cqlLibraryStore.updateLibrary(null);
+    };
+  }, []);
+
+  const [serverError, setServerError] = useState(undefined);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [elmTranslationError, setElmTranslationError] = useState(undefined);
   const [successMessage, setSuccessMessage] = useState({
@@ -64,13 +79,15 @@ const EditCqlLibrary = () => {
 
   const formik = useFormik({
     initialValues: {
-      cqlLibraryName: "",
-      model: "",
-      cql: "",
-      draft: !!_.isNil(id),
+      cqlLibraryName: loadedCqlLibrary?.cqlLibraryName,
+      model: loadedCqlLibrary?.model,
+      cql: loadedCqlLibrary?.cql,
+      draft: loadedCqlLibrary?.draft,
+      id,
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
     onSubmit: handleSubmit,
+    enableReinitialize: true,
   });
   const { resetForm } = formik;
   const handleAnnotations = async (value) => {
@@ -93,6 +110,7 @@ const EditCqlLibrary = () => {
       cqlLibraryServiceApi
         .fetchCqlLibrary(id)
         .then((cqlLibrary) => {
+          cqlLibraryStore.updateLibrary(cqlLibrary);
           resetForm({
             values: { ...cqlLibrary },
           });
@@ -174,9 +192,13 @@ const EditCqlLibrary = () => {
     cqlLibraryServiceApi
       .updateCqlLibrary(synchedCqlLibrary)
       .then(() => {
-        resetForm({
-          values: { ...synchedCqlLibrary },
-        });
+        const updatedLibrary = Object.assign(
+          {},
+          loadedCqlLibrary,
+          synchedCqlLibrary
+        );
+        setLoadedCqlLibrary(updatedLibrary);
+        resetForm();
 
         const successMessage =
           inSyncCql !== cqlLibrary.cql
@@ -280,142 +302,139 @@ const EditCqlLibrary = () => {
     }
     return null;
   };
-  return (
-    <>
-      <div tw="flex flex-wrap " style={{ marginBottom: "-5.7rem" }}>
-        <CreateNewLibraryDialog
-          open={createLibOpen}
-          onClose={() => {
-            setCreateLibOpen(false);
-          }}
-        />
-        <div tw="flex-wrap max-w-xl">
-          <div tw="mx-2 mt-2">
-            {!formik.values.draft && (
-              <InfoAlert>
-                CQL Library is not a draft. Only drafts can be edited.
-              </InfoAlert>
-            )}
-            {serverError && (
-              <ErrorAlert
-                data-testid="cql-library-server-error-alerts"
-                role="alert"
-              >
-                {serverError}
-              </ErrorAlert>
-            )}
+  const handleTabChange = (event, nextTab) => {
+    history.push(`?tab=${nextTab}`);
+  };
 
-            {elmTranslationError && (
-              <ErrorAlert
-                data-testid="cql-library-elm-translation-error-alerts"
-                role="alert"
-              >
-                {elmTranslationError}
-              </ErrorAlert>
-            )}
-            {successMessage.status ? (
-              successMessage?.status === "warning" ? (
-                <WarningText data-testid="cql-library-warning-alert">
-                  {successMessage.message}
-                </WarningText>
-              ) : (
-                <SuccessText
-                  data-testid="cql-library-success-alert"
-                  role="alert"
-                >
-                  {successMessage.message}
-                </SuccessText>
-              )
-            ) : (
-              ""
-            )}
-            <form
-              data-testid="create-new-cql-library-form"
-              onSubmit={formik.handleSubmit}
-              tw="m-8"
-            >
-              <FormRow tw="w-72">
-                <TextInput
-                  type="text"
-                  id="cqlLibraryName"
-                  {...formik.getFieldProps("cqlLibraryName")}
-                  readOnly={!formik.values.draft}
-                  placeholder="Enter a Cql Library Name"
-                  data-testid="cql-library-name-text-field"
-                >
-                  <Label htmlFor="cqlLibraryName" text="Cql Library Name" />
-                  {formikErrorHandler("cqlLibraryName", true)}
-                </TextInput>
-              </FormRow>
-              <FormControl tw="w-72">
-                <Label text="CQL Library Model" />
-                <TextField
-                  size="small"
-                  select
-                  InputLabelProps={{ shrink: false }}
-                  InputProps={{
-                    readOnly: !formik.values.draft,
-                  }}
-                  label={formik.values.model === "" ? "Select a model" : " "}
-                  id="cqlLibraryModel"
-                  data-testid="cql-library-model-select"
-                  name={"model"}
-                  {...formik.getFieldProps("model")}
-                  error={formik.touched.model && Boolean(formik.errors.model)}
-                  helperText={formik.touched.model && formik.errors.model}
-                >
-                  {Object.keys(Model).map((modelKey) => {
-                    return (
-                      <MenuItem
-                        key={modelKey}
-                        value={Model[modelKey]}
-                        data-testid={`cql-library-model-option-${Model[modelKey]}`}
-                      >
-                        {Model[modelKey]}
-                      </MenuItem>
-                    );
-                  })}
-                </TextField>
-              </FormControl>
-              <FormRow>
-                <Button
-                  id="saveBtn"
-                  buttonTitle={id ? "Update CQL Library" : "Create Cql Library"}
-                  type="submit"
-                  tw="mr-3"
-                  data-testid="cql-library-save-button"
-                  disabled={
-                    !(formik.isValid && formik.dirty) ||
-                    (!!id &&
-                      (_.isNil(loadedCqlLibrary) ||
-                        _.isNil(loadedCqlLibrary.id))) ||
-                    !formik.values.draft
-                  }
-                />
-                <Button
-                  id="cancelBtn"
-                  buttonTitle="Cancel"
-                  type="button"
-                  variant="white"
-                  onClick={() => {
-                    history.push("/cql-libraries");
-                  }}
-                  data-testid="cql-library-cancel-button"
-                />
-              </FormRow>
-            </form>
+  return (
+    <form
+      id="edit-measure-page"
+      data-testId="create-new-cql-library-form"
+      onSubmit={formik.handleSubmit}
+    >
+      {/* main page container */}
+      <div className="flow-container">
+        <div id="left-panel">
+          <div tw="flex-grow " data-testid="cql-library-editor-component">
+            <CqlLibraryEditor
+              value={formik.values.cql}
+              onChange={onChange}
+              readOnly={!formik.values.draft}
+              valuesetSuccess={valuesetSuccess}
+              valuesetMsg={valuesetMsg}
+              inboundAnnotations={elmAnnotations}
+            />
           </div>
         </div>
-        <div tw="flex-grow " data-testid="cql-library-editor-component">
-          <CqlLibraryEditor
-            value={formik.values.cql}
-            onChange={onChange}
-            readOnly={!formik.values.draft}
-            valuesetSuccess={valuesetSuccess}
-            valuesetMsg={valuesetMsg}
-            inboundAnnotations={elmAnnotations}
-          />
+        <div id="divider" />
+        <div id="right-panel">
+          <NavTabs activeTab={activeTab} handleTabChange={handleTabChange} />
+          <div className="inner-right">
+            {activeTab === "details" && (
+              <div id="details-tab" data-test-id="details-tab">
+                {/* formik tab */}
+                {!formik.values.draft && (
+                  <div className="form-row">
+                    <InfoAlert>
+                      CQL Library is not a draft. Only drafts can be edited.
+                    </InfoAlert>
+                  </div>
+                )}
+                {serverError && (
+                  <div className="form-row">
+                    <ErrorAlert
+                      data-testid="cql-library-server-error-alerts"
+                      role="alert"
+                    >
+                      {serverError}
+                    </ErrorAlert>
+                  </div>
+                )}
+
+                {elmTranslationError && (
+                  <div className="form-row">
+                    <ErrorAlert
+                      data-testid="cql-library-elm-translation-error-alerts"
+                      role="alert"
+                    >
+                      {elmTranslationError}
+                    </ErrorAlert>
+                  </div>
+                )}
+                {successMessage.status ? (
+                  successMessage?.status === "warning" ? (
+                    <div className="form-row">
+                      <WarningText data-testid="cql-library-warning-alert">
+                        {successMessage.message}
+                      </WarningText>
+                    </div>
+                  ) : (
+                    <div className="form-row">
+                      <SuccessText
+                        data-testid="cql-library-success-alert"
+                        role="alert"
+                      >
+                        {successMessage.message}
+                      </SuccessText>
+                    </div>
+                  )
+                ) : (
+                  ""
+                )}
+                {/* <form data-testId="create-new-cql-library-form" id="cql-library-form"> */}
+                <div className="form-row">
+                  {/* should it be read only? */}
+                  <TextField
+                    label="CQL Library Name"
+                    required
+                    id="cqlLibraryName"
+                    data-testid="cql-library-name-text-field"
+                    inputProps={{
+                      id: "cql-library-name-text-field-input",
+                      "data-testid": "cql-library-name-text-field-input",
+                      readOnly: !formik.values.draft,
+                    }}
+                    error={
+                      formik.touched.cqlLibraryName &&
+                      Boolean(formik.errors.cqlLibraryName)
+                    }
+                    {...formik.getFieldProps("cqlLibraryName")}
+                    helperText={formikErrorHandler("cqlLibraryName", true)}
+                    placeholder="Enter a Cql Library Name"
+                  />
+                </div>
+                {/* </form> */}
+              </div>
+            )}
+          </div>
         </div>
+        {/* footer lives here */}
+      </div>
+      <div id="sticky-footer">
+        <button
+          className="blue-60-outline"
+          disabled={!formik.dirty}
+          data-testid="cql-library-cancel-button"
+          onClick={() => {
+            history.push("/cql-libraries");
+          }}
+        >
+          Discard Changes
+        </button>
+        <Button
+          data-testid="cql-library-save-button"
+          role="button"
+          variant="cyan"
+          type="submit"
+          disabled={
+            !(formik.isValid && formik.dirty) ||
+            (!!id &&
+              (_.isNil(loadedCqlLibrary) || _.isNil(loadedCqlLibrary.id))) ||
+            !formik.values.draft
+          }
+        >
+          Save
+        </Button>
       </div>
       <Toast
         toastKey="library-cql-editor-toast"
@@ -430,7 +449,13 @@ const EditCqlLibrary = () => {
         onClose={onToastClose}
         autoHideDuration={6000}
       />
-    </>
+      <CreateNewLibraryDialog
+        open={createLibOpen}
+        onClose={() => {
+          setCreateLibOpen(false);
+        }}
+      />
+    </form>
   );
 };
 
