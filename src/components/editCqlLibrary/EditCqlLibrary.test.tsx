@@ -26,10 +26,6 @@ jest.mock("@madie/madie-util", () => ({
     },
     unsubscribe: () => null,
   },
-  // useOktaTokens: () => ({
-  //   getAccessToken: () => "test.jwt",
-  //   getUserName: () => "nosec@example.com", //#nosec
-  // }),
 }));
 const cqlLibrary = {
   id: "cql-lib-1234",
