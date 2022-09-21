@@ -5,7 +5,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "start": "webpack serve --port 8507",
+    "start": "webpack serve --port 8507 --env=protocol=http",
     "build": "concurrently npm:build:*",
     "build:webpack": "webpack --mode=production",
     "analyze": "webpack --mode=production --env analyze",
@@ -32,7 +32,7 @@
     "@madie/madie-auth": "^0.0.1",
     "@madie/madie-components": "^0.0.3",
     "@madie/madie-editor": "^0.0.1",
-    "@madie/madie-models": "^1.1.6",
+    "@madie/madie-models": "^1.2.2",
     "@madie/madie-root": "^0.0.2",
     "@mui/icons-material": "^5.5.1",
     "@mui/material": "~5.2.5",
@@ -86,10 +86,13 @@
   },
   "dependencies": {
     "@madie/madie-design-system": "^1.0.13",
+    "query-string": "^7.1.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-router": "^5.2.1",
     "react-router-dom": "^5.3.0",
+    "sass": "^1.54.9",
+    "sass-loader": "^13.0.2",
     "single-spa": "^5.9.3",
     "single-spa-react": "^4.2.0"
   },

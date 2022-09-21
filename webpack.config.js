@@ -52,6 +52,7 @@ module.exports = (webpackConfigEnv, argv) => {
   const newCssRule = {
     module: {
       rules: [
+        { test: /\.m?js/, type: "javascript/auto" },
         {
           test: /\.css$/i,
           include: [/node_modules/, /src/],
@@ -60,6 +61,31 @@ module.exports = (webpackConfigEnv, argv) => {
             "css-loader", // uses modules: true, which I think we want. Parent does not
             "postcss-loader",
           ],
+        },
+        {
+          test: /\.scss$/,
+          resolve: {
+            extensions: [".scss", ".sass"],
+          },
+          use: [
+            {
+              loader: "style-loader",
+            },
+            {
+              loader: "css-loader",
+              options: { sourceMap: true, importLoaders: 2 },
+            },
+            {
+              loader: "postcss-loader",
+              options: {
+                sourceMap: true,
+              },
+            },
+            {
+              loader: "sass-loader",
+            },
+          ],
+          exclude: /node_modules/,
         },
       ],
     },

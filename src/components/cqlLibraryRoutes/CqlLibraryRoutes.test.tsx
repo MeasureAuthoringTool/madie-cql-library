@@ -8,7 +8,7 @@ jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => (
   <div data-testid="cql-library-landing-mocked" />
 ));
 
-jest.mock("../createEditCqlLibrary/CreateEditCqlLibrary", () => () => (
+jest.mock("../editCqlLibrary/EditCqlLibrary", () => () => (
   <div data-testid="create-edit-cql-library-mocked" />
 ));
 
@@ -41,7 +41,7 @@ describe("CqlLibraryRoutes Component", () => {
 
   it("should redirect to create edit cql library component", async () => {
     const { getByTestId } = render(
-      <MemoryRouter initialEntries={["/cql-libraries/lib1234/edit"]}>
+      <MemoryRouter initialEntries={["/cql-libraries/lib1234/edit/details"]}>
         <CqlLibraryRoutes />
       </MemoryRouter>
     );
