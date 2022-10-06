@@ -3,13 +3,12 @@ import tw from "twin.macro";
 import "styled-components/macro";
 import { useHistory, useParams, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
-import { CqlLibrary, Model } from "@madie/madie-models";
+import { CqlLibrary } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import queryString from "query-string";
-import { HelperText, Label, TextInput } from "@madie/madie-components";
+import { HelperText } from "@madie/madie-components";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
-import { cqlLibraryStore } from "@madie/madie-util";
-// import TextField from "@mui/material/TextField";
+import { cqlLibraryStore, useOrganizationApi } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
   mapElmErrorsToAceAnnotations,
@@ -30,6 +29,7 @@ import {
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
+import { Autocomplete, Checkbox, FormControlLabel } from "@mui/material";
 
 const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
 const WarningText = tw.div`bg-yellow-200 rounded-lg py-3 px-3 text-yellow-800 mb-3`;
@@ -53,6 +53,7 @@ const EditCqlLibrary = () => {
 
   const [serverError, setServerError] = useState(undefined);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  const organizationApi = useRef(useOrganizationApi()).current;
   const [elmTranslationError, setElmTranslationError] = useState(undefined);
   const [successMessage, setSuccessMessage] = useState({
     status: undefined,
@@ -61,6 +62,7 @@ const EditCqlLibrary = () => {
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
+  const [organizations, setOrganizations] = useState<string[]>();
 
   // toast utilities
   const [toastOpen, setToastOpen] = useState<boolean>(false);
@@ -80,6 +82,9 @@ const EditCqlLibrary = () => {
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: loadedCqlLibrary?.cqlLibraryName,
+      description: loadedCqlLibrary?.description,
+      publisher: loadedCqlLibrary?.publisher || "",
+      experimental: loadedCqlLibrary?.experimental || false,
       model: loadedCqlLibrary?.model,
       cql: loadedCqlLibrary?.cql,
       draft: loadedCqlLibrary?.draft,
@@ -122,6 +127,22 @@ const EditCqlLibrary = () => {
         });
     }
   }, [id, resetForm, loadedCqlLibrary, cqlLibraryServiceApi]);
+
+  // fetch organizations DB using measure service and sorts alphabetically
+  useEffect(() => {
+    organizationApi
+      .getAllOrganizations()
+      .then((response) => {
+        const organizationsList = response
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((element) => element.name);
+        setOrganizations(organizationsList);
+      })
+      .catch(() => {
+        const message = `Error fetching organizations`;
+        handleToast("danger", message, true);
+      });
+  }, []);
 
   async function createCqlLibrary(cqlLibrary: CqlLibrary) {
     cqlLibraryServiceApi
@@ -306,6 +327,28 @@ const EditCqlLibrary = () => {
     history.push(`?tab=${nextTab}`);
   };
 
+  const autoCompleteStyles = {
+    borderRadius: "3px",
+    height: 40,
+    // border: "1px solid #DDDDDD",
+    "& .MuiOutlinedInput-notchedOutline": {
+      borderRadius: "3px",
+      "& legend": {
+        width: 0,
+      },
+    },
+    "& .MuiAutocomplete-inputFocused": {
+      border: "none",
+      boxShadow: "none",
+      outline: "none",
+    },
+    "& .MuiAutocomplete-inputRoot": {
+      paddingTop: 0,
+      paddingBottom: 0,
+    },
+    width: "100%",
+  };
+
   return (
     <form
       id="edit-measure-page"
@@ -403,7 +446,81 @@ const EditCqlLibrary = () => {
                     placeholder="Enter a Cql Library Name"
                   />
                 </div>
-                {/* </form> */}
+                <label htmlFor="cql-library-description">Description</label>
+                <div className="form-row">
+                  <textarea
+                    readOnly={!formik.values.draft}
+                    name={"cql-library-description"}
+                    id={"cql-library-description"}
+                    autoComplete={"cql-library-description"}
+                    onChange={formik.handleChange}
+                    value={formik.values.description}
+                    placeholder={"Description"}
+                    data-testid={"cql-library-description"}
+                    {...formik.getFieldProps("description")}
+                  />
+                </div>
+                <div className="form-row">
+                  <FormControlLabel
+                    sx={{
+                      "& .MuiFormControlLabel-label": {
+                        fontSize: 16,
+                        fontWeight: 300,
+                      },
+                    }}
+                    control={
+                      <Checkbox
+                        id="epxerimental"
+                        data-testid="cql-library-experimental-checkbox"
+                        sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
+                        disabled={!formik.values.draft}
+                        {...formik.getFieldProps("experimental")}
+                        checked={formik.values.experimental}
+                        onChange={(event: any) => {
+                          formik.setFieldValue(
+                            "experimental",
+                            event.target.checked
+                          );
+                        }}
+                      />
+                    }
+                    label="Experimental"
+                  />
+                </div>
+                {organizations && (
+                  <>
+                    <div className="form-row">
+                      <Autocomplete
+                        data-testid="publisher"
+                        options={organizations}
+                        disabled={!formik.values.draft}
+                        sx={autoCompleteStyles}
+                        {...formik.getFieldProps("publisher")}
+                        onChange={(_event: any, selectedVal: string | null) => {
+                          formik.setFieldValue("publisher", selectedVal || "");
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Publisher"
+                            sx={{
+                              "& .MuiInputLabel-root": {
+                                border: "none",
+                              },
+                            }}
+                          />
+                        )}
+                        renderOption={(props: any, option) => {
+                          const uniqueProps = {
+                            ...props,
+                            key: `${props.key}_${props.id}`,
+                          };
+                          return <li {...uniqueProps}>{option}</li>;
+                        }}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
