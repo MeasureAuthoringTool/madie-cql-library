@@ -26,24 +26,39 @@ jest.mock("@madie/madie-util", () => ({
     },
     unsubscribe: () => null,
   },
+  useOrganizationApi: jest.fn(() => ({
+    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
+  })),
 }));
+
 const cqlLibrary = {
   id: "cql-lib-1234",
   cqlLibraryName: "Library1",
   model: Model.QICORE,
   draft: true,
-  version: null,
-  groupId: null,
+  version: "testVersion",
+  groupId: "testGroupId",
   cqlErrors: false,
-  publisher: null,
-  description: null,
-  experimental: null,
+  experimental: false,
   cql: "",
   createdAt: "",
   createdBy: "",
   lastModifiedAt: "",
   lastModifiedBy: "",
 } as CqlLibrary;
+
+const organizations = [
+  {
+    id: "1234",
+    name: "Org1",
+    oid: "1.2.3.4",
+  },
+  {
+    id: "56789",
+    name: "Org2",
+    oid: "5.6.7.8",
+  },
+];
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -66,6 +81,9 @@ const serviceConfig: ServiceConfig = {
     baseUrl: "",
   },
   cqlLibraryService: {
+    baseUrl: "",
+  },
+  terminologyService: {
     baseUrl: "",
   },
 };
@@ -607,6 +625,7 @@ describe("Edit Cql Library Component", () => {
     fireEvent.click(toastCloseButton);
     expect(toastCloseButton).not.toBeInTheDocument();
   });
+
   it("should render all fields in read-only mode when loaded library is not a draft", async () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
@@ -643,6 +662,23 @@ describe("Edit Cql Library Component", () => {
     expect(
       screen.getByTestId("cql-library-name-text-field-input")
     ).toHaveAttribute("readonly");
+    expect(
+      screen.getByRole("textbox", { name: "Description" })
+    ).toHaveAttribute("readonly");
+    expect(screen.getByRole("combobox", { name: "Publisher" })).toBeDisabled();
+    expect(
+      screen.getByRole("checkbox", { name: "Experimental" })
+    ).toBeDisabled();
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+  });
+
+  it("should render organization list in publisher autocomplete", async () => {
+    renderWithRouter();
+    const publisher = await screen.findByRole("combobox", {
+      name: "Publisher",
+    });
+    fireEvent.keyDown(publisher, { key: "ArrowDown" });
+    const orgList = await screen.findAllByRole("option");
+    expect(orgList).toHaveLength(2);
   });
 });

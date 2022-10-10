@@ -1,7 +1,7 @@
 declare module "@madie/madie-util" {
   import { LifeCycleFn } from "single-spa";
   // import { Measure } from "@madie/madie-models/dist/Measure";
-  import { CqlLibrary, Measure } from "@madie/madie-models";
+  import { CqlLibrary, Measure, Organization } from "@madie/madie-models";
   export interface OktaConfig {
     baseUrl: string;
     issuer: string;
@@ -36,6 +36,12 @@ declare module "@madie/madie-util" {
   };
 
   export function getServiceConfig(): Promise<ServiceConfig>;
+
+  export class OrganizationApi {
+    constructor(getAccessToken: () => string);
+    getAllOrganizations(): Promise<Organization[]>;
+  }
+  export function useOrganizationApi(): OrganizationApi;
 
   export function useKeyPress(targetKey: any): boolean;
   export const useOktaTokens: (storageKey?: string) => {

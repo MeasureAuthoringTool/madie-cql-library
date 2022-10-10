@@ -1,4 +1,5 @@
 #edit-measure-page {
+  font-family: Rubik, sans-serif;
   display: flex;
   flex-direction: column;
 
@@ -22,6 +23,27 @@
 
       > .inner-right {
         padding: 43px 32px;
+      }
+
+      textarea {
+        box-sizing: border-box;
+        width: 800px;
+        border-radius: 3px;
+        border: solid 1px #ddd;
+        background-color: #fff;
+        opacity: 1;
+        height: 120px;
+        font-size: 14px;
+        font-weight: 400;
+        resize: both;
+      }
+
+      label {
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 17px;
+        color: #333;
+        text-transform: none;
       }
     }
 
@@ -89,4 +111,5 @@
   display: flex;
   flex-direction: row;
   flex-grow: 1;
+  margin-bottom: 40px;
 }
