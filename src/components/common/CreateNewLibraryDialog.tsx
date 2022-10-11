@@ -103,7 +103,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
     validationSchema: CqlLibrarySchemaValidator,
     onSubmit: handleSubmit,
   });
-  const { resetForm, handleBlur, setFieldTouched } = formik;
+  const { resetForm, setFieldTouched } = formik;
   function formikErrorHandler(name: string, isError: boolean) {
     if (formik.touched[name] && formik.errors[name]) {
       return (
@@ -265,6 +265,8 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
                   formik.setFieldValue("publisher", selectedVal || "");
                 }}
                 onBlur={(e) => {
+                  // This really shouldn't be necessary, but formik.handleBlur
+                  // isn't being triggered here.
                   setFieldTouched("publisher");
                 }}
                 renderInput={(params) => (
@@ -281,7 +283,6 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
                       Boolean(formik.errors.publisher)
                     }
                     helperText={formikErrorHandler("publisher", true)}
-                    onBlur={handleBlur}
                     {...params}
                   />
                 )}
