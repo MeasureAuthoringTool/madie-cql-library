@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
@@ -10,8 +10,10 @@ import {
   Toast,
 } from "@madie/madie-design-system/dist/react";
 import { Box } from "@mui/system";
-import { FormHelperText, MenuItem } from "@mui/material";
+import { Autocomplete, FormHelperText, MenuItem } from "@mui/material";
 import { useFormik } from "formik";
+import { useOrganizationApi } from "@madie/madie-util";
+import TextArea from "./TextArea";
 
 interface TestProps {
   open: boolean;
@@ -36,6 +38,17 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   });
   const { toastOpen, toastType, toastMessage } = toast;
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  const [organizations, setOrganizations] = useState<string[]>();
+  const organizationApi = useRef(useOrganizationApi()).current;
+  // fetch organizations DB using measure service and sorts alphabetically
+  useEffect(() => {
+    organizationApi.getAllOrganizations().then((response) => {
+      const organizationsList = response
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map((element) => element.name);
+      setOrganizations(organizationsList);
+    });
+  }, []);
   async function createCqlLibrary(cqlLibrary: CqlLibrary) {
     cqlLibraryServiceApi
       .createCqlLibrary(cqlLibrary)
@@ -84,11 +97,13 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       model: "",
       cql: "",
       draft: true,
+      description: "",
+      publisher: "",
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
     onSubmit: handleSubmit,
   });
-  const { resetForm } = formik;
+  const { resetForm, setFieldTouched } = formik;
   function formikErrorHandler(name: string, isError: boolean) {
     if (formik.touched[name] && formik.errors[name]) {
       return (
@@ -201,6 +216,87 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
             />
             <Box />
           </Box>
+          <Box sx={formRow}>
+            <TextArea
+              label="Description"
+              readOnly={!formik.values.draft}
+              required
+              name="cql-library-description"
+              id="cql-library-description"
+              onChange={formik.handleChange}
+              value={formik.values.description}
+              placeholder="Description"
+              data-testid="cql-library-description"
+              {...formik.getFieldProps("description")}
+              error={
+                formik.touched.description && Boolean(formik.errors.description)
+              }
+              helperText={formikErrorHandler("description", true)}
+            />
+          </Box>
+          <Box sx={formRow}>
+            {organizations && (
+              <Autocomplete
+                data-testid="cql-library-publisher"
+                options={organizations}
+                disabled={!formik.values.draft}
+                sx={{
+                  borderRadius: "3px",
+                  height: 40,
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderRadius: "3px",
+                    "& legend": {
+                      width: 0,
+                    },
+                  },
+                  "& .MuiAutocomplete-inputFocused": {
+                    border: "none",
+                    boxShadow: "none",
+                    outline: "none",
+                  },
+                  "& .MuiAutocomplete-inputRoot": {
+                    paddingTop: 0,
+                    paddingBottom: 0,
+                  },
+                  width: "100%",
+                }}
+                {...formik.getFieldProps("publisher")}
+                onChange={(_event: any, selectedVal: string | null) => {
+                  formik.setFieldValue("publisher", selectedVal || "");
+                }}
+                onBlur={(e) => {
+                  // This really shouldn't be necessary, but formik.handleBlur
+                  // isn't being triggered here.
+                  setFieldTouched("publisher");
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    required
+                    label="Publisher"
+                    sx={{
+                      "& .MuiInputLabel-root": {
+                        border: "none",
+                      },
+                    }}
+                    error={
+                      formik.touched.publisher &&
+                      Boolean(formik.errors.publisher)
+                    }
+                    helperText={formikErrorHandler("publisher", true)}
+                    {...params}
+                  />
+                )}
+                renderOption={(props: any, option) => {
+                  const uniqueProps = {
+                    ...props,
+                    key: `${props.key}_${props.id}`,
+                  };
+                  return <li {...uniqueProps}>{option}</li>;
+                }}
+              />
+            )}
+          </Box>
+          <Box sx={formRow} />
         </>
       </MadieDialog>
       <Toast

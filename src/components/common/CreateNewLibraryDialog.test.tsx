@@ -27,8 +27,22 @@ jest.mock("@madie/madie-util", () => ({
     getAccessToken: () => "test.jwt",
     getUserName: () => "TestUser@example.com", //#nosec
   }),
+  useOrganizationApi: jest.fn(() => ({
+    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
+  })),
 }));
-
+const organizations = [
+  {
+    id: "1234",
+    name: "Org1",
+    oid: "1.2.3.4",
+  },
+  {
+    id: "56789",
+    name: "Org2",
+    oid: "5.6.7.8",
+  },
+];
 const serviceConfig: ServiceConfig = {
   measureService: {
     baseUrl: "madie.com",
@@ -59,10 +73,12 @@ const formikInfo = {
   cqlLibraryName: "",
   model: "",
   cql: "",
+  publisher: "",
+  description: "",
   draft: true,
 };
 
-describe("Measures Library Dialog", () => {
+describe("Library Dialog", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -83,10 +99,10 @@ describe("Measures Library Dialog", () => {
       );
 
       expect(await findByTestId("dialog-form")).toBeInTheDocument();
-
       expect(
         await findByTestId("cql-library-name-text-field")
       ).toBeInTheDocument();
+
       expect(
         await findByTestId("cql-library-name-text-field-input")
       ).toBeInTheDocument();
@@ -94,9 +110,14 @@ describe("Measures Library Dialog", () => {
       expect(
         await findByTestId("cql-library-model-select")
       ).toBeInTheDocument();
+
       expect(
         await findByTestId("cql-library-model-select-input")
       ).toBeInTheDocument();
+
+      expect(await findByTestId("cql-library-description")).toBeInTheDocument();
+
+      expect(await findByTestId("cql-library-publisher")).toBeInTheDocument();
 
       expect(
         await findByTestId("create-new-library-save-button")

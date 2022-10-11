@@ -26,16 +26,8 @@
       }
 
       textarea {
-        box-sizing: border-box;
-        width: 800px;
-        border-radius: 3px;
-        border: solid 1px #ddd;
-        background-color: #fff;
-        opacity: 1;
-        height: 120px;
-        font-size: 14px;
-        font-weight: 400;
-        resize: both;
+        resize: vertical;
+        border: none;
       }
 
       label {
