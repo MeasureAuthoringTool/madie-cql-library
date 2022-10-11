@@ -4,7 +4,7 @@ import "styled-components/macro";
 import { useHistory, useParams, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
 import { CqlLibrary } from "@madie/madie-models";
-import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
+import { EditLibraryValidator } from "../../validators/EditLibraryValidator";
 import queryString from "query-string";
 import { HelperText } from "@madie/madie-components";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
@@ -30,6 +30,7 @@ import {
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
 import { Autocomplete, Checkbox, FormControlLabel } from "@mui/material";
+import TextArea from "../common/TextArea";
 
 const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
 const WarningText = tw.div`bg-yellow-200 rounded-lg py-3 px-3 text-yellow-800 mb-3`;
@@ -90,7 +91,7 @@ const EditCqlLibrary = () => {
       draft: loadedCqlLibrary?.draft,
       id,
     } as CqlLibrary,
-    validationSchema: CqlLibrarySchemaValidator,
+    validationSchema: EditLibraryValidator,
     onSubmit: handleSubmit,
     enableReinitialize: true,
   });
@@ -330,7 +331,6 @@ const EditCqlLibrary = () => {
   const autoCompleteStyles = {
     borderRadius: "3px",
     height: 40,
-    // border: "1px solid #DDDDDD",
     "& .MuiOutlinedInput-notchedOutline": {
       borderRadius: "3px",
       "& legend": {
@@ -424,7 +424,6 @@ const EditCqlLibrary = () => {
                 ) : (
                   ""
                 )}
-                {/* <form data-testId="create-new-cql-library-form" id="cql-library-form"> */}
                 <div className="form-row">
                   {/* should it be read only? */}
                   <TextField
@@ -446,18 +445,23 @@ const EditCqlLibrary = () => {
                     placeholder="Enter a Cql Library Name"
                   />
                 </div>
-                <label htmlFor="cql-library-description">Description</label>
                 <div className="form-row">
-                  <textarea
+                  <TextArea
+                    label="Description"
                     readOnly={!formik.values.draft}
-                    name={"cql-library-description"}
-                    id={"cql-library-description"}
-                    autoComplete={"cql-library-description"}
+                    required
+                    name="cql-library-description"
+                    id="cql-library-description"
                     onChange={formik.handleChange}
                     value={formik.values.description}
-                    placeholder={"Description"}
+                    placeholder="Description"
                     data-testid={"cql-library-description"}
                     {...formik.getFieldProps("description")}
+                    error={
+                      formik.touched.description &&
+                      Boolean(formik.errors.description)
+                    }
+                    helperText={formikErrorHandler("description", true)}
                   />
                 </div>
                 <div className="form-row">
@@ -501,6 +505,7 @@ const EditCqlLibrary = () => {
                         }}
                         renderInput={(params) => (
                           <TextField
+                            required
                             {...params}
                             label="Publisher"
                             sx={{
@@ -508,6 +513,14 @@ const EditCqlLibrary = () => {
                                 border: "none",
                               },
                             }}
+                            error={Boolean(formik.errors.publisher)}
+                            helperText={
+                              <HelperText
+                                data-testid={`publisher-helper-text`}
+                                text={formik.errors["publisher"]}
+                                isError
+                              />
+                            }
                           />
                         )}
                         renderOption={(props: any, option) => {
