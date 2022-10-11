@@ -26,11 +26,9 @@ const TextArea = ({
       <MUITextField
         multiline
         sx={{
-          "& fieldset": {
-            border: "none",
-          },
+          // resize: "vertical",
           borderRadius: "3px",
-          height: "auto", //there's a .13 coming from somewhere.
+          height: "auto",
           // remove weird line break from legend
           "& .MuiOutlinedInput-notchedOutline": {
             borderRadius: "3px",
@@ -46,6 +44,8 @@ const TextArea = ({
           },
           // input base selector
           "& .MuiInputBase-input": {
+            resize: "vertical",
+            minHeight: "95px",
             fontFamily: "Rubik",
             fontSize: 14,
             borderRadius: "3px",

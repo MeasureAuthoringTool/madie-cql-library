@@ -4,7 +4,7 @@ import "styled-components/macro";
 import { useHistory, useParams, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
 import { CqlLibrary } from "@madie/madie-models";
-import { EditLibraryValidator } from "../../validators/EditLibraryValidator";
+import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import queryString from "query-string";
 import { HelperText } from "@madie/madie-components";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
@@ -91,7 +91,7 @@ const EditCqlLibrary = () => {
       draft: loadedCqlLibrary?.draft,
       id,
     } as CqlLibrary,
-    validationSchema: EditLibraryValidator,
+    validationSchema: CqlLibrarySchemaValidator,
     onSubmit: handleSubmit,
     enableReinitialize: true,
   });

@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 
 import * as React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import NewCqlLibrary from "./CqlLibraryLanding";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
@@ -21,6 +21,28 @@ const cqlLibrary = [
   },
 ];
 
+jest.mock("@madie/madie-util", () => ({
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => "TestUser@example.com", //#nosec
+  }),
+  useOrganizationApi: jest.fn(() => ({
+    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
+  })),
+}));
+const organizations = [
+  {
+    id: "1234",
+    name: "Org1",
+    oid: "1.2.3.4",
+  },
+  {
+    id: "56789",
+    name: "Org2",
+    oid: "5.6.7.8",
+  },
+];
+
 const serviceConfig: ServiceConfig = {
   measureService: {
     baseUrl: "example-service-url",
@@ -30,6 +52,9 @@ const serviceConfig: ServiceConfig = {
   },
   cqlLibraryService: {
     baseUrl: "example-service-url",
+  },
+  terminologyService: {
+    baseUrl: "example-terminology-url",
   },
 };
 
