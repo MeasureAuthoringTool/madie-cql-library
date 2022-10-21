@@ -53,6 +53,11 @@ declare module "@madie/madie-util" {
   };
   export function useOnClickOutside(ref: any, handler: any): void;
 
+  export function useDocumentTitle(
+    title: string,
+    prevailOnMount?: boolean
+  ): void;
+
   export const bootstrap: LifeCycleFn<void>;
   export const mount: LifeCycleFn<void>;
   export const unmount: LifeCycleFn<void>;

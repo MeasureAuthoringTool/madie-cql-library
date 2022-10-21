@@ -5,8 +5,10 @@ import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
+import { useDocumentTitle } from "@madie/madie-util";
 
 function CqlLibraryLanding() {
+  useDocumentTitle("MADiE Libraries");
   const [activeTab, setActiveTab] = useState(0);
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
