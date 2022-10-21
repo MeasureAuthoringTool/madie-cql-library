@@ -14,6 +14,7 @@ import {
 } from "@madie/madie-editor";
 
 jest.mock("@madie/madie-util", () => ({
+  useDocumentTitle: jest.fn(),
   cqlLibraryStore: {
     state: null,
     initialState: null,

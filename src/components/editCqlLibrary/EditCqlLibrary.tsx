@@ -8,7 +8,11 @@ import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaVali
 import queryString from "query-string";
 import { HelperText } from "@madie/madie-components";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
-import { cqlLibraryStore, useOrganizationApi } from "@madie/madie-util";
+import {
+  cqlLibraryStore,
+  useDocumentTitle,
+  useOrganizationApi,
+} from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
   mapElmErrorsToAceAnnotations,
@@ -38,6 +42,7 @@ const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
 const InfoAlert = tw.div`bg-blue-200 rounded-lg py-1 px-1 text-blue-900 mb-3`;
 
 const EditCqlLibrary = () => {
+  useDocumentTitle("MADiE Edit Libraries");
   const history = useHistory();
   const { search } = useLocation();
   const values = queryString.parse(search);
