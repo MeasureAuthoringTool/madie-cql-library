@@ -42,7 +42,7 @@ const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
 const InfoAlert = tw.div`bg-blue-200 rounded-lg py-1 px-1 text-blue-900 mb-3`;
 
 const EditCqlLibrary = () => {
-  useDocumentTitle("MADiE Edit Libraries");
+  useDocumentTitle("MADiE Edit Library");
   const history = useHistory();
   const { search } = useLocation();
   const values = queryString.parse(search);
