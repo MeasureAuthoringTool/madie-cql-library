@@ -17,6 +17,10 @@ declare module "@madie/madie-util" {
       baseUrl: string;
     };
   }
+  export interface RouteHandlerState {
+    canTravel: boolean;
+    pendingRoute: string;
+  }
 
   export const measureStore: {
     subscribe: (
@@ -26,6 +30,16 @@ declare module "@madie/madie-util" {
     initialState: null;
     state: Measure;
   };
+
+  export const routeHandlerStore: {
+    subscribe: (
+      setRouteHandlerState: React.Dispatch<React.SetStateAction<object>>
+    ) => import("rxjs").Subscription;
+    updateRouteHandlerState: (routeHandlerState: RouteHandlerState) => void;
+    initialState: RouteHandlerState;
+    state: RouteHandlerState;
+  };
+
   export const cqlLibraryStore: {
     subscribe: (
       setLibrary: React.Dispatch<React.SetStateAction<CqlLibrary>>

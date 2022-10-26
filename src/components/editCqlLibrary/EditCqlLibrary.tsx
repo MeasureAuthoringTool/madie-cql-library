@@ -12,6 +12,7 @@ import {
   cqlLibraryStore,
   useDocumentTitle,
   useOrganizationApi,
+  routeHandlerStore,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
@@ -29,6 +30,7 @@ import {
 import {
   Toast,
   Button,
+  MadieDiscardDialog,
   TextField,
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
@@ -74,6 +76,10 @@ const EditCqlLibrary = () => {
   const [toastOpen, setToastOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string>("");
   const [toastType, setToastType] = useState<string>("danger");
+  const [discardDialogOpen, setDiscardDialogOpen] = useState<boolean>(false);
+  const { updateRouteHandlerState } = routeHandlerStore;
+  // We have a unique case where when we have a fresh measure the cql isn't an empty string. It's a null or undefined value.
+
   const onToastClose = () => {
     setToastType(null);
     setToastMessage("");
@@ -101,6 +107,12 @@ const EditCqlLibrary = () => {
     enableReinitialize: true,
   });
   const { resetForm } = formik;
+  useEffect(() => {
+    updateRouteHandlerState({
+      canTravel: !formik.dirty,
+      pendingRoute: "",
+    });
+  }, [formik.dirty, updateRouteHandlerState]);
   const handleAnnotations = async (value) => {
     await updateElmAnnotations(value).catch((err) => {
       console.error("An error occurred while translating CQL to ELM", err);
@@ -551,7 +563,7 @@ const EditCqlLibrary = () => {
           disabled={!formik.dirty}
           data-testid="cql-library-cancel-button"
           onClick={() => {
-            history.push("/cql-libraries");
+            setDiscardDialogOpen(true);
           }}
         >
           Discard Changes
@@ -588,6 +600,14 @@ const EditCqlLibrary = () => {
         open={createLibOpen}
         onClose={() => {
           setCreateLibOpen(false);
+        }}
+      />
+      <MadieDiscardDialog
+        open={discardDialogOpen}
+        onClose={() => setDiscardDialogOpen(false)}
+        onContinue={async () => {
+          await resetForm();
+          history.push("/cql-libraries");
         }}
       />
     </form>
