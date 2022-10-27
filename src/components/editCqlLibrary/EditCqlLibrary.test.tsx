@@ -27,6 +27,15 @@ jest.mock("@madie/madie-util", () => ({
     },
     unsubscribe: () => null,
   },
+  routeHandlerStore: {
+    subscribe: (set) => {
+      // set(measure)
+      return { unsubscribe: () => null };
+    },
+    updateRouteHandlerState: () => null,
+    state: { canTravel: false, pendingPath: "" },
+    initialState: { canTravel: false, pendingPath: "" },
+  },
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
@@ -259,7 +268,37 @@ describe("Edit Cql Library Component", () => {
     });
   });
 
-  it("should navigate to cql library home page on cancel", async () => {
+  it("should close dialog on cancel", async () => {
+    const { getByTestId, queryByText } = renderWithRouter();
+    const input = getByTestId("cql-library-name-text-field-input");
+    await waitFor(() => {
+      expect(input.value).toBe("Library1");
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-name-text-field-input")
+      ).not.toHaveAttribute("readonly");
+    });
+    userEvent.clear(input);
+    expect(input.value).toBe("");
+    userEvent.type(input, "TestinglibraryName12");
+    expect(input.value).toBe("TestinglibraryName12");
+    fireEvent.blur(input);
+    fireEvent.click(getByTestId("cql-library-cancel-button"));
+    const discardDialog = await screen.getByTestId("discard-dialog");
+    expect(discardDialog).toBeInTheDocument();
+    const cancelButton = await screen.getByTestId(
+      "discard-dialog-cancel-button"
+    );
+    expect(queryByText("You have unsaved changes.")).toBeVisible();
+    expect(cancelButton).toBeInTheDocument();
+    fireEvent.click(cancelButton);
+    await waitFor(() => {
+      expect(queryByText("You have unsaved changes.")).not.toBeVisible();
+    });
+  });
+
+  it("should navigate away on continue", async () => {
     const { getByTestId } = renderWithRouter();
     const input = getByTestId("cql-library-name-text-field-input");
     await waitFor(() => {
@@ -276,7 +315,17 @@ describe("Edit Cql Library Component", () => {
     expect(input.value).toBe("TestinglibraryName12");
     fireEvent.blur(input);
     fireEvent.click(getByTestId("cql-library-cancel-button"));
-    expect(mockPush).toHaveBeenCalledWith("/cql-libraries");
+    const discardDialog = await screen.getByTestId("discard-dialog");
+    expect(discardDialog).toBeInTheDocument();
+    const continueButton = await screen.getByTestId(
+      "discard-dialog-continue-button"
+    );
+    expect(continueButton).toBeInTheDocument();
+    fireEvent.click(continueButton);
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/cql-libraries");
+      // expect(queryByText("You have unsaved changes.")).not.toBeVisible();
+    });
   });
 
   it("should have Save button disabled until form is valid and dirty", async () => {
