@@ -32,6 +32,7 @@ import {
   Button,
   MadieDiscardDialog,
   TextField,
+  MadieSpinner,
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
@@ -71,6 +72,7 @@ const EditCqlLibrary = () => {
   const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
   const [organizations, setOrganizations] = useState<string[]>();
+  const [activeSpinner, setActiveSpinner] = useState<boolean>(false);
 
   // toast utilities
   const [toastOpen, setToastOpen] = useState<boolean>(false);
@@ -189,6 +191,7 @@ const EditCqlLibrary = () => {
   }
 
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
+    setActiveSpinner(true);
     const inSyncCql = await synchingEditorCqlContent(
       formik.values.cql.trim(),
       loadedCqlLibrary?.cql,
@@ -265,6 +268,7 @@ const EditCqlLibrary = () => {
           setServerError("An error occurred while updating the CQL library");
         }
       });
+    setActiveSpinner(false);
   }
 
   async function handleSubmit(cqlLibrary: CqlLibrary) {
@@ -376,14 +380,27 @@ const EditCqlLibrary = () => {
       <div className="flow-container">
         <div id="left-panel">
           <div tw="flex-grow " data-testid="cql-library-editor-component">
-            <CqlLibraryEditor
-              value={formik.values.cql}
-              onChange={onChange}
-              readOnly={!formik.values.draft}
-              valuesetSuccess={valuesetSuccess}
-              valuesetMsg={valuesetMsg}
-              inboundAnnotations={elmAnnotations}
-            />
+            {!activeSpinner && (
+              <CqlLibraryEditor
+                value={formik.values.cql}
+                onChange={onChange}
+                readOnly={!formik.values.draft}
+                valuesetSuccess={valuesetSuccess}
+                valuesetMsg={valuesetMsg}
+                inboundAnnotations={elmAnnotations}
+              />
+            )}
+            {activeSpinner && (
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  height: "calc(100vh - 135px)",
+                }}
+              >
+                <MadieSpinner style={{ height: 50, width: 50 }} />
+              </div>
+            )}
           </div>
         </div>
         <div id="divider" />

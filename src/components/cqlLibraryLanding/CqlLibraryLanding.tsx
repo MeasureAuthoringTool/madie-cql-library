@@ -6,17 +6,20 @@ import * as _ from "lodash";
 import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle } from "@madie/madie-util";
+import { MadieSpinner } from "@madie/madie-design-system/dist/react";
 
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
   const [activeTab, setActiveTab] = useState(0);
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
+  const [loading, setLoading] = useState(true);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
 
   // Libraries are fetched again, when a new draft or version is created
   const loadCqlLibraries = useCallback(async () => {
     const cqlLibraries: CqlLibrary[] =
       await cqlLibraryServiceApi.fetchCqlLibraries(activeTab === 0);
+    setLoading(false);
     return setCqlLibraryList(() =>
       _.orderBy(cqlLibraries, ["createdAt"], ["desc"])
     );
@@ -106,11 +109,18 @@ function CqlLibraryLanding() {
         </section>
         <div>
           <div className="table">
-            <CqlLibraryList
-              cqlLibraryList={cqlLibraryList}
-              onListUpdate={loadCqlLibraries}
-            />
+            {!loading && (
+              <CqlLibraryList
+                cqlLibraryList={cqlLibraryList}
+                onListUpdate={loadCqlLibraries}
+              />
+            )}
           </div>
+          {loading && (
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <MadieSpinner style={{ height: 50, width: 50 }} />
+            </div>
+          )}
         </div>
       </div>
     </div>
