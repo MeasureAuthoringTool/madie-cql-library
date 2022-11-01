@@ -1,25 +1,26 @@
-#edit-measure-page {
+#edit-library-page {
   font-family: Rubik, sans-serif;
   display: flex;
   flex-direction: column;
+  flex-wrap: wrap;
+  margin: 1.5rem 2rem;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  border-radius: 0.375rem;
+  border-width: 1px;
+  border-color: #ededed;
+  background-color: white;
 
   .flow-container {
-    padding: 32px 32px 0 32px;
     display: flex;
-    flex-direction: row;
     flex-grow: 1;
 
     #left-panel {
       width: 75%;
-      border: 1px solid #9797972b;
-      border-radius: 6px 0px 0px 0px;
       overflow: hidden;
     }
 
     #right-panel {
       width: 25%;
-      border-radius: 0 6px 0 0;
-      border: 1px solid rgba(151, 151, 151, 0.17);
 
       > .inner-right {
         padding: 43px 32px;
@@ -90,13 +91,6 @@
       }
     }
   }
-}
-
-#test-case-nav-container {
-  background-color: rgba(0, 0, 0, 0);
-  display: flex;
-  padding-left: 2rem;
-  padding-right: 2rem;
 }
 
 .form-row {

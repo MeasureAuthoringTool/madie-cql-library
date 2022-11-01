@@ -9,7 +9,11 @@ jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => (
 ));
 
 jest.mock("../editCqlLibrary/EditCqlLibrary", () => () => (
-  <div data-testid="create-edit-cql-library-mocked" />
+  <div data-testid="edit-cql-library-mocked" />
+));
+
+jest.mock("../createNewLibrary/CreateNewLibrary", () => () => (
+  <div data-testid="create-cql-library-mocked" />
 ));
 
 beforeEach(cleanup);
@@ -35,7 +39,7 @@ describe("CqlLibraryRoutes Component", () => {
     );
 
     await waitFor(() => {
-      expect(getByTestId("create-edit-cql-library-mocked")).toBeInTheDocument();
+      expect(getByTestId("create-cql-library-mocked")).toBeInTheDocument();
     });
   });
 
@@ -47,7 +51,7 @@ describe("CqlLibraryRoutes Component", () => {
     );
 
     await waitFor(() => {
-      expect(getByTestId("create-edit-cql-library-mocked")).toBeInTheDocument();
+      expect(getByTestId("edit-cql-library-mocked")).toBeInTheDocument();
     });
   });
 });
