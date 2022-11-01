@@ -18,7 +18,6 @@ import * as _ from "lodash";
 import CqlLibraryEditor, {
   mapElmErrorsToAceAnnotations,
 } from "../cqlLibraryEditor/CqlLibraryEditor";
-import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import {
   EditorAnnotation,
   ElmTranslationError,
@@ -32,17 +31,14 @@ import {
   Button,
   MadieDiscardDialog,
   TextField,
+  MadieAlert,
   MadieSpinner,
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
 import { Autocomplete, Checkbox, FormControlLabel } from "@mui/material";
 import TextArea from "../common/TextArea";
-
-const SuccessText = tw.div`bg-green-200 rounded-lg py-3 px-3 text-green-900 mb-3`;
-const WarningText = tw.div`bg-yellow-200 rounded-lg py-3 px-3 text-yellow-800 mb-3`;
-const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
-const InfoAlert = tw.div`bg-blue-200 rounded-lg py-1 px-1 text-blue-900 mb-3`;
+import StatusHandler from "./statusHandler/StatusHandler";
 
 const autoCompleteStyles = {
   borderRadius: "3px",
@@ -81,10 +77,17 @@ const EditCqlLibrary = () => {
     };
   }, []);
 
-  const [serverError, setServerError] = useState(undefined);
+  // StatusHandler utilities
+  const [success, setSuccess] = useState({
+    status: undefined,
+    message: undefined,
+  });
+  const [error, setError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>(null);
+  const [outboundAnnotations, setOutboundAnnotations] = useState([]);
+
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const organizationApi = useRef(useOrganizationApi()).current;
-  const [elmTranslationError, setElmTranslationError] = useState(undefined);
   const [successMessage, setSuccessMessage] = useState({
     status: undefined,
     message: undefined,
@@ -96,6 +99,7 @@ const EditCqlLibrary = () => {
   const [activeSpinner, setActiveSpinner] = useState<boolean>(false);
 
   // toast utilities
+  // toast is used only for displaying error message from fetching orgs list
   const [toastOpen, setToastOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string>("");
   const [toastType, setToastType] = useState<string>("danger");
@@ -126,7 +130,9 @@ const EditCqlLibrary = () => {
       id,
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
-    onSubmit: handleSubmit,
+    onSubmit: async (cqlLibrary: CqlLibrary) => {
+      await updateCqlLibrary(cqlLibrary);
+    },
     enableReinitialize: true,
   });
   const { resetForm } = formik;
@@ -141,15 +147,17 @@ const EditCqlLibrary = () => {
   const handleAnnotations = async (value) => {
     await updateElmAnnotations(value).catch((err) => {
       console.error("An error occurred while translating CQL to ELM", err);
-      setElmTranslationError("Unable to translate CQL to ELM!");
+      setError(true);
+      setErrorMessage("Unable to translate CQL to ELM!");
       setElmAnnotations([]);
     });
   };
 
   const onChange = (value) => {
     formik.setFieldValue("cql", value);
-    setElmTranslationError(undefined);
-    setSuccessMessage({ status: undefined, message: undefined });
+    setSuccess({ status: undefined, message: undefined });
+    setError(false);
+    setErrorMessage(undefined);
     setValuesetMsg(undefined);
     setValuesetSuccess(false);
   };
@@ -167,7 +175,8 @@ const EditCqlLibrary = () => {
           setLoadedCqlLibrary(cqlLibrary);
         })
         .catch(() => {
-          setServerError("An error occurred while fetching the CQL Library!");
+          setError(true);
+          setErrorMessage("An error occurred while fetching the CQL Library!");
         });
     }
   }, [id, resetForm, loadedCqlLibrary, cqlLibraryServiceApi]);
@@ -206,7 +215,8 @@ const EditCqlLibrary = () => {
         "An error occurred while translating CQL to ELM",
         results[0].reason
       );
-      setElmTranslationError("Unable to translate CQL to ELM!");
+      setError(true);
+      setErrorMessage("Unable to translate CQL to ELM!");
       setElmAnnotations([]);
     } else if (results[1].status === "rejected") {
       const rejection: PromiseRejectedResult = results[1];
@@ -243,15 +253,15 @@ const EditCqlLibrary = () => {
         const successMessage =
           inSyncCql !== cqlLibrary.cql
             ? {
-                status: "warning",
+                status: "success",
                 message:
                   "CQL updated successfully! Library Name and/or Version can not be updated in the CQL Editor. MADiE has overwritten the updated Library Name and/or Version.",
               }
             : { status: "success", message: "CQL saved successfully" };
-
-        setSuccessMessage(successMessage);
+        setSuccess(successMessage);
       })
       .catch((error) => {
+        setError(true);
         if (error?.response) {
           let msg: string = error.response.data.message;
           if (!!error.response.data.validationErrors) {
@@ -261,20 +271,12 @@ const EditCqlLibrary = () => {
               );
             }
           }
-          setServerError(msg);
+          setErrorMessage(msg);
         } else {
-          setServerError("An error occurred while updating the CQL library");
+          setErrorMessage("An error occurred while updating the CQL library");
         }
       });
     setActiveSpinner(false);
-  }
-
-  async function handleSubmit() {
-    setSuccessMessage({ status: undefined, message: undefined });
-    setServerError(undefined);
-    if (id) {
-      updateCqlLibrary(formik.values);
-    }
   }
 
   const hasParserErrors = async (cql) => {
@@ -307,15 +309,16 @@ const EditCqlLibrary = () => {
   const updateElmAnnotations = async (
     cql: string
   ): Promise<ValidationResult> => {
+    setError(false);
     if (cql && cql.trim().length > 0) {
       const result = await validateContent(cql);
       const { errors, externalErrors } = result;
       // right now we are only displaying the external errors related to included libraries
       // and only the first error returned by elm translator
-      handleToast("danger", externalErrors[0]?.message, true);
-      if (isLoggedInUMLS(errors)) {
-        setValuesetMsg("Please log in to UMLS!");
+      if (errors?.length > 0 || externalErrors?.length > 0) {
+        setError(true);
       }
+      setErrorMessage(externalErrors[0]?.message);
       setElmAnnotations(mapElmErrorsToAceAnnotations(errors));
       return result;
     } else {
@@ -323,6 +326,7 @@ const EditCqlLibrary = () => {
     }
     return null;
   };
+
   const handleTabChange = (event, nextTab) => {
     history.push(`?tab=${nextTab}`);
   };
@@ -330,7 +334,7 @@ const EditCqlLibrary = () => {
   return (
     <form
       id="edit-library-page"
-      data-testId="edit-cql-library-form"
+      data-testId="edit-library-form"
       onSubmit={formik.handleSubmit}
     >
       {/* main page container */}
@@ -338,14 +342,23 @@ const EditCqlLibrary = () => {
         <div id="left-panel">
           <div tw="flex-grow " data-testid="cql-library-editor-component">
             {!activeSpinner && (
-              <CqlLibraryEditor
-                value={formik.values.cql}
-                onChange={onChange}
-                readOnly={!formik.values.draft}
-                valuesetSuccess={valuesetSuccess}
-                valuesetMsg={valuesetMsg}
-                inboundAnnotations={elmAnnotations}
-              />
+              <>
+                <StatusHandler
+                  error={error}
+                  errorMessage={errorMessage}
+                  success={success}
+                  outboundAnnotations={outboundAnnotations}
+                />
+                <CqlLibraryEditor
+                  value={formik.values.cql}
+                  onChange={onChange}
+                  readOnly={!formik.values.draft}
+                  valuesetSuccess={valuesetSuccess}
+                  valuesetMsg={valuesetMsg}
+                  inboundAnnotations={elmAnnotations}
+                  setOutboundAnnotations={setOutboundAnnotations}
+                />
+              </>
             )}
             {activeSpinner && (
               <div
@@ -366,55 +379,20 @@ const EditCqlLibrary = () => {
           <div className="inner-right">
             {activeTab === "details" && (
               <div id="details-tab" data-test-id="details-tab">
-                {/* formik tab */}
-                {!formik.values.draft && (
+                {formik.values.draft === false && (
                   <div className="form-row">
-                    <InfoAlert>
-                      CQL Library is not a draft. Only drafts can be edited.
-                    </InfoAlert>
-                  </div>
-                )}
-                {serverError && (
-                  <div className="form-row">
-                    <ErrorAlert
-                      data-testid="cql-library-server-error-alerts"
-                      role="alert"
-                    >
-                      {serverError}
-                    </ErrorAlert>
+                    <MadieAlert
+                      type="info"
+                      content={
+                        <p>
+                          CQL Library is not a draft. Only drafts can be edited.
+                        </p>
+                      }
+                      canClose={false}
+                    />
                   </div>
                 )}
 
-                {elmTranslationError && (
-                  <div className="form-row">
-                    <ErrorAlert
-                      data-testid="cql-library-elm-translation-error-alerts"
-                      role="alert"
-                    >
-                      {elmTranslationError}
-                    </ErrorAlert>
-                  </div>
-                )}
-                {successMessage.status ? (
-                  successMessage?.status === "warning" ? (
-                    <div className="form-row">
-                      <WarningText data-testid="cql-library-warning-alert">
-                        {successMessage.message}
-                      </WarningText>
-                    </div>
-                  ) : (
-                    <div className="form-row">
-                      <SuccessText
-                        data-testid="cql-library-success-alert"
-                        role="alert"
-                      >
-                        {successMessage.message}
-                      </SuccessText>
-                    </div>
-                  )
-                ) : (
-                  ""
-                )}
                 <div className="form-row">
                   {/* should it be read only? */}
                   <TextField
