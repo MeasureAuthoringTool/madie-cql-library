@@ -372,8 +372,8 @@ const EditCqlLibrary = () => {
 
   return (
     <form
-      id="edit-measure-page"
-      data-testId="create-new-cql-library-form"
+      id="edit-library-page"
+      data-testId="edit-cql-library-form"
       onSubmit={formik.handleSubmit}
     >
       {/* main page container */}
@@ -526,47 +526,45 @@ const EditCqlLibrary = () => {
                   />
                 </div>
                 {organizations && (
-                  <>
-                    <div className="form-row">
-                      <Autocomplete
-                        data-testid="publisher"
-                        options={organizations}
-                        disabled={!formik.values.draft}
-                        sx={autoCompleteStyles}
-                        {...formik.getFieldProps("publisher")}
-                        onChange={(_event: any, selectedVal: string | null) => {
-                          formik.setFieldValue("publisher", selectedVal || "");
-                        }}
-                        renderInput={(params) => (
-                          <TextField
-                            required
-                            {...params}
-                            label="Publisher"
-                            sx={{
-                              "& .MuiInputLabel-root": {
-                                border: "none",
-                              },
-                            }}
-                            error={Boolean(formik.errors.publisher)}
-                            helperText={
-                              <HelperText
-                                data-testid={`publisher-helper-text`}
-                                text={formik.errors["publisher"]}
-                                isError
-                              />
-                            }
-                          />
-                        )}
-                        renderOption={(props: any, option) => {
-                          const uniqueProps = {
-                            ...props,
-                            key: `${props.key}_${props.id}`,
-                          };
-                          return <li {...uniqueProps}>{option}</li>;
-                        }}
-                      />
-                    </div>
-                  </>
+                  <div className="form-row">
+                    <Autocomplete
+                      data-testid="publisher"
+                      options={organizations}
+                      disabled={!formik.values.draft}
+                      sx={autoCompleteStyles}
+                      {...formik.getFieldProps("publisher")}
+                      onChange={(_event: any, selectedVal: string | null) => {
+                        formik.setFieldValue("publisher", selectedVal || "");
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          required
+                          {...params}
+                          label="Publisher"
+                          sx={{
+                            "& .MuiInputLabel-root": {
+                              border: "none",
+                            },
+                          }}
+                          error={Boolean(formik.errors.publisher)}
+                          helperText={
+                            <HelperText
+                              data-testid={`publisher-helper-text`}
+                              text={formik.errors["publisher"]}
+                              isError
+                            />
+                          }
+                        />
+                      )}
+                      renderOption={(props: any, option) => {
+                        const uniqueProps = {
+                          ...props,
+                          key: `${props.key}_${props.id}`,
+                        };
+                        return <li {...uniqueProps}>{option}</li>;
+                      }}
+                    />
+                  </div>
                 )}
               </div>
             )}
