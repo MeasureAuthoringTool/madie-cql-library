@@ -44,6 +44,27 @@ const WarningText = tw.div`bg-yellow-200 rounded-lg py-3 px-3 text-yellow-800 mb
 const ErrorAlert = tw.div`bg-red-200 rounded-lg py-3 px-3 text-red-900 mb-3`;
 const InfoAlert = tw.div`bg-blue-200 rounded-lg py-1 px-1 text-blue-900 mb-3`;
 
+const autoCompleteStyles = {
+  borderRadius: "3px",
+  height: 40,
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderRadius: "3px",
+    "& legend": {
+      width: 0,
+    },
+  },
+  "& .MuiAutocomplete-inputFocused": {
+    border: "none",
+    boxShadow: "none",
+    outline: "none",
+  },
+  "& .MuiAutocomplete-inputRoot": {
+    paddingTop: 0,
+    paddingBottom: 0,
+  },
+  width: "100%",
+};
+
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
   const history = useHistory();
@@ -109,12 +130,14 @@ const EditCqlLibrary = () => {
     enableReinitialize: true,
   });
   const { resetForm } = formik;
+
   useEffect(() => {
     updateRouteHandlerState({
       canTravel: !formik.dirty,
       pendingRoute: "",
     });
   }, [formik.dirty, updateRouteHandlerState]);
+
   const handleAnnotations = async (value) => {
     await updateElmAnnotations(value).catch((err) => {
       console.error("An error occurred while translating CQL to ELM", err);
@@ -130,6 +153,7 @@ const EditCqlLibrary = () => {
     setValuesetMsg(undefined);
     setValuesetSuccess(false);
   };
+
   useEffect(() => {
     if (id && _.isNil(loadedCqlLibrary)) {
       cqlLibraryServiceApi
@@ -163,32 +187,6 @@ const EditCqlLibrary = () => {
         handleToast("danger", message, true);
       });
   }, []);
-
-  async function createCqlLibrary(cqlLibrary: CqlLibrary) {
-    cqlLibraryServiceApi
-      .createCqlLibrary(cqlLibrary)
-      .then(() => {
-        setSuccessMessage({
-          status: "success",
-          message: "Cql Library successfully created",
-        });
-      })
-      .catch((error) => {
-        if (error?.response) {
-          let msg: string = error.response.data.message;
-          if (!!error.response.data.validationErrors) {
-            for (const erroredField in error.response.data.validationErrors) {
-              msg = msg.concat(
-                ` ${erroredField} : ${error.response.data.validationErrors[erroredField]}`
-              );
-            }
-          }
-          setServerError(msg);
-        } else {
-          setServerError("An error occurred while creating the CQL Library");
-        }
-      });
-  }
 
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
     setActiveSpinner(true);
@@ -271,18 +269,18 @@ const EditCqlLibrary = () => {
     setActiveSpinner(false);
   }
 
-  async function handleSubmit(cqlLibrary: CqlLibrary) {
+  async function handleSubmit() {
     setSuccessMessage({ status: undefined, message: undefined });
     setServerError(undefined);
     if (id) {
       updateCqlLibrary(formik.values);
-    } else {
-      createCqlLibrary(formik.values);
     }
   }
+
   const hasParserErrors = async (cql) => {
     return !!(parseContent(cql)?.length > 0);
   };
+
   const isLoggedInUMLS = (errors: ElmTranslationError[]) => {
     return JSON.stringify(errors).includes("Please log in to UMLS");
   };
@@ -306,26 +304,6 @@ const EditCqlLibrary = () => {
     }
   }
 
-  // Create Dialog utilities
-  const [createLibOpen, setCreateLibOpen] = useState<boolean>(false);
-  useEffect(() => {
-    const openCreateLibraryDialogListener = () => {
-      setCreateLibOpen(true);
-    };
-    window.addEventListener(
-      "openCreateLibraryDialog",
-      openCreateLibraryDialogListener,
-      false
-    );
-    return () => {
-      window.removeEventListener(
-        "openCreateLibraryDialog",
-        openCreateLibraryDialogListener,
-        false
-      );
-    };
-  }, []);
-
   const updateElmAnnotations = async (
     cql: string
   ): Promise<ValidationResult> => {
@@ -347,27 +325,6 @@ const EditCqlLibrary = () => {
   };
   const handleTabChange = (event, nextTab) => {
     history.push(`?tab=${nextTab}`);
-  };
-
-  const autoCompleteStyles = {
-    borderRadius: "3px",
-    height: 40,
-    "& .MuiOutlinedInput-notchedOutline": {
-      borderRadius: "3px",
-      "& legend": {
-        width: 0,
-      },
-    },
-    "& .MuiAutocomplete-inputFocused": {
-      border: "none",
-      boxShadow: "none",
-      outline: "none",
-    },
-    "& .MuiAutocomplete-inputRoot": {
-      paddingTop: 0,
-      paddingBottom: 0,
-    },
-    width: "100%",
   };
 
   return (
@@ -610,12 +567,6 @@ const EditCqlLibrary = () => {
         message={toastMessage}
         onClose={onToastClose}
         autoHideDuration={6000}
-      />
-      <CreateNewLibraryDialog
-        open={createLibOpen}
-        onClose={() => {
-          setCreateLibOpen(false);
-        }}
       />
       <MadieDiscardDialog
         open={discardDialogOpen}
