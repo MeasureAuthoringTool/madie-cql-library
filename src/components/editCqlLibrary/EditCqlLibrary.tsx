@@ -283,10 +283,6 @@ const EditCqlLibrary = () => {
     return !!(parseContent(cql)?.length > 0);
   };
 
-  const isLoggedInUMLS = (errors: ElmTranslationError[]) => {
-    return JSON.stringify(errors).includes("Please log in to UMLS");
-  };
-
   const executeCqlParsingForErrors = async (cql: string) => {
     return await Promise.allSettled([
       updateElmAnnotations(cql),
