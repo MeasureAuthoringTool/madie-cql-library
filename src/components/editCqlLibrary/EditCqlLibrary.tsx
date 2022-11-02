@@ -134,9 +134,7 @@ const EditCqlLibrary = () => {
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
     onSubmit: async (cqlLibrary: CqlLibrary) => {
-      if (!discardDialogOpen) {
-        await updateCqlLibrary(cqlLibrary);
-      }
+      await updateCqlLibrary(cqlLibrary);
     },
     enableReinitialize: true,
   });
@@ -527,7 +525,8 @@ const EditCqlLibrary = () => {
           className="blue-60-outline"
           disabled={!formik.dirty}
           data-testid="cql-library-cancel-button"
-          onClick={() => {
+          onClick={(e) => {
+            e.preventDefault();
             setDiscardDialogOpen(true);
           }}
         >
