@@ -135,6 +135,30 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
   });
 
+  it("should display edit button and on click should render CQL library edit page", () => {
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+    const viewEditButton = screen.getByTestId(
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+    );
+    fireEvent.click(viewEditButton);
+
+    const editButton = screen.getByTestId(
+      `edit-cql-library-button-${cqlLibrary[0].id}-edit`
+    );
+    expect(editButton).toBeInTheDocument();
+    fireEvent.click(editButton);
+
+    expect(mockPush).toHaveBeenNthCalledWith(
+      1,
+      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
+    );
+  });
+
   it("should display draft button for version libraries and on click should render dialog", () => {
     const cqlLibrary: CqlLibrary[] = [
       {

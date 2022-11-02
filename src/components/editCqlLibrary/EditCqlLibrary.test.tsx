@@ -14,6 +14,9 @@ import {
 } from "@madie/madie-editor";
 
 jest.mock("@madie/madie-util", () => ({
+  useOktaTokens: jest.fn(() => ({
+    getUserName: jest.fn(() => "john doe"), //#nosec
+  })),
   useDocumentTitle: jest.fn(),
   cqlLibraryStore: {
     state: null,
@@ -52,7 +55,7 @@ const cqlLibrary = {
   experimental: false,
   cql: "",
   createdAt: "",
-  createdBy: "",
+  createdBy: "john doe",
   lastModifiedAt: "",
   lastModifiedBy: "",
   publisher: "Tester",
@@ -498,12 +501,12 @@ describe("Edit Cql Library Component", () => {
       version: null,
       groupId: null,
       cqlErrors: false,
-      publisher: "Tester",
+      publisher: "Org1",
       description: "testing",
       experimental: true,
       cql: "library UpdateName version '1.0.000'",
       createdAt: "",
-      createdBy: "",
+      createdBy: "john doe",
       lastModifiedAt: "",
       lastModifiedBy: "",
     };
@@ -544,6 +547,20 @@ describe("Edit Cql Library Component", () => {
     Simulate.change(libraryNode);
 
     await waitFor(() => expect(libraryNode.value).toBe("UpdatedName"));
+
+    const experiementalChkBox = screen.getByRole("checkbox", {
+      name: "Experimental",
+    });
+    expect(experiementalChkBox.value).toBe("true");
+    userEvent.click(experiementalChkBox);
+    expect(experiementalChkBox.value).toBe("false");
+
+    const publisher = screen.getByRole("combobox", { name: "Publisher" });
+    expect(publisher.value).toBe("Org1");
+    fireEvent.keyDown(publisher, { key: "ArrowDown" });
+    const anotherOrg = await screen.getByRole("option", { selected: false });
+    userEvent.click(anotherOrg);
+    expect(publisher.value).toBe("Org2");
 
     fireEvent.change(screen.getByTestId("cql-library-editor"), {
       target: {
@@ -695,5 +712,51 @@ describe("Edit Cql Library Component", () => {
     fireEvent.keyDown(publisher, { key: "ArrowDown" });
     const orgList = await screen.findAllByRole("option");
     expect(orgList).toHaveLength(2);
+  });
+
+  it("should render all fields in read-only mode if user is not the owner of the CQL Library", async () => {
+    const cqlLibrary: CqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      model: Model.QICORE,
+      draft: true,
+      version: null,
+      groupId: null,
+      publisher: "Tester",
+      description: "Testing stuff.",
+      experimental: true,
+      cql: "library testCql version '1.0.000'",
+      createdAt: "",
+      createdBy: "someone else",
+      lastModifiedAt: "",
+      lastModifiedBy: "",
+    };
+
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+
+    expect(
+      await screen.findByText(
+        "You are not the owner of the CQL Library. Only owner can edit it."
+      )
+    ).toBeInTheDocument();
+
+    expect(screen.getByTestId("cql-library-editor")).toHaveAttribute(
+      "readonly"
+    );
+    expect(
+      screen.getByTestId("cql-library-name-text-field-input")
+    ).toHaveAttribute("readonly");
+    expect(
+      screen.getByRole("textbox", { name: "Description" })
+    ).toHaveAttribute("readonly");
+    expect(screen.getByRole("combobox", { name: "Publisher" })).toBeDisabled();
+    expect(
+      screen.getByRole("checkbox", { name: "Experimental" })
+    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
   });
 });

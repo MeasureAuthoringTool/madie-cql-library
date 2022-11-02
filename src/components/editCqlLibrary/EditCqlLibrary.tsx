@@ -13,6 +13,7 @@ import {
   useDocumentTitle,
   useOrganizationApi,
   routeHandlerStore,
+  useOktaTokens,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
@@ -20,7 +21,6 @@ import CqlLibraryEditor, {
 } from "../cqlLibraryEditor/CqlLibraryEditor";
 import {
   EditorAnnotation,
-  ElmTranslationError,
   parseContent,
   synchingEditorCqlContent,
   validateContent,
@@ -106,6 +106,9 @@ const EditCqlLibrary = () => {
   const [discardDialogOpen, setDiscardDialogOpen] = useState<boolean>(false);
   const { updateRouteHandlerState } = routeHandlerStore;
   // We have a unique case where when we have a fresh measure the cql isn't an empty string. It's a null or undefined value.
+  const { getUserName } = useOktaTokens();
+  const userName = getUserName();
+  const isOwner = loadedCqlLibrary?.createdBy === userName;
 
   const onToastClose = () => {
     setToastType(null);
@@ -348,7 +351,7 @@ const EditCqlLibrary = () => {
                 <CqlLibraryEditor
                   value={formik.values.cql}
                   onChange={onChange}
-                  readOnly={!formik.values.draft}
+                  readOnly={!formik.values.draft || !isOwner}
                   valuesetSuccess={valuesetSuccess}
                   valuesetMsg={valuesetMsg}
                   inboundAnnotations={elmAnnotations}
@@ -388,6 +391,20 @@ const EditCqlLibrary = () => {
                     />
                   </div>
                 )}
+                {!isOwner && (
+                  <div className="form-row">
+                    <MadieAlert
+                      type="info"
+                      content={
+                        <p>
+                          You are not the owner of the CQL Library. Only owner
+                          can edit it.
+                        </p>
+                      }
+                      canClose={false}
+                    />
+                  </div>
+                )}
 
                 <div className="form-row">
                   {/* should it be read only? */}
@@ -399,7 +416,7 @@ const EditCqlLibrary = () => {
                     inputProps={{
                       id: "cql-library-name-text-field-input",
                       "data-testid": "cql-library-name-text-field-input",
-                      readOnly: !formik.values.draft,
+                      readOnly: !formik.values.draft || !isOwner,
                     }}
                     error={
                       formik.touched.cqlLibraryName &&
@@ -413,7 +430,7 @@ const EditCqlLibrary = () => {
                 <div className="form-row">
                   <TextArea
                     label="Description"
-                    readOnly={!formik.values.draft}
+                    readOnly={!formik.values.draft || !isOwner}
                     required
                     name="cql-library-description"
                     id="cql-library-description"
@@ -442,7 +459,7 @@ const EditCqlLibrary = () => {
                         id="epxerimental"
                         data-testid="cql-library-experimental-checkbox"
                         sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
-                        disabled={!formik.values.draft}
+                        disabled={!formik.values.draft || !isOwner}
                         {...formik.getFieldProps("experimental")}
                         checked={formik.values.experimental}
                         onChange={(event: any) => {
@@ -461,7 +478,7 @@ const EditCqlLibrary = () => {
                     <Autocomplete
                       data-testid="publisher"
                       options={organizations}
-                      disabled={!formik.values.draft}
+                      disabled={!formik.values.draft || !isOwner}
                       sx={autoCompleteStyles}
                       {...formik.getFieldProps("publisher")}
                       onChange={(_event: any, selectedVal: string | null) => {
