@@ -13,6 +13,7 @@ import {
   useDocumentTitle,
   useOrganizationApi,
   routeHandlerStore,
+  useOktaTokens,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
@@ -81,6 +82,9 @@ const EditCqlLibrary = () => {
   const [discardDialogOpen, setDiscardDialogOpen] = useState<boolean>(false);
   const { updateRouteHandlerState } = routeHandlerStore;
   // We have a unique case where when we have a fresh measure the cql isn't an empty string. It's a null or undefined value.
+  const { getUserName } = useOktaTokens();
+  const userName = getUserName();
+  const isOwner = loadedCqlLibrary?.createdBy === userName;
 
   const onToastClose = () => {
     setToastType(null);
@@ -384,7 +388,7 @@ const EditCqlLibrary = () => {
               <CqlLibraryEditor
                 value={formik.values.cql}
                 onChange={onChange}
-                readOnly={!formik.values.draft}
+                readOnly={!formik.values.draft || !isOwner}
                 valuesetSuccess={valuesetSuccess}
                 valuesetMsg={valuesetMsg}
                 inboundAnnotations={elmAnnotations}
@@ -414,6 +418,14 @@ const EditCqlLibrary = () => {
                   <div className="form-row">
                     <InfoAlert>
                       CQL Library is not a draft. Only drafts can be edited.
+                    </InfoAlert>
+                  </div>
+                )}
+                {!isOwner && (
+                  <div className="form-row">
+                    <InfoAlert>
+                      You are not the owner of the CQL Library. Only owner can
+                      edit it.
                     </InfoAlert>
                   </div>
                 )}
@@ -463,12 +475,13 @@ const EditCqlLibrary = () => {
                   <TextField
                     label="CQL Library Name"
                     required
+                    disabled={!isOwner}
                     id="cqlLibraryName"
                     data-testid="cql-library-name-text-field"
                     inputProps={{
                       id: "cql-library-name-text-field-input",
                       "data-testid": "cql-library-name-text-field-input",
-                      readOnly: !formik.values.draft,
+                      readOnly: !formik.values.draft || !isOwner,
                     }}
                     error={
                       formik.touched.cqlLibraryName &&
@@ -482,8 +495,9 @@ const EditCqlLibrary = () => {
                 <div className="form-row">
                   <TextArea
                     label="Description"
-                    readOnly={!formik.values.draft}
+                    readOnly={!formik.values.draft || !isOwner}
                     required
+                    disabled={!isOwner}
                     name="cql-library-description"
                     id="cql-library-description"
                     onChange={formik.handleChange}
@@ -511,7 +525,7 @@ const EditCqlLibrary = () => {
                         id="epxerimental"
                         data-testid="cql-library-experimental-checkbox"
                         sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
-                        disabled={!formik.values.draft}
+                        disabled={!formik.values.draft || !isOwner}
                         {...formik.getFieldProps("experimental")}
                         checked={formik.values.experimental}
                         onChange={(event: any) => {
@@ -531,7 +545,7 @@ const EditCqlLibrary = () => {
                       <Autocomplete
                         data-testid="publisher"
                         options={organizations}
-                        disabled={!formik.values.draft}
+                        disabled={!formik.values.draft || !isOwner}
                         sx={autoCompleteStyles}
                         {...formik.getFieldProps("publisher")}
                         onChange={(_event: any, selectedVal: string | null) => {
