@@ -14,6 +14,7 @@ export interface CqlLibraryEditorProps {
   onChange: (val: string) => void;
   value: string;
   readOnly?: boolean;
+  setOutboundAnnotations: any;
 }
 
 export const mapElmErrorsToAceAnnotations = (
@@ -37,6 +38,7 @@ const CqlLibraryEditor = ({
   onChange,
   value,
   readOnly,
+  setOutboundAnnotations,
 }: CqlLibraryEditorProps) => {
   return (
     <>
@@ -44,8 +46,9 @@ const CqlLibraryEditor = ({
         onChange={onChange}
         value={value}
         inboundAnnotations={inboundAnnotations}
-        height="780px"
+        height="calc(100vh - 135px)"
         readOnly={readOnly}
+        setOutboundAnnotations={setOutboundAnnotations}
       />
       {!valuesetSuccess && (
         <ErrorText data-testid="valueset-error">{valuesetMsg}</ErrorText>

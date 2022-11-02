@@ -81,6 +81,7 @@ declare module "@madie/madie-editor" {
     inboundAnnotations?: EditorAnnotation[];
     height?: string;
     readOnly?: boolean;
+    setOutboundAnnotations?: Function;
   }>;
   export const bootstrap: LifeCycleFn<void>;
   export const mount: LifeCycleFn<void>;

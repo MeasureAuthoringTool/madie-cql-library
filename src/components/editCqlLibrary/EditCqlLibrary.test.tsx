@@ -151,7 +151,7 @@ describe("Edit Cql Library Component", () => {
   it("should render form and cql library editor", () => {
     const { getByTestId } = renderWithRouter();
     const cqlLibraryEditor = getByTestId("cql-library-editor-component");
-    const form = getByTestId("create-new-cql-library-form");
+    const form = getByTestId("edit-library-form");
     const input = getByTestId("cql-library-editor") as HTMLInputElement;
     expect(form).toBeInTheDocument();
     expect(cqlLibraryEditor).toBeInTheDocument();
@@ -485,7 +485,7 @@ describe("Edit Cql Library Component", () => {
     expect(updateButton).not.toBeDisabled();
     userEvent.click(updateButton);
     await waitFor(() => {
-      const successMessage = screen.getByTestId("cql-library-warning-alert");
+      const successMessage = screen.getByTestId("generic-success-text-header");
       expect(successMessage.textContent).toEqual(
         "CQL updated successfully! Library Name and/or Version can not be updated in the CQL Editor. MADiE has overwritten the updated Library Name and/or Version."
       );
@@ -574,7 +574,7 @@ describe("Edit Cql Library Component", () => {
     expect(updateButton).not.toBeDisabled();
     userEvent.click(updateButton);
     await waitFor(() => {
-      const successMessage = screen.getByTestId("cql-library-success-alert");
+      const successMessage = screen.getByTestId("generic-success-text-header");
       expect(successMessage.textContent).toEqual("CQL saved successfully");
       expect(mockedAxios.put).toHaveBeenCalledTimes(1);
     });
@@ -656,43 +656,6 @@ describe("Edit Cql Library Component", () => {
       cqlToElmExternalErrors[0].message
     );
     expect(toastMessage).toBeInTheDocument();
-  });
-
-  it("should be able to close toast message", async () => {
-    const cqlLibrary: CqlLibrary = {
-      id: "cql-lib-1234",
-      cqlLibraryName: "Library1",
-      model: Model.QICORE,
-      draft: true,
-      version: null,
-      groupId: null,
-      cqlErrors: false,
-      publisher: "Tester",
-      description: "Testing stuff.",
-      experimental: false,
-      cql: "some cql string",
-      createdAt: "",
-      createdBy: "",
-      lastModifiedAt: "",
-      lastModifiedBy: "",
-    };
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
-    (validateContent as jest.Mock).mockClear().mockImplementation(() => {
-      return Promise.resolve({
-        errors: [],
-        externalErrors: cqlToElmExternalErrors,
-      });
-    });
-    const toastCloseButton = await screen.findByRole("button", {
-      name: "close",
-    });
-    expect(toastCloseButton).toBeInTheDocument();
-    fireEvent.click(toastCloseButton);
-    expect(toastCloseButton).not.toBeInTheDocument();
   });
 
   it("should render all fields in read-only mode when loaded library is not a draft", async () => {
