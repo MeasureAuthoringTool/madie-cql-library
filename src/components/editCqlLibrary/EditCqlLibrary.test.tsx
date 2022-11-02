@@ -796,17 +796,4 @@ describe("Edit Cql Library Component", () => {
     ).toBeDisabled();
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
   });
-
-  // it("test", async () => {
-  //   useOrganizationApi: jest.fn(() => ({
-  //     getAllOrganizations: jest.fn().mockRejectedValue("error"),
-  //   })),
-  //     renderWithRouter();
-  //   const publisher = await screen.findByRole("combobox", {
-  //     name: "Publisher",
-  //   });
-  //   fireEvent.keyDown(publisher, { key: "ArrowDown" });
-  //   const orgList = await screen.findAllByRole("option");
-  //   expect(orgList).toHaveLength(2);
-  // });
 });
