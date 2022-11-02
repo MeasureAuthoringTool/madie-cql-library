@@ -134,7 +134,9 @@ const EditCqlLibrary = () => {
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
     onSubmit: async (cqlLibrary: CqlLibrary) => {
-      await updateCqlLibrary(cqlLibrary);
+      if (!discardDialogOpen) {
+        await updateCqlLibrary(cqlLibrary);
+      }
     },
     enableReinitialize: true,
   });
