@@ -575,7 +575,9 @@ describe("Edit Cql Library Component", () => {
     userEvent.click(updateButton);
     await waitFor(() => {
       const successMessage = screen.getByTestId("generic-success-text-header");
-      expect(successMessage.textContent).toEqual("CQL saved successfully");
+      expect(successMessage.textContent).toEqual(
+        "CQL Library saved successfully"
+      );
       expect(mockedAxios.put).toHaveBeenCalledTimes(1);
     });
   });
