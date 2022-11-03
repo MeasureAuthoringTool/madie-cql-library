@@ -257,8 +257,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                   ? "Edit"
                   : "View"}
               </button>
-              {selectedCQLLibrary.draft &&
-              selectedCQLLibrary.createdBy === userName ? (
+              {selectedCQLLibrary.draft ? (
                 <button
                   data-testid={`create-new-version-${selectedCQLLibrary.id}-button`}
                   onClick={() => {
