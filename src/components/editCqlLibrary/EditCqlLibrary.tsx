@@ -252,7 +252,6 @@ const EditCqlLibrary = () => {
         );
         setLoadedCqlLibrary(updatedLibrary);
         resetForm();
-
         const successMessage =
           inSyncCql !== cqlLibrary.cql
             ? {
@@ -260,7 +259,7 @@ const EditCqlLibrary = () => {
                 message:
                   "CQL updated successfully! Library Name and/or Version can not be updated in the CQL Editor. MADiE has overwritten the updated Library Name and/or Version.",
               }
-            : { status: "success", message: "CQL saved successfully" };
+            : { status: "success", message: "CQL Library saved successfully" };
         setSuccess(successMessage);
       })
       .catch((error) => {
