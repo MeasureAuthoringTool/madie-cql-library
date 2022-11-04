@@ -166,7 +166,7 @@ describe("CqlLibrary List component", () => {
         cqlLibraryName: "testing1",
         model: Model.QICORE,
         createdAt: "",
-        createdBy: "testuser@example.com",
+        createdBy: "testuser@example.com", //#nosec
         lastModifiedAt: "",
         lastModifiedBy: "",
         draft: false,
