@@ -147,7 +147,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
         cancelButtonProps={{
           id: "cancelBtn",
           "data-testid": "cql-library-cancel-button",
-          variant: "secondary",
+          variant: "outline",
           onClick: () => {
             onClose();
             resetForm();
@@ -159,6 +159,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
           "data-testid": "create-new-library-save-button",
           disabled: !(formik.isValid && formik.dirty),
           continueText: "Continue",
+          variant: "cyan",
           continueIcon: (
             <ChevronRightIcon
               sx={{
