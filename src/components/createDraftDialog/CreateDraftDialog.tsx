@@ -8,7 +8,6 @@ import {
   DialogTitle,
   Divider,
   IconButton,
-  Button,
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
@@ -20,6 +19,7 @@ import * as Yup from "yup";
 import { CqlLibrary } from "@madie/madie-models";
 import { HelperText, Label, TextInput } from "@madie/madie-components";
 import { synchingEditorCqlContent } from "@madie/madie-editor";
+import { Button } from "@madie/madie-design-system/dist/react";
 
 const useStyles = makeStyles({
   row: {
@@ -168,10 +168,15 @@ const CreatDraftDialog = ({ open, onClose, onSubmit, cqlLibrary }) => {
         </DialogContent>
         <Divider className={classes.dividerBottom} />
         <DialogActions classes={{ root: classes.actionsRoot }}>
-          <Button onClick={onClose} data-testid="create-draft-cancel-button">
+          <Button
+            variant="outline"
+            onClick={onClose}
+            data-testid="create-draft-cancel-button"
+          >
             Cancel
           </Button>
           <Button
+            variant="cyan"
             type="submit"
             data-testid="create-draft-continue-button"
             disabled={!formik.isValid}

@@ -11,7 +11,6 @@ import {
   RadioGroup,
   Radio,
   FormControlLabel,
-  Button,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -20,6 +19,7 @@ import { makeStyles } from "@mui/styles";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import tw from "twin.macro";
+import { Button } from "@madie/madie-design-system/dist/react";
 
 const useStyles = makeStyles({
   row: {
@@ -176,12 +176,14 @@ const CreatVersionDialog = ({
         <Divider className={classes.dividerBottom} />
         <DialogActions classes={{ root: classes.actionsRoot }}>
           <Button
+            variant="outline"
             onClick={handleDialogClose}
             data-testid="create-version-cancel-button"
           >
             Cancel
           </Button>
           <Button
+            variant="cyan"
             type="submit"
             data-testid="create-version-continue-button"
             disabled={
