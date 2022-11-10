@@ -11,6 +11,7 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useOktaTokens } from "@madie/madie-util";
+import { Button } from "@madie/madie-design-system/dist/react";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -359,19 +360,18 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                         </p>
                       </td>
                       <td>
-                        <button
-                          className="action-button"
+                        <Button
+                          variant="outline-secondary"
                           onClick={(e) => {
                             handleOpen(cqlLibrary, e);
                           }}
-                          tw="text-blue-600 hover:text-blue-900"
                           data-testid={`view/edit-cqlLibrary-button-${cqlLibrary.id}`}
                         >
-                          <div className="action">View/Edit</div>
-                          <div className="chevron-container">
+                          View/Edit
+                          <span>
                             <ExpandMoreIcon />
-                          </div>
-                        </button>
+                          </span>
+                        </Button>
                       </td>
                     </tr>
                   ))}
