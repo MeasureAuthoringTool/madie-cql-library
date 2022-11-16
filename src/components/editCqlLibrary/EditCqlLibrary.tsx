@@ -41,27 +41,6 @@ import { Checkbox, FormControlLabel } from "@mui/material";
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
 
-const autoCompleteStyles = {
-  borderRadius: "3px",
-  height: 40,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderRadius: "3px",
-    "& legend": {
-      width: 0,
-    },
-  },
-  "& .MuiAutocomplete-inputFocused": {
-    border: "none",
-    boxShadow: "none",
-    outline: "none",
-  },
-  "& .MuiAutocomplete-inputRoot": {
-    paddingTop: 0,
-    paddingBottom: 0,
-  },
-  width: "100%",
-};
-
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
   const history = useHistory();
@@ -89,10 +68,6 @@ const EditCqlLibrary = () => {
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const organizationApi = useRef(useOrganizationApi()).current;
-  const [successMessage, setSuccessMessage] = useState({
-    status: undefined,
-    message: undefined,
-  });
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
