@@ -382,16 +382,15 @@ const EditCqlLibrary = () => {
                 )}
 
                 <div className="form-row">
-                  {/* should it be read only? */}
                   <TextField
                     label="CQL Library Name"
                     required
                     id="cqlLibraryName"
                     data-testid="cql-library-name-text-field"
+                    disabled={!formik.values.draft || !isOwner}
                     inputProps={{
                       id: "cql-library-name-text-field-input",
                       "data-testid": "cql-library-name-text-field-input",
-                      readOnly: !formik.values.draft || !isOwner,
                     }}
                     error={
                       formik.touched.cqlLibraryName &&
@@ -406,7 +405,7 @@ const EditCqlLibrary = () => {
                 <div className="form-row">
                   <TextArea
                     label="Description"
-                    readOnly={!formik.values.draft || !isOwner}
+                    disabled={!formik.values.draft || !isOwner}
                     required
                     name="cql-library-description"
                     id="cql-library-description"

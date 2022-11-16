@@ -184,7 +184,7 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
-      ).not.toHaveAttribute("readonly");
+      ).not.toHaveAttribute("disabled");
     });
     userEvent.clear(input);
     expect(input.value).toBe("");
@@ -208,7 +208,7 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
-      ).not.toHaveAttribute("readonly");
+      ).not.toHaveAttribute("disabled");
     });
     userEvent.clear(input);
     expect(input.value).toBe("");
@@ -232,7 +232,7 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
-      ).not.toHaveAttribute("readonly");
+      ).not.toHaveAttribute("disabled");
     });
     userEvent.clear(input);
     expect(input.value).toBe("");
@@ -256,7 +256,7 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
-      ).not.toHaveAttribute("readonly");
+      ).not.toHaveAttribute("disabled");
     });
     userEvent.clear(input);
     expect(input.value).toBe("");
@@ -280,7 +280,7 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
-      ).not.toHaveAttribute("readonly");
+      ).not.toHaveAttribute("disabled");
     });
     userEvent.clear(input);
     expect(input.value).toBe("");
@@ -310,7 +310,7 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
-      ).not.toHaveAttribute("readonly");
+      ).not.toHaveAttribute("disabled");
     });
     userEvent.clear(input);
     expect(input.value).toBe("");
@@ -365,7 +365,7 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
-      ).not.toHaveAttribute("readonly");
+      ).not.toHaveAttribute("disabled");
     });
     const input = (await screen.getByTestId(
       "cql-library-name-text-field-input"
@@ -425,7 +425,7 @@ describe("Edit Cql Library Component", () => {
 
     expect(
       screen.getByTestId("cql-library-name-text-field-input")
-    ).toHaveAttribute("readonly");
+    ).toHaveAttribute("disabled");
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
 
     expect(
@@ -695,10 +695,10 @@ describe("Edit Cql Library Component", () => {
     );
     expect(
       screen.getByTestId("cql-library-name-text-field-input")
-    ).toHaveAttribute("readonly");
+    ).toHaveAttribute("disabled");
     expect(
       screen.getByRole("textbox", { name: "Description" })
-    ).toHaveAttribute("readonly");
+    ).toHaveAttribute("disabled");
     expect(screen.getByRole("combobox", { name: "Publisher" })).toBeDisabled();
     expect(
       screen.getByRole("checkbox", { name: "Experimental" })
@@ -751,10 +751,10 @@ describe("Edit Cql Library Component", () => {
     );
     expect(
       screen.getByTestId("cql-library-name-text-field-input")
-    ).toHaveAttribute("readonly");
+    ).toHaveAttribute("disabled");
     expect(
       screen.getByRole("textbox", { name: "Description" })
-    ).toHaveAttribute("readonly");
+    ).toHaveAttribute("disabled");
     expect(screen.getByRole("combobox", { name: "Publisher" })).toBeDisabled();
     expect(
       screen.getByRole("checkbox", { name: "Experimental" })
