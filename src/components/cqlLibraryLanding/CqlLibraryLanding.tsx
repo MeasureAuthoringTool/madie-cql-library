@@ -6,7 +6,7 @@ import * as _ from "lodash";
 import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle } from "@madie/madie-util";
-import { MadieSpinner } from "@madie/madie-design-system/dist/react";
+import { MadieSpinner, Button } from "@madie/madie-design-system/dist/react";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
@@ -146,19 +146,29 @@ function CqlLibraryLanding() {
             <table style={{ marginLeft: 20, marginTop: 20, marginBottom: 20 }}>
               <thead>
                 <tr>
-                  <TextField
-                    label="Filter Libraries"
-                    onChange={(newFilter) => {
-                      setFilter(newFilter.target.value);
-                    }}
-                    type="search"
-                    inputProps={{
-                      "data-testid": "searchMeasure-input",
-                      "aria-required": "false",
-                    }}
-                    InputProps={searchInputProps}
-                    value={filter}
-                  />
+                  <td>
+                    <TextField
+                      label="Filter Libraries"
+                      onChange={(newFilter) => {
+                        setFilter(newFilter.target.value);
+                      }}
+                      type="search"
+                      inputProps={{
+                        "data-testid": "searchMeasure-input",
+                        "aria-required": "false",
+                      }}
+                      InputProps={searchInputProps}
+                      value={filter}
+                    />
+                  </td>{" "}
+                  <td>
+                    <Button
+                      style={{ marginLeft: 10, marginBottom: 20 }}
+                      type="submit"
+                    >
+                      Filter
+                    </Button>
+                  </td>
                 </tr>
               </thead>
             </table>
