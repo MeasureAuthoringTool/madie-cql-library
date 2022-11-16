@@ -147,7 +147,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
         cancelButtonProps={{
           id: "cancelBtn",
           "data-testid": "cql-library-cancel-button",
-          variant: "secondary",
+          variant: "outline",
           onClick: () => {
             onClose();
             resetForm();
@@ -159,6 +159,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
           "data-testid": "create-new-library-save-button",
           disabled: !(formik.isValid && formik.dirty),
           continueText: "Continue",
+          variant: "cyan",
           continueIcon: (
             <ChevronRightIcon
               sx={{
@@ -202,6 +203,9 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               error={formik.touched.model && Boolean(formik.errors.model)}
               helperText={formik.touched.model && formik.errors.model}
               size="small"
+              onClose={() => {
+                setFieldTouched("model");
+              }}
               options={Object.keys(Model).map((modelKey) => {
                 return (
                   <MenuItem
@@ -267,6 +271,9 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
                 onBlur={(e) => {
                   // This really shouldn't be necessary, but formik.handleBlur
                   // isn't being triggered here.
+                  setFieldTouched("publisher");
+                }}
+                onClose={() => {
                   setFieldTouched("publisher");
                 }}
                 renderInput={(params) => (

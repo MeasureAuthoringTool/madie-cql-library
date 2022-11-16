@@ -520,8 +520,9 @@ const EditCqlLibrary = () => {
         {/* footer lives here */}
       </div>
       <div id="sticky-footer">
-        <button
-          className="blue-60-outline"
+        <Button
+          variant="outline"
+          tw="mx-2"
           disabled={!formik.dirty}
           data-testid="cql-library-cancel-button"
           onClick={(e) => {
@@ -530,8 +531,9 @@ const EditCqlLibrary = () => {
           }}
         >
           Discard Changes
-        </button>
+        </Button>
         <Button
+          tw="!mt-0 mx-2"
           data-testid="cql-library-save-button"
           role="button"
           variant="cyan"
