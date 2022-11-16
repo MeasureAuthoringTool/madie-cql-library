@@ -203,6 +203,9 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               error={formik.touched.model && Boolean(formik.errors.model)}
               helperText={formik.touched.model && formik.errors.model}
               size="small"
+              onClose={() => {
+                setFieldTouched("model");
+              }}
               options={Object.keys(Model).map((modelKey) => {
                 return (
                   <MenuItem
@@ -268,6 +271,9 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
                 onBlur={(e) => {
                   // This really shouldn't be necessary, but formik.handleBlur
                   // isn't being triggered here.
+                  setFieldTouched("publisher");
+                }}
+                onClose={() => {
                   setFieldTouched("publisher");
                 }}
                 renderInput={(params) => (
