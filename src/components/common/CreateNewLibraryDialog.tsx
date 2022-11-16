@@ -204,6 +204,9 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               error={formik.touched.model && Boolean(formik.errors.model)}
               helperText={formik.touched.model && formik.errors.model}
               size="small"
+              onClose={() => {
+                setFieldTouched("model");
+              }}
               options={Object.keys(Model).map((modelKey) => {
                 return (
                   <MenuItem
