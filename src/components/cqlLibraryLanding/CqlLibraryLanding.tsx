@@ -75,8 +75,7 @@ function CqlLibraryLanding() {
         // sx={{
         //   visibility: props.searchCriteria ? "visible" : "hidden",
         // }}
-        onClick={(e) => {
-          e.preventDefault;
+        onClick={() => {
           setFilter("");
           setCurrentFilter("");
         }}
