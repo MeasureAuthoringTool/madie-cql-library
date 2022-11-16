@@ -117,7 +117,7 @@ describe("Library Dialog", () => {
 
       expect(await findByTestId("cql-library-description")).toBeInTheDocument();
 
-      expect(await findByTestId("cql-library-publisher")).toBeInTheDocument();
+      expect(await findByTestId("publisher")).toBeInTheDocument();
 
       expect(
         await findByTestId("create-new-library-save-button")
