@@ -72,9 +72,6 @@ function CqlLibraryLanding() {
     endAdornment: (
       <IconButton
         aria-label="Clear-Search"
-        // sx={{
-        //   visibility: props.searchCriteria ? "visible" : "hidden",
-        // }}
         onClick={() => {
           setFilter("");
           setCurrentFilter("");
