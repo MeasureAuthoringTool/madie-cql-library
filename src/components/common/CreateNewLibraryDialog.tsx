@@ -8,9 +8,10 @@ import {
   Select,
   TextField,
   Toast,
+  AutoComplete,
 } from "@madie/madie-design-system/dist/react";
 import { Box } from "@mui/system";
-import { Autocomplete, FormHelperText, MenuItem } from "@mui/material";
+import { FormHelperText, MenuItem } from "@mui/material";
 import { useFormik } from "formik";
 import { useOrganizationApi } from "@madie/madie-util";
 import TextArea from "./TextArea";
@@ -239,69 +240,18 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
             />
           </Box>
           <Box sx={formRow}>
-            {organizations && (
-              <Autocomplete
-                data-testid="cql-library-publisher"
-                options={organizations}
-                disabled={!formik.values.draft}
-                sx={{
-                  borderRadius: "3px",
-                  height: 40,
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    borderRadius: "3px",
-                    "& legend": {
-                      width: 0,
-                    },
-                  },
-                  "& .MuiAutocomplete-inputFocused": {
-                    border: "none",
-                    boxShadow: "none",
-                    outline: "none",
-                  },
-                  "& .MuiAutocomplete-inputRoot": {
-                    paddingTop: 0,
-                    paddingBottom: 0,
-                  },
-                  width: "100%",
-                }}
-                {...formik.getFieldProps("publisher")}
-                onChange={(_event: any, selectedVal: string | null) => {
-                  formik.setFieldValue("publisher", selectedVal || "");
-                }}
-                onBlur={(e) => {
-                  // This really shouldn't be necessary, but formik.handleBlur
-                  // isn't being triggered here.
-                  setFieldTouched("publisher");
-                }}
-                onClose={() => {
-                  setFieldTouched("publisher");
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    required
-                    label="Publisher"
-                    sx={{
-                      "& .MuiInputLabel-root": {
-                        border: "none",
-                      },
-                    }}
-                    error={
-                      formik.touched.publisher &&
-                      Boolean(formik.errors.publisher)
-                    }
-                    helperText={formikErrorHandler("publisher", true)}
-                    {...params}
-                  />
-                )}
-                renderOption={(props: any, option) => {
-                  const uniqueProps = {
-                    ...props,
-                    key: `${props.key}_${props.id}`,
-                  };
-                  return <li {...uniqueProps}>{option}</li>;
-                }}
-              />
-            )}
+            <AutoComplete
+              id="publisher"
+              dataTestId="publisher"
+              label="Publisher"
+              placeholder="-"
+              required={true}
+              error={formik.touched.publisher && formik.errors.publisher}
+              helperText={formik.touched.publisher && formik.errors.publisher}
+              options={organizations}
+              {...formik.getFieldProps("publisher")}
+              onChange={formik.setFieldValue}
+            />
           </Box>
           <Box sx={formRow} />
         </>

@@ -26,12 +26,23 @@
         padding: 43px 32px;
       }
 
+      input {
+        &.Mui-disabled {
+          background-color: #ededed;
+          border: #ededed;
+        }
+      }
+
       textarea {
         resize: vertical;
         border: none;
+        &.Mui-disabled {
+          background-color: #ededed;
+          border: #ededed;
+        }
       }
 
-      label {
+      label:not(.Mui-disabled) {
         font-weight: 500;
         font-size: 14px;
         line-height: 17px;

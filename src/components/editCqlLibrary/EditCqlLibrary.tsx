@@ -33,33 +33,13 @@ import {
   TextField,
   MadieAlert,
   MadieSpinner,
+  AutoComplete,
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
-import { Autocomplete, Checkbox, FormControlLabel } from "@mui/material";
+import { Checkbox, FormControlLabel } from "@mui/material";
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
-
-const autoCompleteStyles = {
-  borderRadius: "3px",
-  height: 40,
-  "& .MuiOutlinedInput-notchedOutline": {
-    borderRadius: "3px",
-    "& legend": {
-      width: 0,
-    },
-  },
-  "& .MuiAutocomplete-inputFocused": {
-    border: "none",
-    boxShadow: "none",
-    outline: "none",
-  },
-  "& .MuiAutocomplete-inputRoot": {
-    paddingTop: 0,
-    paddingBottom: 0,
-  },
-  width: "100%",
-};
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -88,10 +68,6 @@ const EditCqlLibrary = () => {
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const organizationApi = useRef(useOrganizationApi()).current;
-  const [successMessage, setSuccessMessage] = useState({
-    status: undefined,
-    message: undefined,
-  });
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
@@ -335,7 +311,6 @@ const EditCqlLibrary = () => {
       data-testId="edit-library-form"
       onSubmit={formik.handleSubmit}
     >
-      {/* main page container */}
       <div className="flow-container">
         <div id="left-panel">
           <div tw="flex-grow " data-testid="cql-library-editor-component">
@@ -377,7 +352,8 @@ const EditCqlLibrary = () => {
           <div className="inner-right">
             {activeTab === "details" && (
               <div id="details-tab" data-test-id="details-tab">
-                {formik.values.draft === false && (
+                {/* These are loaded in first instance and then removed why ? */}
+                {!formik.values.draft && (
                   <div className="form-row">
                     <MadieAlert
                       type="info"
@@ -406,16 +382,15 @@ const EditCqlLibrary = () => {
                 )}
 
                 <div className="form-row">
-                  {/* should it be read only? */}
                   <TextField
                     label="CQL Library Name"
                     required
                     id="cqlLibraryName"
                     data-testid="cql-library-name-text-field"
+                    disabled={!formik.values.draft || !isOwner}
                     inputProps={{
                       id: "cql-library-name-text-field-input",
                       "data-testid": "cql-library-name-text-field-input",
-                      readOnly: !formik.values.draft || !isOwner,
                     }}
                     error={
                       formik.touched.cqlLibraryName &&
@@ -426,10 +401,11 @@ const EditCqlLibrary = () => {
                     placeholder="Enter a Cql Library Name"
                   />
                 </div>
+
                 <div className="form-row">
                   <TextArea
                     label="Description"
-                    readOnly={!formik.values.draft || !isOwner}
+                    disabled={!formik.values.draft || !isOwner}
                     required
                     name="cql-library-description"
                     id="cql-library-description"
@@ -445,6 +421,25 @@ const EditCqlLibrary = () => {
                     helperText={formikErrorHandler("description", true)}
                   />
                 </div>
+
+                <div className="form-row">
+                  <AutoComplete
+                    id="publisher"
+                    dataTestId="publisher"
+                    label="Publisher"
+                    placeholder="-"
+                    required={true}
+                    disabled={!formik.values.draft || !isOwner}
+                    error={formik.touched.publisher && formik.errors.publisher}
+                    helperText={
+                      formik.touched.publisher && formik.errors.publisher
+                    }
+                    options={organizations}
+                    {...formik.getFieldProps("publisher")}
+                    onChange={formik.setFieldValue}
+                  />
+                </div>
+
                 <div className="form-row">
                   <FormControlLabel
                     sx={{
@@ -455,7 +450,7 @@ const EditCqlLibrary = () => {
                     }}
                     control={
                       <Checkbox
-                        id="epxerimental"
+                        id="experimental"
                         data-testid="cql-library-experimental-checkbox"
                         sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
                         disabled={!formik.values.draft || !isOwner}
@@ -472,52 +467,10 @@ const EditCqlLibrary = () => {
                     label="Experimental"
                   />
                 </div>
-                {organizations && (
-                  <div className="form-row">
-                    <Autocomplete
-                      data-testid="publisher"
-                      options={organizations}
-                      disabled={!formik.values.draft || !isOwner}
-                      sx={autoCompleteStyles}
-                      {...formik.getFieldProps("publisher")}
-                      onChange={(_event: any, selectedVal: string | null) => {
-                        formik.setFieldValue("publisher", selectedVal || "");
-                      }}
-                      renderInput={(params) => (
-                        <TextField
-                          required
-                          {...params}
-                          label="Publisher"
-                          sx={{
-                            "& .MuiInputLabel-root": {
-                              border: "none",
-                            },
-                          }}
-                          error={Boolean(formik.errors.publisher)}
-                          helperText={
-                            <HelperText
-                              data-testid={`publisher-helper-text`}
-                              text={formik.errors["publisher"]}
-                              isError
-                            />
-                          }
-                        />
-                      )}
-                      renderOption={(props: any, option) => {
-                        const uniqueProps = {
-                          ...props,
-                          key: `${props.key}_${props.id}`,
-                        };
-                        return <li {...uniqueProps}>{option}</li>;
-                      }}
-                    />
-                  </div>
-                )}
               </div>
             )}
           </div>
         </div>
-        {/* footer lives here */}
       </div>
       <div id="sticky-footer">
         <Button
