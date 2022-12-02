@@ -1,12 +1,15 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Divider, Tab, Tabs } from "@mui/material";
+import { Divider, Tab, Tabs, TextField, IconButton } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle } from "@madie/madie-util";
-import { MadieSpinner } from "@madie/madie-design-system/dist/react";
+import { MadieSpinner, Button } from "@madie/madie-design-system/dist/react";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import ClearIcon from "@mui/icons-material/Clear";
+import SearchIcon from "@mui/icons-material/Search";
 
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
@@ -14,6 +17,8 @@ function CqlLibraryLanding() {
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const [loading, setLoading] = useState(true);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  const [filter, setFilter] = useState("");
+  const [currentFilter, setCurrentFilter] = useState("");
 
   // Libraries are fetched again, when a new draft or version is created
   const loadCqlLibraries = useCallback(async () => {
@@ -51,6 +56,31 @@ function CqlLibraryLanding() {
       );
     };
   }, []);
+
+  const submitFilter = (e) => {
+    e.preventDefault();
+    setFilter(filter.trim());
+    setCurrentFilter(filter);
+  };
+
+  const searchInputProps = {
+    startAdornment: (
+      <InputAdornment position="start">
+        <SearchIcon />
+      </InputAdornment>
+    ),
+    endAdornment: (
+      <IconButton
+        aria-label="Clear-Search"
+        onClick={() => {
+          setFilter("");
+          setCurrentFilter("");
+        }}
+      >
+        <ClearIcon />
+      </IconButton>
+    ),
+  };
 
   return (
     <div id="cql-library-landing" data-testid="cql-library-landing">
@@ -108,10 +138,52 @@ function CqlLibraryLanding() {
           <span tw="flex-grow" />
         </section>
         <div>
+          <form onSubmit={submitFilter}>
+            <table style={{ marginLeft: 20, marginTop: 20, marginBottom: 20 }}>
+              <thead>
+                <tr>
+                  <td>
+                    <TextField
+                      label="Filter Libraries"
+                      onChange={(newFilter) => {
+                        setFilter(newFilter.target.value);
+                      }}
+                      type="search"
+                      inputProps={{
+                        "data-testid": "library-filter-input",
+                        "aria-required": "false",
+                      }}
+                      InputProps={searchInputProps}
+                      value={filter}
+                    />
+                  </td>{" "}
+                  <td>
+                    <Button
+                      style={{ marginLeft: 10, marginBottom: 20 }}
+                      type="submit"
+                      data-testid="library-filter-submit"
+                    >
+                      Filter
+                    </Button>
+                  </td>
+                </tr>
+              </thead>
+            </table>
+          </form>
+        </div>
+        <div>
           <div className="table">
             {!loading && (
               <CqlLibraryList
-                cqlLibraryList={cqlLibraryList}
+                cqlLibraryList={
+                  currentFilter == ""
+                    ? cqlLibraryList
+                    : cqlLibraryList.filter((library) =>
+                        library.cqlLibraryName
+                          .toLowerCase()
+                          .includes(currentFilter.toLowerCase())
+                      )
+                }
                 onListUpdate={loadCqlLibraries}
               />
             )}
