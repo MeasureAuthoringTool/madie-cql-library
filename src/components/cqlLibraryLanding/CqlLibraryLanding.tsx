@@ -150,7 +150,7 @@ function CqlLibraryLanding() {
                       }}
                       type="search"
                       inputProps={{
-                        "data-testid": "searchMeasure-input",
+                        "data-testid": "library-filter-input",
                         "aria-required": "false",
                       }}
                       InputProps={searchInputProps}
@@ -161,6 +161,7 @@ function CqlLibraryLanding() {
                     <Button
                       style={{ marginLeft: 10, marginBottom: 20 }}
                       type="submit"
+                      data-testid="library-filter-submit"
                     >
                       Filter
                     </Button>

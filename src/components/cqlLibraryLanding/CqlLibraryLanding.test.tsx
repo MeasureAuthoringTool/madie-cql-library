@@ -2,7 +2,7 @@ import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 
 import * as React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import NewCqlLibrary from "./CqlLibraryLanding";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
@@ -147,5 +147,49 @@ describe("Cql Library Page", () => {
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
       false
     );
+  });
+
+  test("SQL Library Search removes non-matching libraries", async () => {
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <NewCqlLibrary />
+      </ApiContextProvider>
+    );
+    const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
+    expect(cqlLibrary1).toBeInTheDocument();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+      true
+    );
+    const myCqlLibrariesTab = screen.getByRole("tab", {
+      name: "My CQL Libraries",
+    });
+    expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
+    const allCqlLibrariesTab = screen.getByRole("tab", {
+      name: "All CQL Libraries",
+    });
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+      ...cqlLibrary,
+      {
+        id: "622e1f46d1fd3729d861e7cb",
+        cqlLibraryName: "TestCqlLibrary2",
+        model: Model.QICORE,
+        createdAt: null,
+        createdBy: null,
+        lastModifiedAt: null,
+        lastModifiedBy: null,
+      },
+    ]);
+
+    userEvent.click(allCqlLibrariesTab);
+    const cqlLibrary2 = await screen.findByText("TestCqlLibrary2");
+    expect(cqlLibrary2).toBeInTheDocument();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+      false
+    );
+    const searchBox = await screen.getByTestId("library-filter-input");
+    expect(searchBox).toBeInTheDocument();
+    userEvent.type(searchBox, "1");
+    fireEvent.click(screen.getByTestId("library-filter-submit"));
+    expect(cqlLibrary2).not.toBeInTheDocument();
   });
 });
