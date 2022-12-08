@@ -119,16 +119,14 @@ describe("Library Dialog", () => {
 
       expect(await findByTestId("publisher")).toBeInTheDocument();
 
-      expect(
-        await findByTestId("create-new-library-save-button")
-      ).toBeInTheDocument();
+      expect(await findByTestId("continue-button")).toBeInTheDocument();
 
       const cancelButton = await findByTestId("cql-library-cancel-button");
 
       expect(cancelButton).toBeInTheDocument();
       expect(cancelButton).toBeEnabled();
 
-      const submitButton = await findByTestId("create-new-library-save-button");
+      const submitButton = await findByTestId("continue-button");
       expect(submitButton).toBeInTheDocument();
       expect(submitButton).toBeDisabled();
 
