@@ -144,10 +144,14 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
           onSubmit: formik.handleSubmit,
           maxWidth: "sm",
           showRequiredFieldMessage: true,
+          sx: {
+            zIndex: 9999,
+          },
         }}
         cancelButtonProps={{
           id: "cancelBtn",
           "data-testid": "cql-library-cancel-button",
+          "aria-label": "cancel button",
           variant: "outline",
           onClick: () => {
             onClose();
@@ -157,7 +161,8 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
         }}
         continueButtonProps={{
           type: "submit",
-          "data-testid": "create-new-library-save-button",
+          "aria-label": "continue button",
+          "data-testid": "continue-button",
           disabled: !(formik.isValid && formik.dirty),
           continueText: "Continue",
           variant: "cyan",
