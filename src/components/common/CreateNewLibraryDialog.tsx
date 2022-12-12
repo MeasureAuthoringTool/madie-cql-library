@@ -144,9 +144,6 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
           onSubmit: formik.handleSubmit,
           maxWidth: "sm",
           showRequiredFieldMessage: true,
-          sx: {
-            zIndex: 9999,
-          },
         }}
         cancelButtonProps={{
           id: "cancelBtn",
