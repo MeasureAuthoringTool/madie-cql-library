@@ -10,7 +10,7 @@ import CreatDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { useOktaTokens } from "@madie/madie-util";
+import { checkUserCanEdit } from "@madie/madie-util";
 import { Button } from "@madie/madie-design-system/dist/react";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -155,8 +155,6 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
     setSelectedCqlLibrary(null);
     setAnchorEl(null);
   };
-  const { getUserName } = useOktaTokens();
-  const userName = getUserName();
 
   return (
     <div data-testid="cqlLibrary-list">
@@ -253,13 +251,13 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 data-testid={`edit-cql-library-button-${selectedCQLLibrary.id}-edit`}
               >
                 {/* edit and version: must be draft and have ownership, else view only*/}
-                {selectedCQLLibrary.createdBy === userName &&
+                {checkUserCanEdit(selectedCQLLibrary.createdBy, []) &&
                 selectedCQLLibrary.draft
                   ? "Edit"
                   : "View"}
               </button>
               {selectedCQLLibrary.draft &&
-                selectedCQLLibrary.createdBy === userName && (
+                checkUserCanEdit(selectedCQLLibrary.createdBy, []) && (
                   <button
                     data-testid={`create-new-version-${selectedCQLLibrary.id}-button`}
                     onClick={() => {
@@ -280,7 +278,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 )}
 
               {!selectedCQLLibrary.draft &&
-                selectedCQLLibrary.createdBy === userName && (
+                checkUserCanEdit(selectedCQLLibrary.createdBy, []) && (
                   <button
                     data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
                     onClick={() => {

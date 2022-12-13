@@ -13,7 +13,7 @@ import {
   useDocumentTitle,
   useOrganizationApi,
   routeHandlerStore,
-  useOktaTokens,
+  checkUserCanEdit,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
@@ -81,10 +81,7 @@ const EditCqlLibrary = () => {
   const [toastType, setToastType] = useState<string>("danger");
   const [discardDialogOpen, setDiscardDialogOpen] = useState<boolean>(false);
   const { updateRouteHandlerState } = routeHandlerStore;
-  // We have a unique case where when we have a fresh measure the cql isn't an empty string. It's a null or undefined value.
-  const { getUserName } = useOktaTokens();
-  const userName = getUserName();
-  const isOwner = loadedCqlLibrary?.createdBy === userName;
+  const isOwner = checkUserCanEdit(loadedCqlLibrary?.createdBy, []);
 
   const onToastClose = () => {
     setToastType(null);
