@@ -142,6 +142,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCQLLibrary, setSelectedCqlLibrary] =
     useState<CqlLibrary>(null);
+  const isOwner = checkUserCanEdit(selectedCQLLibrary?.createdBy, []);
   const handleOpen = (
     selected: CqlLibrary,
     event: React.MouseEvent<HTMLButtonElement>
@@ -251,48 +252,43 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 data-testid={`edit-cql-library-button-${selectedCQLLibrary.id}-edit`}
               >
                 {/* edit and version: must be draft and have ownership, else view only*/}
-                {checkUserCanEdit(selectedCQLLibrary.createdBy, []) &&
-                selectedCQLLibrary.draft
-                  ? "Edit"
-                  : "View"}
+                {isOwner && selectedCQLLibrary.draft ? "Edit" : "View"}
               </button>
-              {selectedCQLLibrary.draft &&
-                checkUserCanEdit(selectedCQLLibrary.createdBy, []) && (
-                  <button
-                    data-testid={`create-new-version-${selectedCQLLibrary.id}-button`}
-                    onClick={() => {
-                      setCreateVersionDialog({
-                        open: true,
-                        cqlLibraryId: selectedCQLLibrary.id,
-                        cqlLibraryError: selectedCQLLibrary.cqlErrors,
-                        isCqlPresent:
-                          selectedCQLLibrary &&
-                          selectedCQLLibrary.cql?.trim().length > 0,
-                      });
-                      setOptionsOpen(false);
-                      setAnchorEl(null);
-                    }}
-                  >
-                    Version
-                  </button>
-                )}
+              {selectedCQLLibrary.draft && isOwner && (
+                <button
+                  data-testid={`create-new-version-${selectedCQLLibrary.id}-button`}
+                  onClick={() => {
+                    setCreateVersionDialog({
+                      open: true,
+                      cqlLibraryId: selectedCQLLibrary.id,
+                      cqlLibraryError: selectedCQLLibrary.cqlErrors,
+                      isCqlPresent:
+                        selectedCQLLibrary &&
+                        selectedCQLLibrary.cql?.trim().length > 0,
+                    });
+                    setOptionsOpen(false);
+                    setAnchorEl(null);
+                  }}
+                >
+                  Version
+                </button>
+              )}
 
-              {!selectedCQLLibrary.draft &&
-                checkUserCanEdit(selectedCQLLibrary.createdBy, []) && (
-                  <button
-                    data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
-                    onClick={() => {
-                      setCreateDraftDialog({
-                        open: true,
-                        cqlLibrary: selectedCQLLibrary,
-                      });
-                      setOptionsOpen(false);
-                      setAnchorEl(null);
-                    }}
-                  >
-                    Draft
-                  </button>
-                )}
+              {!selectedCQLLibrary.draft && isOwner && (
+                <button
+                  data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
+                  onClick={() => {
+                    setCreateDraftDialog({
+                      open: true,
+                      cqlLibrary: selectedCQLLibrary,
+                    });
+                    setOptionsOpen(false);
+                    setAnchorEl(null);
+                  }}
+                >
+                  Draft
+                </button>
+              )}
             </div>
           </div>
         )}
