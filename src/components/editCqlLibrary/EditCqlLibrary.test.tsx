@@ -12,11 +12,12 @@ import {
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
+import { checkUserCanEdit } from "@madie/madie-util";
 
 jest.mock("@madie/madie-util", () => ({
-  useOktaTokens: jest.fn(() => ({
-    getUserName: jest.fn(() => "john doe"), //#nosec
-  })),
+  checkUserCanEdit: jest.fn(() => {
+    return true;
+  }),
   useDocumentTitle: jest.fn(),
   cqlLibraryStore: {
     state: null,
@@ -717,6 +718,9 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should render all fields in read-only mode if user is not the owner of the CQL Library", async () => {
+    (checkUserCanEdit as jest.Mock).mockImplementation(() => {
+      return false;
+    });
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",

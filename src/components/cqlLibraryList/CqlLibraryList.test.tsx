@@ -10,7 +10,9 @@ import useCqlLibraryServiceApi, {
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
     getAccessToken: () => "test.jwt",
-    getUserName: () => "testuser@example.com",
+  }),
+  checkUserCanEdit: jest.fn(() => {
+    return true;
   }),
 }));
 

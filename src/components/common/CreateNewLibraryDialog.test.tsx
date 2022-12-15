@@ -25,7 +25,6 @@ const cqlLibrary = [
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
     getAccessToken: () => "test.jwt",
-    getUserName: () => "TestUser@example.com", //#nosec
   }),
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
