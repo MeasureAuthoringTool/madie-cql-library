@@ -44,6 +44,7 @@ const TextArea = ({
           },
           // input base selector
           "& .MuiInputBase-input": {
+            color: "#333",
             resize: "vertical",
             minHeight: "95px",
             fontFamily: "Rubik",
@@ -51,7 +52,8 @@ const TextArea = ({
             borderRadius: "3px",
             padding: "9px 14px",
             "&::placeholder": {
-              opacity: 0.6,
+              opacity: 1,
+              color: "#717171",
             },
           },
         }}

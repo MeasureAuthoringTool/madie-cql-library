@@ -6,7 +6,6 @@ import { useFormik } from "formik";
 import { CqlLibrary } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import queryString from "query-string";
-import { HelperText } from "@madie/madie-components";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import {
   cqlLibraryStore,
@@ -37,7 +36,7 @@ import {
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
-import { Checkbox, FormControlLabel } from "@mui/material";
+import { Checkbox, FormControlLabel, FormHelperText } from "@mui/material";
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
 
@@ -268,10 +267,12 @@ const EditCqlLibrary = () => {
   function formikErrorHandler(name: string, isError: boolean) {
     if (formik.touched[name] && formik.errors[name]) {
       return (
-        <HelperText
+        <FormHelperText
+          aria-live="polite"
+          id={`${name}-helper-text`}
           data-testid={`${name}-helper-text`}
-          text={formik.errors[name]}
-          isError={isError}
+          children={formik.errors[name]}
+          error={isError}
         />
       );
     }
