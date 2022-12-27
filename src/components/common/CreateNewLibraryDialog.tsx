@@ -34,7 +34,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   }
   const [toast, setToast] = useState<Toast>({
     toastOpen: false,
-    toastType: null,
+    toastType: "danger",
     toastMessage: "",
   });
   const { toastOpen, toastType, toastMessage } = toast;
@@ -271,7 +271,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
         onClose={() => {
           setToast({
             toastOpen: false,
-            toastType: null,
+            toastType: "danger",
             toastMessage: "",
           });
         }}
