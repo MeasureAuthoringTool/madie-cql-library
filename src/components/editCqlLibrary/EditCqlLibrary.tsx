@@ -267,15 +267,6 @@ const EditCqlLibrary = () => {
   function formikErrorHandler(name: string, isError: boolean) {
     if (formik.touched[name] && formik.errors[name]) {
       return `${formik.errors[name]}`;
-      // return (
-      //   <FormHelperText
-      //     aria-live="polite"
-      //     id={`${name}-helper-text`}
-      //     data-testid={`${name}-helper-text`}
-      //     children={formik.errors[name]}
-      //     error={isError}
-      //   />
-      // );
     }
   }
 
