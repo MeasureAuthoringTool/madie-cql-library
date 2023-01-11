@@ -107,13 +107,14 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   const { resetForm, setFieldTouched } = formik;
   function formikErrorHandler(name: string, isError: boolean) {
     if (formik.touched[name] && formik.errors[name]) {
-      return (
-        <FormHelperText
-          data-testid={`${name}-helper-text`}
-          children={formik.errors[name]}
-          error={isError}
-        />
-      );
+      return `${formik.errors[name]}`;
+      // return (
+      //   <FormHelperText
+      //     data-testid={`${name}-helper-text`}
+      //     children={formik.errors[name]}
+      //     error={isError}
+      //   />
+      // );
     }
   }
   // style utilities
