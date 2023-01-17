@@ -105,16 +105,9 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
     onSubmit: handleSubmit,
   });
   const { resetForm, setFieldTouched } = formik;
-  function formikErrorHandler(name: string, isError: boolean) {
+  function formikErrorHandler(name: string) {
     if (formik.touched[name] && formik.errors[name]) {
       return `${formik.errors[name]}`;
-      // return (
-      //   <FormHelperText
-      //     data-testid={`${name}-helper-text`}
-      //     children={formik.errors[name]}
-      //     error={isError}
-      //   />
-      // );
     }
   }
   // style utilities
@@ -133,6 +126,15 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
     },
   };
   const formRowGapped = Object.assign({}, formRow, gap);
+  // we create a state to track current focus. We only display helper text on focus and remove current focus on blur
+  const [focusedField, setFocusedField] = useState("");
+  const onBlur = (field) => {
+    setFocusedField("");
+    formik.setFieldTouched(field);
+  };
+  const onFocus = (field) => {
+    setFocusedField(field);
+  };
 
   return (
     <div>
@@ -177,6 +179,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
         <>
           <Box sx={formRow}>
             <TextField
+              onFocus={() => onFocus("cqlLibraryName")}
               placeholder="Enter a Cql Library Name"
               required
               label="Library Name"
@@ -185,13 +188,21 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               inputProps={{
                 "data-testid": "cql-library-name-text-field-input",
               }}
-              helperText={formikErrorHandler("cqlLibraryName", true)}
+              helperText={
+                (formik.touched["cqlLibraryName"] ||
+                  focusedField === "cqlLibraryName") &&
+                (formikErrorHandler("cqlLibraryName") ||
+                  "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters.")
+              }
               size="small"
               error={
                 formik.touched.cqlLibraryName &&
                 Boolean(formik.errors.cqlLibraryName)
               }
               {...formik.getFieldProps("cqlLibraryName")}
+              onBlur={() => {
+                onBlur("cqlLibraryName");
+              }}
             />
           </Box>
           <Box sx={formRowGapped}>
@@ -239,7 +250,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               error={
                 formik.touched.description && Boolean(formik.errors.description)
               }
-              helperText={formikErrorHandler("description", true)}
+              helperText={formikErrorHandler("description")}
             />
           </Box>
           <Box sx={formRow}>
