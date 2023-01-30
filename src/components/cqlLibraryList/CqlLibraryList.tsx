@@ -298,7 +298,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
           <div tw="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div>
               <table tw="min-w-full" style={{ borderTop: "solid 1px #DDD" }}>
-                <thead>
+                <thead tw="bg-slate">
                   <tr>
                     <th scope="col" className="col-header">
                       Name
@@ -319,7 +319,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                     <tr
                       key={cqlLibrary.id}
                       data-testid="row-item"
-                      className={i % 2 === 0 ? "odd" : ""}
+                      style={{ borderBottom: "solid 1px #AAA" }}
                     >
                       <td>
                         <button
