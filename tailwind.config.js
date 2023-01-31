@@ -108,6 +108,11 @@ module.exports = {
         950: "#20253a",
         975: "#080B1A",
       },
+      slate: {
+        DEFAULT: "#EDEDED",
+        90: "#242424",
+        80: "#333333",
+      },
     },
     extend: {
       outline: {
