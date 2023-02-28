@@ -92,7 +92,10 @@ function CqlLibraryLanding() {
         }}
       />
       <div className="measure-table">
-        <section tw="flex flex-row">
+        <section
+          tw="flex flex-row"
+          style={{ borderBottom: "1px solid #b0b0b0" }}
+        >
           <div>
             <Tabs
               value={activeTab}
