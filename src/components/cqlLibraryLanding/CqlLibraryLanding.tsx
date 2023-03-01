@@ -136,7 +136,6 @@ function CqlLibraryLanding() {
                 data-testid="all-cql-libraries-tab"
               />
             </Tabs>
-            <Divider />
           </div>
           <span tw="flex-grow" />
         </section>
