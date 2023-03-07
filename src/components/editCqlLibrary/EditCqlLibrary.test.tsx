@@ -1,6 +1,12 @@
 import * as React from "react";
 import CreateEditCqlLibrary from "./EditCqlLibrary";
-import { fireEvent, render, waitFor, screen } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  waitFor,
+  screen,
+  within,
+} from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import { MemoryRouter, Route } from "react-router";
 import userEvent from "@testing-library/user-event";
@@ -625,7 +631,106 @@ describe("Edit Cql Library Component", () => {
       codeSystem:
         "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs",
     });
-  }, 25000);
+  }, 10000);
+
+  it("should allow the user to clear the program use context and save", async () => {
+    const cqlLibrary: CqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      model: Model.QICORE,
+      draft: true,
+      version: null,
+      groupId: null,
+      cqlErrors: false,
+      publisher: "Org1",
+      description: "testing",
+      experimental: true,
+      cql: "library UpdateName version '1.0.000'",
+      createdAt: "",
+      createdBy: "john doe",
+      lastModifiedAt: "",
+      lastModifiedBy: "",
+      programUseContext: {
+        code: "ep-ec",
+        display: "EP/EC",
+        codeSystem:
+          "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs",
+      },
+    };
+
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockedAxios.put.mockClear();
+    (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
+      return "library UpdateName version '1.0.000'";
+    });
+    mockedAxios.put.mockResolvedValue({
+      data: {
+        ...cqlLibrary,
+        cqlLibraryName: "UpdatedName",
+        programUseContext: null,
+      },
+    });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+
+    expect(mockedAxios.get).toHaveBeenCalled();
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Save",
+      })
+    ).toBeInTheDocument();
+
+    const libraryNode = await screen.getByTestId(
+      "cql-library-name-text-field-input"
+    );
+    expect(libraryNode.value).toBe("Library1");
+    Simulate.change(libraryNode);
+
+    userEvent.clear(libraryNode);
+    userEvent.type(libraryNode, "UpdatedName");
+    Simulate.change(libraryNode);
+
+    await waitFor(() => expect(libraryNode.value).toBe("UpdatedName"));
+    const programUseContext = screen.getByRole("combobox", {
+      name: "Program Use Context",
+    }) as HTMLInputElement;
+    expect(programUseContext.value).toEqual("EP/EC");
+
+    fireEvent.keyDown(programUseContext, { key: "ArrowDown" });
+    const programUseContextDiv = screen.getByTestId("programUseContext");
+    const clearProgramUseContext = await within(
+      programUseContextDiv
+    ).findByTitle("Clear");
+    userEvent.click(clearProgramUseContext);
+    expect(programUseContext.value).toBeFalsy();
+
+    const updateButton = screen.getByRole("button", {
+      name: "Save",
+    });
+    expect(updateButton).not.toBeDisabled();
+    userEvent.click(updateButton);
+    await waitFor(() => {
+      const successMessage = screen.getByTestId("generic-success-text-header");
+      expect(successMessage.textContent).toEqual(
+        "CQL Library saved successfully"
+      );
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+    });
+    expect(mockedAxios.put.mock.lastCall[0]).toEqual(
+      "/cql-libraries/cql-lib-1234"
+    );
+    expect(mockedAxios.put.mock.lastCall[1]).toBeTruthy();
+    expect(
+      (mockedAxios.put.mock.lastCall[1] as CqlLibrary).programUseContext
+    ).toBeFalsy();
+    const programUseContext2 = screen.getByRole("combobox", {
+      name: "Program Use Context",
+    }) as HTMLInputElement;
+    expect(programUseContext2.value).toBeFalsy();
+  }, 10000);
 
   it("should render existing CQL in the editor", async () => {
     const cqlLibrary: CqlLibrary = {
