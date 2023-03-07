@@ -222,13 +222,9 @@ const EditCqlLibrary = () => {
     const synchedCqlLibrary = { ...cqlLibrary, cql: inSyncCql, cqlErrors };
     cqlLibraryServiceApi
       .updateCqlLibrary(synchedCqlLibrary)
-      .then(() => {
-        const updatedLibrary = Object.assign(
-          {},
-          loadedCqlLibrary,
-          synchedCqlLibrary
-        );
-        setLoadedCqlLibrary(updatedLibrary);
+      .then((response) => {
+        cqlLibraryStore.updateLibrary(response.data);
+        setLoadedCqlLibrary(response.data);
         resetForm();
         const successMessage =
           inSyncCql !== cqlLibrary.cql

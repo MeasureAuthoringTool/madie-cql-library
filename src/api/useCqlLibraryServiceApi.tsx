@@ -52,7 +52,7 @@ export class CqlLibraryServiceApi {
     });
   }
 
-  async updateCqlLibrary(cqlLibrary: CqlLibrary): Promise<void> {
+  async updateCqlLibrary(cqlLibrary: CqlLibrary): Promise<any> {
     return await axios.put(
       `${this.baseUrl}/cql-libraries/${cqlLibrary.id}`,
       cqlLibrary,
