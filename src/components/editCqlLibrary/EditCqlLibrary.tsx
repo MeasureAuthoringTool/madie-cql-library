@@ -472,14 +472,6 @@ const EditCqlLibrary = () => {
                     label="Program Use Context"
                     placeholder="-"
                     disabled={!formik.values.draft || !isOwner}
-                    error={
-                      formik.touched.programUseContext &&
-                      formik.errors.programUseContext
-                    }
-                    helperText={
-                      formik.touched.programUseContext &&
-                      formik.errors.programUseContext
-                    }
                     options={programUseContextOptions}
                     value={formik.values?.programUseContext?.display ?? null}
                     onChange={(id, value) => {
