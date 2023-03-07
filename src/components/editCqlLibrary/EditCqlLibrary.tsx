@@ -13,6 +13,7 @@ import {
   useOrganizationApi,
   routeHandlerStore,
   checkUserCanEdit,
+  PROGRAM_USE_CONTEXTS,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
@@ -36,9 +37,13 @@ import {
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
-import { Checkbox, FormControlLabel, FormHelperText } from "@mui/material";
+import { Checkbox, FormControlLabel } from "@mui/material";
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
+
+const programUseContextOptions: string[] = PROGRAM_USE_CONTEXTS.map(
+  (puc) => puc.display
+);
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -102,6 +107,7 @@ const EditCqlLibrary = () => {
       model: loadedCqlLibrary?.model,
       cql: loadedCqlLibrary?.cql,
       draft: loadedCqlLibrary?.draft,
+      programUseContext: loadedCqlLibrary?.programUseContext,
       id,
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
@@ -455,6 +461,27 @@ const EditCqlLibrary = () => {
                       />
                     }
                     label="Experimental"
+                  />
+                </div>
+
+                <div className="form-row">
+                  <AutoComplete
+                    id="programUseContext"
+                    name="programUseContext"
+                    dataTestId="programUseContext"
+                    label="Program Use Context"
+                    placeholder="-"
+                    disabled={!formik.values.draft || !isOwner}
+                    options={programUseContextOptions}
+                    value={formik.values?.programUseContext?.display ?? null}
+                    onChange={(id, value) => {
+                      formik.setFieldValue(
+                        "programUseContext",
+                        PROGRAM_USE_CONTEXTS.find(
+                          (puc) => value === puc.display
+                        )
+                      );
+                    }}
                   />
                 </div>
               </div>

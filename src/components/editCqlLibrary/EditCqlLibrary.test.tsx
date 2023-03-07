@@ -43,6 +43,20 @@ jest.mock("@madie/madie-util", () => ({
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
+  PROGRAM_USE_CONTEXTS: [
+    {
+      code: "mips",
+      display: "MIPS",
+      codeSystem:
+        "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs",
+    },
+    {
+      code: "ep-ec",
+      display: "EP/EC",
+      codeSystem:
+        "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs",
+    },
+  ],
 }));
 
 const cqlLibrary = {
@@ -510,6 +524,12 @@ describe("Edit Cql Library Component", () => {
       createdBy: "john doe",
       lastModifiedAt: "",
       lastModifiedBy: "",
+      programUseContext: {
+        code: "ep-ec",
+        display: "EP/EC",
+        codeSystem:
+          "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs",
+      },
     };
 
     mockedAxios.get.mockClear();
@@ -563,6 +583,18 @@ describe("Edit Cql Library Component", () => {
     userEvent.click(anotherOrg);
     expect(publisher.value).toBe("Org2");
 
+    const programUseContext = screen.getByRole("combobox", {
+      name: "Program Use Context",
+    }) as HTMLInputElement;
+    expect(programUseContext.value).toEqual("EP/EC");
+    fireEvent.keyDown(programUseContext, { key: "ArrowDown" });
+    const programOptions = (await screen.findAllByRole(
+      "option"
+    )) as HTMLOptionElement[];
+    expect(programOptions).toHaveLength(2);
+    userEvent.click(programOptions[0]);
+    expect(programUseContext.value).toBe("MIPS");
+
     fireEvent.change(screen.getByTestId("cql-library-editor"), {
       target: {
         value: "library UpdateName version '1.0.000'",
@@ -581,7 +613,19 @@ describe("Edit Cql Library Component", () => {
       );
       expect(mockedAxios.put).toHaveBeenCalledTimes(1);
     });
-  });
+    expect(mockedAxios.put.mock.lastCall[0]).toEqual(
+      "/cql-libraries/cql-lib-1234"
+    );
+    expect(mockedAxios.put.mock.lastCall[1]).toBeTruthy();
+    expect(
+      (mockedAxios.put.mock.lastCall[1] as CqlLibrary).programUseContext
+    ).toEqual({
+      code: "mips",
+      display: "MIPS",
+      codeSystem:
+        "http://hl7.org/fhir/us/cqfmeasures/CodeSystem/quality-programs",
+    });
+  }, 25000);
 
   it("should render existing CQL in the editor", async () => {
     const cqlLibrary: CqlLibrary = {
@@ -717,6 +761,16 @@ describe("Edit Cql Library Component", () => {
     expect(orgList).toHaveLength(2);
   });
 
+  it("should render program use context options in an autocomplete", async () => {
+    renderWithRouter();
+    const programUseContext = screen.getByRole("combobox", {
+      name: "Program Use Context",
+    });
+    fireEvent.keyDown(programUseContext, { key: "ArrowDown" });
+    const programList = await screen.findAllByRole("option");
+    expect(programList).toHaveLength(2);
+  });
+
   it("should render all fields in read-only mode if user is not the owner of the CQL Library", async () => {
     (checkUserCanEdit as jest.Mock).mockImplementation(() => {
       return false;
@@ -760,6 +814,9 @@ describe("Edit Cql Library Component", () => {
       screen.getByRole("textbox", { name: "Description" })
     ).toHaveAttribute("disabled");
     expect(screen.getByRole("combobox", { name: "Publisher" })).toBeDisabled();
+    expect(
+      screen.getByRole("combobox", { name: "Program Use Context" })
+    ).toBeDisabled();
     expect(
       screen.getByRole("checkbox", { name: "Experimental" })
     ).toBeDisabled();
