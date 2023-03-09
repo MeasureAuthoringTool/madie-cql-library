@@ -181,7 +181,7 @@ const EditCqlLibrary = () => {
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
     setActiveSpinner(true);
     const inSyncCql = await synchingEditorCqlContent(
-      formik.values.cql.trim(),
+      formik.values.cql?.trim() ?? "",
       loadedCqlLibrary?.cql,
       formik.values.cqlLibraryName,
       loadedCqlLibrary?.cqlLibraryName,
