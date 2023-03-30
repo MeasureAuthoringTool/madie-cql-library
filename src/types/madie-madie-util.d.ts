@@ -55,6 +55,16 @@ declare module "@madie/madie-util" {
     state: CqlLibrary;
   };
 
+  interface FeatureFlags {
+    export: boolean;
+    measureVersioning: boolean;
+    populationCriteriaTabs: boolean;
+    applyDefaults: boolean;
+    qdm: boolean;
+  }
+
+  export function useFeatureFlags(): FeatureFlags;
+
   export function getServiceConfig(): Promise<ServiceConfig>;
 
   export class OrganizationApi {

@@ -29,6 +29,9 @@ jest.mock("@madie/madie-util", () => ({
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
+  useFeatureFlags: jest.fn().mockReturnValue({
+    qdm: false,
+  }),
 }));
 const organizations = [
   {

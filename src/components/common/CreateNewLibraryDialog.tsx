@@ -13,7 +13,7 @@ import {
 import { Box } from "@mui/system";
 import { FormHelperText, MenuItem } from "@mui/material";
 import { useFormik } from "formik";
-import { useOrganizationApi } from "@madie/madie-util";
+import { useFeatureFlags, useOrganizationApi } from "@madie/madie-util";
 import TextArea from "./TextArea";
 
 interface TestProps {
@@ -41,6 +41,12 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [organizations, setOrganizations] = useState<string[]>();
   const organizationApi = useRef(useOrganizationApi()).current;
+  const featureFlags = useFeatureFlags();
+
+  const modelOptions = featureFlags?.qdm
+    ? Object.keys(Model)
+    : [Object.keys(Model)[0]];
+
   // fetch organizations DB using measure service and sorts alphabetically
   useEffect(() => {
     organizationApi.getAllOrganizations().then((response) => {
@@ -221,7 +227,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               onClose={() => {
                 setFieldTouched("model");
               }}
-              options={Object.keys(Model).map((modelKey) => {
+              options={modelOptions.map((modelKey) => {
                 return (
                   <MenuItem
                     key={modelKey}
