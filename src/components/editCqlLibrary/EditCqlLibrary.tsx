@@ -227,7 +227,7 @@ const EditCqlLibrary = () => {
         setLoadedCqlLibrary(response.data);
         resetForm();
         const successMessage =
-          inSyncCql !== cqlLibrary.cql
+          cqlLibrary.cql !== null && inSyncCql?.trim() !== cqlLibrary.cql.trim()
             ? {
                 status: "success",
                 message:
