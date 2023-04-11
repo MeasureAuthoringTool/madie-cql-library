@@ -1,12 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Divider, Tab, Tabs, TextField, IconButton } from "@mui/material";
+import { Divider, TextField, IconButton } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import * as _ from "lodash";
 import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle } from "@madie/madie-util";
-import { MadieSpinner, Button } from "@madie/madie-design-system/dist/react";
+import {
+  MadieSpinner,
+  Button,
+  Tabs,
+  Tab,
+} from "@madie/madie-design-system/dist/react";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
@@ -97,41 +102,14 @@ function CqlLibraryLanding() {
           style={{ borderBottom: "1px solid #b0b0b0" }}
         >
           <div>
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              sx={{
-                fontWeight: 700,
-                color: "#003366",
-                "& .MuiTabs-indicator": {
-                  height: "4px",
-                  backgroundColor: "#0073C8",
-                },
-                "& .Mui-selected": {
-                  fontWeight: 500,
-                  color: "#003366 !important",
-                },
-              }}
-            >
+            <Tabs type="B" value={activeTab} onChange={handleTabChange}>
               <Tab
-                sx={{
-                  padding: "24px 21px",
-                  fontFamily: "Rubik, sans serif",
-                  borderRadius: "6px 0 0 0",
-                  fontWeight: 400,
-                  color: "#003366",
-                }}
+                type="B"
                 label={`My CQL Libraries`}
                 data-testid="my-cql-libraries-tab"
               />
               <Tab
-                sx={{
-                  padding: "24px 21px",
-                  fontFamily: "Rubik, sans serif",
-                  borderRadius: "0 6px 0 0",
-                  fontWeight: 400,
-                  color: "#003366",
-                }}
+                type="B"
                 label="All CQL Libraries"
                 data-testid="all-cql-libraries-tab"
               />
