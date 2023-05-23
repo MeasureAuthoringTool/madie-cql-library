@@ -95,12 +95,15 @@ const CreatDraftDialog = ({ open, onClose, onSubmit, cqlLibrary }) => {
   });
 
   const submitForm = async (cqlLibraryName) => {
+    const using = cqlLibrary?.model.split(" v");
     const inSyncCql = await synchingEditorCqlContent(
       "",
       cqlLibrary?.cql,
       cqlLibraryName,
       cqlLibrary?.cqlLibraryName,
       cqlLibrary?.version,
+      using[0],
+      using[1],
       "draftDialog"
     );
     return onSubmit({ ...cqlLibrary, cqlLibraryName, cql: inSyncCql });

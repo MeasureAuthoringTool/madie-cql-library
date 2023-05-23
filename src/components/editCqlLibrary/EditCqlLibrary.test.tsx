@@ -15,6 +15,7 @@ import { act, Simulate } from "react-dom/test-utils";
 import axios from "axios";
 import {
   ElmTranslationExternalError,
+  isUsingEmpty,
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
@@ -508,7 +509,67 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       const successMessage = screen.getByTestId("generic-success-text-header");
       expect(successMessage.textContent).toEqual(
-        "CQL updated successfully! Library Name and/or Version can not be updated in the CQL Editor. MADiE has overwritten the updated Library Name and/or Version."
+        "CQL updated successfully! Library Statement or Using Statement were incorrect. MADiE has overwritten them to ensure proper CQL."
+      );
+    });
+  });
+
+  it("should update an existing cql library with the synched cql library name, version and warn about blank using", async () => {
+    (synchingEditorCqlContent as jest.Mock)
+      .mockClear()
+      .mockImplementation(() => {
+        return "library UpdateName version '1.0.000'";
+      });
+
+    isUsingEmpty.mockClear().mockImplementation(() => true);
+
+    mockedAxios.put.mockResolvedValue({
+      data: {
+        ...cqlLibrary,
+        cqlLibraryName: "UpdatedName",
+        cql: synchingEditorCqlContent,
+      },
+    });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+
+    expect(mockedAxios.get).toHaveBeenCalled();
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Save",
+      })
+    ).toBeInTheDocument();
+
+    const libraryNameInput = screen.getByTestId(
+      "cql-library-name-text-field-input"
+    );
+
+    expect(libraryNameInput.value).toBe("Library1");
+    userEvent.clear(libraryNameInput);
+    userEvent.type(libraryNameInput, "UpdatedName1");
+    fireEvent.blur(libraryNameInput);
+    expect(libraryNameInput.value).toBe("UpdatedName1");
+    // await waitFor(() => expect(libraryNameInput.value).toBe("UpdatedName1"));
+    const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
+    expect(input).toHaveValue("");
+
+    fireEvent.change(screen.getByTestId("cql-library-editor"), {
+      target: {
+        value: "library UpdatedNameTets versionsszz '0.0.000'",
+      },
+    });
+
+    const updateButton = screen.getByRole("button", {
+      name: "Save",
+    });
+    expect(updateButton).not.toBeDisabled();
+    userEvent.click(updateButton);
+    await waitFor(() => {
+      const successMessage = screen.getByTestId("generic-success-text-header");
+      expect(successMessage.textContent).toEqual(
+        "CQL updated successfully but was missing a Using statement.  Please add in a valid model and version."
       );
     });
   });
@@ -544,10 +605,11 @@ describe("Edit Cql Library Component", () => {
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
       return "library UpdateName version '1.0.000'";
     });
+    isUsingEmpty.mockClear().mockImplementation(() => false);
     mockedAxios.put.mockResolvedValue({
       data: {
         ...cqlLibrary,
-        cqlLibraryName: "UpdatedName",
+        cqlLibraryName: "UpdateName",
         cql: synchingEditorCqlContent,
       },
     });
@@ -570,10 +632,10 @@ describe("Edit Cql Library Component", () => {
     Simulate.change(libraryNode);
 
     userEvent.clear(libraryNode);
-    userEvent.type(libraryNode, "UpdatedName");
+    userEvent.type(libraryNode, "UpdateName");
     Simulate.change(libraryNode);
 
-    await waitFor(() => expect(libraryNode.value).toBe("UpdatedName"));
+    await waitFor(() => expect(libraryNode.value).toBe("UpdateName"));
 
     const experiementalChkBox = screen.getByRole("checkbox", {
       name: "Experimental",
@@ -645,7 +707,7 @@ describe("Edit Cql Library Component", () => {
       publisher: "Org1",
       description: "testing",
       experimental: true,
-      cql: "library UpdateName version '1.0.000'",
+      cql: "library UpdateName version '1.0.000'\nusing QI-Core version '4.1.1'",
       createdAt: "",
       createdBy: "john doe",
       lastModifiedAt: "",
@@ -662,12 +724,13 @@ describe("Edit Cql Library Component", () => {
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
     mockedAxios.put.mockClear();
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
-      return "library UpdateName version '1.0.000'";
+      return "library UpdateName version '1.0.000'\nusing QI-Core version '4.1.1'";
     });
+    isUsingEmpty.mockClear().mockImplementation(() => false);
     mockedAxios.put.mockResolvedValue({
       data: {
         ...cqlLibrary,
-        cqlLibraryName: "UpdatedName",
+        cqlLibraryName: "UpdateName",
         programUseContext: null,
       },
     });
@@ -690,10 +753,10 @@ describe("Edit Cql Library Component", () => {
     Simulate.change(libraryNode);
 
     userEvent.clear(libraryNode);
-    userEvent.type(libraryNode, "UpdatedName");
+    userEvent.type(libraryNode, "UpdateName");
     Simulate.change(libraryNode);
 
-    await waitFor(() => expect(libraryNode.value).toBe("UpdatedName"));
+    await waitFor(() => expect(libraryNode.value).toBe("UpdateName"));
     const programUseContext = screen.getByRole("combobox", {
       name: "Program Use Context",
     }) as HTMLInputElement;
