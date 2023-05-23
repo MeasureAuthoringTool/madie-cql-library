@@ -21,6 +21,7 @@ import CqlLibraryEditor, {
 } from "../cqlLibraryEditor/CqlLibraryEditor";
 import {
   EditorAnnotation,
+  isUsingEmpty,
   parseContent,
   synchingEditorCqlContent,
   validateContent,
@@ -180,12 +181,15 @@ const EditCqlLibrary = () => {
 
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
     setActiveSpinner(true);
+    const using = loadedCqlLibrary?.model.split(" v");
     const inSyncCql = await synchingEditorCqlContent(
       formik.values.cql?.trim() ?? "",
       loadedCqlLibrary?.cql,
       formik.values.cqlLibraryName,
       loadedCqlLibrary?.cqlLibraryName,
       loadedCqlLibrary?.version,
+      using[0],
+      using[1],
       "updateCqlLibrary"
     );
 
@@ -226,15 +230,27 @@ const EditCqlLibrary = () => {
         cqlLibraryStore.updateLibrary(response.data);
         setLoadedCqlLibrary(response.data);
         resetForm();
-        const successMessage =
-          cqlLibrary.cql !== null && inSyncCql?.trim() !== cqlLibrary.cql.trim()
-            ? {
-                status: "success",
-                message:
-                  "CQL updated successfully! Library Name and/or Version can not be updated in the CQL Editor. MADiE has overwritten the updated Library Name and/or Version.",
-              }
-            : { status: "success", message: "CQL Library saved successfully" };
-        setSuccess(successMessage);
+        if (isUsingEmpty(cqlLibrary.cql.trim())) {
+          setSuccess({
+            status: "success",
+            message:
+              "CQL updated successfully but was missing a Using statement.  Please add in a valid model and version.",
+          });
+        } else {
+          const successMessage =
+            cqlLibrary.cql !== null &&
+            inSyncCql?.trim() !== cqlLibrary.cql.trim()
+              ? {
+                  status: "success",
+                  message:
+                    "CQL updated successfully! Library Statement or Using Statement were incorrect. MADiE has overwritten them to ensure proper CQL.",
+                }
+              : {
+                  status: "success",
+                  message: "CQL Library saved successfully",
+                };
+          setSuccess(successMessage);
+        }
       })
       .catch((error) => {
         setError(true);

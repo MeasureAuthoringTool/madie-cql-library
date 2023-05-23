@@ -5,6 +5,7 @@ export const validateContent = jest
   .fn()
   .mockImplementation((content) => ({ errors: [], translation: {} }));
 export const synchingEditorCqlContent = jest.fn();
+export const isUsingEmpty = jest.fn();
 
 export function MadieEditor({
   onChange,
