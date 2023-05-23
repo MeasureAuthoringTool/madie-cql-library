@@ -605,10 +605,11 @@ describe("Edit Cql Library Component", () => {
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
       return "library UpdateName version '1.0.000'";
     });
+    isUsingEmpty.mockClear().mockImplementation(() => false);
     mockedAxios.put.mockResolvedValue({
       data: {
         ...cqlLibrary,
-        cqlLibraryName: "UpdatedName",
+        cqlLibraryName: "UpdateName",
         cql: synchingEditorCqlContent,
       },
     });
@@ -631,10 +632,10 @@ describe("Edit Cql Library Component", () => {
     Simulate.change(libraryNode);
 
     userEvent.clear(libraryNode);
-    userEvent.type(libraryNode, "UpdatedName");
+    userEvent.type(libraryNode, "UpdateName");
     Simulate.change(libraryNode);
 
-    await waitFor(() => expect(libraryNode.value).toBe("UpdatedName"));
+    await waitFor(() => expect(libraryNode.value).toBe("UpdateName"));
 
     const experiementalChkBox = screen.getByRole("checkbox", {
       name: "Experimental",
@@ -706,7 +707,7 @@ describe("Edit Cql Library Component", () => {
       publisher: "Org1",
       description: "testing",
       experimental: true,
-      cql: "library UpdateName version '1.0.000'",
+      cql: "library UpdateName version '1.0.000'\nusing QI-Core version '4.1.1'",
       createdAt: "",
       createdBy: "john doe",
       lastModifiedAt: "",
@@ -723,12 +724,13 @@ describe("Edit Cql Library Component", () => {
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
     mockedAxios.put.mockClear();
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
-      return "library UpdateName version '1.0.000'";
+      return "library UpdateName version '1.0.000'\nusing QI-Core version '4.1.1'";
     });
+    isUsingEmpty.mockClear().mockImplementation(() => false);
     mockedAxios.put.mockResolvedValue({
       data: {
         ...cqlLibrary,
-        cqlLibraryName: "UpdatedName",
+        cqlLibraryName: "UpdateName",
         programUseContext: null,
       },
     });
@@ -751,10 +753,10 @@ describe("Edit Cql Library Component", () => {
     Simulate.change(libraryNode);
 
     userEvent.clear(libraryNode);
-    userEvent.type(libraryNode, "UpdatedName");
+    userEvent.type(libraryNode, "UpdateName");
     Simulate.change(libraryNode);
 
-    await waitFor(() => expect(libraryNode.value).toBe("UpdatedName"));
+    await waitFor(() => expect(libraryNode.value).toBe("UpdateName"));
     const programUseContext = screen.getByRole("combobox", {
       name: "Program Use Context",
     }) as HTMLInputElement;
