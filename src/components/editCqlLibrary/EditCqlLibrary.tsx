@@ -239,6 +239,7 @@ const EditCqlLibrary = () => {
         } else {
           const successMessage =
             cqlLibrary.cql !== null &&
+            inSyncCql &&
             inSyncCql?.trim() !== cqlLibrary.cql.trim()
               ? {
                   status: "success",
