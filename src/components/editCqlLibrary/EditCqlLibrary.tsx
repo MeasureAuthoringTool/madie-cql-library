@@ -233,7 +233,7 @@ const EditCqlLibrary = () => {
         if (!cqlLibrary.cql?.trim()) {
           setSuccess({
             status: "success",
-            message: "CQL updated successfully.  Please add CQL.",
+            message: "CQL Library saved successfully.",
           });
         } else if (isUsingEmpty(cqlLibrary.cql.trim())) {
           setSuccess({
