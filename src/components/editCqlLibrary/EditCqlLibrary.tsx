@@ -230,7 +230,6 @@ const EditCqlLibrary = () => {
         cqlLibraryStore.updateLibrary(response.data);
         setLoadedCqlLibrary(response.data);
         resetForm();
-
         if (cqlLibrary.cql?.trim() && isUsingEmpty(cqlLibrary.cql.trim())) {
           setSuccess({
             status: "success",
