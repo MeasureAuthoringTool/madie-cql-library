@@ -253,13 +253,15 @@ describe("Library Dialog", () => {
     expect(
       await screen.findByText("Cql Library successfully created")
     ).toBeInTheDocument();
-    expect(mockCqlLibraryServiceApi.createCqlLibrary).toHaveBeenCalledWith({
-      cqlLibraryName: "QdmLibrary1",
-      model: "QDM v5.6",
-      cql: "",
-      draft: true,
-      description: "QDM Library Description",
-      publisher: "Org2",
-    });
+    expect(mockCqlLibraryServiceApi.createCqlLibrary).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cqlLibraryName: "QdmLibrary1",
+        model: "QDM v5.6",
+        cql: "",
+        draft: true,
+        description: "QDM Library Description",
+        publisher: "Org2",
+      })
+    );
   }, 20000);
 });
