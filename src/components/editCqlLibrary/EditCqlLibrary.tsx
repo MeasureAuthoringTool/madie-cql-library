@@ -109,6 +109,8 @@ const EditCqlLibrary = () => {
       cql: loadedCqlLibrary?.cql,
       draft: loadedCqlLibrary?.draft,
       programUseContext: loadedCqlLibrary?.programUseContext,
+      librarySetId: loadedCqlLibrary?.librarySetId,
+      librarySet: loadedCqlLibrary?.librarySet,
       id,
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
