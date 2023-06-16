@@ -142,7 +142,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCQLLibrary, setSelectedCqlLibrary] =
     useState<CqlLibrary>(null);
-  const isOwner = checkUserCanEdit(selectedCQLLibrary?.createdBy, []);
+  const isOwner = checkUserCanEdit(selectedCQLLibrary?.librarySet?.owner, []);
   const handleOpen = (
     selected: CqlLibrary,
     event: React.MouseEvent<HTMLButtonElement>

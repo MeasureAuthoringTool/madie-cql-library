@@ -15,6 +15,7 @@ import { FormHelperText, MenuItem } from "@mui/material";
 import { useFormik } from "formik";
 import { useFeatureFlags, useOrganizationApi } from "@madie/madie-util";
 import TextArea from "./TextArea";
+import { v4 as uuidv4 } from "uuid";
 
 interface TestProps {
   open: boolean;
@@ -57,6 +58,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
     });
   }, []);
   async function createCqlLibrary(cqlLibrary: CqlLibrary) {
+    cqlLibrary.librarySetId = uuidv4();
     cqlLibraryServiceApi
       .createCqlLibrary(cqlLibrary)
       .then(() => {
