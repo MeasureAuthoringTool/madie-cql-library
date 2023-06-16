@@ -86,7 +86,7 @@ const EditCqlLibrary = () => {
   const [toastType, setToastType] = useState<string>("danger");
   const [discardDialogOpen, setDiscardDialogOpen] = useState<boolean>(false);
   const { updateRouteHandlerState } = routeHandlerStore;
-  const isOwner = checkUserCanEdit(loadedCqlLibrary?.createdBy, []);
+  const isOwner = checkUserCanEdit(loadedCqlLibrary?.librarySet?.owner, []);
 
   const onToastClose = () => {
     setToastType(null);
