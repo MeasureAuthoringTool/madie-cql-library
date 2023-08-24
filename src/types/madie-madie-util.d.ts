@@ -1,13 +1,7 @@
 declare module "@madie/madie-util" {
   import { LifeCycleFn } from "single-spa";
   // import { Measure } from "@madie/madie-models/dist/Measure";
-  import {
-    CqlLibrary,
-    Measure,
-    Organization,
-    Acl,
-    ProgramUseContext,
-  } from "@madie/madie-models";
+  import { CqlLibrary, Measure, Organization, Acl } from "@madie/madie-models";
   export interface OktaConfig {
     baseUrl: string;
     issuer: string;
@@ -95,6 +89,4 @@ declare module "@madie/madie-util" {
   export const bootstrap: LifeCycleFn<void>;
   export const mount: LifeCycleFn<void>;
   export const unmount: LifeCycleFn<void>;
-
-  export const PROGRAM_USE_CONTEXTS: ProgramUseContext[];
 }
