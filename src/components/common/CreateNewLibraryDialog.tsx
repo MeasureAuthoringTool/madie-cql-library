@@ -153,7 +153,10 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       setCqlLibraryHelper(
         "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters."
       );
-    } else if (formik.values.cqlLibraryName.length > 64) {
+    } else if (
+      formik.values.cqlLibraryName.length > 64 &&
+      formikErrorHandler("cqlLibraryName")
+    ) {
       setCqlLibraryHelper("A Libary Name cannot be more than 64 characters");
     } else {
       setCqlLibraryHelper(null);
