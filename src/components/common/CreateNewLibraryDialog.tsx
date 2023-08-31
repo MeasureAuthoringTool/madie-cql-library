@@ -157,7 +157,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       formik.values.cqlLibraryName.length > 64 &&
       formikErrorHandler("cqlLibraryName")
     ) {
-      setCqlLibraryHelper("A Libary Name cannot be more than 64 characters");
+      setCqlLibraryHelper("Libary Name cannot be more than 64 characters");
     } else {
       setCqlLibraryHelper(null);
     }
