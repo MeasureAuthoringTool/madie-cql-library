@@ -402,7 +402,6 @@ const EditCqlLibrary = () => {
                     inputProps={{
                       id: "cql-library-name-text-field-input",
                       "data-testid": "cql-library-name-text-field-input",
-                      maxlength: 64,
                     }}
                     error={
                       formik.touched.cqlLibraryName &&

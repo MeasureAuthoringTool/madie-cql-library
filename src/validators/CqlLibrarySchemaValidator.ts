@@ -8,7 +8,8 @@ export const CqlLibrarySchemaValidator = Yup.object().shape({
     .matches(
       /^[A-Z][a-zA-Z0-9]*$/,
       "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters."
-    ),
+    )
+    .max(64, "Library name must be less than 64 characters long."),
   description: Yup.string().required("Description is required."),
   publisher: Yup.string().required("Publisher is required."),
   model: Yup.string()
