@@ -40,7 +40,6 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   });
   const { toastOpen, toastType, toastMessage } = toast;
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
-  const [cqlLibraryHelper, setCqlLibraryHelper] = useState(String);
   const [organizations, setOrganizations] = useState<string[]>();
   const organizationApi = useRef(useOrganizationApi()).current;
   const featureFlags = useFeatureFlags();
@@ -145,24 +144,6 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
     setFocusedField(field);
   };
 
-  useEffect(() => {
-    if (
-      (formik.touched["cqlLibraryName"] || focusedField === "cqlLibraryName") &&
-      formikErrorHandler("cqlLibraryName")
-    ) {
-      setCqlLibraryHelper(
-        "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters."
-      );
-    } else if (
-      formik.values.cqlLibraryName.length > 64 &&
-      formikErrorHandler("cqlLibraryName")
-    ) {
-      setCqlLibraryHelper("Libary Name cannot be more than 64 characters");
-    } else {
-      setCqlLibraryHelper(null);
-    }
-  }, [formik.values.cqlLibraryName, formik.touched]);
-
   return (
     <div>
       <MadieDialog
@@ -216,7 +197,11 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
                 "data-testid": "cql-library-name-text-field-input",
                 maxlength: 64,
               }}
-              helperText={cqlLibraryHelper}
+              helperText={
+                (formik.touched["cqlLibraryName"] ||
+                  focusedField === "cqlLibraryName") &&
+                formikErrorHandler("cqlLibraryName")
+              }
               size="small"
               error={
                 formik.touched.cqlLibraryName &&
