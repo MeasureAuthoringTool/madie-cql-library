@@ -200,7 +200,8 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               helperText={
                 (formik.touched["cqlLibraryName"] ||
                   focusedField === "cqlLibraryName") &&
-                formikErrorHandler("cqlLibraryName")
+                (formikErrorHandler("cqlLibraryName") ||
+                  "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters.")
               }
               size="small"
               error={
