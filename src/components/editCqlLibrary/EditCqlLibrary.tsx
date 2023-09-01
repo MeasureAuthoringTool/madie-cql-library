@@ -405,7 +405,7 @@ const EditCqlLibrary = () => {
                     helperText={
                       formikErrorHandler("cqlLibraryName", true) ||
                       (formik.values.cqlLibraryName?.length > 64 &&
-                        "Libary Name cannot be more than 64 characters")
+                        "A Measure CQL Library Name cannot be more than 64 characters.")
                     }
                     placeholder="Enter a Cql Library Name"
                   />
