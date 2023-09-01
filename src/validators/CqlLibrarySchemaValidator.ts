@@ -3,7 +3,7 @@ import { Model } from "@madie/madie-models";
 
 export const CqlLibrarySchemaValidator = Yup.object().shape({
   cqlLibraryName: Yup.string()
-    .max(64, "A Measure CQL Library Name cannot be more than 64 characters.")
+    .max(64, "Library name cannot be more than 64 characters.")
     .required("Library name is required.")
     .matches(
       /^[A-Z][a-zA-Z0-9]*$/,
