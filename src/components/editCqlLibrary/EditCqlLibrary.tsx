@@ -402,11 +402,7 @@ const EditCqlLibrary = () => {
                       Boolean(formik.errors.cqlLibraryName)
                     }
                     {...formik.getFieldProps("cqlLibraryName")}
-                    helperText={
-                      formikErrorHandler("cqlLibraryName", true) ||
-                      (formik.values.cqlLibraryName?.length > 64 &&
-                        "Library name cannot be more than 64 characters.")
-                    }
+                    helperText={formikErrorHandler("cqlLibraryName", true)}
                     placeholder="Enter a Cql Library Name"
                   />
                 </div>
