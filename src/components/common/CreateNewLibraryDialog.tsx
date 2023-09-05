@@ -195,7 +195,6 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               data-testid="cql-library-name-text-field"
               inputProps={{
                 "data-testid": "cql-library-name-text-field-input",
-                maxlength: 64,
               }}
               helperText={
                 (formik.touched["cqlLibraryName"] ||
