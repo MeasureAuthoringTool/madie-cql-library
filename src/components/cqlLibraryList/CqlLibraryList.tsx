@@ -360,6 +360,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                             handleOpen(cqlLibrary, e);
                           }}
                           data-testid={`view/edit-cqlLibrary-button-${cqlLibrary.id}`}
+                          aria-label={`CQL Library ${cqlLibrary.cqlLibraryName} version ${cqlLibrary.version} draft status ${cqlLibrary.draft} View / Edit`}
                         >
                           View/Edit
                           <span>
