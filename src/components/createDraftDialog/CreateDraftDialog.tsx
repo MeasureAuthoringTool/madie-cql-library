@@ -163,6 +163,7 @@ const CreatDraftDialog = ({ open, onClose, onSubmit, cqlLibrary }) => {
               {...formik.getFieldProps("cqlLibraryName")}
               data-testid="cql-library-name-text-field"
               required={true}
+              aria-required={true}
             >
               <Label htmlFor="cqlLibraryName" text="Cql Library Name" />
               {formikErrorHandler("cqlLibraryName", true)}

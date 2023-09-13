@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -108,6 +108,7 @@ const CreatVersionDialog = ({
     formik.resetForm();
     onClose();
   };
+  const [focusedField, setFocusedField] = useState("");
 
   return (
     <Dialog
@@ -146,31 +147,52 @@ const CreatVersionDialog = ({
               aria-labelledby="radio-button-group"
               data-testid="radio-button-group"
               onChange={formik.handleChange}
+              aria-required={true}
+              aria-describedby="create-version-helper"
             >
               <FormControlLabel
                 value="major"
                 control={<Radio name="type" />}
                 label="Major"
+                onBlur={() => {
+                  setFocusedField("");
+                  formik.setFieldTouched("type");
+                }}
+                onFocus={() => {
+                  setFocusedField("type");
+                }}
               />
               <FormControlLabel
                 value="minor"
                 control={<Radio name="type" />}
                 label="Minor"
+                onBlur={() => {
+                  setFocusedField("");
+                  formik.setFieldTouched("type");
+                }}
+                onFocus={() => {
+                  setFocusedField("type");
+                }}
               />
             </RadioGroup>
-            <ErrorText data-testid="create-version-error-message">
-              {cqlLibraryError
-                ? "Versioning cannot be done as the Cql has errors in it"
-                : ""}
-            </ErrorText>
-            {isCqlPresent ? (
-              ""
-            ) : (
-              <ErrorText>
-                Versioning cannot be done as there is no associated Cql with
-                this library
-              </ErrorText>
-            )}
+            {(formik.touched["type"] || focusedField === "type") &&
+              cqlLibraryError && (
+                <ErrorText
+                  data-testid="create-version-error-message"
+                  id="create-version-helper"
+                  aria-live="polite"
+                >
+                  Versioning cannot be done as the Cql has errors in it
+                </ErrorText>
+              )}
+
+            {(formik.touched["type"] || focusedField === "type") &&
+              !isCqlPresent && (
+                <ErrorText id="create-version-helper" aria-live="polite">
+                  Versioning cannot be done as there is no associated Cql with
+                  this library
+                </ErrorText>
+              )}
           </div>
         </DialogContent>
         <Divider className={classes.dividerBottom} />
