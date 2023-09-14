@@ -258,7 +258,6 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               onChange={formik.handleChange}
               value={formik.values.description}
               placeholder="Description"
-              data-testid="cql-library-description"
               {...formik.getFieldProps("description")}
               error={
                 formik.touched.description && Boolean(formik.errors.description)
