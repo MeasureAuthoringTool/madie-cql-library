@@ -252,7 +252,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
             <TextArea
               label="Description"
               readOnly={!formik.values.draft}
-              required
+              required={true}
               name="cql-library-description"
               id="cql-library-description"
               onChange={formik.handleChange}

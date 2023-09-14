@@ -1,10 +1,6 @@
 import React from "react";
-import { InputLabel } from "@madie/madie-design-system/dist/react";
-import {
-  FormControl,
-  FormHelperText,
-  TextField as MUITextField,
-} from "@mui/material";
+import { TextField } from "@madie/madie-design-system/dist/react";
+import { FormControl } from "@mui/material";
 
 const TextArea = ({
   id,
@@ -26,7 +22,7 @@ const TextArea = ({
           flexGrow: 1,
         }}
       />
-      <InputLabel
+      {/* <InputLabel
         disabled={disabled}
         shrink
         required={required}
@@ -68,8 +64,8 @@ const TextArea = ({
         ]}
       >
         {label}
-      </InputLabel>
-      {helperText && (
+      </InputLabel> */}
+      {/* {helperText && (
         <FormHelperText
           tabIndex={0}
           aria-live="polite"
@@ -88,8 +84,9 @@ const TextArea = ({
         >
           {helperText}
         </FormHelperText>
-      )}
-      <MUITextField
+      )} */}
+      <TextField
+        label={label}
         multiline
         sx={{
           // resize: "vertical",
@@ -125,17 +122,21 @@ const TextArea = ({
             },
           },
         }}
-        label={null}
-        error={error}
+        required={required}
         disabled={disabled}
         id={id}
-        required={required}
         inputProps={{
+          "data-testid": id,
+          "aria-described-by": `${id}-helper-text`,
           "aria-required": required ? true : false,
+          required: required,
         }}
+        helperText={helperText}
+        readOnly={readOnly}
         InputProps={{
           readOnly: readOnly,
         }}
+        error={error}
         {...rest}
       />
     </FormControl>
