@@ -130,6 +130,9 @@ const TextArea = ({
         disabled={disabled}
         id={id}
         required={required}
+        inputProps={{
+          "aria-required": required ? true : false,
+        }}
         InputProps={{
           readOnly: readOnly,
         }}

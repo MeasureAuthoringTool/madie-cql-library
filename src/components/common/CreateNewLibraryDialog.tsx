@@ -195,6 +195,8 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               data-testid="cql-library-name-text-field"
               inputProps={{
                 "data-testid": "cql-library-name-text-field-input",
+                "aria-required": true,
+                required: true,
               }}
               helperText={
                 (formik.touched["cqlLibraryName"] ||
@@ -223,6 +225,9 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               inputProps={{ "data-testid": "cql-library-model-select-input" }}
               name="model"
               {...formik.getFieldProps("model")}
+              SelectDisplayProps={{
+                "aria-required": "true",
+              }}
               error={formik.touched.model && Boolean(formik.errors.model)}
               helperText={formik.touched.model && formik.errors.model}
               size="small"
