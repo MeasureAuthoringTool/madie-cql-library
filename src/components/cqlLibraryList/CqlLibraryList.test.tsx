@@ -1,11 +1,19 @@
 import * as React from "react";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  fireEvent,
+  logRoles,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CqlLibraryList from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../api/useCqlLibraryServiceApi";
+import { checkUserCanEdit } from "@madie/madie-util";
+import { AxiosError, AxiosResponse } from "axios";
 
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
@@ -27,6 +35,7 @@ jest.mock("react-router-dom", () => ({
 const cqlLibrary: CqlLibrary[] = [
   {
     id: "622e1f46d1fd3729d861e6cb",
+    librarySetId: "librarySetId1",
     cqlLibraryName: "testing1",
     model: Model.QICORE,
     createdAt: "",
@@ -41,6 +50,7 @@ const cqlLibrary: CqlLibrary[] = [
   },
   {
     id: "622e1f46d1fd3729d861e6c1",
+    librarySetId: "librarySetId2",
     cqlLibraryName: "testing2",
     model: Model.QICORE,
     createdAt: "",
@@ -65,13 +75,24 @@ const useCqlLibraryServiceMock =
 const useCqlLibraryServiceMockResolved = {
   createVersion: jest.fn().mockResolvedValue({}),
   createDraft: jest.fn().mockResolvedValue({}),
+  deleteDraft: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
 
 describe("CqlLibrary List component", () => {
   beforeEach(() => {
+    useCqlLibraryServiceMockResolved.createVersion = jest
+      .fn()
+      .mockResolvedValue({});
+    useCqlLibraryServiceMockResolved.createDraft = jest
+      .fn()
+      .mockResolvedValue({});
+    useCqlLibraryServiceMockResolved.deleteDraft = jest
+      .fn()
+      .mockResolvedValue({});
     useCqlLibraryServiceMock.mockImplementation(() => {
       return useCqlLibraryServiceMockResolved;
     });
+    (checkUserCanEdit as jest.Mock).mockReturnValue(true);
   });
 
   it("should display a list of Cql Libraries", () => {
@@ -165,6 +186,7 @@ describe("CqlLibrary List component", () => {
     const cqlLibrary: CqlLibrary[] = [
       {
         id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "librarySetId",
         cqlLibraryName: "testing1",
         model: Model.QICORE,
         createdAt: "",
@@ -547,5 +569,332 @@ describe("CqlLibrary List component", () => {
         "Internal server error"
       );
     });
+  });
+
+  it("should display delete draft button for owned, draft libraries and on click should render dialog", async () => {
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        groupId: "",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+
+    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    expect(
+      await screen.findByText("Delete draft of testing1?")
+    ).toBeInTheDocument();
+  });
+
+  it("should delete draft library on confirmation", async () => {
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        groupId: "",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+      },
+      {
+        id: "650359394b0427f896ced541",
+        librarySetId: "libsetid2",
+        cqlLibraryName: "versioned lib1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: false,
+        version: "1.0.000",
+        groupId: "",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+
+    userEvent.click(screen.getAllByRole("button", { name: "View/Edit" })[0]);
+    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    expect(
+      await screen.findByText("Delete draft of testing1?")
+    ).toBeInTheDocument();
+    userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
+    await waitFor(() => {
+      expect(useCqlLibraryServiceMockResolved.deleteDraft).toBeCalled();
+    });
+    expect(
+      await screen.findByText("The Draft CQL Library has been deleted.")
+    ).toBeInTheDocument();
+  });
+
+  it("should display error message for delete draft library when backend states not a draft", async () => {
+    // this scenario could possibly happen if the library document is versioned in a different window/tab
+    // or by a different user (once sharing is added) but current window thinks library document is still draft
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true, // need this to be true for UI to present delete option
+        version: "0.0.000",
+        groupId: "",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+
+    const axiosError: AxiosError = {
+      response: {
+        status: 409,
+        data: {
+          status: 409,
+          error: "Conflict",
+          message: "GOOD PERSON DO BAD THING",
+        },
+      } as AxiosResponse,
+      toJSON: jest.fn(),
+    } as unknown as AxiosError;
+    useCqlLibraryServiceMockResolved.deleteDraft = jest
+      .fn()
+      .mockRejectedValueOnce(axiosError);
+
+    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    expect(
+      await screen.findByText("Delete draft of testing1?")
+    ).toBeInTheDocument();
+    userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
+    await waitFor(() => {
+      expect(useCqlLibraryServiceMockResolved.deleteDraft).toBeCalled();
+    });
+    expect(
+      await screen.findByText(
+        "This CQL Library is not in the correct state to be deleted."
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("should display error message for delete draft library when non-owner attempts to delete", async () => {
+    // this scenario could possibly happen if the library is transferred while the former owner is still on the list page
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true, // need this to be true for UI to present delete option
+        version: "0.0.000",
+        groupId: "",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+
+    const axiosError: AxiosError = {
+      response: {
+        status: 403,
+        data: {
+          status: 403,
+          error: "Forbidden",
+          message: "BAD PERSON DO BAD THING",
+        },
+      } as AxiosResponse,
+      toJSON: jest.fn(),
+    } as unknown as AxiosError;
+    useCqlLibraryServiceMockResolved.deleteDraft = jest
+      .fn()
+      .mockRejectedValueOnce(axiosError);
+
+    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    expect(
+      await screen.findByText("Delete draft of testing1?")
+    ).toBeInTheDocument();
+    userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
+    await waitFor(() => {
+      expect(useCqlLibraryServiceMockResolved.deleteDraft).toBeCalled();
+    });
+    expect(
+      await screen.findByText(
+        "User is not authorized to delete this CQL Library."
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("should not delete draft library on cancel", async () => {
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        groupId: "",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+      },
+      {
+        id: "650359394b0427f896ced541",
+        librarySetId: "libsetid2",
+        cqlLibraryName: "versioned lib1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: false,
+        version: "1.0.000",
+        groupId: "",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+
+    userEvent.click(screen.getAllByRole("button", { name: "View/Edit" })[0]);
+    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
+    expect(
+      await screen.findByText("Delete draft of testing1?")
+    ).toBeInTheDocument();
+    userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    await waitFor(() => {
+      expect(useCqlLibraryServiceMockResolved.deleteDraft).not.toBeCalled();
+    });
+    expect(
+      await screen.queryByText("The Draft CQL Library has been deleted.")
+    ).not.toBeInTheDocument();
+  });
+
+  it("should not have delete draft option if not owner", async () => {
+    (checkUserCanEdit as jest.Mock).mockReturnValue(false);
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        groupId: "",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+
+    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    expect(
+      await screen.findByRole("button", { name: "View" })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Delete" })
+    ).not.toBeInTheDocument();
+  });
+
+  it("should not have delete draft option if owner but versioned library", async () => {
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: false,
+        version: "0.0.000",
+        groupId: "",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+
+    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    expect(
+      await screen.findByRole("button", { name: "View" })
+    ).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Draft" })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Delete" })
+    ).not.toBeInTheDocument();
   });
 });

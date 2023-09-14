@@ -87,6 +87,14 @@ export class CqlLibraryServiceApi {
       }
     );
   }
+
+  async deleteDraft(id: string): Promise<CqlLibrary> {
+    return await axios.delete(`${this.baseUrl}/cql-libraries/${id}`, {
+      headers: {
+        Authorization: `Bearer ${this.getAccessToken()}`,
+      },
+    });
+  }
 }
 
 export default function useCqlLibraryServiceApi() {

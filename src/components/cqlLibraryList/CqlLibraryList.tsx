@@ -11,7 +11,10 @@ import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { checkUserCanEdit } from "@madie/madie-util";
-import { Button } from "@madie/madie-design-system/dist/react";
+import {
+  Button,
+  MadieDeleteDialog,
+} from "@madie/madie-design-system/dist/react";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -19,6 +22,11 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
 ) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
+
+const INITIAL_DELETE_DRAFT_STATE = {
+  open: false,
+  cqlLibrary: null,
+};
 
 export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const history = useHistory();
@@ -31,6 +39,9 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const [createDraftDialog, setCreateDraftDialog] = useState({
     open: false,
     cqlLibrary: null,
+  });
+  const [deleteDraftDialog, setDeleteDraftDialog] = useState({
+    ...INITIAL_DELETE_DRAFT_STATE,
   });
   const [snackBar, setSnackBar] = useState({
     message: "",
@@ -47,6 +58,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
       isCqlPresent: true,
     });
     setCreateDraftDialog({ open: false, cqlLibrary: null });
+    setDeleteDraftDialog({ ...INITIAL_DELETE_DRAFT_STATE });
   };
 
   const handleSnackBarClose = (
@@ -137,6 +149,44 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
       });
   };
 
+  const deleteDraft = () => {
+    cqlLibraryServiceApi
+      .deleteDraft(deleteDraftDialog.cqlLibrary?.id)
+      .then(async () => {
+        handleDialogClose();
+        await onListUpdate();
+        setSnackBar({
+          message: "The Draft CQL Library has been deleted.",
+          open: true,
+          severity: "success",
+        });
+      })
+      .catch((error) => {
+        handleDialogClose();
+        const errorData = error?.response?.data;
+        if (errorData?.status == 409) {
+          setSnackBar({
+            message:
+              "This CQL Library is not in the correct state to be deleted.",
+            open: true,
+            severity: "error",
+          });
+        } else if (errorData?.status == 403) {
+          setSnackBar({
+            message: "User is not authorized to delete this CQL Library.",
+            open: true,
+            severity: "error",
+          });
+        } else {
+          setSnackBar({
+            message: errorData?.message,
+            open: true,
+            severity: "error",
+          });
+        }
+      });
+  };
+
   // Popover utilities
   const [optionsOpen, setOptionsOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -185,6 +235,13 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
         onClose={handleDialogClose}
         onSubmit={createDraft}
         cqlLibrary={createDraftDialog.cqlLibrary}
+      />
+      <MadieDeleteDialog
+        open={deleteDraftDialog.open}
+        dialogTitle={`Delete draft of ${deleteDraftDialog.cqlLibrary?.cqlLibraryName}?`}
+        name={`draft of ${deleteDraftDialog.cqlLibrary?.cqlLibraryName}`}
+        onClose={() => setDeleteDraftDialog({ ...INITIAL_DELETE_DRAFT_STATE })}
+        onContinue={deleteDraft}
       />
       <Popover
         open={optionsOpen}
@@ -287,6 +344,22 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                   }}
                 >
                   Draft
+                </button>
+              )}
+
+              {selectedCQLLibrary.draft && isOwner && (
+                <button
+                  data-testid={`delete-existing-draft-${selectedCQLLibrary.id}-button`}
+                  onClick={() => {
+                    setDeleteDraftDialog({
+                      open: true,
+                      cqlLibrary: selectedCQLLibrary,
+                    });
+                    setOptionsOpen(false);
+                    setAnchorEl(null);
+                  }}
+                >
+                  Delete
                 </button>
               )}
             </div>
