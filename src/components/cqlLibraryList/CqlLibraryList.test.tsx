@@ -596,7 +596,11 @@ describe("CqlLibrary List component", () => {
       />
     );
 
-    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    userEvent.click(
+      screen.getByRole("button", {
+        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
+      })
+    );
     userEvent.click(await screen.findByRole("button", { name: "Delete" }));
     expect(
       await screen.findByText("Delete draft of testing1?")
@@ -643,7 +647,11 @@ describe("CqlLibrary List component", () => {
       />
     );
 
-    userEvent.click(screen.getAllByRole("button", { name: "View/Edit" })[0]);
+    userEvent.click(
+      screen.getByRole("button", {
+        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
+      })
+    );
     userEvent.click(await screen.findByRole("button", { name: "Delete" }));
     expect(
       await screen.findByText("Delete draft of testing1?")
@@ -699,7 +707,11 @@ describe("CqlLibrary List component", () => {
       .fn()
       .mockRejectedValueOnce(axiosError);
 
-    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    userEvent.click(
+      screen.getByRole("button", {
+        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
+      })
+    );
     userEvent.click(await screen.findByRole("button", { name: "Delete" }));
     expect(
       await screen.findByText("Delete draft of testing1?")
@@ -756,7 +768,11 @@ describe("CqlLibrary List component", () => {
       .fn()
       .mockRejectedValueOnce(axiosError);
 
-    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    userEvent.click(
+      screen.getByRole("button", {
+        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
+      })
+    );
     userEvent.click(await screen.findByRole("button", { name: "Delete" }));
     expect(
       await screen.findByText("Delete draft of testing1?")
@@ -812,7 +828,11 @@ describe("CqlLibrary List component", () => {
       />
     );
 
-    userEvent.click(screen.getAllByRole("button", { name: "View/Edit" })[0]);
+    userEvent.click(
+      screen.getByRole("button", {
+        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
+      })
+    );
     userEvent.click(await screen.findByRole("button", { name: "Delete" }));
     expect(
       await screen.findByText("Delete draft of testing1?")
@@ -852,7 +872,11 @@ describe("CqlLibrary List component", () => {
       />
     );
 
-    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    userEvent.click(
+      screen.getByRole("button", {
+        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
+      })
+    );
     expect(
       await screen.findByRole("button", { name: "View" })
     ).toBeInTheDocument();
@@ -886,7 +910,11 @@ describe("CqlLibrary List component", () => {
       />
     );
 
-    userEvent.click(screen.getByRole("button", { name: "View/Edit" }));
+    userEvent.click(
+      screen.getByRole("button", {
+        name: "CQL Library testing1 version 0.0.000 draft status false View / Edit",
+      })
+    );
     expect(
       await screen.findByRole("button", { name: "View" })
     ).toBeInTheDocument();
