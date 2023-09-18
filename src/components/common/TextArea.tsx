@@ -65,7 +65,7 @@ const TextArea = ({
         inputProps={{
           "data-testid": id,
           "aria-described-by": `${id}-helper-text`,
-          "aria-required": required ? true : false,
+          "aria-required": required ? "true" : "false",
           required: required,
         }}
         helperText={helperText}
