@@ -217,7 +217,7 @@ describe("Library Dialog", () => {
     await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary1"));
 
     const libraryDescription = screen.getByRole("textbox", {
-      name: "Description",
+      name: "Description required",
     }) as HTMLInputElement;
     userEvent.type(libraryDescription, "QDM Library Description");
     await waitFor(() =>
