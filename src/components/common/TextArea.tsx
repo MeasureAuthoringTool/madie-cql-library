@@ -63,6 +63,7 @@ const TextArea = ({
         disabled={disabled}
         id={id}
         inputProps={{
+          "aria-label": `${label} ${required ? "required" : ""}`,
           "data-testid": id,
           "aria-described-by": `${id}-helper-text`,
           "aria-required": required ? "true" : "false",

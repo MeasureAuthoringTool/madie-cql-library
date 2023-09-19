@@ -764,7 +764,7 @@ describe("Edit Cql Library Component", () => {
       screen.getByTestId("cql-library-name-text-field-input")
     ).toHaveAttribute("disabled");
     expect(
-      screen.getByRole("textbox", { name: "Description" })
+      screen.getByRole("textbox", { name: "Description required" })
     ).toHaveAttribute("disabled");
     expect(screen.getByRole("combobox", { name: "Publisher" })).toBeDisabled();
     expect(
@@ -823,7 +823,7 @@ describe("Edit Cql Library Component", () => {
       screen.getByTestId("cql-library-name-text-field-input")
     ).toHaveAttribute("disabled");
     expect(
-      screen.getByRole("textbox", { name: "Description" })
+      screen.getByRole("textbox", { name: "Description required" })
     ).toHaveAttribute("disabled");
     expect(screen.getByRole("combobox", { name: "Publisher" })).toBeDisabled();
 
