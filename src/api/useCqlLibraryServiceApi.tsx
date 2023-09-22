@@ -7,7 +7,10 @@ import useOktaTokens from "../hooks/useOktaTokens";
 export class CqlLibraryServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}
 
-  async fetchCqlLibraries(filterByCurrentUser: boolean): Promise<CqlLibrary[]> {
+  async fetchCqlLibraries(
+    filterByCurrentUser: boolean,
+    signal
+  ): Promise<CqlLibrary[]> {
     try {
       const response = await axios.get<CqlLibrary[]>(
         `${this.baseUrl}/cql-libraries`,
@@ -17,6 +20,7 @@ export class CqlLibraryServiceApi {
           },
           params: {
             currentUser: filterByCurrentUser,
+            signal,
           },
         }
       );
