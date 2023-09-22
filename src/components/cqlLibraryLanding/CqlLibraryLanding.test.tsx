@@ -9,6 +9,8 @@ import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
 import { Model } from "@madie/madie-models";
 
+const abortController = new AbortController();
+
 const cqlLibrary = [
   {
     id: "622e1f46d1fd3729d861e6cb",
@@ -101,7 +103,8 @@ describe("Cql Library Page", () => {
     const cqlLibrary1Model = await screen.findByText("QI-Core v4.1.1");
     expect(cqlLibrary1Model).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true
+      true,
+      abortController.signal
     );
     const myCqlLibrariesTab = screen.getByRole("tab", {
       name: "My CQL Libraries",
@@ -124,7 +127,8 @@ describe("Cql Library Page", () => {
     const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
     expect(cqlLibrary1).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true
+      true,
+      abortController.signal
     );
     const myCqlLibrariesTab = screen.getByRole("tab", {
       name: "My CQL Libraries",
@@ -150,7 +154,8 @@ describe("Cql Library Page", () => {
     const cqlLibrary2 = await screen.findByText("TestCqlLibrary2");
     expect(cqlLibrary2).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      false
+      false,
+      abortController.signal
     );
   });
 
@@ -163,7 +168,8 @@ describe("Cql Library Page", () => {
     const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
     expect(cqlLibrary1).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true
+      true,
+      abortController.signal
     );
     const myCqlLibrariesTab = screen.getByRole("tab", {
       name: "My CQL Libraries",
@@ -189,7 +195,8 @@ describe("Cql Library Page", () => {
     const cqlLibrary2 = await screen.findByText("TestCqlLibrary2");
     expect(cqlLibrary2).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      false
+      false,
+      abortController.signal
     );
     const searchBox = await screen.getByTestId("library-filter-input");
     expect(searchBox).toBeInTheDocument();

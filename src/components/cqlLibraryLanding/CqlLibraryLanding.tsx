@@ -24,11 +24,16 @@ function CqlLibraryLanding() {
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [filter, setFilter] = useState("");
   const [currentFilter, setCurrentFilter] = useState("");
+  const abortController = useRef(null);
 
   // Libraries are fetched again, when a new draft or version is created
   const loadCqlLibraries = useCallback(async () => {
+    abortController.current = new AbortController();
     const cqlLibraries: CqlLibrary[] =
-      await cqlLibraryServiceApi.fetchCqlLibraries(activeTab === 0);
+      await cqlLibraryServiceApi.fetchCqlLibraries(
+        activeTab === 0,
+        abortController.current.signal
+      );
     setLoading(false);
     return setCqlLibraryList(() =>
       _.orderBy(cqlLibraries, ["createdAt"], ["desc"])
@@ -40,7 +45,9 @@ function CqlLibraryLanding() {
   }, [activeTab, cqlLibraryServiceApi, loadCqlLibraries]);
 
   const handleTabChange = (event, nextTab) => {
+    setCqlLibraryList(null);
     setActiveTab(nextTab);
+    abortController.current && abortController.current.abort();
   };
   // Create Dialog utilities
   const [createLibOpen, setCreateLibOpen] = useState<boolean>(false);
