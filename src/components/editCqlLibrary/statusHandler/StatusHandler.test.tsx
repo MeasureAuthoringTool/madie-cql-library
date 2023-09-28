@@ -1,9 +1,9 @@
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
-import StatusHandler from "./StatusHandler";
+import StatusHandler, { transformAnnotation } from "./StatusHandler";
 
 describe("StatusHandler Component", () => {
-  const { getByTestId, queryByTestId } = screen;
+  const { getByTestId } = screen;
   const annotationsObject = [
     {
       row: 2,
@@ -18,31 +18,8 @@ describe("StatusHandler Component", () => {
       text: "ELM: 1:56 | 401 : [no body]",
     },
   ];
-  // all success conditions
-  test("It displays a generic success message when no error or messages present", () => {
-    const success = {
-      status: "success",
-      message: "stuff saved successfully",
-    };
-    render(
-      <StatusHandler
-        success={success}
-        error={false}
-        errorMessage={false}
-        outboundAnnotations={[]}
-      />
-    );
 
-    const successHeader = getByTestId("generic-success-text-header");
-    const successSubHeader = queryByTestId("generic-success-text-sub-header");
-    const successList = queryByTestId("generic-success-text-list");
-
-    expect(successHeader.textContent).toBe(success.message);
-    expect(successSubHeader).not.toBeInTheDocument();
-    expect(successList).not.toBeInTheDocument();
-  });
-
-  test("It displays a generic success message and a library warning if a library warning exists when no error or messages present, also displays a list of annotations", () => {
+  it("Should display a success message and a library warning if a library warning exists when no error or messages present, also displays a list of annotations", () => {
     const success = {
       status: "success",
       message:
@@ -52,130 +29,118 @@ describe("StatusHandler Component", () => {
       <StatusHandler
         success={success}
         error={false}
-        errorMessage={false}
+        errorMessage={null}
         outboundAnnotations={annotationsObject}
       />
     );
 
-    const successHeader = getByTestId("generic-success-text-header");
-    const successSubHeader = queryByTestId("generic-success-text-sub-header");
-    const libraryWarning = queryByTestId("library-warning");
-    const successList = queryByTestId("generic-success-text-list");
-
-    expect(successHeader.textContent).toBe(
-      "Changes saved successfully but the following errors were found"
+    expect(getByTestId("generic-success-text-header")).toHaveTextContent(
+      "Changes saved successfully but the following issues were found"
     );
-    expect(libraryWarning?.textContent).toBe(success.message);
-    expect(successSubHeader?.textContent).toBe(
-      `${annotationsObject.length} CQL errors found:`
+    expect(screen.getByTestId("library-warning")).toHaveTextContent(
+      success.message
     );
-    expect(successList).toBeInTheDocument();
+    const errorsList = screen.getByTestId("generic-errors-text-list");
+    expect(errorsList).toBeInTheDocument();
+    expect(errorsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[0])
+    );
+    const warningsList = screen.getByTestId("generic-warnings-text-list");
+    expect(warningsList).toBeInTheDocument();
+    expect(warningsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[1])
+    );
   });
 
-  test("It displays a generic success message and a using warning if a using warning exists when no error or messages present, also displays a list of annotations", () => {
+  it("Should display a success message and a using warning if a using warning exists when no error or messages present, also displays a list of annotations", () => {
     const success = {
       status: "success",
       message:
-        "CQL updated successfully but was missing a Using statement.  Please add in a valid model and version.",
+        "CQL updated successfully but was missing a Using statement. Please add in a valid model and version.",
     };
     render(
       <StatusHandler
         success={success}
         error={false}
-        errorMessage={false}
+        errorMessage={null}
         outboundAnnotations={annotationsObject}
       />
     );
 
-    const successHeader = getByTestId("generic-success-text-header");
-    const successSubHeader = queryByTestId("generic-success-text-sub-header");
-    const libraryWarning = queryByTestId("library-warning");
-    const successList = queryByTestId("generic-success-text-list");
+    expect(getByTestId("generic-success-text-header")).toHaveTextContent(
+      "Changes saved successfully but the following issues were found"
+    );
+    expect(screen.queryByTestId("library-warning")).not.toBeInTheDocument();
+    const errorsList = screen.getByTestId("generic-errors-text-list");
+    expect(errorsList).toBeInTheDocument();
+    expect(errorsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[0])
+    );
+    const warningsList = screen.getByTestId("generic-warnings-text-list");
+    expect(warningsList).toBeInTheDocument();
+    expect(warningsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[1])
+    );
+  });
 
-    expect(successHeader.textContent).toBe(
-      "Changes saved successfully but the following errors were found"
+  it("Should display a success message along with annotation", () => {
+    const success = {
+      status: "success",
+      message: "stuff saved successfully",
+    };
+    render(
+      <StatusHandler
+        success={success}
+        error={false}
+        errorMessage={null}
+        outboundAnnotations={annotationsObject}
+      />
     );
-    expect(libraryWarning?.textContent).toBe(success.message);
-    expect(successSubHeader?.textContent).toBe(
-      `${annotationsObject.length} CQL errors found:`
+
+    expect(getByTestId("generic-success-text-header")).toHaveTextContent(
+      "Changes saved successfully but the following issues were found"
     );
-    expect(successList).toBeInTheDocument();
+    expect(screen.queryByTestId("library-warning")).not.toBeInTheDocument();
+    const errorsList = screen.getByTestId("generic-errors-text-list");
+    expect(errorsList).toBeInTheDocument();
+    expect(errorsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[0])
+    );
+    const warningsList = screen.getByTestId("generic-warnings-text-list");
+    expect(warningsList).toBeInTheDocument();
+    expect(warningsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[1])
+    );
+  });
+
+  it("Should display a generic success message when no annotations or messages are present", () => {
+    const success = {
+      status: "success",
+      message: "stuff saved successfully",
+    };
+    render(
+      <StatusHandler
+        success={success}
+        error={false}
+        errorMessage={null}
+        outboundAnnotations={[]}
+      />
+    );
+
+    expect(getByTestId("generic-success-text-header")).toHaveTextContent(
+      success.message
+    );
+    expect(
+      screen.queryByTestId("generic-errors-text-list")
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("generic-warnings-text-list")
+    ).not.toBeInTheDocument();
   });
 
   //all error conditions
-  test("It displays an error message at it's least complex when no error Message is present, but flag is true", () => {
-    const success = {
-      status: undefined,
-      message: "",
-    };
-    render(
-      <StatusHandler
-        success={success}
-        error={true}
-        errorMessage={""}
-        outboundAnnotations={[]}
-      />
-    );
 
-    const errorHeader = getByTestId("generic-error-text-header");
-    const errorSubHeader = queryByTestId("generic-error-text-sub-header");
-    const errorList = queryByTestId("generic-error-text-list");
-
-    expect(errorHeader.textContent).toBe("Errors were found within the CQL");
-    expect(errorSubHeader).not.toBeInTheDocument();
-    expect(errorList).not.toBeInTheDocument();
-  });
-
-  test("It displays an error message and information about errors supplied when error is true and annotations provided", () => {
-    const success = {
-      status: undefined,
-      message: "",
-    };
-    render(
-      <StatusHandler
-        success={success}
-        error={true}
-        errorMessage={""}
-        outboundAnnotations={annotationsObject}
-      />
-    );
-
-    const errorHeader = getByTestId("generic-error-text-header");
-    const errorSubHeader = queryByTestId("generic-error-text-sub-header");
-    const errorList = queryByTestId("generic-error-text-list");
-
-    expect(errorHeader.textContent).toBe("Errors were found within the CQL");
-    expect(errorSubHeader?.textContent).toBe(
-      `${annotationsObject.length} CQL errors found:`
-    );
-    expect(errorList).toBeInTheDocument();
-  });
-
-  test("It displays an error message with provided error message and no annotations", () => {
-    const success = {
-      status: undefined,
-      message: "",
-    };
-    const errorMessage = "CQL problem please help";
-    render(
-      <StatusHandler
-        success={success}
-        error={true}
-        errorMessage={errorMessage}
-        outboundAnnotations={[]}
-      />
-    );
-
-    const errorHeader = getByTestId("generic-error-text-header");
-    const errorSubHeader = queryByTestId("generic-error-text-sub-header");
-    const errorList = queryByTestId("generic-error-text-list");
-
-    expect(errorHeader.textContent).toBe(errorMessage);
-    expect(errorSubHeader).not.toBeInTheDocument();
-    expect(errorList).not.toBeInTheDocument();
-  });
-
-  test("It displays an error message with error message = to error Message provided and annotations provided", () => {
+  it("Should display an error message with provided errorMessage and annotations", () => {
     const success = {
       status: undefined,
       message: "",
@@ -190,18 +155,104 @@ describe("StatusHandler Component", () => {
       />
     );
 
-    const errorHeader = getByTestId("generic-error-text-header");
-    const errorSubHeader = queryByTestId("generic-error-text-sub-header");
-    const errorList = queryByTestId("generic-error-text-list");
-
-    expect(errorHeader.textContent).toBe(errorMessage);
-    expect(errorSubHeader?.textContent).toBe(
-      `${annotationsObject.length} CQL errors found:`
+    expect(screen.getByTestId("generic-error-text-header")).toHaveTextContent(
+      errorMessage
     );
-    expect(errorList).toBeInTheDocument();
+    const errorsList = screen.getByTestId("generic-errors-text-list");
+    expect(errorsList).toBeInTheDocument();
+    expect(errorsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[0])
+    );
+    const warningsList = screen.getByTestId("generic-warnings-text-list");
+    expect(warningsList).toBeInTheDocument();
+    expect(warningsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[1])
+    );
   });
 
-  test("Error flag is false, but outbound annotations exist", () => {
+  it("Should display an error message with provided error message and no annotations", () => {
+    const success = {
+      status: undefined,
+      message: "",
+    };
+    const errorMessage = "CQL problem please help";
+    render(
+      <StatusHandler
+        success={success}
+        error={true}
+        errorMessage={errorMessage}
+        outboundAnnotations={[]}
+      />
+    );
+
+    expect(getByTestId("generic-error-text-header")).toHaveTextContent(
+      errorMessage
+    );
+    expect(screen.queryByTestId("library-warning")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("generic-errors-text-list")
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("generic-warnings-text-list")
+    ).not.toBeInTheDocument();
+  });
+
+  it("Should display a generic error message along with annotations provided", () => {
+    const success = {
+      status: undefined,
+      message: "",
+    };
+    render(
+      <StatusHandler
+        success={success}
+        error={true}
+        errorMessage={null}
+        outboundAnnotations={annotationsObject}
+      />
+    );
+
+    expect(screen.getByTestId("generic-error-text-header")).toHaveTextContent(
+      "Following issues were found within the CQL"
+    );
+    const errorsList = screen.getByTestId("generic-errors-text-list");
+    expect(errorsList).toBeInTheDocument();
+    expect(errorsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[0])
+    );
+    const warningsList = screen.getByTestId("generic-warnings-text-list");
+    expect(warningsList).toBeInTheDocument();
+    expect(warningsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[1])
+    );
+  });
+
+  it("Should display a generic error message when no error message or annotations are provided, but error flag is true", () => {
+    const success = {
+      status: undefined,
+      message: "",
+    };
+    render(
+      <StatusHandler
+        success={success}
+        error={true}
+        errorMessage={""}
+        outboundAnnotations={[]}
+      />
+    );
+
+    expect(getByTestId("generic-error-text-header")).toHaveTextContent(
+      "Issues were found within the CQL"
+    );
+    expect(screen.queryByTestId("library-warning")).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("generic-errors-text-list")
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("generic-warnings-text-list")
+    ).not.toBeInTheDocument();
+  });
+
+  it("Should display outbound annotation even when Error flag is false", () => {
     const success = {
       status: undefined,
       message: "",
@@ -215,14 +266,18 @@ describe("StatusHandler Component", () => {
       />
     );
 
-    const errorHeader = getByTestId("generic-error-text-header");
-    const errorSubHeader = queryByTestId("generic-error-text-sub-header");
-    const errorList = queryByTestId("generic-error-text-list");
-
-    expect(errorHeader.textContent).toBe("Errors were found within the CQL");
-    expect(errorSubHeader?.textContent).toBe(
-      `${annotationsObject.length} CQL errors found:`
+    expect(screen.getByTestId("generic-error-text-header")).toHaveTextContent(
+      "Following issues were found within the CQL"
     );
-    expect(errorList).toBeInTheDocument();
+    const errorsList = screen.getByTestId("generic-errors-text-list");
+    expect(errorsList).toBeInTheDocument();
+    expect(errorsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[0])
+    );
+    const warningsList = screen.getByTestId("generic-warnings-text-list");
+    expect(warningsList).toBeInTheDocument();
+    expect(warningsList).toHaveTextContent(
+      transformAnnotation(annotationsObject[1])
+    );
   });
 });
