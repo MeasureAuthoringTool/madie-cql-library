@@ -49,19 +49,19 @@ jest.mock("@madie/madie-util", () => ({
 const cqlLibrary = {
   id: "cql-lib-1234",
   cqlLibraryName: "Library1",
+  librarySetId: "",
   model: Model.QICORE,
-  draft: true,
-  version: "testVersion",
-  groupId: "testGroupId",
   cqlErrors: false,
-  experimental: false,
   cql: "",
+  version: "testVersion",
+  draft: true,
   createdAt: "",
   createdBy: "john doe",
   lastModifiedAt: "",
   lastModifiedBy: "",
   publisher: "Tester",
   description: "testing stuff.",
+  experimental: false,
 } as CqlLibrary;
 
 const organizations = [
@@ -162,7 +162,9 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for required Cql Library name", async () => {
     const { getByTestId } = renderWithRouter();
-    const input = getByTestId("cql-library-name-text-field-input");
+    const input = getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
     await waitFor(() => {
       expect(input.value).toBe("Library1");
     });
@@ -179,7 +181,9 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for at least one alphabet in cql library name", async () => {
     const { getByTestId } = renderWithRouter();
-    const input = getByTestId("cql-library-name-text-field-input");
+    const input = getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
     await waitFor(() => {
       expect(input.value).toBe("Library1");
     });
@@ -203,7 +207,9 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for underscore in cql library name", async () => {
     const { getByTestId } = renderWithRouter();
-    const input = getByTestId("cql-library-name-text-field-input");
+    const input = getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
     await waitFor(() => {
       expect(input.value).toBe("Library1");
     });
@@ -227,7 +233,9 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for library name starting with lower case", async () => {
     const { getByTestId } = renderWithRouter();
-    const input = getByTestId("cql-library-name-text-field-input");
+    const input = getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
     await waitFor(() => {
       expect(input.value).toBe("Library1");
     });
@@ -251,7 +259,9 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for library name with a space", async () => {
     const { getByTestId } = renderWithRouter();
-    const input = getByTestId("cql-library-name-text-field-input");
+    const input = getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
     await waitFor(() => {
       expect(input.value).toBe("Library1");
     });
@@ -275,7 +285,9 @@ describe("Edit Cql Library Component", () => {
 
   it("should close dialog on cancel", async () => {
     const { getByTestId, queryByText } = renderWithRouter();
-    const input = getByTestId("cql-library-name-text-field-input");
+    const input = getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
     await waitFor(() => {
       expect(input.value).toBe("Library1");
     });
@@ -305,7 +317,9 @@ describe("Edit Cql Library Component", () => {
 
   it("should navigate away on continue", async () => {
     const { getByTestId } = renderWithRouter();
-    const input = getByTestId("cql-library-name-text-field-input");
+    const input = getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
     await waitFor(() => {
       expect(input.value).toBe("Library1");
     });
@@ -335,7 +349,9 @@ describe("Edit Cql Library Component", () => {
 
   it("should have Save button disabled until form is valid and dirty", async () => {
     const { getByTestId } = renderWithRouter();
-    const input = getByTestId("cql-library-name-text-field-input");
+    const input = getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
     await waitFor(() => {
       expect(input.value).toBe("Library1");
     });
@@ -464,7 +480,7 @@ describe("Edit Cql Library Component", () => {
 
     const libraryNameInput = screen.getByTestId(
       "cql-library-name-text-field-input"
-    );
+    ) as HTMLInputElement;
 
     expect(libraryNameInput.value).toBe("Library1");
     userEvent.clear(libraryNameInput);
@@ -524,7 +540,7 @@ describe("Edit Cql Library Component", () => {
 
     const libraryNameInput = screen.getByTestId(
       "cql-library-name-text-field-input"
-    );
+    ) as HTMLInputElement;
 
     expect(libraryNameInput.value).toBe("Library1");
     userEvent.clear(libraryNameInput);
@@ -558,10 +574,10 @@ describe("Edit Cql Library Component", () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
+      librarySetId: "",
       model: Model.QICORE,
       draft: true,
       version: null,
-      groupId: null,
       cqlErrors: false,
       publisher: "Org1",
       description: "testing",
@@ -599,9 +615,9 @@ describe("Edit Cql Library Component", () => {
       })
     ).toBeInTheDocument();
 
-    const libraryNode = await screen.getByTestId(
+    const libraryNode = (await screen.getByTestId(
       "cql-library-name-text-field-input"
-    );
+    )) as HTMLInputElement;
     expect(libraryNode.value).toBe("Library1");
     Simulate.change(libraryNode);
 
@@ -613,12 +629,14 @@ describe("Edit Cql Library Component", () => {
 
     const experiementalChkBox = screen.getByRole("checkbox", {
       name: "Experimental",
-    });
+    }) as HTMLInputElement;
     expect(experiementalChkBox.value).toBe("true");
     userEvent.click(experiementalChkBox);
     expect(experiementalChkBox.value).toBe("false");
 
-    const publisher = screen.getByRole("combobox", { name: "Publisher" });
+    const publisher = screen.getByRole("combobox", {
+      name: "Publisher",
+    }) as HTMLInputElement;
     expect(publisher.value).toBe("Org1");
     fireEvent.keyDown(publisher, { key: "ArrowDown" });
     const anotherOrg = await screen.getByRole("option", { selected: false });
@@ -653,10 +671,10 @@ describe("Edit Cql Library Component", () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
+      librarySetId: "",
       model: Model.QICORE,
       draft: true,
       version: null,
-      groupId: null,
       cqlErrors: false,
       publisher: "Tester",
       description: "Testing stuff.",
@@ -695,10 +713,10 @@ describe("Edit Cql Library Component", () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
+      librarySetId: "",
       model: Model.QICORE,
       draft: true,
       version: null,
-      groupId: null,
       cqlErrors: false,
       publisher: "Tester",
       description: "Testing stuff.",
@@ -731,10 +749,11 @@ describe("Edit Cql Library Component", () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
+      librarySetId: "",
       model: Model.QICORE,
+      cqlErrors: false,
       draft: false,
       version: null,
-      groupId: null,
       publisher: "Tester",
       description: "Testing stuff.",
       experimental: true,
@@ -790,11 +809,12 @@ describe("Edit Cql Library Component", () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
+      librarySetId: "",
       model: Model.QICORE,
       draft: true,
       version: null,
-      groupId: null,
       publisher: "Tester",
+      cqlErrors: false,
       description: "Testing stuff.",
       experimental: true,
       cql: "library testCql version '1.0.000'",
@@ -837,10 +857,10 @@ describe("Edit Cql Library Component", () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
+      librarySetId: "",
       model: Model.QICORE,
       draft: true,
       version: null,
-      groupId: null,
       cqlErrors: false,
       publisher: "Org1",
       description: "testing",
@@ -879,7 +899,9 @@ describe("Edit Cql Library Component", () => {
       })
     ).toBeInTheDocument();
 
-    const publisher = screen.getByRole("combobox", { name: "Publisher" });
+    const publisher = screen.getByRole("combobox", {
+      name: "Publisher",
+    }) as HTMLInputElement;
     expect(publisher.value).toBe("Org1");
     fireEvent.keyDown(publisher, { key: "ArrowDown" });
     const anotherOrg = await screen.getByRole("option", { selected: false });
@@ -908,10 +930,10 @@ describe("Edit Cql Library Component", () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
+      librarySetId: "",
       model: Model.QICORE,
       draft: true,
       version: null,
-      groupId: null,
       cqlErrors: false,
       publisher: "Org1",
       description: "testing",
@@ -945,7 +967,9 @@ describe("Edit Cql Library Component", () => {
       })
     ).toBeInTheDocument();
 
-    const publisher = screen.getByRole("combobox", { name: "Publisher" });
+    const publisher = screen.getByRole("combobox", {
+      name: "Publisher",
+    }) as HTMLInputElement;
     expect(publisher.value).toBe("Org1");
     fireEvent.keyDown(publisher, { key: "ArrowDown" });
     const anotherOrg = await screen.getByRole("option", { selected: false });
