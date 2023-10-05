@@ -44,9 +44,15 @@ function CqlLibraryLanding() {
     (async () => await loadCqlLibraries())();
   }, [activeTab, cqlLibraryServiceApi, loadCqlLibraries]);
 
+  //If a filter exists then this will set it again on tab change
+  useEffect(() => {
+    if (cqlLibraryList != null && cqlLibraryList.length > 0) {
+      setCurrentFilter(filter);
+    }
+  }, [cqlLibraryList]);
+
   const handleTabChange = (event, nextTab) => {
     setCqlLibraryList(null);
-    setFilter("");
     setCurrentFilter("");
     setActiveTab(nextTab);
     abortController.current && abortController.current.abort();
