@@ -46,6 +46,8 @@ function CqlLibraryLanding() {
 
   const handleTabChange = (event, nextTab) => {
     setCqlLibraryList(null);
+    setFilter("");
+    setCurrentFilter("");
     setActiveTab(nextTab);
     abortController.current && abortController.current.abort();
   };
