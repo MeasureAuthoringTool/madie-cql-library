@@ -80,7 +80,9 @@ function CqlLibraryLanding() {
   const submitFilter = (e) => {
     e.preventDefault();
     setFilter(filter.trim());
-    setCurrentFilter(filter);
+    if (cqlLibraryList != null && cqlLibraryList.length > 0) {
+      setCurrentFilter(filter);
+    }
   };
 
   const searchInputProps = {
