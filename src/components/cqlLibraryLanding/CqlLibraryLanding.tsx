@@ -44,8 +44,16 @@ function CqlLibraryLanding() {
     (async () => await loadCqlLibraries())();
   }, [activeTab, cqlLibraryServiceApi, loadCqlLibraries]);
 
+  //If a filter exists then this will set it again on tab change
+  useEffect(() => {
+    if (cqlLibraryList != null && cqlLibraryList.length > 0) {
+      setCurrentFilter(filter);
+    }
+  }, [cqlLibraryList]);
+
   const handleTabChange = (event, nextTab) => {
     setCqlLibraryList(null);
+    setCurrentFilter("");
     setActiveTab(nextTab);
     abortController.current && abortController.current.abort();
   };
@@ -72,7 +80,9 @@ function CqlLibraryLanding() {
   const submitFilter = (e) => {
     e.preventDefault();
     setFilter(filter.trim());
-    setCurrentFilter(filter);
+    if (cqlLibraryList != null && cqlLibraryList.length > 0) {
+      setCurrentFilter(filter);
+    }
   };
 
   const searchInputProps = {

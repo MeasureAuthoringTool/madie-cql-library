@@ -20,8 +20,8 @@ export class CqlLibraryServiceApi {
           },
           params: {
             currentUser: filterByCurrentUser,
-            signal,
           },
+          signal: signal,
         }
       );
       return response.data;
