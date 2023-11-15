@@ -361,15 +361,20 @@ const EditCqlLibrary = () => {
           <NavTabs activeTab={activeTab} handleTabChange={handleTabChange} />
           <div
             style={{
-              marginBottom: -15,
-              marginTop: 5,
+              marginBottom: -10,
+              marginTop: 10,
               display: "flex",
               flexDirection: "row",
               justifyContent: "flex-end",
             }}
           >
             <Typography
-              style={{ fontSize: 14, fontWeight: 300, fontFamily: "Rubik" }}
+              style={{
+                fontSize: 14,
+                fontWeight: 300,
+                fontFamily: "Rubik",
+                marginRight: 32,
+              }}
             >
               <span
                 style={{
