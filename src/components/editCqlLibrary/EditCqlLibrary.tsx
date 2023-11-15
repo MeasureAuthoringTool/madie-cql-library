@@ -37,7 +37,7 @@ import {
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
-import { Checkbox, FormControlLabel } from "@mui/material";
+import { Checkbox, FormControlLabel, Typography } from "@mui/material";
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
 
@@ -359,6 +359,30 @@ const EditCqlLibrary = () => {
         <div id="divider" />
         <div id="right-panel">
           <NavTabs activeTab={activeTab} handleTabChange={handleTabChange} />
+          <div
+            style={{
+              marginBottom: -15,
+              marginTop: 5,
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "flex-end",
+            }}
+          >
+            <Typography
+              style={{ fontSize: 14, fontWeight: 300, fontFamily: "Rubik" }}
+            >
+              <span
+                style={{
+                  color: "rgb(174, 28, 28)",
+                  marginRight: 3,
+                  fontWeight: 400,
+                }}
+              >
+                *
+              </span>
+              Indicates required field
+            </Typography>
+          </div>
           <div className="inner-right">
             {activeTab === "details" && (
               <div id="details-tab" data-test-id="details-tab">
