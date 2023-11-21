@@ -61,6 +61,7 @@ const useStyles = makeStyles({
   },
   dividerBottom: {
     marginTop: 10,
+    borderColor: "#8c8c8c",
   },
   actionsRoot: {
     padding: 16,
@@ -133,7 +134,7 @@ const CreatVersionDialog = ({
             </IconButton>
           </div>
         </div>
-        <Divider />
+        <Divider sx={{ borderColor: "#8c8c8c" }} />
         <DialogContent>
           <div className={flexEnd}>
             <Typography className={classes.info}>

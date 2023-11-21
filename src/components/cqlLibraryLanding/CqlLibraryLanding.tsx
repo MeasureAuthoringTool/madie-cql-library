@@ -116,7 +116,7 @@ function CqlLibraryLanding() {
       <div className="measure-table">
         <section
           tw="flex flex-row"
-          style={{ borderBottom: "1px solid #b0b0b0" }}
+          style={{ borderBottom: "1px solid #8c8c8c" }}
         >
           <div>
             <Tabs type="B" value={activeTab} onChange={handleTabChange}>
@@ -141,6 +141,12 @@ function CqlLibraryLanding() {
                 <tr>
                   <td>
                     <TextField
+                      sx={{
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "#8C8C8C",
+                          borderRadius: "3px",
+                        },
+                      }}
                       label="Filter Libraries"
                       onChange={(newFilter) => {
                         setFilter(newFilter.target.value);

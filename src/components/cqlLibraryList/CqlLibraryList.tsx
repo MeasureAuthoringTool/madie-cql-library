@@ -370,7 +370,13 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
         <div tw="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div tw="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div>
-              <table tw="min-w-full" style={{ borderTop: "solid 1px #DDD" }}>
+              <table
+                tw="min-w-full"
+                style={{
+                  borderTop: "solid 1px #8c8c8c",
+                  borderBottom: "solid 1px #8c8c8c",
+                }}
+              >
                 <thead tw="bg-slate">
                   <tr>
                     <th scope="col" className="col-header">
@@ -392,7 +398,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                     <tr
                       key={cqlLibrary.id}
                       data-testid="row-item"
-                      style={{ borderBottom: "solid 1px #AAA" }}
+                      style={{ borderTop: "solid 1px #8c8c8c" }}
                     >
                       <td>
                         <button
@@ -429,6 +435,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                       <td>
                         <Button
                           variant="outline-secondary"
+                          style={{ borderColor: "#c8c8c8" }}
                           onClick={(e) => {
                             handleOpen(cqlLibrary, e);
                           }}
