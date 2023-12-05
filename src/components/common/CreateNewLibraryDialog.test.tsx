@@ -37,7 +37,7 @@ jest.mock("@madie/madie-util", () => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
   useFeatureFlags: jest.fn().mockReturnValue({
-    qdm: false,
+    qdmExport: true,
   }),
 }));
 const organizations = [
@@ -154,36 +154,6 @@ describe("Library Dialog", () => {
       expect(modelNode.value).toBe(formikInfo.model);
       Simulate.change(modelNode);
     });
-  });
-
-  test("Does not show QDM as an option when flag is disabled", async () => {
-    (useFeatureFlags as jest.Mock).mockReturnValue({ qdm: false });
-    const onFormSubmit = jest.fn();
-    const onFormCancel = jest.fn();
-    render(
-      <ApiContextProvider value={serviceConfig}>
-        <div>
-          <button data-testId="open-button" onClick={onFormSubmit}>
-            I open the dialog
-          </button>
-          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
-        </div>
-      </ApiContextProvider>
-    );
-
-    const modelSelect = await screen.getByTestId("cql-library-model-select");
-    const modelSelectBtn = await within(modelSelect).getByRole("button");
-    userEvent.click(modelSelectBtn);
-    const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(1);
-    userEvent.click(options[0]);
-    expect(
-      (
-        (await within(modelSelect).getByRole("textbox", {
-          hidden: true,
-        })) as HTMLInputElement
-      ).value
-    ).toEqual("QI-Core v4.1.1");
   });
 
   test("Allows creation of a QDM library", async () => {
