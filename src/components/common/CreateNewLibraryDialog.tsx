@@ -43,7 +43,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   const [organizations, setOrganizations] = useState<string[]>();
   const organizationApi = useRef(useOrganizationApi()).current;
 
-  const modelOptions = Object.keys(Model);;
+  const modelOptions = Object.keys(Model);
 
   // fetch organizations DB using measure service and sorts alphabetically
   useEffect(() => {
