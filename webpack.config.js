@@ -1,35 +1,18 @@
 /** @format */
-
-const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { mergeWithRules } = require("webpack-merge");
 const singleSpaDefaults = require("webpack-config-single-spa-react-ts");
-const path = require("path");
+
+const merge = mergeWithRules({
+  module: {
+    rules: {
+      test: "match",
+      use: "replace",
+    },
+  },
+  plugins: "append",
+});
 
 module.exports = (webpackConfigEnv, argv) => {
-  const protocol = webpackConfigEnv.protocol
-    ? webpackConfigEnv.protocol
-    : "http";
-  console.log("Branch Name " + protocol);
-  let https;
-  console.log("Dir Name " + __dirname);
-  try {
-    if (protocol === "https") {
-      https = {
-        key: fs.readFileSync(path.resolve(__dirname, "localhost.key"), "utf-8"),
-        cert: fs.readFileSync(
-          path.resolve(__dirname, "localhost.crt"),
-          "utf-8"
-        ),
-      };
-    } else {
-      https = false;
-    }
-  } catch {
-    console.warn(
-      "Consider creating an SSL certificate at ./localhost.key and ./localhost.crt, so you can tell your operating system to trust the certificate"
-    );
-  }
-
   const defaultConfig = singleSpaDefaults({
     orgName: "madie",
     projectName: "madie-cql-library",
@@ -89,52 +72,7 @@ module.exports = (webpackConfigEnv, argv) => {
         },
       ],
     },
-    devServer: {
-      static: [
-        {
-          directory: path.join(__dirname, "local-dev-env"),
-          publicPath: "/importmap",
-        },
-        {
-          directory: path.join(
-            __dirname,
-            "node_modules/@madie/madie-root/dist/"
-          ),
-          publicPath: "/",
-        },
-        {
-          directory: path.join(
-            __dirname,
-            "node_modules/@madie/madie-editor/dist/"
-          ),
-          publicPath: "/madie-editor",
-        },
-        {
-          directory: path.join(
-            __dirname,
-            "node_modules/@madie/madie-auth/dist/"
-          ),
-          publicPath: "/madie-auth",
-        },
-      ],
-    },
-    plugins: [
-      new HtmlWebpackPlugin({
-        template: path.join(
-          __dirname,
-          "node_modules/@madie/madie-root/dist/index.html"
-        ),
-      }),
-    ],
   };
 
-  return mergeWithRules({
-    module: {
-      rules: {
-        test: "match",
-        use: "replace",
-      },
-    },
-    plugins: "append",
-  })(externalsConfig, defaultConfig, newCssRule);
+  return merge(externalsConfig, defaultConfig, newCssRule);
 };
