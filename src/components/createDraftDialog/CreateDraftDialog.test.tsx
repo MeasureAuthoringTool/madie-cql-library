@@ -1,17 +1,13 @@
 import * as React from "react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CreatDraftDialog from "./CreateDraftDialog";
-import {
-  act,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import clearAllMocks = jest.clearAllMocks;
 
 const cqlLibrary: CqlLibrary = {
+  cqlErrors: false,
+  librarySetId: "",
   id: "622e1f46d1fd3729d861e6cb",
   cqlLibraryName: "testing1",
   model: Model.QICORE,
@@ -21,7 +17,6 @@ const cqlLibrary: CqlLibrary = {
   lastModifiedBy: null,
   draft: true,
   version: "0.0.000",
-  groupId: null,
   cql: null,
 };
 
@@ -39,14 +34,14 @@ describe("Create Draft Dialog component", () => {
         cqlLibrary={cqlLibrary}
       />
     );
-    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
-    expect(screen.getByTestId("cql-library-name-text-field")).toHaveValue(
-      "testing1"
-    );
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(
+      screen.getByRole("textbox", { name: "CQL Library Name" })
+    ).toHaveValue("testing1");
   });
 
   it("should generate field level error for required Cql Library name", async () => {
-    const { getByTestId } = render(
+    render(
       <CreatDraftDialog
         open={true}
         onClose={jest.fn()}
@@ -54,14 +49,14 @@ describe("Create Draft Dialog component", () => {
         cqlLibrary={cqlLibrary}
       />
     );
-    const cqlLibraryNameInput = getByTestId("cql-library-name-text-field");
-    fireEvent.blur(cqlLibraryNameInput);
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     await waitFor(() => {
-      expect(getByTestId("cqlLibraryName-helper-text")).not.toBe(null);
-      expect(getByTestId("cqlLibraryName-helper-text")).toHaveTextContent(
-        "Library name is required."
-      );
+      expect(
+        screen.getByTestId("cqlLibraryName-helper-text")
+      ).toHaveTextContent("Library name is required.");
     });
   });
 
@@ -74,14 +69,12 @@ describe("Create Draft Dialog component", () => {
         cqlLibrary={cqlLibrary}
       />
     );
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "123123");
     await waitFor(() => {
-      expect(screen.getByTestId("cqlLibraryName-helper-text")).not.toBe(null);
       expect(
         screen.getByTestId("cqlLibraryName-helper-text")
       ).toHaveTextContent(
@@ -99,14 +92,12 @@ describe("Create Draft Dialog component", () => {
         cqlLibrary={cqlLibrary}
       />
     );
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "Testing_libraryName12");
     await waitFor(() => {
-      expect(screen.getByTestId("cqlLibraryName-helper-text")).not.toBe(null);
       expect(
         screen.getByTestId("cqlLibraryName-helper-text")
       ).toHaveTextContent(
@@ -124,14 +115,12 @@ describe("Create Draft Dialog component", () => {
         cqlLibrary={cqlLibrary}
       />
     );
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "testingLibraryName12");
     await waitFor(() => {
-      expect(screen.getByTestId("cqlLibraryName-helper-text")).not.toBe(null);
       expect(
         screen.getByTestId("cqlLibraryName-helper-text")
       ).toHaveTextContent(
@@ -149,14 +138,12 @@ describe("Create Draft Dialog component", () => {
         cqlLibrary={cqlLibrary}
       />
     );
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "testing LibraryName12");
     await waitFor(() => {
-      expect(screen.getByTestId("cqlLibraryName-helper-text")).not.toBe(null);
       expect(
         screen.getByTestId("cqlLibraryName-helper-text")
       ).toHaveTextContent(
@@ -174,9 +161,7 @@ describe("Create Draft Dialog component", () => {
         cqlLibrary={cqlLibrary}
       />
     );
-    expect(
-      screen.getByTestId("create-draft-continue-button")
-    ).not.toBeDisabled();
+    expect(screen.getByRole("button", { name: "Continue" })).not.toBeDisabled();
   });
 
   it("should navigate to cql library home page on cancel", async () => {
@@ -189,7 +174,7 @@ describe("Create Draft Dialog component", () => {
         cqlLibrary={cqlLibrary}
       />
     );
-    fireEvent.click(screen.getByTestId("create-draft-cancel-button"));
+    userEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(onCloseFn).toHaveBeenCalled();
   });
 
@@ -203,16 +188,13 @@ describe("Create Draft Dialog component", () => {
         cqlLibrary={cqlLibrary}
       />
     );
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    expect(
-      screen.getByTestId("create-draft-continue-button")
-    ).not.toBeDisabled();
-    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    expect(screen.getByRole("button", { name: "Continue" })).not.toBeDisabled();
+    userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
       expect(onSubmitFn).toHaveBeenCalled();
     });
