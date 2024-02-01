@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-  fireEvent,
-  logRoles,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CqlLibraryList from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
@@ -44,7 +38,6 @@ const cqlLibrary: CqlLibrary[] = [
     lastModifiedBy: "",
     draft: true,
     version: "0.0.000",
-    groupId: "",
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
   },
@@ -59,7 +52,6 @@ const cqlLibrary: CqlLibrary[] = [
     lastModifiedBy: "null",
     draft: true,
     version: "0.0.000",
-    groupId: "",
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
   },
@@ -122,7 +114,7 @@ describe("CqlLibrary List component", () => {
     const cqlLibraryButton = getByTestId(
       `cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(cqlLibraryButton);
+    userEvent.click(cqlLibraryButton);
     expect(mockPush).toHaveBeenNthCalledWith(
       2,
       "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
@@ -131,7 +123,7 @@ describe("CqlLibrary List component", () => {
     const editCqlLibraryButton = getByTestId(
       `cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(editCqlLibraryButton);
+    userEvent.click(editCqlLibraryButton);
     expect(mockPush).toHaveBeenNthCalledWith(
       3,
       "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
@@ -148,13 +140,13 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
 
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
 
-    fireEvent.click(versionButton);
+    userEvent.click(versionButton);
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
   });
 
@@ -168,13 +160,13 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
 
     const editButton = screen.getByTestId(
       `edit-cql-library-button-${cqlLibrary[0].id}-edit`
     );
     expect(editButton).toBeInTheDocument();
-    fireEvent.click(editButton);
+    userEvent.click(editButton);
 
     expect(mockPush).toHaveBeenNthCalledWith(
       1,
@@ -195,7 +187,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: false,
         version: "0.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -209,13 +200,13 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
 
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(draftButton);
-    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
+    userEvent.click(draftButton);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
   it("should successfully draft a cql library", async () => {
@@ -228,19 +219,18 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(draftButton);
-    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.click(draftButton);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
       expect(loadCqlLibraries).toHaveBeenCalled();
     });
@@ -271,20 +261,19 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
 
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(draftButton);
-    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.click(draftButton);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Requested Cql Library cannot be drafted"
@@ -317,19 +306,18 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(draftButton);
-    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.click(draftButton);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "User is unauthorized to create a draft"
@@ -363,20 +351,19 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
 
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(draftButton);
-    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.click(draftButton);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Internal server error"
@@ -410,19 +397,18 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
     const draftButton = screen.getByTestId(
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(draftButton);
-    expect(screen.getByTestId("create-draft-dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByTestId(
-      "cql-library-name-text-field"
-    );
-    fireEvent.blur(cqlLibraryNameInput);
+    userEvent.click(draftButton);
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "ExistingLibraryName");
-    fireEvent.click(screen.getByTestId("create-draft-continue-button"));
+    userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Requested Cql Library cannot be drafted. Library name must be unique."
@@ -440,14 +426,14 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(versionButton);
-    fireEvent.click(screen.getByLabelText("Major"));
+    userEvent.click(versionButton);
+    userEvent.click(screen.getByLabelText("Major"));
     await waitFor(() => {
-      fireEvent.click(screen.getByTestId("create-version-continue-button"));
+      userEvent.click(screen.getByTestId("create-version-continue-button"));
       expect(loadCqlLibraries).toHaveBeenCalled();
     });
   });
@@ -477,15 +463,15 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
 
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(versionButton);
-    fireEvent.click(screen.getByLabelText("Major"));
+    userEvent.click(versionButton);
+    userEvent.click(screen.getByLabelText("Major"));
     await waitFor(() => {
-      fireEvent.click(screen.getByTestId("create-version-continue-button"));
+      userEvent.click(screen.getByTestId("create-version-continue-button"));
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Requested Cql Library cannot be versioned"
       );
@@ -517,14 +503,14 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(versionButton);
-    fireEvent.click(screen.getByLabelText("Major"));
+    userEvent.click(versionButton);
+    userEvent.click(screen.getByLabelText("Major"));
     await waitFor(() => {
-      fireEvent.click(screen.getByTestId("create-version-continue-button"));
+      userEvent.click(screen.getByTestId("create-version-continue-button"));
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "User is unauthorized to create a version"
       );
@@ -557,14 +543,14 @@ describe("CqlLibrary List component", () => {
     const viewEditButton = screen.getByTestId(
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
-    fireEvent.click(viewEditButton);
+    userEvent.click(viewEditButton);
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
-    fireEvent.click(versionButton);
-    fireEvent.click(screen.getByLabelText("Major"));
+    userEvent.click(versionButton);
+    userEvent.click(screen.getByLabelText("Major"));
     await waitFor(() => {
-      fireEvent.click(screen.getByTestId("create-version-continue-button"));
+      userEvent.click(screen.getByTestId("create-version-continue-button"));
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Internal server error"
       );
@@ -584,7 +570,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: true,
         version: "0.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -620,7 +605,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: true,
         version: "0.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -635,7 +619,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: false,
         version: "1.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -680,7 +663,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: true, // need this to be true for UI to present delete option
         version: "0.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -741,7 +723,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: true, // need this to be true for UI to present delete option
         version: "0.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -801,7 +782,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: true,
         version: "0.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -816,7 +796,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: false,
         version: "1.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -842,7 +821,7 @@ describe("CqlLibrary List component", () => {
       expect(useCqlLibraryServiceMockResolved.deleteDraft).not.toBeCalled();
     });
     expect(
-      await screen.queryByText("The Draft CQL Library has been deleted.")
+      screen.queryByText("The Draft CQL Library has been deleted.")
     ).not.toBeInTheDocument();
   });
 
@@ -860,7 +839,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: true,
         version: "0.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },
@@ -898,7 +876,6 @@ describe("CqlLibrary List component", () => {
         lastModifiedBy: "",
         draft: false,
         version: "0.0.000",
-        groupId: "",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
       },

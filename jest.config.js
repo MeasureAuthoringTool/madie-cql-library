@@ -10,8 +10,6 @@ module.exports = {
   moduleNameMapper: {
     "\\.(css|scss)$": "identity-obj-proxy",
     "single-spa-react/parcel": "single-spa-react/lib/cjs/parcel.cjs",
-    "@madie/madie-components":
-      "<rootDir>/node_modules/@madie/madie-components/src/madie-madie-components.tsx",
   },
   setupFilesAfterEnv: ["@testing-library/jest-dom"],
   globals: {
