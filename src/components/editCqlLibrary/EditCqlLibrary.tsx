@@ -81,7 +81,7 @@ const EditCqlLibrary = () => {
   const [toastType, setToastType] = useState<string>("danger");
   const [discardDialogOpen, setDiscardDialogOpen] = useState<boolean>(false);
   const { updateRouteHandlerState } = routeHandlerStore;
-  const isOwner = checkUserCanEdit(
+  const canEdit = checkUserCanEdit(
     loadedCqlLibrary?.librarySet?.owner,
     loadedCqlLibrary?.librarySet?.acls
   );
@@ -338,7 +338,7 @@ const EditCqlLibrary = () => {
                 <CqlLibraryEditor
                   value={formik.values.cql}
                   onChange={onChange}
-                  readOnly={!formik.values.draft || !isOwner}
+                  readOnly={!formik.values.draft || !canEdit}
                   valuesetSuccess={valuesetSuccess}
                   valuesetMsg={valuesetMsg}
                   inboundAnnotations={elmAnnotations}
@@ -408,7 +408,7 @@ const EditCqlLibrary = () => {
                     />
                   </div>
                 )}
-                {!isOwner && (
+                {!canEdit && (
                   <div className="form-row">
                     <MadieAlert
                       type="info"
@@ -429,7 +429,7 @@ const EditCqlLibrary = () => {
                     required
                     id="cqlLibraryName"
                     data-testid="cql-library-name-text-field"
-                    disabled={!formik.values.draft || !isOwner}
+                    disabled={!formik.values.draft || !canEdit}
                     inputProps={{
                       id: "cql-library-name-text-field-input",
                       "data-testid": "cql-library-name-text-field-input",
@@ -449,7 +449,7 @@ const EditCqlLibrary = () => {
                 <div className="form-row">
                   <TextArea
                     label="Description"
-                    disabled={!formik.values.draft || !isOwner}
+                    disabled={!formik.values.draft || !canEdit}
                     required
                     name="cql-library-description"
                     id="cql-library-description"
@@ -473,7 +473,7 @@ const EditCqlLibrary = () => {
                     label="Publisher"
                     placeholder="-"
                     required={true}
-                    disabled={!formik.values.draft || !isOwner}
+                    disabled={!formik.values.draft || !canEdit}
                     error={formik.touched.publisher && formik.errors.publisher}
                     helperText={
                       formik.touched.publisher && formik.errors.publisher
@@ -497,7 +497,7 @@ const EditCqlLibrary = () => {
                         id="experimental"
                         data-testid="cql-library-experimental-checkbox"
                         sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
-                        disabled={!formik.values.draft || !isOwner}
+                        disabled={!formik.values.draft || !canEdit}
                         {...formik.getFieldProps("experimental")}
                         checked={formik.values.experimental}
                         onChange={(event: any) => {
