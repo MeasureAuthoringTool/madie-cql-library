@@ -6,7 +6,7 @@ import userEvent from "@testing-library/user-event";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../api/useCqlLibraryServiceApi";
-import { checkUserCanEdit } from "@madie/madie-util";
+import { checkUserCanEdit, checkUserCanDelete } from "@madie/madie-util";
 import { AxiosError, AxiosResponse } from "axios";
 
 jest.mock("@madie/madie-util", () => ({
@@ -14,6 +14,9 @@ jest.mock("@madie/madie-util", () => ({
     getAccessToken: () => "test.jwt",
   }),
   checkUserCanEdit: jest.fn(() => {
+    return true;
+  }),
+  checkUserCanDelete: jest.fn(() => {
     return true;
   }),
 }));
@@ -827,6 +830,7 @@ describe("CqlLibrary List component", () => {
 
   it("should not have delete draft option if not owner", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(false);
+    (checkUserCanDelete as jest.Mock).mockReturnValue(false);
     const cqlLibrary: CqlLibrary[] = [
       {
         id: "622e1f46d1fd3729d861e6cb",

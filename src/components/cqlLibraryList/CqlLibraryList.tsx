@@ -10,7 +10,7 @@ import CreatDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { checkUserCanEdit } from "@madie/madie-util";
+import { checkUserCanDelete, checkUserCanEdit } from "@madie/madie-util";
 import {
   Button,
   MadieDeleteDialog,
@@ -192,7 +192,14 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedCQLLibrary, setSelectedCqlLibrary] =
     useState<CqlLibrary>(null);
-  const isOwner = checkUserCanEdit(selectedCQLLibrary?.librarySet?.owner, []);
+  const canEdit = checkUserCanEdit(
+    selectedCQLLibrary?.librarySet?.owner,
+    selectedCQLLibrary?.librarySet?.acls
+  );
+  const canDelete = checkUserCanDelete(
+    selectedCQLLibrary?.librarySet?.owner,
+    selectedCQLLibrary?.draft
+  );
   const handleOpen = (
     selected: CqlLibrary,
     event: React.MouseEvent<HTMLButtonElement>
@@ -309,9 +316,9 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 data-testid={`edit-cql-library-button-${selectedCQLLibrary.id}-edit`}
               >
                 {/* edit and version: must be draft and have ownership, else view only*/}
-                {isOwner && selectedCQLLibrary.draft ? "Edit" : "View"}
+                {canEdit && selectedCQLLibrary.draft ? "Edit" : "View"}
               </button>
-              {selectedCQLLibrary.draft && isOwner && (
+              {selectedCQLLibrary.draft && canEdit && (
                 <button
                   data-testid={`create-new-version-${selectedCQLLibrary.id}-button`}
                   onClick={() => {
@@ -331,7 +338,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 </button>
               )}
 
-              {!selectedCQLLibrary.draft && isOwner && (
+              {!selectedCQLLibrary.draft && canEdit && (
                 <button
                   data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
                   onClick={() => {
@@ -347,7 +354,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 </button>
               )}
 
-              {selectedCQLLibrary.draft && isOwner && (
+              {canDelete && (
                 <button
                   data-testid={`delete-existing-draft-${selectedCQLLibrary.id}-button`}
                   onClick={() => {
