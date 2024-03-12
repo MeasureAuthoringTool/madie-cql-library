@@ -196,7 +196,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
     selectedCQLLibrary?.librarySet?.owner,
     selectedCQLLibrary?.librarySet?.acls
   );
-  const isOwner = checkUserCanDelete(
+  const canDelete = checkUserCanDelete(
     selectedCQLLibrary?.librarySet?.owner,
     selectedCQLLibrary?.draft
   );
@@ -354,7 +354,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 </button>
               )}
 
-              {isOwner && (
+              {canDelete && (
                 <button
                   data-testid={`delete-existing-draft-${selectedCQLLibrary.id}-button`}
                   onClick={() => {
