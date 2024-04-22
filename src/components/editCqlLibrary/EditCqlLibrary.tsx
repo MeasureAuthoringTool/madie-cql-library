@@ -3,7 +3,7 @@ import tw from "twin.macro";
 import "styled-components/macro";
 import { useHistory, useParams, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
-import { CqlLibrary } from "@madie/madie-models";
+import { CqlLibrary, Model } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import queryString from "query-string";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
@@ -40,6 +40,7 @@ import "./EditCQLLibrary.scss";
 import { Checkbox, FormControlLabel, Typography } from "@mui/material";
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
+import { QdmCqlLibrarySchemaValidator } from "../../validators/QdmCqlLibrarySchemaValidator";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -97,6 +98,11 @@ const EditCqlLibrary = () => {
     setToastOpen(open);
   };
 
+  const schema =
+    loadedCqlLibrary?.model === Model.QICORE
+      ? CqlLibrarySchemaValidator
+      : QdmCqlLibrarySchemaValidator;
+
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: loadedCqlLibrary?.cqlLibraryName,
@@ -110,7 +116,7 @@ const EditCqlLibrary = () => {
       librarySet: loadedCqlLibrary?.librarySet,
       id,
     } as CqlLibrary,
-    validationSchema: CqlLibrarySchemaValidator,
+    validationSchema: schema,
     onSubmit: async (cqlLibrary: CqlLibrary) => {
       await updateCqlLibrary(cqlLibrary);
     },

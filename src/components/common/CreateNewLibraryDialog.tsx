@@ -16,6 +16,7 @@ import { useFormik } from "formik";
 import { useOrganizationApi } from "@madie/madie-util";
 import TextArea from "./TextArea";
 import { v4 as uuidv4 } from "uuid";
+import { QdmCqlLibrarySchemaValidator } from "../../validators/QdmCqlLibrarySchemaValidator";
 
 interface TestProps {
   open: boolean;
@@ -44,6 +45,10 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   const organizationApi = useRef(useOrganizationApi()).current;
 
   const modelOptions = Object.keys(Model);
+
+  const [validationSchema, setValidationSchema] = useState(
+    QdmCqlLibrarySchemaValidator
+  );
 
   // fetch organizations DB using measure service and sorts alphabetically
   useEffect(() => {
@@ -106,7 +111,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       description: "",
       publisher: "",
     } as CqlLibrary,
-    validationSchema: CqlLibrarySchemaValidator,
+    validationSchema: validationSchema,
     onSubmit: handleSubmit,
   });
   const { resetForm, setFieldTouched } = formik;
@@ -115,6 +120,13 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       return `${formik.errors[name]}`;
     }
   }
+  useEffect(() => {
+    if (Model.QICORE === formik.values?.model) {
+      setValidationSchema(CqlLibrarySchemaValidator);
+    } else if (Model.QDM_5_6 === formik.values?.model) {
+      setValidationSchema(QdmCqlLibrarySchemaValidator);
+    }
+  }, [formik.values?.model]);
   // style utilities
   const row = {
     display: "flex",
@@ -199,7 +211,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
                 (formik.touched["cqlLibraryName"] ||
                   focusedField === "cqlLibraryName") &&
                 (formikErrorHandler("cqlLibraryName") ||
-                  "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters.")
+                  "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters except of underscore for QDM.")
               }
               size="small"
               error={
