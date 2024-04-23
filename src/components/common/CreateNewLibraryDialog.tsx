@@ -115,6 +115,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       return `${formik.errors[name]}`;
     }
   }
+
   // style utilities
   const row = {
     display: "flex",
@@ -199,7 +200,9 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
                 (formik.touched["cqlLibraryName"] ||
                   focusedField === "cqlLibraryName") &&
                 (formikErrorHandler("cqlLibraryName") ||
-                  "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters.")
+                formik.values.model === Model.QDM_5_6
+                  ? "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters except of underscore for QDM."
+                  : "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters")
               }
               size="small"
               error={

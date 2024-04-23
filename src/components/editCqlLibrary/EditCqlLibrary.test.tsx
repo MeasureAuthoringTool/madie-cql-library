@@ -205,7 +205,7 @@ describe("Edit Cql Library Component", () => {
     });
   });
 
-  it("should generate field level error for underscore in cql library name", async () => {
+  it("should generate field level error for underscore in cql library name for QI-Core", async () => {
     const { getByTestId } = renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
@@ -228,6 +228,42 @@ describe("Edit Cql Library Component", () => {
       expect(getByTestId("cqlLibraryName-helper-text")).toHaveTextContent(
         "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters."
       );
+      expect(
+        screen.getByRole("button", {
+          name: "Save",
+        })
+      ).toBeDisabled();
+    });
+  });
+
+  it("should not generate field level error for underscore in cql library name for qdm", async () => {
+    mockedAxios.get.mockResolvedValue({
+      data: { ...cqlLibrary, model: Model.QDM_5_6 },
+    });
+    const { getByTestId, queryByTestId } = renderWithRouter();
+    const input = getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
+    await waitFor(() => {
+      expect(input.value).toBe("Library1");
+    });
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-name-text-field-input")
+      ).not.toHaveAttribute("disabled");
+    });
+    userEvent.clear(input);
+    expect(input.value).toBe("");
+    userEvent.type(input, "Testing_libraryName12");
+    expect(input.value).toBe("Testing_libraryName12");
+    fireEvent.blur(input);
+    await waitFor(() => {
+      expect(queryByTestId("cqlLibraryName-helper-text")).toBe(null);
+      expect(
+        screen.getByRole("button", {
+          name: "Save",
+        })
+      ).not.toBeDisabled();
     });
   });
 

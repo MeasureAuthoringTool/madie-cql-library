@@ -3,7 +3,7 @@ import tw from "twin.macro";
 import "styled-components/macro";
 import { useHistory, useParams, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
-import { CqlLibrary } from "@madie/madie-models";
+import { CqlLibrary, Model } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import queryString from "query-string";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
