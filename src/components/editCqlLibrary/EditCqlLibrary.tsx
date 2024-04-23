@@ -40,7 +40,6 @@ import "./EditCQLLibrary.scss";
 import { Checkbox, FormControlLabel, Typography } from "@mui/material";
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
-import { QdmCqlLibrarySchemaValidator } from "../../validators/QdmCqlLibrarySchemaValidator";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -98,11 +97,6 @@ const EditCqlLibrary = () => {
     setToastOpen(open);
   };
 
-  const schema =
-    loadedCqlLibrary?.model === Model.QICORE
-      ? CqlLibrarySchemaValidator
-      : QdmCqlLibrarySchemaValidator;
-
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: loadedCqlLibrary?.cqlLibraryName,
@@ -116,7 +110,7 @@ const EditCqlLibrary = () => {
       librarySet: loadedCqlLibrary?.librarySet,
       id,
     } as CqlLibrary,
-    validationSchema: schema,
+    validationSchema: CqlLibrarySchemaValidator,
     onSubmit: async (cqlLibrary: CqlLibrary) => {
       await updateCqlLibrary(cqlLibrary);
     },
