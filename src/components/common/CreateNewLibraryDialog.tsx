@@ -150,7 +150,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       return formikErrorHandler("cqlLibraryName");
     } else {
       if (formik.values.model === Model.QDM_5_6) {
-        return "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters underscore for QDM.";
+        return "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters except underscore for QDM.";
       }
       return "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters";
     }
