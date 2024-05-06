@@ -15,6 +15,7 @@ import {
   Button,
   MadieDeleteDialog,
 } from "@madie/madie-design-system/dist/react";
+import _ from "lodash";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -322,14 +323,25 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 <button
                   data-testid={`create-new-version-${selectedCQLLibrary.id}-button`}
                   onClick={() => {
-                    setCreateVersionDialog({
-                      open: true,
-                      cqlLibraryId: selectedCQLLibrary.id,
-                      cqlLibraryError: selectedCQLLibrary.cqlErrors,
-                      isCqlPresent:
-                        selectedCQLLibrary &&
-                        selectedCQLLibrary.cql?.trim().length > 0,
-                    });
+                    cqlLibraryServiceApi
+                      .fetchCqlLibrary(selectedCQLLibrary.id)
+                      .then((cqlLibrary) => {
+                        setCreateVersionDialog({
+                          open: true,
+                          cqlLibraryId: cqlLibrary.id,
+                          cqlLibraryError: cqlLibrary.cqlErrors,
+                          isCqlPresent:
+                            cqlLibrary && cqlLibrary.cql?.trim().length > 0,
+                        });
+                      })
+                      .catch(() => {
+                        setSnackBar({
+                          message:
+                            "An error occurred while fetching the CQL Library!",
+                          open: true,
+                          severity: "error",
+                        });
+                      });
                     setOptionsOpen(false);
                     setAnchorEl(null);
                   }}
