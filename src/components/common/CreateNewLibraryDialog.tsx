@@ -142,6 +142,19 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
     setFocusedField(field);
   };
 
+  const getFormikErrorMessage = (() => {
+    if (
+      (formik.touched["cqlLibraryName"] || focusedField === "cqlLibraryName") &&
+      formikErrorHandler("cqlLibraryName")
+    ) {
+      return formikErrorHandler("cqlLibraryName");
+    } else {
+      if (formik.values.model === Model.QDM_5_6) {
+        return "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters except underscore for QDM.";
+      }
+      return "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters";
+    }
+  })();
   return (
     <div>
       <MadieDialog
@@ -196,14 +209,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
                 "aria-required": true,
                 required: true,
               }}
-              helperText={
-                (formik.touched["cqlLibraryName"] ||
-                  focusedField === "cqlLibraryName") &&
-                (formikErrorHandler("cqlLibraryName") ||
-                formik.values.model === Model.QDM_5_6
-                  ? "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters except of underscore for QDM."
-                  : "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters")
-              }
+              helperText={getFormikErrorMessage}
               size="small"
               error={
                 formik.touched.cqlLibraryName &&
