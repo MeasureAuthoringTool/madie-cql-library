@@ -326,12 +326,14 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                     cqlLibraryServiceApi
                       .fetchCqlLibrary(selectedCQLLibrary.id)
                       .then((cqlLibrary) => {
+                        setSelectedCqlLibrary(cqlLibrary);
                         setCreateVersionDialog({
                           open: true,
-                          cqlLibraryId: cqlLibrary.id,
-                          cqlLibraryError: cqlLibrary.cqlErrors,
+                          cqlLibraryId: selectedCQLLibrary.id,
+                          cqlLibraryError: selectedCQLLibrary.cqlErrors,
                           isCqlPresent:
-                            cqlLibrary && cqlLibrary.cql?.trim().length > 0,
+                            selectedCQLLibrary &&
+                            selectedCQLLibrary.cql?.trim().length > 0,
                         });
                       })
                       .catch(() => {
