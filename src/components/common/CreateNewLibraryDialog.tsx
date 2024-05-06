@@ -254,7 +254,6 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
             />
             <Box />
           </Box>
-          test
           <Box sx={formRow}>
             <TextArea
               label="Description"
