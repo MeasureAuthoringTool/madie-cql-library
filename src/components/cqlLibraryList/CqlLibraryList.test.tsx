@@ -36,7 +36,7 @@ const cqlLibrary: CqlLibrary[] = [
     cqlLibraryName: "testing1",
     model: Model.QICORE,
     createdAt: "1",
-    createdBy: "testuser@example.com",
+    createdBy: "testuseratexamplecom",
     lastModifiedAt: "",
     lastModifiedBy: "",
     draft: true,
@@ -46,7 +46,7 @@ const cqlLibrary: CqlLibrary[] = [
     librarySet: {
       id: "1",
       librarySetId: "librarySetId1",
-      owner: "testuser@example.com",
+      owner: "testuseratexamplecom",
     },
   },
   {
@@ -55,7 +55,7 @@ const cqlLibrary: CqlLibrary[] = [
     cqlLibraryName: "testing2",
     model: Model.QICORE,
     createdAt: "",
-    createdBy: "anothertestuser@example.com",
+    createdBy: "anothertestuseratexamplecom",
     lastModifiedAt: "2",
     lastModifiedBy: "null",
     draft: true,
@@ -65,7 +65,7 @@ const cqlLibrary: CqlLibrary[] = [
     librarySet: {
       id: "2",
       librarySetId: "librarySetId2",
-      owner: "anothertestuser@example.com",
+      owner: "anothertestuseratexamplecom",
     },
   },
 ];
