@@ -329,11 +329,10 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                         setSelectedCqlLibrary(cqlLibrary);
                         setCreateVersionDialog({
                           open: true,
-                          cqlLibraryId: selectedCQLLibrary.id,
-                          cqlLibraryError: selectedCQLLibrary.cqlErrors,
+                          cqlLibraryId: cqlLibrary.id,
+                          cqlLibraryError: cqlLibrary.cqlErrors,
                           isCqlPresent:
-                            selectedCQLLibrary &&
-                            selectedCQLLibrary.cql?.trim().length > 0,
+                            cqlLibrary && cqlLibrary.cql?.trim().length > 0,
                         });
                       })
                       .catch(() => {
