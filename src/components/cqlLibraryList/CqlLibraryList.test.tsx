@@ -1,5 +1,5 @@
 import * as React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CqlLibraryList from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
@@ -35,14 +35,19 @@ const cqlLibrary: CqlLibrary[] = [
     librarySetId: "librarySetId1",
     cqlLibraryName: "testing1",
     model: Model.QICORE,
-    createdAt: "",
-    createdBy: "testuser@example.com",
+    createdAt: "1",
+    createdBy: "testuseratexamplecom",
     lastModifiedAt: "",
     lastModifiedBy: "",
     draft: true,
     version: "0.0.000",
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
+    librarySet: {
+      id: "1",
+      librarySetId: "librarySetId1",
+      owner: "testuseratexamplecom",
+    },
   },
   {
     id: "622e1f46d1fd3729d861e6c1",
@@ -50,13 +55,18 @@ const cqlLibrary: CqlLibrary[] = [
     cqlLibraryName: "testing2",
     model: Model.QICORE,
     createdAt: "",
-    createdBy: "anothertestuser@example.com",
-    lastModifiedAt: "",
+    createdBy: "anothertestuseratexamplecom",
+    lastModifiedAt: "2",
     lastModifiedBy: "null",
     draft: true,
     version: "0.0.000",
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
+    librarySet: {
+      id: "2",
+      librarySetId: "librarySetId2",
+      owner: "anothertestuseratexamplecom",
+    },
   },
 ];
 
@@ -71,10 +81,12 @@ const useCqlLibraryServiceMockResolved = {
   createVersion: jest.fn().mockResolvedValue({}),
   createDraft: jest.fn().mockResolvedValue({}),
   deleteDraft: jest.fn().mockResolvedValue({}),
+  fetchCqlLibrary: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
 
 describe("CqlLibrary List component", () => {
   beforeEach(() => {
+    jest.resetModules();
     useCqlLibraryServiceMockResolved.createVersion = jest
       .fn()
       .mockResolvedValue({});
@@ -84,10 +96,16 @@ describe("CqlLibrary List component", () => {
     useCqlLibraryServiceMockResolved.deleteDraft = jest
       .fn()
       .mockResolvedValue({});
-    useCqlLibraryServiceMock.mockImplementation(() => {
+    useCqlLibraryServiceMockResolved.fetchCqlLibrary = jest
+      .fn()
+      .mockResolvedValue({});
+    useCqlLibraryServiceMock.mockReset().mockImplementation(() => {
       return useCqlLibraryServiceMockResolved;
     });
     (checkUserCanEdit as jest.Mock).mockReturnValue(true);
+  });
+  afterEach(() => {
+    cleanup();
   });
 
   it("should display a list of Cql Libraries", () => {
@@ -133,7 +151,7 @@ describe("CqlLibrary List component", () => {
     );
   });
 
-  it("should display version button for draft libraries and on click should render dialog", () => {
+  it("should display version button for draft libraries and on click should render dialog", async () => {
     render(
       <CqlLibraryList
         cqlLibraryList={cqlLibrary}
@@ -149,7 +167,7 @@ describe("CqlLibrary List component", () => {
       `create-new-version-${cqlLibrary[0].id}-button`
     );
 
-    userEvent.click(versionButton);
+    await userEvent.click(versionButton);
     expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
   });
 
@@ -430,13 +448,31 @@ describe("CqlLibrary List component", () => {
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
     userEvent.click(viewEditButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId(`create-new-version-${cqlLibrary[0].id}-button`)
+      ).toBeInTheDocument();
+    });
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
     userEvent.click(versionButton);
-    userEvent.click(screen.getByLabelText("Major"));
+
     await waitFor(() => {
-      userEvent.click(screen.getByTestId("create-version-continue-button"));
+      expect(screen.getByLabelText("Major")).toBeInTheDocument();
+    });
+    const majorButton = screen.getByLabelText("Major");
+    userEvent.click(majorButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("create-version-continue-button")
+      ).toBeInTheDocument();
+    });
+    const continueButton = screen.getByTestId("create-version-continue-button");
+    userEvent.click(continueButton);
+    await waitFor(() => {
       expect(loadCqlLibraries).toHaveBeenCalled();
     });
   });
@@ -450,6 +486,7 @@ describe("CqlLibrary List component", () => {
       },
     };
     const useCqlLibraryServiceMockRejected = {
+      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
       createVersion: jest.fn().mockRejectedValue(error),
     } as unknown as CqlLibraryServiceApi;
 
@@ -468,13 +505,31 @@ describe("CqlLibrary List component", () => {
     );
     userEvent.click(viewEditButton);
 
+    await waitFor(() => {
+      expect(
+        screen.getByTestId(`create-new-version-${cqlLibrary[0].id}-button`)
+      ).toBeInTheDocument();
+    });
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
     userEvent.click(versionButton);
-    userEvent.click(screen.getByLabelText("Major"));
+
     await waitFor(() => {
-      userEvent.click(screen.getByTestId("create-version-continue-button"));
+      expect(screen.getByLabelText("Major")).toBeInTheDocument();
+    });
+    const majorButton = screen.getByLabelText("Major");
+    userEvent.click(majorButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("create-version-continue-button")
+      ).toBeInTheDocument();
+    });
+    const continueButton = screen.getByTestId("create-version-continue-button");
+    userEvent.click(continueButton);
+
+    await waitFor(() => {
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Requested Cql Library cannot be versioned"
       );
@@ -490,6 +545,7 @@ describe("CqlLibrary List component", () => {
       },
     };
     const useCqlLibraryServiceMockRejected = {
+      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
       createVersion: jest.fn().mockRejectedValue(error),
     } as unknown as CqlLibraryServiceApi;
 
@@ -507,13 +563,32 @@ describe("CqlLibrary List component", () => {
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
     userEvent.click(viewEditButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId(`create-new-version-${cqlLibrary[0].id}-button`)
+      ).toBeInTheDocument();
+    });
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
     userEvent.click(versionButton);
-    userEvent.click(screen.getByLabelText("Major"));
+
     await waitFor(() => {
-      userEvent.click(screen.getByTestId("create-version-continue-button"));
+      expect(screen.getByLabelText("Major")).toBeInTheDocument();
+    });
+    const majorButton = screen.getByLabelText("Major");
+    userEvent.click(majorButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("create-version-continue-button")
+      ).toBeInTheDocument();
+    });
+    const continueButton = screen.getByTestId("create-version-continue-button");
+    userEvent.click(continueButton);
+
+    await waitFor(() => {
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "User is unauthorized to create a version"
       );
@@ -531,6 +606,7 @@ describe("CqlLibrary List component", () => {
     };
     const useCqlLibraryServiceMockRejected = {
       createVersion: jest.fn().mockRejectedValue(error),
+      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
     } as unknown as CqlLibraryServiceApi;
 
     useCqlLibraryServiceMock.mockImplementation(() => {
@@ -547,13 +623,32 @@ describe("CqlLibrary List component", () => {
       `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
     userEvent.click(viewEditButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId(`create-new-version-${cqlLibrary[0].id}-button`)
+      ).toBeInTheDocument();
+    });
     const versionButton = screen.getByTestId(
       `create-new-version-${cqlLibrary[0].id}-button`
     );
     userEvent.click(versionButton);
-    userEvent.click(screen.getByLabelText("Major"));
+
     await waitFor(() => {
-      userEvent.click(screen.getByTestId("create-version-continue-button"));
+      expect(screen.getByLabelText("Major")).toBeInTheDocument();
+    });
+    const majorButton = screen.getByLabelText("Major");
+    userEvent.click(majorButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("create-version-continue-button")
+      ).toBeInTheDocument();
+    });
+    const continueButton = screen.getByTestId("create-version-continue-button");
+    userEvent.click(continueButton);
+
+    await waitFor(() => {
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Internal server error"
       );
