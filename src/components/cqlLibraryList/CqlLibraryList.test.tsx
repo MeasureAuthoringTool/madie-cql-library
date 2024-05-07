@@ -527,9 +527,9 @@ describe("CqlLibrary List component", () => {
       ).toBeInTheDocument();
     });
     const continueButton = screen.getByTestId("create-version-continue-button");
+    userEvent.click(continueButton);
 
     await waitFor(() => {
-      userEvent.click(continueButton);
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Requested Cql Library cannot be versioned"
       );
@@ -586,8 +586,9 @@ describe("CqlLibrary List component", () => {
       ).toBeInTheDocument();
     });
     const continueButton = screen.getByTestId("create-version-continue-button");
+    userEvent.click(continueButton);
+
     await waitFor(() => {
-      userEvent.click(continueButton);
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "User is unauthorized to create a version"
       );
@@ -645,8 +646,9 @@ describe("CqlLibrary List component", () => {
       ).toBeInTheDocument();
     });
     const continueButton = screen.getByTestId("create-version-continue-button");
+    userEvent.click(continueButton);
+
     await waitFor(() => {
-      userEvent.click(continueButton);
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Internal server error"
       );
