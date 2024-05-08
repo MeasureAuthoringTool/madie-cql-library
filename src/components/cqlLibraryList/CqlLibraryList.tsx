@@ -355,10 +355,23 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 <button
                   data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
                   onClick={() => {
-                    setCreateDraftDialog({
-                      open: true,
-                      cqlLibrary: selectedCQLLibrary,
-                    });
+                    cqlLibraryServiceApi
+                      .fetchCqlLibrary(selectedCQLLibrary.id)
+                      .then((cqlLibrary) => {
+                        setSelectedCqlLibrary(cqlLibrary);
+                        setCreateDraftDialog({
+                          open: true,
+                          cqlLibrary: cqlLibrary,
+                        });
+                      })
+                      .catch(() => {
+                        setSnackBar({
+                          message:
+                            "An error occurred while fetching the CQL Library!",
+                          open: true,
+                          severity: "error",
+                        });
+                      });
                     setOptionsOpen(false);
                     setAnchorEl(null);
                   }}

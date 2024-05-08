@@ -195,7 +195,7 @@ describe("CqlLibrary List component", () => {
     );
   });
 
-  it("should display draft button for version libraries and on click should render dialog", () => {
+  it("should display draft button for version libraries and on click should render dialog", async () => {
     const cqlLibrary: CqlLibrary[] = [
       {
         id: "622e1f46d1fd3729d861e6cb",
@@ -212,6 +212,15 @@ describe("CqlLibrary List component", () => {
         cqlErrors: false,
       },
     ];
+
+    useCqlLibraryServiceMockResolved.fetchCqlLibrary = jest
+      .fn()
+      .mockResolvedValue(cqlLibrary[0]);
+
+    useCqlLibraryServiceMock.mockImplementation(() => {
+      return useCqlLibraryServiceMockResolved;
+    });
+
     render(
       <CqlLibraryList
         cqlLibraryList={cqlLibrary}
@@ -227,10 +236,18 @@ describe("CqlLibrary List component", () => {
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
     userEvent.click(draftButton);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
 
   it("should successfully draft a cql library", async () => {
+    useCqlLibraryServiceMockResolved.fetchCqlLibrary = jest
+      .fn()
+      .mockResolvedValue(cqlLibrary[0]);
+
+    useCqlLibraryServiceMock.mockImplementation(() => {
+      return useCqlLibraryServiceMockResolved;
+    });
+
     render(
       <CqlLibraryList
         cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
@@ -245,7 +262,7 @@ describe("CqlLibrary List component", () => {
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
     userEvent.click(draftButton);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
     const cqlLibraryNameInput = screen.getByRole("textbox", {
       name: "CQL Library Name",
     });
@@ -267,6 +284,7 @@ describe("CqlLibrary List component", () => {
     };
     const useCqlLibraryServiceMockRejected = {
       createDraft: jest.fn().mockRejectedValue(error),
+      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
     } as unknown as CqlLibraryServiceApi;
 
     useCqlLibraryServiceMock.mockImplementation(() => {
@@ -288,7 +306,7 @@ describe("CqlLibrary List component", () => {
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
     userEvent.click(draftButton);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
     const cqlLibraryNameInput = screen.getByRole("textbox", {
       name: "CQL Library Name",
     });
@@ -312,6 +330,7 @@ describe("CqlLibrary List component", () => {
     };
     const useCqlLibraryServiceMockRejected = {
       createDraft: jest.fn().mockRejectedValue(error),
+      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
     } as unknown as CqlLibraryServiceApi;
 
     useCqlLibraryServiceMock.mockImplementation(() => {
@@ -332,7 +351,7 @@ describe("CqlLibrary List component", () => {
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
     userEvent.click(draftButton);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
     const cqlLibraryNameInput = screen.getByRole("textbox", {
       name: "CQL Library Name",
     });
@@ -357,6 +376,7 @@ describe("CqlLibrary List component", () => {
     };
     const useCqlLibraryServiceMockRejected = {
       createDraft: jest.fn().mockRejectedValue(error),
+      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
     } as unknown as CqlLibraryServiceApi;
 
     useCqlLibraryServiceMock.mockImplementation(() => {
@@ -378,7 +398,7 @@ describe("CqlLibrary List component", () => {
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
     userEvent.click(draftButton);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
     const cqlLibraryNameInput = screen.getByRole("textbox", {
       name: "CQL Library Name",
     });
@@ -403,6 +423,7 @@ describe("CqlLibrary List component", () => {
     };
     const useCqlLibraryServiceMockRejected = {
       createDraft: jest.fn().mockRejectedValue(error),
+      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
     } as unknown as CqlLibraryServiceApi;
 
     useCqlLibraryServiceMock.mockImplementation(() => {
@@ -423,7 +444,7 @@ describe("CqlLibrary List component", () => {
       `create-new-draft-${cqlLibrary[0].id}-button`
     );
     userEvent.click(draftButton);
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
     const cqlLibraryNameInput = screen.getByRole("textbox", {
       name: "CQL Library Name",
     });
