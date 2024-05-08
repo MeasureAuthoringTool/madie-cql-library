@@ -215,6 +215,27 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
     setAnchorEl(null);
   };
 
+  const onDraftClicked = (selectedCQLLibrary: CqlLibrary) => {
+    cqlLibraryServiceApi
+      .fetchCqlLibrary(selectedCQLLibrary.id)
+      .then((cqlLibrary) => {
+        setSelectedCqlLibrary(cqlLibrary);
+        setCreateDraftDialog({
+          open: true,
+          cqlLibrary: cqlLibrary,
+        });
+      })
+      .catch(() => {
+        setSnackBar({
+          message: "An error occurred while fetching the CQL Library!",
+          open: true,
+          severity: "error",
+        });
+      });
+    setOptionsOpen(false);
+    setAnchorEl(null);
+  };
+
   return (
     <div data-testid="cqlLibrary-list">
       <Snackbar
@@ -354,14 +375,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
               {!selectedCQLLibrary.draft && canEdit && (
                 <button
                   data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
-                  onClick={() => {
-                    setCreateDraftDialog({
-                      open: true,
-                      cqlLibrary: selectedCQLLibrary,
-                    });
-                    setOptionsOpen(false);
-                    setAnchorEl(null);
-                  }}
+                  onClick={() => onDraftClicked(selectedCQLLibrary)}
                 >
                   Draft
                 </button>
