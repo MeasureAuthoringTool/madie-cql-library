@@ -87,6 +87,8 @@ declare module "@madie/madie-util" {
     draft?: boolean
   ): boolean;
 
+  export function wafIntercept(): void;
+
   export const bootstrap: LifeCycleFn<void>;
   export const mount: LifeCycleFn<void>;
   export const unmount: LifeCycleFn<void>;

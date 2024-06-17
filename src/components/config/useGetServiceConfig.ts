@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-
+import { wafIntercept } from "@madie/madie-util";
 export interface OktaConfig {
   baseUrl: string;
   issuer: string;
@@ -22,6 +22,10 @@ export interface ServiceConfig {
     baseUrl: string;
   };
 }
+
+axios.interceptors.response.use((response) => {
+  return response;
+}, wafIntercept);
 
 const useGetServiceConfig = () => {
   const [config, setConfig] = useState<ServiceConfig | null>(null);

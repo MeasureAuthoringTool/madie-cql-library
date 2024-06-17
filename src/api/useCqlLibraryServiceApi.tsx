@@ -3,7 +3,7 @@ import useServiceConfig from "./useServiceConfig";
 import { ServiceConfig } from "./ServiceContext";
 import { CqlLibrary } from "@madie/madie-models";
 import useOktaTokens from "../hooks/useOktaTokens";
-
+import { wafIntercept } from "@madie/madie-util";
 export class CqlLibraryServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}
 
@@ -100,6 +100,10 @@ export class CqlLibraryServiceApi {
     });
   }
 }
+
+axios.interceptors.response.use((response) => {
+  return response;
+}, wafIntercept);
 
 export default function useCqlLibraryServiceApi() {
   const serviceConfig: ServiceConfig = useServiceConfig();
