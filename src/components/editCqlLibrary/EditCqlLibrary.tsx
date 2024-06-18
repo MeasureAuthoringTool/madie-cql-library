@@ -249,12 +249,12 @@ const EditCqlLibrary = () => {
         }
         if (updatedContent.isLibraryStatementChanged) {
           secondaryMessages.push(
-            "Library Statement was incorrect. MADiE has overwritten it."
+            "Library statement was incorrect. MADiE has overwritten it."
           );
         }
         if (updatedContent.isUsingStatementChanged) {
           secondaryMessages.push(
-            "Using Statement was incorrect. MADiE has overwritten it."
+            "Using statement was incorrect. MADiE has overwritten it."
           );
         }
         if (updatedContent.isValueSetChanged) {

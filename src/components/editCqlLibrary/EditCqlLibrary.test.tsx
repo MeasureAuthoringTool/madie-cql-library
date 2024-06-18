@@ -551,7 +551,7 @@ describe("Edit Cql Library Component", () => {
     });
     const warningMessage = screen.getByTestId("library-warning");
     expect(warningMessage.textContent).toEqual(
-      "Library Statement was incorrect. MADiE has overwritten it."
+      "Library statement was incorrect. MADiE has overwritten it."
     );
   });
 
