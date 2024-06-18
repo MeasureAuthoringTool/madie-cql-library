@@ -6,7 +6,7 @@ import * as _ from "lodash";
 const generateMadieAlertWithContent = (
   type,
   header,
-  secondaryMessage,
+  secondaryMessages,
   outboundAnnotations
 ) => {
   const errorAnnotation = _.filter(outboundAnnotations, { type: "error" });
@@ -31,9 +31,13 @@ const generateMadieAlertWithContent = (
           >
             {header}
           </h3>
-          {secondaryMessage && (
+          {secondaryMessages?.length > 0 && (
             <p className="secondary" data-testid="library-warning">
-              {secondaryMessage}
+              <ul style={{ listStyle: "inside" }}>
+                {secondaryMessages.map((message) => (
+                  <li>{message}</li>
+                ))}
+              </ul>
             </p>
           )}
           {errors?.length > 0 && (
@@ -73,31 +77,17 @@ const StatusHandler = ({
 }) => {
   if (success.status === "success") {
     if (outboundAnnotations?.length > 0) {
-      if (
-        success.message ===
-          "CQL updated successfully but was missing a Using statement.  Please add in a valid model and version." ||
-        success.message ===
-          "CQL updated successfully! Library Statement or Using Statement were incorrect. MADiE has overwritten them to ensure proper CQL."
-      ) {
-        return generateMadieAlertWithContent(
-          success.status,
-          "Changes saved successfully but the following issues were found",
-          success.message,
-          outboundAnnotations
-        );
-      } else {
-        return generateMadieAlertWithContent(
-          success.status,
-          "Changes saved successfully but the following issues were found",
-          null,
-          outboundAnnotations
-        );
-      }
+      return generateMadieAlertWithContent(
+        success.status,
+        success.primaryMessage,
+        success.secondaryMessages,
+        outboundAnnotations
+      );
     } else {
       return generateMadieAlertWithContent(
         success.status,
-        success.message,
-        null,
+        success.primaryMessage,
+        success.secondaryMessages,
         null
       );
     }

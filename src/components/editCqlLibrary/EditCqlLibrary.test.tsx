@@ -489,11 +489,16 @@ describe("Edit Cql Library Component", () => {
     ).toBeDisabled();
   });
 
-  it("should update an existing cql library with the synched cql library name, version and display a warning message", async () => {
+  it("should revert change in library statement, using statement and value version if encountered", async () => {
     (synchingEditorCqlContent as jest.Mock)
       .mockClear()
       .mockImplementation(() => {
-        return "library UpdateName version '1.0.000'";
+        return {
+          cql: "library UpdateName version '1.0.000'",
+          isLibraryStatementChanged: true,
+          isUsingStatementChanged: false,
+          isValueSetChanged: false,
+        };
       });
     mockedAxios.put.mockResolvedValue({
       data: {
@@ -541,12 +546,16 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       const successMessage = screen.getByTestId("generic-success-text-header");
       expect(successMessage.textContent).toEqual(
-        "CQL updated successfully! Library Statement or Using Statement were incorrect. MADiE has overwritten them to ensure proper CQL."
+        "CQL updated successfully but the following issues were found"
       );
     });
+    const warningMessage = screen.getByTestId("library-warning");
+    expect(warningMessage.textContent).toEqual(
+      "Library Statement was incorrect. MADiE has overwritten it."
+    );
   });
 
-  it("should update an existing cql library with the synched cql library name, version and warn about blank using", async () => {
+  it("should update an existing cql library with the updated cql library name, version and warn about blank using", async () => {
     (synchingEditorCqlContent as jest.Mock)
       .mockClear()
       .mockImplementation(() => {
@@ -601,7 +610,7 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       const successMessage = screen.getByTestId("generic-success-text-header");
       expect(successMessage.textContent).toEqual(
-        "CQL updated successfully but was missing a Using statement.  Please add in a valid model and version."
+        "CQL updated successfully but the following issues were found"
       );
     });
   });
@@ -692,9 +701,7 @@ describe("Edit Cql Library Component", () => {
     userEvent.click(updateButton);
     await waitFor(() => {
       const successMessage = screen.getByTestId("generic-success-text-header");
-      expect(successMessage.textContent).toEqual(
-        "CQL Library saved successfully"
-      );
+      expect(successMessage.textContent).toEqual("CQL updated successfully");
       expect(mockedAxios.put).toHaveBeenCalledTimes(1);
     });
     expect(mockedAxios.put.mock.lastCall[0]).toEqual(
