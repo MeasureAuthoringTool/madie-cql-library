@@ -60,7 +60,8 @@ const EditCqlLibrary = () => {
   // StatusHandler utilities
   const [success, setSuccess] = useState({
     status: undefined,
-    message: undefined,
+    primaryMessage: undefined,
+    secondaryMessages: undefined,
   });
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>(null);
@@ -136,7 +137,11 @@ const EditCqlLibrary = () => {
 
   const onChange = (value) => {
     formik.setFieldValue("cql", value);
-    setSuccess({ status: undefined, message: undefined });
+    setSuccess({
+      status: undefined,
+      primaryMessage: undefined,
+      secondaryMessages: undefined,
+    });
     setError(false);
     setErrorMessage(undefined);
     setValuesetMsg(undefined);
@@ -181,7 +186,7 @@ const EditCqlLibrary = () => {
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
     setActiveSpinner(true);
     const using = loadedCqlLibrary?.model.split(" v");
-    const inSyncCql = await synchingEditorCqlContent(
+    const updatedContent = await synchingEditorCqlContent(
       formik.values.cql?.trim() ?? "",
       loadedCqlLibrary?.cql,
       formik.values.cqlLibraryName,
@@ -191,9 +196,7 @@ const EditCqlLibrary = () => {
       using[1],
       "updateCqlLibrary"
     );
-
-    const results = await executeCqlParsingForErrors(inSyncCql);
-
+    const results = await executeCqlParsingForErrors(updatedContent.cql);
     if (results[0].status === "rejected") {
       console.error(
         "An error occurred while translating CQL to ELM",
@@ -223,38 +226,50 @@ const EditCqlLibrary = () => {
         _.filter(validationResult?.errors, { errorSeverity: "Error" })
       ) || !_.isEmpty(validationResult?.externalErrors);
 
-    const cqlErrors = inSyncCql?.trim().length
+    const cqlErrors = updatedContent.cql?.trim().length
       ? parseErrors || cqlElmErrors
       : false;
-    const synchedCqlLibrary = { ...cqlLibrary, cql: inSyncCql, cqlErrors };
+    const updatedLibrary = {
+      ...cqlLibrary,
+      cql: updatedContent.cql,
+      cqlErrors,
+    };
     cqlLibraryServiceApi
-      .updateCqlLibrary(synchedCqlLibrary)
+      .updateCqlLibrary(updatedLibrary)
       .then((response) => {
         cqlLibraryStore.updateLibrary(response.data);
         setLoadedCqlLibrary(response.data);
         resetForm();
-        if (cqlLibrary.cql?.trim() && isUsingEmpty(cqlLibrary.cql.trim())) {
-          setSuccess({
-            status: "success",
-            message:
-              "CQL updated successfully but was missing a Using statement.  Please add in a valid model and version.",
-          });
-        } else {
-          const successMessage =
-            cqlLibrary.cql !== null &&
-            inSyncCql &&
-            inSyncCql?.trim() !== cqlLibrary.cql.trim()
-              ? {
-                  status: "success",
-                  message:
-                    "CQL updated successfully! Library Statement or Using Statement were incorrect. MADiE has overwritten them to ensure proper CQL.",
-                }
-              : {
-                  status: "success",
-                  message: "CQL Library saved successfully",
-                };
-          setSuccess(successMessage);
+        let primaryMessage = "CQL updated successfully";
+        const secondaryMessages = [];
+        if (isUsingEmpty(updatedContent.cql)) {
+          secondaryMessages.push(
+            "Missing a using statement. Please add in a valid model and version."
+          );
         }
+        if (updatedContent.isLibraryStatementChanged) {
+          secondaryMessages.push(
+            "Library statement was incorrect. MADiE has overwritten it."
+          );
+        }
+        if (updatedContent.isUsingStatementChanged) {
+          secondaryMessages.push(
+            "Using statement was incorrect. MADiE has overwritten it."
+          );
+        }
+        if (updatedContent.isValueSetChanged) {
+          secondaryMessages.push(
+            "MADiE does not currently support use of value set version directly in library at this time. Your value set versions have been removed. Please use the relevant manifest for value set expansion for testing."
+          );
+        }
+        if (secondaryMessages.length > 0) {
+          primaryMessage += " but the following issues were found";
+        }
+        setSuccess({
+          status: "success",
+          primaryMessage,
+          secondaryMessages,
+        });
       })
       .catch((error) => {
         setError(true);
