@@ -79,6 +79,9 @@ const organizations = [
 
 jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+mockedAxios.interceptors = axios.interceptors as jest.Mocked<
+  typeof axios.interceptors
+>;
 
 // mocking useHistory
 const mockPush = jest.fn();
