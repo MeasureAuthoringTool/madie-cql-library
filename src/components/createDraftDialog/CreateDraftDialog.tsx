@@ -54,7 +54,7 @@ const CreatDraftDialog = ({
     return onSubmit({
       ...cqlLibrary,
       cqlLibraryName,
-      cql: editorContents?.cql,
+      cql: editorContents?.cql || editorContents,
     });
   };
 
