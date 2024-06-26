@@ -20,6 +20,12 @@ const cqlLibrary: CqlLibrary = {
   cql: null,
 };
 
+jest.mock("@madie/madie-editor", () => ({
+  synchingEditorCqlContent: jest.fn().mockResolvedValue({
+    cql: "library testing1 version '0.0.000'",
+  }),
+}));
+
 describe("Create Draft Dialog component", () => {
   beforeEach(() => {
     clearAllMocks();
