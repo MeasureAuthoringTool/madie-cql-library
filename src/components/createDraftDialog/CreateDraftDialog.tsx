@@ -5,9 +5,7 @@ import { DialogContent, Box, Typography } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { CqlLibrary } from "@madie/madie-models";
-import { synchingEditorCqlContent } from "@madie/madie-editor";
 import { MadieDialog, TextField } from "@madie/madie-design-system/dist/react";
-import _ from "lodash";
 
 interface CreateDraftDialogProps {
   open: boolean;
@@ -40,21 +38,19 @@ const CreatDraftDialog = ({
   });
 
   const submitForm = async (cqlLibraryName: string) => {
-    const cqlModelInfo: string[] = _.split(cqlLibrary?.model, " v", 2);
-    const editorContents = await synchingEditorCqlContent(
-      "",
-      cqlLibrary?.cql,
-      cqlLibraryName,
-      cqlLibrary?.cqlLibraryName,
-      cqlLibrary?.version,
-      cqlModelInfo[0],
-      cqlModelInfo[1],
-      "draftDialog"
-    );
+    let cql = cqlLibrary?.cql;
+    const previousLibraryName = cqlLibrary?.cqlLibraryName;
+    // make sure cql is updated with new library name, if it is changed
+    if (
+      previousLibraryName !== cqlLibraryName &&
+      cql?.includes(cqlLibrary.cqlLibraryName)
+    ) {
+      cql = cql.replace(previousLibraryName, cqlLibraryName);
+    }
     return onSubmit({
       ...cqlLibrary,
       cqlLibraryName,
-      cql: editorContents?.cql || editorContents,
+      cql,
     });
   };
 

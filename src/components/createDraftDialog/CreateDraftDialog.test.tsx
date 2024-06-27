@@ -9,7 +9,7 @@ const cqlLibrary: CqlLibrary = {
   cqlErrors: false,
   librarySetId: "",
   id: "622e1f46d1fd3729d861e6cb",
-  cqlLibraryName: "testing1",
+  cqlLibraryName: "TestLib",
   model: Model.QICORE,
   createdAt: null,
   createdBy: null,
@@ -17,14 +17,8 @@ const cqlLibrary: CqlLibrary = {
   lastModifiedBy: null,
   draft: true,
   version: "0.0.000",
-  cql: null,
+  cql: "library TestLib version '0.0.000'\nusing QICore version '4.1.1'\n",
 };
-
-jest.mock("@madie/madie-editor", () => ({
-  synchingEditorCqlContent: jest.fn().mockResolvedValue({
-    cql: "library testing1 version '0.0.000'",
-  }),
-}));
 
 describe("Create Draft Dialog component", () => {
   beforeEach(() => {
@@ -43,7 +37,7 @@ describe("Create Draft Dialog component", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
     expect(
       screen.getByRole("textbox", { name: "CQL Library Name" })
-    ).toHaveValue("testing1");
+    ).toHaveValue(cqlLibrary.cqlLibraryName);
   });
 
   it("should generate field level error for required Cql Library name", async () => {
@@ -184,7 +178,27 @@ describe("Create Draft Dialog component", () => {
     expect(onCloseFn).toHaveBeenCalled();
   });
 
-  it("should continue drafting by calling onSubmit", async () => {
+  it("should not change cql but continue drafting by calling onSubmit when user does not rename library", async () => {
+    const onSubmitFn = jest.fn();
+    render(
+      <CreatDraftDialog
+        open={true}
+        onClose={jest.fn()}
+        onSubmit={onSubmitFn}
+        cqlLibrary={cqlLibrary}
+      />
+    );
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    }) as HTMLInputElement;
+    expect(cqlLibraryNameInput.value).toBe(cqlLibrary.cqlLibraryName);
+    userEvent.click(screen.getByRole("button", { name: "Continue" }));
+    await waitFor(() => {
+      expect(onSubmitFn).toHaveBeenCalledWith(cqlLibrary);
+    });
+  });
+
+  it("should update the cql and continue drafting by calling onSubmit when user renames the library", async () => {
     const onSubmitFn = jest.fn();
     render(
       <CreatDraftDialog
@@ -199,10 +213,13 @@ describe("Create Draft Dialog component", () => {
     });
     userEvent.clear(cqlLibraryNameInput);
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    expect(screen.getByRole("button", { name: "Continue" })).not.toBeDisabled();
     userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
-      expect(onSubmitFn).toHaveBeenCalled();
+      expect(onSubmitFn).toHaveBeenCalledWith({
+        ...cqlLibrary,
+        cql: "library TestingLibraryName12 version '0.0.000'\nusing QICore version '4.1.1'\n",
+        cqlLibraryName: "TestingLibraryName12",
+      });
     });
   });
 });
