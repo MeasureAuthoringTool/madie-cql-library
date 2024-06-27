@@ -1,4 +1,4 @@
-import { axiosInstance as axios } from "../utils/axios-insatnce";
+import axios from "./axios-instance";
 import useServiceConfig from "./useServiceConfig";
 import { ServiceConfig } from "./ServiceContext";
 import { CqlLibrary } from "@madie/madie-models";
