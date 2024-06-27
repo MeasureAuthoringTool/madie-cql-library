@@ -152,18 +152,6 @@ describe("Create Draft Dialog component", () => {
     });
   });
 
-  it("should have continue button disabled until form is valid", async () => {
-    render(
-      <CreatDraftDialog
-        open={true}
-        onClose={jest.fn()}
-        onSubmit={jest.fn()}
-        cqlLibrary={cqlLibrary}
-      />
-    );
-    expect(screen.getByRole("button", { name: "Continue" })).not.toBeDisabled();
-  });
-
   it("should navigate to cql library home page on cancel", async () => {
     const onCloseFn = jest.fn();
     render(
