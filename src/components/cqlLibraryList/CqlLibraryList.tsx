@@ -15,7 +15,6 @@ import {
   Button,
   MadieDeleteDialog,
 } from "@madie/madie-design-system/dist/react";
-import _ from "lodash";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
