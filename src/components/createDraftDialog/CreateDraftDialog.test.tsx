@@ -210,4 +210,28 @@ describe("Create Draft Dialog component", () => {
       });
     });
   });
+  it("should not update cql even if user renames library when there is no cql", async () => {
+    const onSubmitFn = jest.fn();
+    render(
+      <CreatDraftDialog
+        open={true}
+        onClose={jest.fn()}
+        onSubmit={onSubmitFn}
+        cqlLibrary={{ ...cqlLibrary, cql: null }}
+      />
+    );
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
+    userEvent.clear(cqlLibraryNameInput);
+    userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+    userEvent.click(screen.getByRole("button", { name: "Continue" }));
+    await waitFor(() => {
+      expect(onSubmitFn).toHaveBeenCalledWith({
+        ...cqlLibrary,
+        cqlLibraryName: "TestingLibraryName12",
+        cql: null,
+      });
+    });
+  });
 });
