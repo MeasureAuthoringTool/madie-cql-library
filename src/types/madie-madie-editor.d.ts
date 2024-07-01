@@ -63,6 +63,13 @@ declare module "@madie/madie-editor" {
     valueSets?: any;
   };
 
+  export interface UpdatedCqlObject {
+    cql: string;
+    isLibraryStatementChanged?: boolean;
+    isUsingStatementChanged?: boolean;
+    isValueSetChanged?: boolean;
+  }
+
   export const parseContent: (content: string) => CqlError[];
   export const validateContent: (content: string) => Promise<ValidationResult>;
   export const synchingEditorCqlContent: (
@@ -74,7 +81,7 @@ declare module "@madie/madie-editor" {
     usingName: string,
     usingVersion: string,
     triggeredFrom: string
-  ) => any;
+  ) => Promise<UpdatedCqlObject>;
 
   export function isUsingEmpty(editorVal: string): boolean;
 
