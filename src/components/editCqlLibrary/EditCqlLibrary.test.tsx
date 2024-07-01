@@ -6,7 +6,7 @@ import { MemoryRouter, Route } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { Simulate } from "react-dom/test-utils";
-import axios from "axios";
+import axios from "../../api/axios-instance";
 import {
   ElmTranslationExternalError,
   isUsingEmpty,
@@ -77,7 +77,7 @@ const organizations = [
   },
 ];
 
-jest.mock("axios");
+jest.mock("../../api/axios-instance");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
 // mocking useHistory

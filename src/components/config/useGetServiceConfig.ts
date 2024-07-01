@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../../api/axios-instance";
 import { useEffect, useState } from "react";
 
 export interface OktaConfig {
