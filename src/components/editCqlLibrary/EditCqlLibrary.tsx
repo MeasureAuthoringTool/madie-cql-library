@@ -242,28 +242,30 @@ const EditCqlLibrary = () => {
         resetForm();
         let primaryMessage = "CQL updated successfully";
         const secondaryMessages = [];
-        if (isUsingEmpty(updatedContent.cql)) {
-          secondaryMessages.push(
-            "Missing a using statement. Please add in a valid model and version."
-          );
-        }
-        if (updatedContent.isLibraryStatementChanged) {
-          secondaryMessages.push(
-            "Library statement was incorrect. MADiE has overwritten it."
-          );
-        }
-        if (updatedContent.isUsingStatementChanged) {
-          secondaryMessages.push(
-            "Using statement was incorrect. MADiE has overwritten it."
-          );
-        }
-        if (updatedContent.isValueSetChanged) {
-          secondaryMessages.push(
-            "MADiE does not currently support use of value set version directly in library at this time. Your value set versions have been removed. Please use the relevant manifest for value set expansion for testing."
-          );
-        }
-        if (secondaryMessages.length > 0) {
-          primaryMessage += " but the following issues were found";
+        if (updatedContent.cql?.trim()) {
+          if (isUsingEmpty(updatedContent.cql)) {
+            secondaryMessages.push(
+              "Missing a using statement. Please add in a valid model and version."
+            );
+          }
+          if (updatedContent.isLibraryStatementChanged) {
+            secondaryMessages.push(
+              "Library statement was incorrect. MADiE has overwritten it."
+            );
+          }
+          if (updatedContent.isUsingStatementChanged) {
+            secondaryMessages.push(
+              "Using statement was incorrect. MADiE has overwritten it."
+            );
+          }
+          if (updatedContent.isValueSetChanged) {
+            secondaryMessages.push(
+              "MADiE does not currently support use of value set version directly in library at this time. Your value set versions have been removed. Please use the relevant manifest for value set expansion for testing."
+            );
+          }
+          if (secondaryMessages.length > 0) {
+            primaryMessage += " but the following issues were found";
+          }
         }
         setSuccess({
           status: "success",
