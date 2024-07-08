@@ -242,7 +242,7 @@ const EditCqlLibrary = () => {
         resetForm();
         let primaryMessage = "CQL updated successfully";
         const secondaryMessages = [];
-        if (updatedContent.cql?.trim()) {
+        if (updatedContent.cql) {
           if (isUsingEmpty(updatedContent.cql)) {
             secondaryMessages.push(
               "Missing a using statement. Please add in a valid model and version."
