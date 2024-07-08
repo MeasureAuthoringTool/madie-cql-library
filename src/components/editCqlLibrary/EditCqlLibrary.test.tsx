@@ -559,7 +559,9 @@ describe("Edit Cql Library Component", () => {
     (synchingEditorCqlContent as jest.Mock)
       .mockClear()
       .mockImplementation(() => {
-        return "library UpdateName version '1.0.000'";
+        return {
+          cql: "library UpdateName version '1.0.000'",
+        };
       });
 
     isUsingEmpty.mockClear().mockImplementation(() => true);
