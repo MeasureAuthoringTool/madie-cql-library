@@ -36,9 +36,6 @@ jest.mock("@madie/madie-util", () => ({
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
-  useFeatureFlags: jest.fn().mockReturnValue({
-    qdmExport: true,
-  }),
 }));
 const organizations = [
   {
@@ -157,7 +154,6 @@ describe("Library Dialog", () => {
   });
 
   test("Allows creation of a QDM library", async () => {
-    (useFeatureFlags as jest.Mock).mockReturnValue({ qdm: true });
     const onFormSubmit = jest.fn();
     const onFormCancel = jest.fn();
     render(
@@ -236,7 +232,6 @@ describe("Library Dialog", () => {
   }, 20000);
 
   test("Does not allow creation of a QI-Core library with special charater", async () => {
-    (useFeatureFlags as jest.Mock).mockReturnValue({ qdm: true });
     const onFormSubmit = jest.fn();
     const onFormCancel = jest.fn();
     render(
