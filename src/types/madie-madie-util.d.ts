@@ -49,9 +49,7 @@ declare module "@madie/madie-util" {
     state: CqlLibrary;
   };
 
-  interface FeatureFlags {
-    qdmExport: boolean;
-  }
+  interface FeatureFlags {}
 
   export function useFeatureFlags(): FeatureFlags;
 
