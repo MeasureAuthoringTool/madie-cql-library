@@ -80,10 +80,13 @@ export class CqlLibraryServiceApi {
     );
   }
 
-  async createDraft(cqlLibrary: CqlLibrary): Promise<void> {
+  async createDraft(
+    cqlLibraryId: string,
+    cqlLibraryName: string
+  ): Promise<void> {
     return await axios.post(
-      `${this.baseUrl}/cql-libraries/draft/${cqlLibrary.id}`,
-      cqlLibrary,
+      `${this.baseUrl}/cql-libraries/draft/${cqlLibraryId}`,
+      { cqlLibraryName: cqlLibraryName },
       {
         headers: {
           Authorization: `Bearer ${this.getAccessToken()}`,

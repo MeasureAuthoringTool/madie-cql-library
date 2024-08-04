@@ -110,7 +110,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
 
   const createDraft = async (cqlLibrary: CqlLibrary) => {
     await cqlLibraryServiceApi
-      .createDraft(cqlLibrary)
+      .createDraft(cqlLibrary.id, cqlLibrary.cqlLibraryName)
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
@@ -215,22 +215,10 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   };
 
   const onDraftClicked = (selectedCQLLibrary: CqlLibrary) => {
-    cqlLibraryServiceApi
-      .fetchCqlLibrary(selectedCQLLibrary.id)
-      .then((cqlLibrary) => {
-        setSelectedCqlLibrary(cqlLibrary);
-        setCreateDraftDialog({
-          open: true,
-          cqlLibrary: cqlLibrary,
-        });
-      })
-      .catch(() => {
-        setSnackBar({
-          message: "An error occurred while fetching the CQL Library!",
-          open: true,
-          severity: "error",
-        });
-      });
+    setCreateDraftDialog({
+      open: true,
+      cqlLibrary: selectedCQLLibrary,
+    });
     setOptionsOpen(false);
     setAnchorEl(null);
   };
