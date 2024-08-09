@@ -205,7 +205,6 @@ describe("Create Draft Dialog component", () => {
     await waitFor(() => {
       expect(onSubmitFn).toHaveBeenCalledWith({
         ...cqlLibrary,
-        cql: "library TestingLibraryName12 version '0.0.000'\nusing QICore version '4.1.1'\n",
         cqlLibraryName: "TestingLibraryName12",
       });
     });

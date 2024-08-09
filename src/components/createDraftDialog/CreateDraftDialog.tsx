@@ -34,28 +34,9 @@ const CreatDraftDialog = ({
         ),
     }),
     enableReinitialize: true,
-    onSubmit: async ({ cqlLibraryName }) => submitForm(cqlLibraryName),
+    onSubmit: async ({ cqlLibraryName }) =>
+      onSubmit({ ...cqlLibrary, cqlLibraryName }),
   });
-
-  const submitForm = async (cqlLibraryName: string) => {
-    const cqlContents = cqlLibrary?.cql?.split("\n");
-    let cql = cqlLibrary?.cql;
-    const previousLibraryName = cqlLibrary?.cqlLibraryName;
-    // make sure cql is updated with new library name, if it is changed
-    if (
-      previousLibraryName !== cqlLibraryName &&
-      cql &&
-      cqlContents[0].includes(cqlLibrary.cqlLibraryName)
-    ) {
-      cqlContents[0] = `library ${cqlLibraryName} version '${cqlLibrary.version}'`;
-      cql = cqlContents.join("\n");
-    }
-    return onSubmit({
-      ...cqlLibrary,
-      cqlLibraryName,
-      cql,
-    });
-  };
 
   return (
     <MadieDialog
