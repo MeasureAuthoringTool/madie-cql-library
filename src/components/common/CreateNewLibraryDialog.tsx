@@ -13,7 +13,7 @@ import {
 import { Box } from "@mui/system";
 import { FormHelperText, MenuItem } from "@mui/material";
 import { useFormik } from "formik";
-import { useOrganizationApi } from "@madie/madie-util";
+import { useOrganizationApi, useFeatureFlags } from "@madie/madie-util";
 import TextArea from "./TextArea";
 import { v4 as uuidv4 } from "uuid";
 
@@ -43,7 +43,13 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   const [organizations, setOrganizations] = useState<string[]>();
   const organizationApi = useRef(useOrganizationApi()).current;
 
-  const modelOptions = Object.keys(Model);
+  let modelOptions = Object.keys(Model);
+  const featureFlags = useFeatureFlags();
+  const qiCore6 = featureFlags?.qiCore6;
+  // disableQiCore6
+  if (!qiCore6) {
+    modelOptions = modelOptions.filter((option) => option !== "QICORE_6_0_0");
+  }
 
   // fetch organizations DB using measure service and sorts alphabetically
   useEffect(() => {

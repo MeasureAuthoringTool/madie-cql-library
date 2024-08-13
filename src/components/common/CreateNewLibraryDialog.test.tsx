@@ -36,6 +36,11 @@ jest.mock("@madie/madie-util", () => ({
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
+  useFeatureFlags: jest.fn(() => {
+    return {
+      qiCore6: false,
+    };
+  }),
 }));
 const organizations = [
   {
@@ -293,5 +298,68 @@ describe("Library Dialog", () => {
     await waitFor(() => expect(publisherSelect).toHaveValue("Org2"));
 
     await waitFor(() => expect(submitButton).toBeDisabled());
+  }, 20000);
+
+  test("QI-Core 6 is disabled", async () => {
+    const onFormSubmit = jest.fn();
+    const onFormCancel = jest.fn();
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const modelSelect = await getByTestId("cql-library-model-select");
+    const modelSelectBtn = await within(modelSelect).getByRole("button");
+    userEvent.click(modelSelectBtn);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(2);
+    userEvent.click(options[1]);
+    expect(
+      (
+        (await within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        })) as HTMLInputElement
+      ).value
+    ).toEqual("QDM v5.6");
+  }, 20000);
+
+  test("QI-Core 6 is enabled", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
+      return {
+        qiCore6: true,
+      };
+    });
+    const onFormSubmit = jest.fn();
+    const onFormCancel = jest.fn();
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const modelSelect = await getByTestId("cql-library-model-select");
+    const modelSelectBtn = await within(modelSelect).getByRole("button");
+    userEvent.click(modelSelectBtn);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(3);
+    userEvent.click(options[1]);
+    expect(
+      (
+        (await within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        })) as HTMLInputElement
+      ).value
+    ).toEqual("QI-Core v6.0.0");
   }, 20000);
 });

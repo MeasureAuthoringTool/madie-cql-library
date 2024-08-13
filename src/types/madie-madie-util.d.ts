@@ -9,6 +9,10 @@ declare module "@madie/madie-util" {
     redirectUri: string;
   }
 
+  interface FeatureFlags {
+    qiCore6: boolean;
+  }
+
   export interface ServiceConfig {
     measureService: {
       baseUrl: string;
