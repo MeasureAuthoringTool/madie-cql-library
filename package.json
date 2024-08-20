@@ -83,7 +83,7 @@
     "single-spa-react": "^4.2.0",
     "styled-components": "^5.3.5",
     "tailwindcss": "^2.2.9",
-    "twin.macro": "^2.7.0",
+    "twin.macro": "^3.0.0",
     "yup": "^0.32.11"
   },
   "types": "dist/madie-madie-cql-library.d.ts",
