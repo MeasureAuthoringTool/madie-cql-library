@@ -37,9 +37,15 @@ import {
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
-import { Checkbox, FormControlLabel, Typography } from "@mui/material";
+import {
+  Checkbox,
+  IconButton,
+  FormControlLabel,
+  Typography,
+} from "@mui/material";
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
+import Search from "@mui/icons-material/Search";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -334,24 +340,39 @@ const EditCqlLibrary = () => {
   const handleTabChange = (event, nextTab) => {
     history.push(`?tab=${nextTab}`);
   };
-
+  const toggleSearch = () => {
+    const event = new CustomEvent("toggleEditorSearchBox");
+    window.dispatchEvent(event);
+  };
   return (
     <form
       id="edit-library-page"
       data-testId="edit-library-form"
       onSubmit={formik.handleSubmit}
     >
+      <StatusHandler
+        error={error}
+        errorMessage={errorMessage}
+        success={success}
+        outboundAnnotations={outboundAnnotations}
+      />
       <div className="flow-container">
         <div id="left-panel">
           <div tw="flex-grow " data-testid="cql-library-editor-component">
             {!activeSpinner && (
               <>
-                <StatusHandler
-                  error={error}
-                  errorMessage={errorMessage}
-                  success={success}
-                  outboundAnnotations={outboundAnnotations}
-                />
+                <div id="header-editor-row">
+                  <IconButton
+                    data-testid="editor-search-button"
+                    aria-label="search button"
+                    style={{
+                      color: "#0073c8",
+                    }}
+                    onClick={toggleSearch}
+                  >
+                    <Search />
+                  </IconButton>
+                </div>
                 <CqlLibraryEditor
                   value={formik.values.cql}
                   onChange={onChange}

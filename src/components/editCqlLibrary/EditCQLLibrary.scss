@@ -10,6 +10,15 @@
   border-color: #ededed;
   background-color: white;
 
+  #header-editor-row {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    height: 48px;
+    justify-content: flex-end;
+    background: #ededed;
+  }
+
   .flow-container {
     display: flex;
     flex-grow: 1;
