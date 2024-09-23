@@ -196,8 +196,8 @@ describe("Library Dialog", () => {
     );
 
     const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectBtn = await within(modelSelect).getByRole("button");
-    userEvent.click(modelSelectBtn);
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(2);
     userEvent.click(options[1]);
@@ -274,8 +274,8 @@ describe("Library Dialog", () => {
     );
 
     const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectBtn = await within(modelSelect).getByRole("button");
-    userEvent.click(modelSelectBtn);
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(2);
     userEvent.click(options[0]);
@@ -315,8 +315,8 @@ describe("Library Dialog", () => {
     );
 
     const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectBtn = await within(modelSelect).getByRole("button");
-    userEvent.click(modelSelectBtn);
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(2);
     userEvent.click(options[1]);
@@ -349,8 +349,8 @@ describe("Library Dialog", () => {
     );
 
     const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectBtn = await within(modelSelect).getByRole("button");
-    userEvent.click(modelSelectBtn);
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(3);
     userEvent.click(options[1]);
