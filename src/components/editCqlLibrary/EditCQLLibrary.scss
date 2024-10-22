@@ -10,56 +10,10 @@
   border-color: #ededed;
   background-color: white;
 
-  #header-editor-row {
-    display: flex;
-    flex-direction: row;
-    flex-grow: 1;
-    height: 48px;
-    justify-content: flex-end;
-    background: #ededed;
-  }
-
   .flow-container {
     display: flex;
     flex-grow: 1;
-
-    #left-panel {
-      width: 75%;
-      overflow: hidden;
-    }
-
-    #right-panel {
-      width: 25%;
-
-      > .inner-right {
-        padding: 43px 32px;
-      }
-
-      input {
-        &.Mui-disabled {
-          background-color: #ededed;
-          border: #ededed;
-        }
-      }
-
-      textarea {
-        resize: vertical;
-        border: none;
-        &.Mui-disabled {
-          background-color: #ededed;
-          border: #ededed;
-        }
-      }
-
-      label:not(.Mui-disabled) {
-        font-weight: 500;
-        font-size: 14px;
-        line-height: 17px;
-        color: #333;
-        text-transform: none;
-      }
-    }
-
+    
     #divider {
       width: 22px;
       height: initial;
@@ -92,4 +46,103 @@
   flex-direction: row;
   flex-grow: 1;
   margin-bottom: 40px;
+}
+
+.allotment-wrapper {
+  margin: 0 32px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+
+  .split-view {
+    position: relative;
+    height: 700px;
+
+    .left-panel {
+      width: 75%; 
+      overflow: hidden;
+      
+      > .panel-content {
+        padding-top: 32px;
+        padding-left: 32px;
+        padding-right: 20px;
+        height: calc(100% - 48px);
+      }
+    }
+    
+    .right-panel {
+      width: 25%;
+      margin-left: 12px;
+      
+      > .panel-content {
+        padding-left: 16px;
+        padding-right: 16px;
+        height: calc(100% - 48px);
+      }
+
+      > .tab-container {
+        > .MuiButtonBase-root {
+          margin-right: 8px;
+
+          > .back-icon {
+            color: #0073c8;
+          }
+        }
+
+        > .spacer {
+          display: flex;
+          flex-grow: 1;
+        }
+
+        > .MuiTabs-root {
+          > .MuiTabs-scroller {
+            overflow-x: auto !important;
+          }
+        }
+      }
+    }
+
+    .left-panel,
+    .right-panel {
+      height: 100%;
+      background: #fff;
+      
+      > .tab-container {
+        background-color: #ededed;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        > .MuiTabs-root {
+          background-color: #ededed;
+          margin-left: 16px;
+        }
+      }
+      
+      > .panel-content {
+        overflow: scroll;
+      }
+    }
+    
+    .sash {
+      width: 16px;
+      background-color: #ddd;
+      &:before {
+        position: absolute;
+        content: "";
+        top: 50%;
+        width: 4px;
+        height: 34px;
+        border: solid 1.5px #717171;
+        border-color: transparent #717171 transparent #717171;
+      }
+
+      &:after {
+        position: absolute;
+        content: "";
+        top: 0;
+        height: 48px;
+        width: 100%;
+        background-color: #ededed;
+      }
+    }
+  }
 }
