@@ -358,8 +358,10 @@ const EditCqlLibrary = () => {
         success={success}
         outboundAnnotations={outboundAnnotations}
       />
-      {/* <div className="flow-container"> */}
-      <div className="allotment-wrapper" id="cql-editor-with-terminology">
+      <div
+        className="allotment-wrapper"
+        data-testid="cql-library-editor-component"
+      >
         <Allotment>
           <Allotment.Pane>
             <div id="left-panel" tw="flex-grow">
