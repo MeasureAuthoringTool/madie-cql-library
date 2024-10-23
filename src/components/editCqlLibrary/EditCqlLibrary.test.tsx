@@ -148,6 +148,11 @@ describe("Edit Cql Library Component", () => {
   beforeEach(() => {
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    global.ResizeObserver = class {
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    };
   });
 
   it("should render form and cql library editor", () => {
