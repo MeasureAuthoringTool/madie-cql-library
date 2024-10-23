@@ -456,7 +456,7 @@ const EditCqlLibrary = () => {
 
                     <div className="form-row">
                       <TextField
-                        label="CQL Library Name 2"
+                        label="CQL Library Name"
                         required
                         id="cqlLibraryName"
                         data-testid="cql-library-name-text-field"
