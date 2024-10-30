@@ -23,6 +23,7 @@ export interface CqlLibraryEditorProps {
 export const mapElmErrorsToAceAnnotations = (
   errors: ElmTranslationError[]
 ): EditorAnnotation[] => {
+  console.log("test");
   let annotations: EditorAnnotation[] = [];
   if (errors && _.isArray(errors) && errors.length > 0) {
     annotations = errors.map((error: ElmTranslationError) => ({
