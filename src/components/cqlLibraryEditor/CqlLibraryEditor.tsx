@@ -49,7 +49,7 @@ const CqlLibraryEditor = ({
         onChange={onChange}
         value={value}
         inboundAnnotations={inboundAnnotations}
-        height="calc(100vh - 135px)"
+        height="calc(100vh - 420px)"
         readOnly={readOnly}
         setOutboundAnnotations={setOutboundAnnotations}
       />
