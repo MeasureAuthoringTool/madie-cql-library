@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import tw from "twin.macro";
 import "styled-components/macro";
 import { useHistory, useParams, useLocation } from "react-router-dom";
 import { useFormik } from "formik";
-import { CqlLibrary, Model } from "@madie/madie-models";
+import { CqlLibrary } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import queryString from "query-string";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
@@ -75,8 +74,6 @@ const EditCqlLibrary = () => {
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const organizationApi = useRef(useOrganizationApi()).current;
-  const [valuesetMsg, setValuesetMsg] = useState(null);
-  const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
   const [organizations, setOrganizations] = useState<string[]>();
   const [activeSpinner, setActiveSpinner] = useState<boolean>(false);
@@ -150,8 +147,6 @@ const EditCqlLibrary = () => {
     });
     setError(false);
     setErrorMessage(undefined);
-    setValuesetMsg(undefined);
-    setValuesetSuccess(false);
   };
 
   useEffect(() => {
@@ -377,8 +372,6 @@ const EditCqlLibrary = () => {
                   value={formik.values.cql}
                   onChange={onChange}
                   readOnly={!formik.values.draft || !canEdit}
-                  valuesetSuccess={valuesetSuccess}
-                  valuesetMsg={valuesetMsg}
                   inboundAnnotations={elmAnnotations}
                   setOutboundAnnotations={setOutboundAnnotations}
                 />

@@ -3,17 +3,9 @@ import "styled-components/macro";
 import { EditorAnnotation, MadieEditor } from "@madie/madie-editor";
 import * as _ from "lodash";
 import { ElmTranslationError } from "./editorUtil";
-import tw from "twin.macro";
-import { IconButton } from "@mui/material";
-import Search from "@mui/icons-material/Search";
 
-const MessageText = tw.p`text-sm font-medium`;
-const SuccessText = tw(MessageText)`text-green-800`;
-const ErrorText = tw(MessageText)`text-red-800`;
 export interface CqlLibraryEditorProps {
-  valuesetMsg: string;
   inboundAnnotations: any;
-  valuesetSuccess: boolean;
   onChange: (val: string) => void;
   value: string;
   readOnly?: boolean;
@@ -23,7 +15,6 @@ export interface CqlLibraryEditorProps {
 export const mapElmErrorsToAceAnnotations = (
   errors: ElmTranslationError[]
 ): EditorAnnotation[] => {
-  console.log("test");
   let annotations: EditorAnnotation[] = [];
   if (errors && _.isArray(errors) && errors.length > 0) {
     annotations = errors.map((error: ElmTranslationError) => ({
@@ -36,8 +27,6 @@ export const mapElmErrorsToAceAnnotations = (
   return annotations;
 };
 const CqlLibraryEditor = ({
-  valuesetSuccess,
-  valuesetMsg,
   inboundAnnotations,
   onChange,
   value,
@@ -54,12 +43,6 @@ const CqlLibraryEditor = ({
         readOnly={readOnly}
         setOutboundAnnotations={setOutboundAnnotations}
       />
-      {!valuesetSuccess && (
-        <ErrorText data-testid="valueset-error">{valuesetMsg}</ErrorText>
-      )}
-      {valuesetSuccess && (
-        <SuccessText data-testid="valueset-success">{valuesetMsg}</SuccessText>
-      )}
     </>
   );
 };
