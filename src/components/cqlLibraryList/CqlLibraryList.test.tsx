@@ -19,6 +19,9 @@ jest.mock("@madie/madie-util", () => ({
   checkUserCanDelete: jest.fn(() => {
     return true;
   }),
+  useFeatureFlags: jest.fn().mockReturnValue({
+    qiCore6: true,
+  }),
 }));
 
 const mockPush = jest.fn();
@@ -43,6 +46,7 @@ const cqlLibrary: CqlLibrary[] = [
     version: "0.0.000",
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
+    active: true,
     librarySet: {
       id: "1",
       librarySetId: "librarySetId1",
@@ -62,6 +66,7 @@ const cqlLibrary: CqlLibrary[] = [
     version: "0.0.000",
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
+    active: true,
     librarySet: {
       id: "2",
       librarySetId: "librarySetId2",
@@ -210,6 +215,7 @@ describe("CqlLibrary List component", () => {
         version: "0.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
     ];
 
@@ -691,6 +697,7 @@ describe("CqlLibrary List component", () => {
         version: "0.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
     ];
     render(
@@ -726,6 +733,7 @@ describe("CqlLibrary List component", () => {
         version: "0.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
       {
         id: "650359394b0427f896ced541",
@@ -740,6 +748,7 @@ describe("CqlLibrary List component", () => {
         version: "1.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
     ];
     render(
@@ -784,6 +793,7 @@ describe("CqlLibrary List component", () => {
         version: "0.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
     ];
     render(
@@ -844,6 +854,7 @@ describe("CqlLibrary List component", () => {
         version: "0.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
     ];
     render(
@@ -903,6 +914,7 @@ describe("CqlLibrary List component", () => {
         version: "0.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
       {
         id: "650359394b0427f896ced541",
@@ -917,6 +929,7 @@ describe("CqlLibrary List component", () => {
         version: "1.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
     ];
     render(
@@ -961,6 +974,7 @@ describe("CqlLibrary List component", () => {
         version: "0.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
     ];
     render(
@@ -998,6 +1012,7 @@ describe("CqlLibrary List component", () => {
         version: "0.0.000",
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
+        active: true,
       },
     ];
     render(

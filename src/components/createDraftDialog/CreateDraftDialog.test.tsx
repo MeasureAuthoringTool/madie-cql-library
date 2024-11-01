@@ -1,6 +1,6 @@
 import * as React from "react";
 import { CqlLibrary, Model } from "@madie/madie-models";
-import CreatDraftDialog from "./CreateDraftDialog";
+import CreateDraftDialog from "./CreateDraftDialog";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import clearAllMocks = jest.clearAllMocks;
@@ -18,7 +18,14 @@ const cqlLibrary: CqlLibrary = {
   draft: true,
   version: "0.0.000",
   cql: "library TestLib version '0.0.000'\nusing QICore version '4.1.1'\n",
+  active: true,
 };
+
+jest.mock("@madie/madie-util", () => ({
+  useFeatureFlags: jest.fn().mockReturnValue({
+    qiCore6: true,
+  }),
+}));
 
 describe("Create Draft Dialog component", () => {
   beforeEach(() => {
@@ -27,7 +34,7 @@ describe("Create Draft Dialog component", () => {
 
   it("should render Draft dialog with cql library name", () => {
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={jest.fn()}
         onSubmit={jest.fn()}
@@ -42,7 +49,7 @@ describe("Create Draft Dialog component", () => {
 
   it("should generate field level error for required Cql Library name", async () => {
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={jest.fn()}
         onSubmit={jest.fn()}
@@ -60,9 +67,50 @@ describe("Create Draft Dialog component", () => {
     });
   });
 
+  it("should display a model version option for QI-Core measures", async () => {
+    render(
+      <CreateDraftDialog
+        open={true}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+        cqlLibrary={cqlLibrary}
+      />
+    );
+    const cqlLibraryName = (await screen.findByRole("textbox", {
+      name: "CQL Library Name",
+    })) as HTMLInputElement;
+    expect(cqlLibraryName.value).toEqual(cqlLibrary.cqlLibraryName);
+    expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+    expect(await screen.findByText("Update Model Version")).toBeInTheDocument();
+    expect(await screen.findByText("QI-Core v4.1.1")).toBeInTheDocument();
+
+    expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
+  });
+
+  it("should not display a model version option for QDM measures", async () => {
+    const qdmLibrary = Object.assign({}, cqlLibrary);
+    qdmLibrary.model = Model.QDM_5_6;
+    render(
+      <CreateDraftDialog
+        open={true}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+        cqlLibrary={qdmLibrary}
+      />
+    );
+    expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+    const cqlLibraryName = (await screen.findByRole("textbox", {
+      name: "CQL Library Name",
+    })) as HTMLInputElement;
+    expect(cqlLibraryName.value).toEqual(cqlLibrary.cqlLibraryName);
+    expect(screen.queryByText("Update Model Version")).not.toBeInTheDocument();
+
+    expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
+  });
+
   it("should generate field level error for at least one alphabet in cql library name", async () => {
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={jest.fn()}
         onSubmit={jest.fn()}
@@ -85,7 +133,7 @@ describe("Create Draft Dialog component", () => {
 
   it("should generate field level error for underscore in cql library name", async () => {
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={jest.fn()}
         onSubmit={jest.fn()}
@@ -108,7 +156,7 @@ describe("Create Draft Dialog component", () => {
 
   it("should generate field level error for library name starting with lower case", async () => {
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={jest.fn()}
         onSubmit={jest.fn()}
@@ -131,7 +179,7 @@ describe("Create Draft Dialog component", () => {
 
   it("should generate field level error for library name with a space", async () => {
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={jest.fn()}
         onSubmit={jest.fn()}
@@ -155,7 +203,7 @@ describe("Create Draft Dialog component", () => {
   it("should navigate to cql library home page on cancel", async () => {
     const onCloseFn = jest.fn();
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={onCloseFn}
         onSubmit={jest.fn()}
@@ -169,7 +217,7 @@ describe("Create Draft Dialog component", () => {
   it("should not change cql but continue drafting by calling onSubmit when user does not rename library", async () => {
     const onSubmitFn = jest.fn();
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={jest.fn()}
         onSubmit={onSubmitFn}
@@ -182,14 +230,14 @@ describe("Create Draft Dialog component", () => {
     expect(cqlLibraryNameInput.value).toBe(cqlLibrary.cqlLibraryName);
     userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
-      expect(onSubmitFn).toHaveBeenCalledWith(cqlLibrary);
+      expect(onSubmitFn).toHaveBeenCalledWith(cqlLibrary, cqlLibrary.model);
     });
   });
 
   it("should update the cql and continue drafting by calling onSubmit when user renames the library", async () => {
     const onSubmitFn = jest.fn();
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={jest.fn()}
         onSubmit={onSubmitFn}
@@ -203,16 +251,19 @@ describe("Create Draft Dialog component", () => {
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
     userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
-      expect(onSubmitFn).toHaveBeenCalledWith({
-        ...cqlLibrary,
-        cqlLibraryName: "TestingLibraryName12",
-      });
+      expect(onSubmitFn).toHaveBeenCalledWith(
+        {
+          ...cqlLibrary,
+          cqlLibraryName: "TestingLibraryName12",
+        },
+        "QI-Core v4.1.1"
+      );
     });
   });
   it("should not update cql even if user renames library when there is no cql", async () => {
     const onSubmitFn = jest.fn();
     render(
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={true}
         onClose={jest.fn()}
         onSubmit={onSubmitFn}
@@ -226,11 +277,14 @@ describe("Create Draft Dialog component", () => {
     userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
     userEvent.click(screen.getByRole("button", { name: "Continue" }));
     await waitFor(() => {
-      expect(onSubmitFn).toHaveBeenCalledWith({
-        ...cqlLibrary,
-        cqlLibraryName: "TestingLibraryName12",
-        cql: null,
-      });
+      expect(onSubmitFn).toHaveBeenCalledWith(
+        {
+          ...cqlLibrary,
+          cqlLibraryName: "TestingLibraryName12",
+          cql: null,
+        },
+        "QI-Core v4.1.1"
+      );
     });
   });
 });
