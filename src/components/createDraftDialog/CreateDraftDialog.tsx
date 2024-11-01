@@ -1,11 +1,16 @@
 import React from "react";
 import "twin.macro";
 import "styled-components/macro";
-import { DialogContent, Box, Typography } from "@mui/material";
+import { DialogContent, Box, MenuItem, Typography } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { CqlLibrary } from "@madie/madie-models";
-import { MadieDialog, TextField } from "@madie/madie-design-system/dist/react";
+import { CqlLibrary, Model } from "@madie/madie-models";
+import {
+  MadieDialog,
+  Select,
+  TextField,
+} from "@madie/madie-design-system/dist/react";
+import { useFeatureFlags } from "@madie/madie-util";
 
 interface CreateDraftDialogProps {
   open: boolean;
@@ -14,15 +19,19 @@ interface CreateDraftDialogProps {
   cqlLibrary: CqlLibrary;
 }
 
-const CreatDraftDialog = ({
+const CreateDraftDialog = ({
   open,
   onClose,
   onSubmit,
   cqlLibrary,
 }: CreateDraftDialogProps) => {
+  let modelOptions = Object.keys(Model);
+  const featureFlags = useFeatureFlags();
+
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: cqlLibrary?.cqlLibraryName,
+      model: cqlLibrary?.model,
     } as CqlLibrary,
     validationSchema: Yup.object().shape({
       cqlLibraryName: Yup.string()
@@ -34,9 +43,25 @@ const CreatDraftDialog = ({
         ),
     }),
     enableReinitialize: true,
-    onSubmit: async ({ cqlLibraryName }) =>
-      onSubmit({ ...cqlLibrary, cqlLibraryName }),
+    onSubmit: async ({ cqlLibraryName, model }) =>
+      onSubmit({ ...cqlLibrary, cqlLibraryName }, model),
   });
+
+  const row = {
+    display: "flex",
+    flexDirection: "row",
+  };
+  const spaced = {
+    marginTop: "23px",
+  };
+  const formRow = Object.assign({}, row, spaced);
+  const gap = {
+    columnGap: "24px",
+    "& > * ": {
+      flex: 1,
+    },
+  };
+  const formRowGapped = Object.assign({}, formRow, gap);
 
   return (
     <MadieDialog
@@ -87,9 +112,48 @@ const CreatDraftDialog = ({
             helperText={formik.errors["cqlLibraryName"]}
           />
         </Box>
+        <>
+          {featureFlags?.qiCore6 && !cqlLibrary?.model.includes("QDM") ? (
+            <Box sx={formRowGapped}>
+              <Select
+                placeHolder={{ name: "Model", value: "" }}
+                required
+                label="Update Model Version"
+                id="model-select"
+                inputProps={{
+                  "data-testid": "cql-library-model-input",
+                  id: "model-select",
+                  "aria-describedby": "model-select-helper-text",
+                  required: true,
+                }}
+                SelectDisplayProps={{
+                  "aria-required": "true",
+                }}
+                data-testid="cql-library-model-select"
+                {...formik.getFieldProps("model")}
+                error={formik.touched.model && Boolean(formik.errors.model)}
+                helperText={formik.touched.model && formik.errors.model}
+                size="small"
+                options={modelOptions.map((modelKey) => {
+                  if (!modelKey.startsWith("QDM")) {
+                    return (
+                      <MenuItem
+                        key={modelKey}
+                        value={Model[modelKey]}
+                        data-testid={`cql-library-model-option-${Model[modelKey]}`}
+                      >
+                        {Model[modelKey]}
+                      </MenuItem>
+                    );
+                  }
+                })}
+              />
+            </Box>
+          ) : null}
+        </>
       </DialogContent>
     </MadieDialog>
   );
 };
 
-export default CreatDraftDialog;
+export default CreateDraftDialog;

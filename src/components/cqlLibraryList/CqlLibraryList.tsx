@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom";
 import { CqlLibrary } from "@madie/madie-models";
 import CreatVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
-import CreatDraftDialog from "../createDraftDialog/CreateDraftDialog";
+import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -108,9 +108,9 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
       });
   };
 
-  const createDraft = async (cqlLibrary: CqlLibrary) => {
+  const createDraft = async (cqlLibrary: CqlLibrary, model: string) => {
     await cqlLibraryServiceApi
-      .createDraft(cqlLibrary.id, cqlLibrary.cqlLibraryName)
+      .createDraft(cqlLibrary.id, cqlLibrary.cqlLibraryName, model)
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
@@ -246,7 +246,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
         cqlLibraryError={createVersionDialog.cqlLibraryError}
         isCqlPresent={createVersionDialog.isCqlPresent}
       />
-      <CreatDraftDialog
+      <CreateDraftDialog
         open={createDraftDialog.open}
         onClose={handleDialogClose}
         onSubmit={createDraft}
