@@ -82,11 +82,12 @@ export class CqlLibraryServiceApi {
 
   async createDraft(
     cqlLibraryId: string,
-    cqlLibraryName: string
+    cqlLibraryName: string,
+    model: string
   ): Promise<void> {
     return await axios.post(
       `${this.baseUrl}/cql-libraries/draft/${cqlLibraryId}`,
-      { cqlLibraryName: cqlLibraryName },
+      { cqlLibraryName: cqlLibraryName, model: model },
       {
         headers: {
           Authorization: `Bearer ${this.getAccessToken()}`,
