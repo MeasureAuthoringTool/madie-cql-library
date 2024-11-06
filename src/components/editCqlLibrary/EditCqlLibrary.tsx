@@ -364,7 +364,7 @@ const EditCqlLibrary = () => {
       >
         <Allotment>
           <Allotment.Pane>
-            <div id="left-panel" tw="flex-grow">
+            <div className="left-panel" tw="flex-grow">
               <IconButton
                 data-testid="editor-search-button"
                 aria-label="search button"
