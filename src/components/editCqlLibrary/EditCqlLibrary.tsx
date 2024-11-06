@@ -394,7 +394,6 @@ const EditCqlLibrary = () => {
               />
               <div
                 style={{
-                  marginBottom: -10,
                   marginTop: 10,
                   display: "flex",
                   flexDirection: "row",
