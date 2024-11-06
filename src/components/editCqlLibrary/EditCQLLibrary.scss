@@ -69,10 +69,8 @@
       height: 700px;
 
       .left-panel {
-        > div {
-          height: calc(100% - 40px);
-          overflow: auto;
-        }
+        width: 75%;
+        overflow: hidden;
 
         > .panel-content {
           padding-top: 32px;
@@ -83,6 +81,7 @@
       }
 
       .right-panel {
+        width: 25%;
         margin-left: 12px;
 
         > .panel-content {
