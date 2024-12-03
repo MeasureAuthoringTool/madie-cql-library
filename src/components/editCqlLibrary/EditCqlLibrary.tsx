@@ -263,7 +263,7 @@ const EditCqlLibrary = () => {
           }
           if (updatedContent.isUsingStatementChanged) {
             secondaryMessages.push(
-              "Using statement was incorrect. MADiE has overwritten it."
+              "Incorrect using statement(s) detected. MADiE has corrected it."
             );
           }
           if (updatedContent.isValueSetChanged) {
