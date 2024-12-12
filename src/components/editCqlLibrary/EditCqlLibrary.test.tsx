@@ -622,6 +622,72 @@ describe("Edit Cql Library Component", () => {
     });
   });
 
+  it("should update an existing cql library with the upated FhirHerlpers Alias and warn ", async () => {
+    (synchingEditorCqlContent as jest.Mock)
+      .mockClear()
+      .mockImplementation(() => {
+        return {
+          cql: "library UpdateName version '1.0.000' include FHIRHelers version '4.3.000' called Dummy",
+          isLibraryStatementChanged: false,
+          isUsingStatementChanged: false,
+          isFhirHelpersAliasChanged: true,
+          isValueSetChanged: false,
+        };
+      });
+
+    isUsingEmpty.mockClear().mockImplementation(() => true);
+
+    mockedAxios.put.mockResolvedValue({
+      data: {
+        ...cqlLibrary,
+        cqlLibraryName: "UpdatedName",
+        cql: synchingEditorCqlContent,
+      },
+    });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+
+    expect(mockedAxios.get).toHaveBeenCalled();
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Save",
+      })
+    ).toBeInTheDocument();
+
+    const libraryNameInput = screen.getByTestId(
+      "cql-library-name-text-field-input"
+    ) as HTMLInputElement;
+
+    expect(libraryNameInput.value).toBe("Library1");
+    userEvent.clear(libraryNameInput);
+    userEvent.type(libraryNameInput, "UpdatedName1");
+    fireEvent.blur(libraryNameInput);
+    expect(libraryNameInput.value).toBe("UpdatedName1");
+    const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
+    expect(input).toHaveValue("");
+
+    fireEvent.change(screen.getByTestId("cql-library-editor"), {
+      target: {
+        value:
+          "library UpdateName version '1.0.000' include FHIRHelers version '4.3.000' called Dummmy",
+      },
+    });
+
+    const updateButton = screen.getByRole("button", {
+      name: "Save",
+    });
+    expect(updateButton).not.toBeDisabled();
+    userEvent.click(updateButton);
+    await waitFor(() => {
+      const successMessage = screen.getByTestId("generic-success-text-header");
+      expect(successMessage.textContent).toEqual(
+        "CQL updated successfully but the following issues were found"
+      );
+    });
+  });
+
   it("should update an existing cql library and displaying success message", async () => {
     const cqlLibrary: CqlLibrary = {
       id: "cql-lib-1234",
