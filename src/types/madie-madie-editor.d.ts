@@ -68,6 +68,7 @@ declare module "@madie/madie-editor" {
     isLibraryStatementChanged?: boolean;
     isUsingStatementChanged?: boolean;
     isValueSetChanged?: boolean;
+    isFhirHelpersAliasChanged?: boolean;
   }
 
   export const parseContent: (content: string) => CqlError[];

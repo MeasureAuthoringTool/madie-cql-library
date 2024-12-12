@@ -261,6 +261,11 @@ const EditCqlLibrary = () => {
               "Library statement was incorrect. MADiE has overwritten it."
             );
           }
+          if (updatedContent.isFhirHelpersAliasChanged) {
+            secondaryMessages.push(
+              "FHIRHelpers was incorrectly aliased. MADiE has overwritten the alias with 'FHIRHelpers'."
+            );
+          }
           if (updatedContent.isUsingStatementChanged) {
             secondaryMessages.push(
               "Incorrect using statement(s) detected. MADiE has corrected it."
