@@ -113,7 +113,7 @@ const CreateDraftDialog = ({
           />
         </Box>
         <>
-          {featureFlags?.qiCore6 && !cqlLibrary?.model.includes("QDM") ? (
+          {!cqlLibrary?.model.includes("QDM") ? (
             <Box sx={formRowGapped}>
               <Select
                 placeHolder={{ name: "Model", value: "" }}
