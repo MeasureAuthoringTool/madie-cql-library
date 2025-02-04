@@ -45,7 +45,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
 
   let modelOptions = Object.keys(Model);
   const featureFlags = useFeatureFlags();
-    modelOptions = modelOptions.filter((option) => option !== "QICORE_6_0_0");
+  modelOptions = modelOptions.filter((option) => option !== "QICORE_6_0_0");
 
   // fetch organizations DB using measure service and sorts alphabetically
   useEffect(() => {
