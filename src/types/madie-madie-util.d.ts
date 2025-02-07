@@ -49,7 +49,9 @@ declare module "@madie/madie-util" {
     state: CqlLibrary;
   };
 
-  interface FeatureFlags {}
+  interface FeatureFlags {
+    LibraryListCheckboxes: boolean;
+  }
 
   export function useFeatureFlags(): FeatureFlags;
 
