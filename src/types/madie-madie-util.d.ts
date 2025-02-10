@@ -51,6 +51,7 @@ declare module "@madie/madie-util" {
 
   interface FeatureFlags {
     LibraryListCheckboxes: boolean;
+    LibraryListButtons: boolean;
   }
 
   export function useFeatureFlags(): FeatureFlags;

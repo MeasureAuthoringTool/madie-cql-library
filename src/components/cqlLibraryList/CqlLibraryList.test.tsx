@@ -18,6 +18,7 @@ import {
   useFeatureFlags,
 } from "@madie/madie-util";
 import { AxiosError, AxiosResponse } from "axios";
+import { check } from "prettier";
 
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
@@ -1046,7 +1047,7 @@ describe("CqlLibrary List component", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("should show checkboxes when featureflag is enabled", async () => {
+  it.only("should show checkboxes when featureflag is enabled", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibraryListCheckboxes: true,
     }));
