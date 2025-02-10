@@ -1,12 +1,22 @@
 import * as React from "react";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CqlLibraryList from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../api/useCqlLibraryServiceApi";
-import { checkUserCanEdit, checkUserCanDelete } from "@madie/madie-util";
+import {
+  checkUserCanEdit,
+  checkUserCanDelete,
+  useFeatureFlags,
+} from "@madie/madie-util";
 import { AxiosError, AxiosResponse } from "axios";
 
 jest.mock("@madie/madie-util", () => ({
@@ -19,9 +29,7 @@ jest.mock("@madie/madie-util", () => ({
   checkUserCanDelete: jest.fn(() => {
     return true;
   }),
-  useFeatureFlags: jest.fn().mockReturnValue({
-    qiCore6: true,
-  }),
+  useFeatureFlags: jest.fn().mockReturnValue({}),
 }));
 
 const mockPush = jest.fn();
@@ -1036,5 +1044,53 @@ describe("CqlLibrary List component", () => {
     expect(
       screen.queryByRole("button", { name: "Delete" })
     ).not.toBeInTheDocument();
+  });
+
+  it("should show checkboxes when featureflag is enabled", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibraryListCheckboxes: true,
+    }));
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+      },
+      {
+        id: "650359394b0427f896ced541",
+        librarySetId: "libsetid2",
+        cqlLibraryName: "versioned lib1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: false,
+        version: "1.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+      />
+    );
+
+    const checkBoxes = await screen.findAllByRole("checkbox");
+    expect(checkBoxes.length).toBe(3);
+    fireEvent.click(checkBoxes[1]);
   });
 });
