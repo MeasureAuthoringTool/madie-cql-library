@@ -199,8 +199,8 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(2);
-    userEvent.click(options[1]);
+    expect(options.length).toEqual(3);
+    userEvent.click(options[2]);
     expect(
       (
         (await within(modelSelect).getByRole("textbox", {
@@ -277,7 +277,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(2);
+    expect(options.length).toEqual(3);
     userEvent.click(options[0]);
     expect(
       (
@@ -298,35 +298,6 @@ describe("Library Dialog", () => {
     await waitFor(() => expect(publisherSelect).toHaveValue("Org2"));
 
     await waitFor(() => expect(submitButton).toBeDisabled());
-  }, 20000);
-
-  test("QI-Core 6 is disabled", async () => {
-    const onFormSubmit = jest.fn();
-    const onFormCancel = jest.fn();
-    render(
-      <ApiContextProvider value={serviceConfig}>
-        <div>
-          <button data-testId="open-button" onClick={onFormSubmit}>
-            I open the dialog
-          </button>
-          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
-        </div>
-      </ApiContextProvider>
-    );
-
-    const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
-    userEvent.click(modelSelectComboBox);
-    const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(2);
-    userEvent.click(options[1]);
-    expect(
-      (
-        (await within(modelSelect).getByRole("textbox", {
-          hidden: true,
-        })) as HTMLInputElement
-      ).value
-    ).toEqual("QDM v5.6");
   }, 20000);
 
   test("QI-Core 6 is enabled", async () => {
