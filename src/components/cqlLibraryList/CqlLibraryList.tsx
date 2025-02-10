@@ -1,4 +1,13 @@
-import React, { useMemo, useState, useRef, HTMLProps } from "react";
+import React, {
+  useMemo,
+  useState,
+  useRef,
+  HTMLProps,
+  forwardRef,
+  useEffect,
+  SyntheticEvent,
+  MouseEvent,
+} from "react";
 import { useHistory } from "react-router-dom";
 import {
   useReactTable,
@@ -26,7 +35,7 @@ import {
   MadieDeleteDialog,
 } from "@madie/madie-design-system/dist/react";
 
-const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
   ref
 ) {
@@ -47,9 +56,9 @@ function IndeterminateCheckbox({
 }: {
   indeterminate?: boolean;
 } & HTMLProps<HTMLInputElement>) {
-  const ref = React.useRef<HTMLInputElement>(null!);
+  const ref = useRef<HTMLInputElement>(null!);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (typeof indeterminate === "boolean") {
       ref.current.indeterminate = !rest.checked && indeterminate;
     }
@@ -101,7 +110,7 @@ export default function CqlLibraryList({ cqlLibraryList = [], onListUpdate }) {
   };
 
   const handleSnackBarClose = (
-    event?: React.SyntheticEvent | Event,
+    event?: SyntheticEvent | Event,
     reason?: string
   ) => {
     if (reason === "clickaway") {
@@ -241,7 +250,7 @@ export default function CqlLibraryList({ cqlLibraryList = [], onListUpdate }) {
   );
   const handleOpen = (
     selected: CqlLibrary,
-    event: React.MouseEvent<HTMLButtonElement>
+    event: MouseEvent<HTMLButtonElement>
   ) => {
     setSelectedCqlLibrary(selected);
     setAnchorEl(event.currentTarget);
