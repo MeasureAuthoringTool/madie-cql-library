@@ -1,8 +1,23 @@
-import React, { useRef, useState } from "react";
+import React, {
+  useMemo,
+  useState,
+  useRef,
+  HTMLProps,
+  forwardRef,
+  useEffect,
+  SyntheticEvent,
+  MouseEvent,
+} from "react";
+import { useHistory } from "react-router-dom";
+import {
+  useReactTable,
+  ColumnDef,
+  getCoreRowModel,
+  flexRender,
+} from "@tanstack/react-table";
 import Popover from "@mui/material/Popover";
 import "twin.macro";
 import "styled-components/macro";
-import { useHistory } from "react-router-dom";
 import { CqlLibrary } from "@madie/madie-models";
 import CreatVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
@@ -10,13 +25,17 @@ import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { checkUserCanDelete, checkUserCanEdit } from "@madie/madie-util";
+import {
+  checkUserCanDelete,
+  checkUserCanEdit,
+  useFeatureFlags,
+} from "@madie/madie-util";
 import {
   Button,
   MadieDeleteDialog,
 } from "@madie/madie-design-system/dist/react";
 
-const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
   ref
 ) {
@@ -28,8 +47,37 @@ const INITIAL_DELETE_DRAFT_STATE = {
   cqlLibrary: null,
 };
 
-export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
+function IndeterminateCheckbox({
+  indeterminate,
+  className = "",
+  onChange,
+  id,
+  ...rest
+}: {
+  indeterminate?: boolean;
+} & HTMLProps<HTMLInputElement>) {
+  const ref = useRef<HTMLInputElement>(null!);
+
+  useEffect(() => {
+    if (typeof indeterminate === "boolean") {
+      ref.current.indeterminate = !rest.checked && indeterminate;
+    }
+  }, [ref, indeterminate]);
+
+  return (
+    <input
+      type="checkbox"
+      ref={ref}
+      className={className + " cursor-pointer"}
+      onChange={onChange}
+      {...rest}
+    />
+  );
+}
+
+export default function CqlLibraryList({ cqlLibraryList = [], onListUpdate }) {
   const history = useHistory();
+  const featureFlags = useFeatureFlags();
   const [createVersionDialog, setCreateVersionDialog] = useState({
     open: false,
     cqlLibraryId: "",
@@ -62,7 +110,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   };
 
   const handleSnackBarClose = (
-    event?: React.SyntheticEvent | Event,
+    event?: SyntheticEvent | Event,
     reason?: string
   ) => {
     if (reason === "clickaway") {
@@ -202,7 +250,7 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
   );
   const handleOpen = (
     selected: CqlLibrary,
-    event: React.MouseEvent<HTMLButtonElement>
+    event: MouseEvent<HTMLButtonElement>
   ) => {
     setSelectedCqlLibrary(selected);
     setAnchorEl(event.currentTarget);
@@ -222,6 +270,117 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
     setOptionsOpen(false);
     setAnchorEl(null);
   };
+
+  const columns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
+    const columnDefs = [];
+
+    // Add the select column with checkboxes conditionally based on feature flag
+    featureFlags?.LibraryListCheckboxes &&
+      columnDefs.push({
+        id: "select",
+        header: ({ table }) => {
+          return (
+            <IndeterminateCheckbox
+              {...{
+                checked: table.getIsAllRowsSelected(),
+                indeterminate: table.getIsSomePageRowsSelected(),
+                onChange: table.getToggleAllPageRowsSelectedHandler(),
+              }}
+            />
+          );
+        },
+        cell: ({ row }) => {
+          return (
+            <div className="px-1">
+              {
+                <IndeterminateCheckbox
+                  {...{
+                    checked: row.getIsSelected(),
+                    disabled: !row.getCanSelect(),
+                    indeterminate: row.getIsSomeSelected(),
+                    onChange: row.getToggleSelectedHandler(),
+                    id: row.original.id,
+                  }}
+                />
+              }
+            </div>
+          );
+        },
+      });
+
+    // Add other columns similar to the second example
+    columnDefs.push(
+      {
+        header: "Name",
+        accessorKey: "cqlLibraryName",
+        cell: (info) => (
+          <button
+            type="button"
+            onClick={() =>
+              history.push(
+                `/cql-libraries/${info.row.original.id}/edit/details`
+              )
+            }
+            data-testid={`cqlLibrary-button-${info.row.original.id}`}
+          >
+            {info.getValue()}
+          </button>
+        ),
+      },
+      {
+        header: "Model",
+        accessorKey: "model",
+        cell: (info) => (
+          <button
+            type="button"
+            onClick={() =>
+              history.push(
+                `/cql-libraries/${info.row.original.id}/edit/details`
+              )
+            }
+            data-testid={`cqlLibrary-button-${info.row.original.id}-model`}
+          >
+            {info.getValue()}
+          </button>
+        ),
+      },
+      {
+        header: "Version",
+        accessorKey: "version",
+        cell: (info) => (
+          <p>
+            {info.row.original.draft && "Draft "}
+            {info.getValue()}
+          </p>
+        ),
+      },
+      {
+        header: "Actions",
+        cell: (info) => (
+          <Button
+            variant="outline-secondary"
+            style={{ borderColor: "#c8c8c8" }}
+            onClick={(e) => handleOpen(info.row.original, e)}
+            data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
+            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+          >
+            View/Edit
+            <span>
+              <ExpandMoreIcon />
+            </span>
+          </Button>
+        ),
+      }
+    );
+
+    return columnDefs;
+  }, [history, featureFlags?.LibraryListCheckboxes]);
+
+  const table = useReactTable({
+    data: cqlLibraryList ?? [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   return (
     <div data-testid="cqlLibrary-list">
@@ -324,7 +483,6 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 }}
                 data-testid={`edit-cql-library-button-${selectedCQLLibrary.id}-edit`}
               >
-                {/* edit and version: must be draft and have ownership, else view only*/}
                 {canEdit && selectedCQLLibrary.draft ? "Edit" : "View"}
               </button>
               {selectedCQLLibrary.draft && canEdit && (
@@ -358,7 +516,6 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                   Version
                 </button>
               )}
-
               {!selectedCQLLibrary.draft && canEdit && (
                 <button
                   data-testid={`create-new-draft-${selectedCQLLibrary.id}-button`}
@@ -367,7 +524,6 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                   Draft
                 </button>
               )}
-
               {canDelete && (
                 <button
                   data-testid={`delete-existing-draft-${selectedCQLLibrary.id}-button`}
@@ -399,76 +555,39 @@ export default function CqlLibraryList({ cqlLibraryList, onListUpdate }) {
                 }}
               >
                 <thead tw="bg-slate">
-                  <tr>
-                    <th scope="col" className="col-header">
-                      Name
-                    </th>
-                    <th scope="col" className="col-header">
-                      Model
-                    </th>
-                    <th scope="col" className="col-header">
-                      Version
-                    </th>
-                    <th scope="col" className="col-header">
-                      Actions
-                    </th>
-                  </tr>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <th key={header.id} scope="col" className="col-header">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
                 </thead>
                 <tbody data-testid="table-body" className="table-body">
-                  {cqlLibraryList?.map((cqlLibrary, i) => (
+                  {table.getRowModel().rows.map((row) => (
                     <tr
-                      key={cqlLibrary.id}
+                      key={row.id}
                       data-testid="row-item"
                       style={{ borderTop: "solid 1px #8c8c8c" }}
                     >
-                      <td>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            history.push(
-                              `/cql-libraries/${cqlLibrary.id}/edit/details`
-                            )
-                          }
-                          data-testid={`cqlLibrary-button-${cqlLibrary.id}`}
+                      {row.getVisibleCells().map((cell) => (
+                        <td
+                          key={cell.id}
+                          data-testid={`cqlLibrary-button-${cell.id}`}
                         >
-                          {cqlLibrary.cqlLibraryName}
-                        </button>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            history.push(
-                              `/cql-libraries/${cqlLibrary.id}/edit/details`
-                            )
-                          }
-                          data-testid={`cqlLibrary-button-${cqlLibrary.id}-model`}
-                        >
-                          {cqlLibrary.model}
-                        </button>
-                      </td>
-                      <td>
-                        <p>
-                          {cqlLibrary.draft && "Draft "}
-                          {cqlLibrary.version}
-                        </p>
-                      </td>
-                      <td>
-                        <Button
-                          variant="outline-secondary"
-                          style={{ borderColor: "#c8c8c8" }}
-                          onClick={(e) => {
-                            handleOpen(cqlLibrary, e);
-                          }}
-                          data-testid={`view/edit-cqlLibrary-button-${cqlLibrary.id}`}
-                          aria-label={`CQL Library ${cqlLibrary.cqlLibraryName} version ${cqlLibrary.version} draft status ${cqlLibrary.draft} View / Edit`}
-                        >
-                          View/Edit
-                          <span>
-                            <ExpandMoreIcon />
-                          </span>
-                        </Button>
-                      </td>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
