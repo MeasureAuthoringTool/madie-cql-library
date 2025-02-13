@@ -8,6 +8,9 @@ import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
 import { Model } from "@madie/madie-models";
+import {
+  useFeatureFlags,
+} from "@madie/madie-util";
 
 const abortController = new AbortController();
 
@@ -207,4 +210,23 @@ describe("Cql Library Page", () => {
     fireEvent.click(screen.getByTestId("library-filter-submit"));
     expect(cqlLibrary2).not.toBeInTheDocument();
   });
+
+  // test("Checkbox tests", async () => {
+  //       (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+  //         LibraryListCheckboxes: true,
+  //       }));
+  //   render(
+  //     <ApiContextProvider value={serviceConfig}>
+  //       <NewCqlLibrary />
+  //     </ApiContextProvider>
+  //   );
+  //   const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
+  //   expect(cqlLibrary1).toBeInTheDocument();
+  //   expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+  //     true,
+  //     abortController.signal
+  //   );
+  //   const checkBoxes = await screen.findAllByRole("checkbox");
+  //   expect(checkBoxes.length).toBe(2);
+  // });
 });

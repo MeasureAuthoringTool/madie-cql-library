@@ -1047,7 +1047,7 @@ describe("CqlLibrary List component", () => {
     ).not.toBeInTheDocument();
   });
 
-  it.only("should show checkboxes when featureflag is enabled", async () => {
+  it("should show checkboxes when featureflag is enabled", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibraryListCheckboxes: true,
     }));
