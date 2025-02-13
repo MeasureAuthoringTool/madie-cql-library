@@ -125,8 +125,10 @@ describe("CqlLibrary List component", () => {
   it("should display a list of Cql Libraries", () => {
     const { getByText, getByTestId } = render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
       />
     );
     cqlLibrary.forEach((c) => {
@@ -168,6 +170,7 @@ describe("CqlLibrary List component", () => {
   it("should display version button for draft libraries and on click should render dialog", async () => {
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -188,6 +191,7 @@ describe("CqlLibrary List component", () => {
   it("should display edit button and on click should render CQL library edit page", () => {
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -238,6 +242,7 @@ describe("CqlLibrary List component", () => {
 
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -265,6 +270,7 @@ describe("CqlLibrary List component", () => {
 
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
         onListUpdate={loadCqlLibraries}
       />
@@ -308,6 +314,7 @@ describe("CqlLibrary List component", () => {
 
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
         onListUpdate={loadCqlLibraries}
       />
@@ -354,6 +361,7 @@ describe("CqlLibrary List component", () => {
 
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
         onListUpdate={loadCqlLibraries}
       />
@@ -400,6 +408,7 @@ describe("CqlLibrary List component", () => {
 
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
         onListUpdate={loadCqlLibraries}
       />
@@ -447,8 +456,10 @@ describe("CqlLibrary List component", () => {
 
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
         onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
       />
     );
     const viewEditButton = screen.getByTestId(
@@ -476,6 +487,7 @@ describe("CqlLibrary List component", () => {
   it("should successfully version a cql library", async () => {
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -532,6 +544,7 @@ describe("CqlLibrary List component", () => {
 
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -591,6 +604,7 @@ describe("CqlLibrary List component", () => {
 
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -651,6 +665,7 @@ describe("CqlLibrary List component", () => {
 
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -711,6 +726,7 @@ describe("CqlLibrary List component", () => {
     ];
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -762,6 +778,7 @@ describe("CqlLibrary List component", () => {
     ];
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -807,6 +824,7 @@ describe("CqlLibrary List component", () => {
     ];
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -868,6 +886,7 @@ describe("CqlLibrary List component", () => {
     ];
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -943,6 +962,7 @@ describe("CqlLibrary List component", () => {
     ];
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -988,6 +1008,7 @@ describe("CqlLibrary List component", () => {
     ];
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -1026,6 +1047,7 @@ describe("CqlLibrary List component", () => {
     ];
     render(
       <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
       />
@@ -1087,6 +1109,7 @@ describe("CqlLibrary List component", () => {
       <CqlLibraryList
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
       />
     );
 

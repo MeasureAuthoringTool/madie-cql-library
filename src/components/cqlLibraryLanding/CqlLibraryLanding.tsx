@@ -6,7 +6,7 @@ import { CqlLibraryListActionCenter as ActionCenter } from "./cqlLibraryListActi
 import * as _ from "lodash";
 import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
-import { useDocumentTitle } from "@madie/madie-util";
+import { useDocumentTitle, useFeatureFlags } from "@madie/madie-util";
 import {
   MadieSpinner,
   Button,
@@ -19,6 +19,7 @@ import SearchIcon from "@mui/icons-material/Search";
 
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
+  const featureFlags = useFeatureFlags();
   const [activeTab, setActiveTab] = useState(0);
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -174,9 +175,11 @@ function CqlLibraryLanding() {
                   Filter
                 </Button>
               </div>
-              <div className="action-center-holder">
-                <ActionCenter libraries={selectedLibraries} />
-              </div>
+              {featureFlags?.LibraryListButtons && (
+                <div className="action-center-holder">
+                  <ActionCenter libraries={selectedLibraries} />
+                </div>
+              )}
             </div>
           </form>
         </div>

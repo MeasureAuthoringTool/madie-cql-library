@@ -394,7 +394,6 @@ export default function CqlLibraryList({
   });
 
   useEffect(() => {
-    console.log("selectedLibraries", selectedLibraries);
     setSelectedLibraries(selectedLibraries);
   }, [selectedLibraries?.length]);
 
