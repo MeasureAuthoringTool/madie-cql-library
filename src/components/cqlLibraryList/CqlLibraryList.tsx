@@ -79,6 +79,10 @@ export default function CqlLibraryList({
   cqlLibraryList = [],
   onListUpdate,
   setSelectedLibraries,
+  deleteDraftDialog,
+  setDeleteDraftDialog,
+  selectedCQLLibrary,
+  setSelectedCqlLibrary,
 }) {
   const history = useHistory();
   const featureFlags = useFeatureFlags();
@@ -93,9 +97,9 @@ export default function CqlLibraryList({
     open: false,
     cqlLibrary: null,
   });
-  const [deleteDraftDialog, setDeleteDraftDialog] = useState({
-    ...INITIAL_DELETE_DRAFT_STATE,
-  });
+  // const [deleteDraftDialog, setDeleteDraftDialog] = useState({
+  //   ...INITIAL_DELETE_DRAFT_STATE,
+  // });
   const [snackBar, setSnackBar] = useState({
     message: "",
     open: false,
@@ -208,6 +212,7 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
+        table.resetRowSelection();
         setSnackBar({
           message: "The Draft CQL Library has been deleted.",
           open: true,
@@ -243,8 +248,8 @@ export default function CqlLibraryList({
   // Popover utilities
   const [optionsOpen, setOptionsOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedCQLLibrary, setSelectedCqlLibrary] =
-    useState<CqlLibrary>(null);
+  // const [selectedCQLLibrary, setSelectedCqlLibrary] =
+  //   useState<CqlLibrary>(null);
   const canEdit = checkUserCanEdit(
     selectedCQLLibrary?.librarySet?.owner,
     selectedCQLLibrary?.librarySet?.acls
