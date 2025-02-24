@@ -49,6 +49,7 @@ import {
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
 import Search from "@mui/icons-material/Search";
+import useFormikResetOnEvent from "../common/useFormikResetOnEvent";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -140,6 +141,8 @@ const EditCqlLibrary = () => {
     enableReinitialize: true,
   });
   const { resetForm } = formik;
+
+  useFormikResetOnEvent(formik);
 
   useEffect(() => {
     updateRouteHandlerState({
