@@ -75,9 +75,14 @@ function IndeterminateCheckbox({
   );
 }
 
-export default function CqlLibraryList({ cqlLibraryList = [], onListUpdate }) {
+export default function CqlLibraryList({
+  cqlLibraryList = [],
+  onListUpdate,
+  setSelectedLibraries,
+}) {
   const history = useHistory();
   const featureFlags = useFeatureFlags();
+
   const [createVersionDialog, setCreateVersionDialog] = useState({
     open: false,
     cqlLibraryId: "",
@@ -381,6 +386,16 @@ export default function CqlLibraryList({ cqlLibraryList = [], onListUpdate }) {
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const selectedLibraries = cqlLibraryList?.filter((library) => {
+    return table
+      .getSelectedRowModel()
+      .rows.find((row) => row.original.id === library.id);
+  });
+
+  useEffect(() => {
+    setSelectedLibraries(selectedLibraries);
+  }, [selectedLibraries?.length]);
 
   return (
     <div data-testid="cqlLibrary-list">

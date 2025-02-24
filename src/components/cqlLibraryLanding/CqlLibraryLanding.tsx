@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Divider, TextField, IconButton } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
+import { CqlLibraryListActionCenter as ActionCenter } from "./cqlLibraryListActionCenter/CqlLibraryListActionCenter";
 import * as _ from "lodash";
 import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
-import { useDocumentTitle } from "@madie/madie-util";
+import { useDocumentTitle, useFeatureFlags } from "@madie/madie-util";
 import {
   MadieSpinner,
   Button,
@@ -18,9 +19,11 @@ import SearchIcon from "@mui/icons-material/Search";
 
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
+  const featureFlags = useFeatureFlags();
   const [activeTab, setActiveTab] = useState(0);
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedLibraries, setSelectedLibraries] = useState<CqlLibrary[]>([]);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [filter, setFilter] = useState("");
   const [currentFilter, setCurrentFilter] = useState("");
@@ -136,42 +139,48 @@ function CqlLibraryLanding() {
         </section>
         <div>
           <form onSubmit={submitFilter}>
-            <table style={{ marginLeft: 20, marginTop: 20, marginBottom: 20 }}>
-              <thead>
-                <tr>
-                  <td>
-                    <TextField
-                      sx={{
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          borderColor: "#8C8C8C",
-                          borderRadius: "3px",
-                        },
-                      }}
-                      label="Filter Libraries"
-                      onChange={(newFilter) => {
-                        setFilter(newFilter.target.value);
-                      }}
-                      type="search"
-                      inputProps={{
-                        "data-testid": "library-filter-input",
-                        "aria-required": "false",
-                      }}
-                      InputProps={searchInputProps}
-                      value={filter}
-                    />
-                  </td>{" "}
-                  <td>
-                    <Button
-                      style={{ marginLeft: 10, marginBottom: 20 }}
-                      type="submit"
-                      data-testid="library-filter-submit"
-                    >
-                      Filter
-                    </Button>
-                  </td>
-                </tr>
-              </thead>
-            </table>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                margin: 20,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <TextField
+                  sx={{
+                    "& .MuiOutlinedInput-notchedOutline": {
+                      borderColor: "#8C8C8C",
+                      borderRadius: "3px",
+                    },
+                  }}
+                  label="Filter Libraries"
+                  onChange={(newFilter) => {
+                    setFilter(newFilter.target.value);
+                  }}
+                  type="search"
+                  inputProps={{
+                    "data-testid": "library-filter-input",
+                    "aria-required": "false",
+                  }}
+                  InputProps={searchInputProps}
+                  value={filter}
+                />
+                <Button
+                  style={{ marginLeft: 10, marginBottom: 20 }}
+                  type="submit"
+                  data-testid="library-filter-submit"
+                >
+                  Filter
+                </Button>
+              </div>
+              {featureFlags?.LibraryListButtons && (
+                <div className="action-center-holder">
+                  <ActionCenter libraries={selectedLibraries} />
+                </div>
+              )}
+            </div>
           </form>
         </div>
         <div>
@@ -188,6 +197,7 @@ function CqlLibraryLanding() {
                       )
                 }
                 onListUpdate={loadCqlLibraries}
+                setSelectedLibraries={setSelectedLibraries}
               />
             )}
           </div>
