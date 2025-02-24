@@ -2,12 +2,13 @@ import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 
 import * as React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import NewCqlLibrary from "./CqlLibraryLanding";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
 import { Model } from "@madie/madie-models";
+import { useFeatureFlags } from "@madie/madie-util";
 
 const abortController = new AbortController();
 
@@ -73,13 +74,13 @@ jest.mock("../../hooks/useOktaTokens", () => () => ({
   getAccessToken: () => "test.jwt",
 }));
 
-const mockCqlLibraryServiceApi = {
-  fetchCqlLibraries: jest.fn().mockResolvedValue(cqlLibrary),
-} as unknown as CqlLibraryServiceApi;
-
 jest.mock("../../api/useCqlLibraryServiceApi", () =>
   jest.fn(() => mockCqlLibraryServiceApi)
 );
+
+const mockCqlLibraryServiceApi = {
+  fetchCqlLibraries: jest.fn().mockResolvedValue(cqlLibrary),
+} as unknown as CqlLibraryServiceApi;
 
 // mocking useHistory
 const mockPush = jest.fn();
@@ -101,8 +102,11 @@ describe("Cql Library Page", () => {
         <NewCqlLibrary />
       </ApiContextProvider>
     );
-    const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
-    expect(cqlLibrary1).toBeInTheDocument();
+    await waitFor(() => {
+      const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+      expect(cqlLibrary1).toBeInTheDocument();
+    });
+
     const cqlLibrary1Model = await screen.findByText("QI-Core v4.1.1");
     expect(cqlLibrary1Model).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
@@ -127,8 +131,10 @@ describe("Cql Library Page", () => {
         <NewCqlLibrary />
       </ApiContextProvider>
     );
-    const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
-    expect(cqlLibrary1).toBeInTheDocument();
+    await waitFor(() => {
+      const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+      expect(cqlLibrary1).toBeInTheDocument();
+    });
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
       true,
       abortController.signal
@@ -168,8 +174,11 @@ describe("Cql Library Page", () => {
         <NewCqlLibrary />
       </ApiContextProvider>
     );
-    const cqlLibrary1 = await screen.findByText("TestCqlLibrary1");
-    expect(cqlLibrary1).toBeInTheDocument();
+    await waitFor(() => {
+      const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+      expect(cqlLibrary1).toBeInTheDocument();
+    });
+
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
       true,
       abortController.signal
@@ -206,5 +215,37 @@ describe("Cql Library Page", () => {
     userEvent.type(searchBox, "1");
     fireEvent.click(screen.getByTestId("library-filter-submit"));
     expect(cqlLibrary2).not.toBeInTheDocument();
+  });
+
+  test("Checkbox tests", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibraryListCheckboxes: true,
+      LibraryListButtons: true,
+    }));
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <NewCqlLibrary />
+      </ApiContextProvider>
+    );
+    await waitFor(() => {
+      const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+      expect(cqlLibrary1).toBeInTheDocument();
+    });
+
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+      {
+        id: "67180dd54665c8239413ba90",
+        cqlLibraryName: "TestLib",
+        createdAt: "2024-10-22T20:40:53.212Z",
+        model: "QI-Core v4.1.1",
+        version: "0.0.000",
+        draft: false,
+      },
+    ]);
+    const checkBoxes = await screen.findAllByRole("checkbox");
+    expect(checkBoxes.length).toBe(3);
+    userEvent.click(checkBoxes[1]);
+    const draftButton = await screen.findByTestId("draft-action-btn");
+    expect(draftButton).not.toBeDisabled();
   });
 });

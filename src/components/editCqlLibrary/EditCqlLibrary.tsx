@@ -271,7 +271,10 @@ const EditCqlLibrary = () => {
     const cqlElmErrors =
       !_.isEmpty(
         _.filter(validationResult?.errors, { errorSeverity: "Error" })
-      ) || !_.isEmpty(validationResult?.externalErrors);
+      ) ||
+      !_.isEmpty(
+        _.filter(validationResult?.externalErrors, { errorSeverity: "Error" })
+      );
 
     const cqlErrors = updatedContent.cql?.trim().length
       ? parseErrors || cqlElmErrors
@@ -371,8 +374,10 @@ const EditCqlLibrary = () => {
       // right now we are only displaying the external errors related to included libraries
       // and only the first error returned by elm translator
       if (errors?.length > 0 || externalErrors?.length > 0) {
-        const elmErrors = _.filter(errors, { errorSeverity: "Error" });
-        setError(!_.isEmpty(elmErrors) || externalErrors.length > 0);
+        setError(
+          !_.isEmpty(_.filter(errors, { errorSeverity: "Error" })) ||
+            !_.isEmpty(_.filter(externalErrors, { errorSeverity: "Error" }))
+        );
       }
       setErrorMessage(externalErrors[0]?.message);
       setElmAnnotations(mapElmErrorsToAceAnnotations(errors));

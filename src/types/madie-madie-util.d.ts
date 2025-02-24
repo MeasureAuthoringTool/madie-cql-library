@@ -9,10 +9,6 @@ declare module "@madie/madie-util" {
     redirectUri: string;
   }
 
-  interface FeatureFlags {
-    qiCore6: boolean;
-  }
-
   export interface ServiceConfig {
     measureService: {
       baseUrl: string;
@@ -53,7 +49,10 @@ declare module "@madie/madie-util" {
     state: CqlLibrary;
   };
 
-  interface FeatureFlags {}
+  interface FeatureFlags {
+    LibraryListCheckboxes: boolean;
+    LibraryListButtons: boolean;
+  }
 
   export function useFeatureFlags(): FeatureFlags;
 
