@@ -17,6 +17,11 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
 
+const INITIAL_DELETE_DRAFT_STATE = {
+  open: false,
+  cqlLibrary: null,
+};
+
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
   const featureFlags = useFeatureFlags();
@@ -28,6 +33,12 @@ function CqlLibraryLanding() {
   const [filter, setFilter] = useState("");
   const [currentFilter, setCurrentFilter] = useState("");
   const abortController = useRef(null);
+  const [selectedCQLLibrary, setSelectedCqlLibrary] =
+    useState<CqlLibrary>(null);
+
+  const [deleteDraftDialog, setDeleteDraftDialog] = useState({
+    ...INITIAL_DELETE_DRAFT_STATE,
+  });
 
   // Libraries are fetched again, when a new draft or version is created
   const loadCqlLibraries = useCallback(async () => {
@@ -177,7 +188,10 @@ function CqlLibraryLanding() {
               </div>
               {featureFlags?.LibraryListButtons && (
                 <div className="action-center-holder">
-                  <ActionCenter libraries={selectedLibraries} />
+                  <ActionCenter
+                    libraries={selectedLibraries}
+                    setDeleteDraftDialog={setDeleteDraftDialog}
+                  />
                 </div>
               )}
             </div>
@@ -198,6 +212,10 @@ function CqlLibraryLanding() {
                 }
                 onListUpdate={loadCqlLibraries}
                 setSelectedLibraries={setSelectedLibraries}
+                deleteDraftDialog={deleteDraftDialog}
+                setDeleteDraftDialog={setDeleteDraftDialog}
+                selectedCQLLibrary={selectedCQLLibrary}
+                setSelectedCqlLibrary={setSelectedCqlLibrary}
               />
             )}
           </div>
