@@ -43,7 +43,7 @@ export default function VersionAction(props: PropTypes) {
     >
       <span>
         <IconButton
-          onClick={props.onClick}
+          onClick={onClick}
           disabled={disableVersionBtn}
           data-testid="version-action-btn"
         >

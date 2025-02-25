@@ -39,6 +39,42 @@ function CqlLibraryLanding() {
   const [deleteDraftDialog, setDeleteDraftDialog] = useState({
     ...INITIAL_DELETE_DRAFT_STATE,
   });
+  const [createVersionDialog, setCreateVersionDialog] = useState({
+    open: false,
+    cqlLibraryId: "",
+    cqlLibraryError: null,
+    isCqlPresent: undefined,
+  });
+  const [createDraftDialog, setCreateDraftDialog] = useState({
+    open: false,
+    cqlLibrary: null,
+  });
+  const [snackBar, setSnackBar] = useState({
+    message: "",
+    open: false,
+    severity: null,
+  });
+
+  const createVersion = async () => {
+    await cqlLibraryServiceApi
+      .fetchCqlLibrary(selectedLibraries[0].id)
+      .then((cqlLibrary) => {
+        setSelectedCqlLibrary(cqlLibrary);
+        setCreateVersionDialog({
+          open: true,
+          cqlLibraryId: cqlLibrary.id,
+          cqlLibraryError: cqlLibrary.cqlErrors,
+          isCqlPresent: cqlLibrary && cqlLibrary.cql?.trim().length > 0,
+        });
+      })
+      .catch(() => {
+        setSnackBar({
+          message: "An error occurred while fetching the CQL Library!",
+          open: true,
+          severity: "error",
+        });
+      });
+  };
 
   // Libraries are fetched again, when a new draft or version is created
   const loadCqlLibraries = useCallback(async () => {
@@ -191,6 +227,9 @@ function CqlLibraryLanding() {
                   <ActionCenter
                     libraries={selectedLibraries}
                     setDeleteDraftDialog={setDeleteDraftDialog}
+                    setSelectedCqlLibrary={setSelectedCqlLibrary}
+                    setCreateDraftDialog={setCreateDraftDialog}
+                    createVersion={createVersion}
                   />
                 </div>
               )}
@@ -216,6 +255,12 @@ function CqlLibraryLanding() {
                 setDeleteDraftDialog={setDeleteDraftDialog}
                 selectedCQLLibrary={selectedCQLLibrary}
                 setSelectedCqlLibrary={setSelectedCqlLibrary}
+                createVersionDialog={createVersionDialog}
+                setCreateVersionDialog={setCreateVersionDialog}
+                createDraftDialog={createDraftDialog}
+                setCreateDraftDialog={setCreateDraftDialog}
+                snackBar={snackBar}
+                setSnackBar={setSnackBar}
               />
             )}
           </div>

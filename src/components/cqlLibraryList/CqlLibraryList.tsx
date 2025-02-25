@@ -83,25 +83,15 @@ export default function CqlLibraryList({
   setDeleteDraftDialog,
   selectedCQLLibrary,
   setSelectedCqlLibrary,
+  createVersionDialog,
+  setCreateVersionDialog,
+  createDraftDialog,
+  setCreateDraftDialog,
+  setSnackBar,
+  snackBar,
 }) {
   const history = useHistory();
   const featureFlags = useFeatureFlags();
-
-  const [createVersionDialog, setCreateVersionDialog] = useState({
-    open: false,
-    cqlLibraryId: "",
-    cqlLibraryError: null,
-    isCqlPresent: undefined,
-  });
-  const [createDraftDialog, setCreateDraftDialog] = useState({
-    open: false,
-    cqlLibrary: null,
-  });
-  const [snackBar, setSnackBar] = useState({
-    message: "",
-    open: false,
-    severity: null,
-  });
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
 
   const handleDialogClose = () => {
