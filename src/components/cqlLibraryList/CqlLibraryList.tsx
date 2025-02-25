@@ -380,8 +380,8 @@ export default function CqlLibraryList({
                   info.row.original.librarySet?.owner,
                   info.row.original.librarySet?.acls
                 ) && info.row.original.draft
-                  ? `edit-cql-library-button-${info.row.original.id}-edit`
-                  : `view-cql-library-button-${info.row.original.id}-view`
+                  ? `edit-cql-library-button-${info.row.original.id}`
+                  : `view-cql-library-button-${info.row.original.id}`
               }
               aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
             >
