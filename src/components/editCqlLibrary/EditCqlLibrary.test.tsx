@@ -5,7 +5,7 @@ import { CqlLibrary, Model } from "@madie/madie-models";
 import { MemoryRouter, Route } from "react-router";
 import userEvent from "@testing-library/user-event";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
-import { Simulate } from "react-dom/test-utils";
+import { act, Simulate } from "react-dom/test-utils";
 import axios from "../../api/axios-instance";
 import {
   ElmTranslationExternalError,
@@ -432,6 +432,70 @@ describe("Edit Cql Library Component", () => {
     expect(input).toBeInTheDocument();
     expect(input.value).toBe("Library1");
     fireEvent.blur(input);
+  });
+
+  it("should display a delete dialog when the event is triggered", async () => {
+    renderWithRouter();
+    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-name-text-field-input")
+      ).not.toHaveAttribute("disabled");
+    });
+    const input = (await screen.getByTestId(
+      "cql-library-name-text-field-input"
+    )) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.value).toBe("Library1");
+    act(() => {
+      window.dispatchEvent(new Event("delete-library"));
+    });
+    expect(
+      await screen.findByText("Delete draft of Library1?")
+    ).toBeInTheDocument();
+    const cancelButton = await screen.findByTestId(
+      "delete-dialog-cancel-button"
+    );
+    userEvent.click(cancelButton);
+    await waitFor(() => {
+      expect(screen.queryByText("Delete draft of Library1?")).not.toBeVisible();
+    });
+  });
+
+  it("should display a delete dialog when the event is triggered and delete succeeds", async () => {
+    renderWithRouter();
+    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-name-text-field-input")
+      ).not.toHaveAttribute("disabled");
+    });
+    const input = (await screen.getByTestId(
+      "cql-library-name-text-field-input"
+    )) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.value).toBe("Library1");
+    act(() => {
+      window.dispatchEvent(new Event("delete-library"));
+    });
+    expect(
+      await screen.findByText("Delete draft of Library1?")
+    ).toBeInTheDocument();
+    const continueButton = await screen.findByTestId(
+      "delete-dialog-continue-button"
+    );
+    userEvent.click(continueButton);
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("edit-library-cql-success-text")
+      ).toBeInTheDocument();
+    });
   });
 
   it("should display an error when existing cql library cannot be loaded", async () => {

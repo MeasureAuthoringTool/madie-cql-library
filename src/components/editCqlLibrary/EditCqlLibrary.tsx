@@ -36,6 +36,7 @@ import {
   MadieAlert,
   MadieSpinner,
   AutoComplete,
+  MadieDeleteDialog,
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
@@ -48,6 +49,7 @@ import {
 import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
 import Search from "@mui/icons-material/Search";
+import useFormikResetOnEvent from "../common/useFormikResetOnEvent";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -58,10 +60,23 @@ const EditCqlLibrary = () => {
   // @ts-ignore
   const { id } = useParams();
   const [loadedCqlLibrary, setLoadedCqlLibrary] = useState<CqlLibrary>(null);
+  const [openDeleteDraftDialog, setOpenDeleteDraftDialog] =
+    useState<boolean>(false);
+
   // on unmount forget library state.
   useEffect(() => {
     return () => {
       cqlLibraryStore.updateLibrary(null);
+    };
+  }, []);
+
+  useEffect(() => {
+    const deleteListener = () => {
+      setOpenDeleteDraftDialog(true);
+    };
+    window.addEventListener("delete-library", deleteListener, false);
+    return () => {
+      window.removeEventListener("delete-library", deleteListener, false);
     };
   }, []);
 
@@ -127,6 +142,8 @@ const EditCqlLibrary = () => {
   });
   const { resetForm } = formik;
 
+  useFormikResetOnEvent(formik);
+
   useEffect(() => {
     updateRouteHandlerState({
       canTravel: !formik.dirty,
@@ -141,6 +158,28 @@ const EditCqlLibrary = () => {
       setErrorMessage("Unable to translate CQL to ELM!");
       setElmAnnotations([]);
     });
+  };
+
+  const deleteDraftLibrary = async (id: string) => {
+    cqlLibraryServiceApi
+      .deleteDraft(id)
+      .then(async () => {
+        handleToast("success", "The Draft CQL Library has been deleted.", true);
+        setTimeout(() => {
+          history.push("/cql-libraries");
+        }, 3000);
+      })
+      .catch((error) => {
+        if (error?.response?.data) {
+          const errorData = error?.response?.data;
+          const errorMessage = `${errorData?.status}: ${errorData?.error} ${errorData?.message}`;
+          handleToast("danger", errorMessage, true);
+          setOpenDeleteDraftDialog(false);
+        } else {
+          handleToast("danger", error.toString(), true);
+          setOpenDeleteDraftDialog(false);
+        }
+      });
   };
 
   const onChange = (value) => {
@@ -615,6 +654,13 @@ const EditCqlLibrary = () => {
           await resetForm();
           history.push("/cql-libraries");
         }}
+      />
+      <MadieDeleteDialog
+        open={openDeleteDraftDialog}
+        dialogTitle={`Delete draft of ${loadedCqlLibrary?.cqlLibraryName}?`}
+        name={`draft of ${loadedCqlLibrary?.cqlLibraryName}`}
+        onClose={() => setOpenDeleteDraftDialog(false)}
+        onContinue={() => deleteDraftLibrary(loadedCqlLibrary?.id)}
       />
     </form>
   );
