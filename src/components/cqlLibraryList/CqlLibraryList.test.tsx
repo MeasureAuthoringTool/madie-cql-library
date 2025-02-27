@@ -328,4 +328,104 @@ describe("CqlLibrary List component", () => {
     expect(checkBoxes.length).toBe(3);
     fireEvent.click(checkBoxes[1]);
   });
+
+  it("buttons featureflag: shows just a view button when cannot edit", async () => {
+    (checkUserCanEdit as jest.Mock).mockReturnValue(false);
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibraryListCheckboxes: true,
+      LibraryListButtons: true,
+    }));
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+      />
+    );
+
+    expect(
+      await screen.findByTestId(
+        "view-cql-library-button-622e1f46d1fd3729d861e6cb"
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "View/Edit" })
+    ).not.toBeInTheDocument();
+  });
+  it("buttons featureflag: shows just an edit button when can edit", async () => {
+    (checkUserCanEdit as jest.Mock).mockReturnValue(true);
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibraryListCheckboxes: true,
+      LibraryListButtons: true,
+    }));
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+      />
+    );
+    expect(
+      await screen.findByTestId(
+        "edit-cql-library-button-622e1f46d1fd3729d861e6cb"
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "View/Edit" })
+    ).not.toBeInTheDocument();
+  });
 });
