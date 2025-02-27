@@ -14,10 +14,19 @@ import {
 interface PropTypes {
   libraries: CqlLibrary[];
   setDeleteDraftDialog: (value: any) => void;
+  setSelectedCqlLibrary: (value: any) => void;
+  setCreateDraftDialog: (value: any) => void;
+  createVersion: () => void;
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
-  const { libraries, setDeleteDraftDialog } = props;
+  const {
+    libraries,
+    setDeleteDraftDialog,
+    setSelectedCqlLibrary,
+    setCreateDraftDialog,
+    createVersion,
+  } = props;
 
   const canEdit = libraries
     ? checkUserCanEdit(
@@ -31,6 +40,12 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
 
   function deleteLibrary() {
     setDeleteDraftDialog({
+      open: true,
+      cqlLibrary: libraries[0],
+    });
+  }
+  function createDraft() {
+    setCreateDraftDialog({
       open: true,
       cqlLibrary: libraries[0],
     });
@@ -49,10 +64,14 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
       <VersionAction
         libraries={libraries}
         canEdit={canEdit}
-        onClick={() => {}}
+        onClick={createVersion}
       />
 
-      <DraftAction libraries={libraries} canEdit={canEdit} onClick={() => {}} />
+      <DraftAction
+        libraries={libraries}
+        canEdit={canEdit}
+        onClick={createDraft}
+      />
     </div>
   );
 }
