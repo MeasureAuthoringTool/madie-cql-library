@@ -121,6 +121,7 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
+        table.resetRowSelection();
         setSnackBar({
           message: "New version of CQL Library is Successfully created",
           open: true,
@@ -158,6 +159,7 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
+        table.resetRowSelection();
         setSnackBar({
           message: "New Draft of CQL Library is Successfully created",
           open: true,
