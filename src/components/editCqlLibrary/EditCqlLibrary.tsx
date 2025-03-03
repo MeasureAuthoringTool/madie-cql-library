@@ -270,10 +270,16 @@ const EditCqlLibrary = () => {
     // Warnings are ignored and doesn't affect cqlErrors flag
     const cqlElmErrors =
       !_.isEmpty(
-        _.filter(validationResult?.errors, { errorSeverity: "Error" })
+        _.filter(
+          validationResult?.errors,
+          (e) => _.toLower(e.errorSeverity) === "error"
+        )
       ) ||
       !_.isEmpty(
-        _.filter(validationResult?.externalErrors, { errorSeverity: "Error" })
+        _.filter(
+          validationResult?.externalErrors,
+          (e) => _.toLower(e.errorSeverity) === "error"
+        )
       );
 
     const cqlErrors = updatedContent.cql?.trim().length
@@ -375,11 +381,18 @@ const EditCqlLibrary = () => {
       // and only the first error returned by elm translator
       if (errors?.length > 0 || externalErrors?.length > 0) {
         setError(
-          !_.isEmpty(_.filter(errors, { errorSeverity: "Error" })) ||
-            !_.isEmpty(_.filter(externalErrors, { errorSeverity: "Error" }))
+          !_.isEmpty(
+            _.filter(errors, (e) => _.toLower(e.errorSeverity) === "error")
+          ) ||
+            !_.isEmpty(
+              _.filter(
+                externalErrors,
+                (e) => _.toLower(e.errorSeverity) === "error"
+              )
+            )
         );
       }
-      setErrorMessage(externalErrors[0]?.message);
+      externalErrors && setErrorMessage(externalErrors[0]?.message);
       setElmAnnotations(mapElmErrorsToAceAnnotations(errors));
       return result;
     } else {
