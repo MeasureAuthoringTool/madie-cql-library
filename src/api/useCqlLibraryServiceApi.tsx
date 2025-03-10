@@ -3,6 +3,7 @@ import useServiceConfig from "./useServiceConfig";
 import { ServiceConfig } from "./ServiceContext";
 import { CqlLibrary } from "@madie/madie-models";
 import useOktaTokens from "../hooks/useOktaTokens";
+import { AxiosResponse } from "axios";
 
 export class CqlLibraryServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}
@@ -68,7 +69,10 @@ export class CqlLibraryServiceApi {
     );
   }
 
-  async createVersion(id: string, isMajor: boolean): Promise<void> {
+  async createVersion(
+    id: string,
+    isMajor: boolean
+  ): Promise<AxiosResponse<CqlLibrary>> {
     return await axios.put(
       `${this.baseUrl}/cql-libraries/version/${id}?isMajor=${isMajor}`,
       {},
