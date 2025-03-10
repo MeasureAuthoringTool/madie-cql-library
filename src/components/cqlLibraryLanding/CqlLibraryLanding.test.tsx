@@ -9,6 +9,7 @@ import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
 import { Model } from "@madie/madie-models";
 import { useFeatureFlags } from "@madie/madie-util";
+import { AxiosError, AxiosResponse } from "axios";
 
 const abortController = new AbortController();
 
@@ -21,6 +22,8 @@ const cqlLibrary = [
     createdBy: null,
     lastModifiedAt: null,
     lastModifiedBy: null,
+    draft: true,
+    cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
   },
 ];
 
@@ -80,6 +83,8 @@ jest.mock("../../api/useCqlLibraryServiceApi", () =>
 
 const mockCqlLibraryServiceApi = {
   fetchCqlLibraries: jest.fn().mockResolvedValue(cqlLibrary),
+  fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
+  deleteDraft: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
 
 // mocking useHistory
@@ -94,6 +99,7 @@ jest.mock("react-router-dom", () => ({
 describe("Cql Library Page", () => {
   afterEach(() => {
     jest.clearAllMocks();
+    jest.clearAllTimers();
   });
 
   test("shows my Cql Libraries on page load", async () => {
@@ -217,7 +223,7 @@ describe("Cql Library Page", () => {
     expect(cqlLibrary2).not.toBeInTheDocument();
   });
 
-  test("Checkbox tests", async () => {
+  test("Checkbox interactions", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibraryListCheckboxes: true,
       LibraryListButtons: true,
@@ -244,8 +250,969 @@ describe("Cql Library Page", () => {
     ]);
     const checkBoxes = await screen.findAllByRole("checkbox");
     expect(checkBoxes.length).toBe(3);
-    userEvent.click(checkBoxes[1]);
+
+    userEvent.click(checkBoxes[2]);
+
     const draftButton = await screen.findByTestId("draft-action-btn");
     expect(draftButton).not.toBeDisabled();
+
+    const deleteButton = await screen.findByTestId("delete-action-btn");
+    expect(deleteButton).not.toBeDisabled();
+  });
+  describe("Delete Action Tests", () => {
+    beforeEach(() => {
+      jest.resetModules();
+      (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+        LibraryListCheckboxes: true,
+        LibraryListButtons: true,
+      }));
+    });
+    afterEach(() => {
+      jest.clearAllMocks();
+      jest.clearAllTimers();
+    });
+    test("Delete should work when everything is okay", async () => {
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: null,
+          createdBy: null,
+          lastModifiedAt: null,
+          lastModifiedBy: null,
+          draft: true,
+        },
+      ]);
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).not.toBeDisabled();
+
+      const deleteButton = await screen.findByTestId("delete-action-btn");
+      expect(deleteButton).not.toBeDisabled();
+
+      userEvent.click(deleteButton);
+
+      expect(
+        await screen.findByText("This Action cannot be undone.")
+      ).toBeInTheDocument();
+
+      userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
+      await waitFor(() => {
+        expect(mockCqlLibraryServiceApi.deleteDraft).toBeCalled();
+      });
+    });
+    test("Delete should not delete when cancel is clicked", async () => {
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: null,
+          createdBy: null,
+          lastModifiedAt: null,
+          lastModifiedBy: null,
+          draft: true,
+        },
+      ]);
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).not.toBeDisabled();
+
+      const deleteButton = await screen.findByTestId("delete-action-btn");
+      expect(deleteButton).not.toBeDisabled();
+
+      userEvent.click(deleteButton);
+
+      expect(
+        await screen.findByText("This Action cannot be undone.")
+      ).toBeInTheDocument();
+
+      userEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      await waitFor(() => {
+        expect(mockCqlLibraryServiceApi.deleteDraft).not.toBeCalled();
+      });
+      expect(
+        screen.queryByText("The Draft CQL Library has been deleted.")
+      ).not.toBeInTheDocument();
+    });
+
+    test("Delete should display error message for delete draft library when non-owner attempts to delete", async () => {
+      jest.clearAllMocks();
+      jest.clearAllTimers();
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "libsetid",
+          cqlLibraryName: "testing1",
+          model: Model.QICORE,
+          createdAt: "",
+          createdBy: "testuser@example.com", //#nosec
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: true, // need this to be true for UI to present delete option
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        },
+      ]);
+      const axiosError: AxiosError = {
+        response: {
+          status: 403,
+          data: {
+            status: 403,
+            error: "Forbidden",
+            message: "BAD PERSON DO BAD THING",
+          },
+        } as AxiosResponse,
+        toJSON: jest.fn(),
+      } as unknown as AxiosError;
+
+      mockCqlLibraryServiceApi.deleteDraft = jest
+        .fn()
+        .mockRejectedValueOnce(axiosError);
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("testing1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).not.toBeDisabled();
+
+      const deleteButton = await screen.findByTestId("delete-action-btn");
+      expect(deleteButton).not.toBeDisabled();
+
+      userEvent.click(deleteButton);
+
+      expect(
+        await screen.findByText("This Action cannot be undone.")
+      ).toBeInTheDocument();
+
+      userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
+
+      await waitFor(() => {
+        expect(
+          (mockCqlLibraryServiceApi.deleteDraft = jest
+            .fn()
+            .mockRejectedValueOnce(axiosError))
+        );
+      });
+      expect(
+        await screen.findByText(
+          "User is not authorized to delete this CQL Library."
+        )
+      ).toBeInTheDocument();
+    });
+    test("Delete should display error message for delete draft library when backend states not a draft", async () => {
+      // this scenario could possibly happen if the library document is versioned in a different window/tab
+      // or by a different user (once sharing is added) but current window thinks library document is still draft
+
+      // Set up mock specifically for this test
+      jest.clearAllMocks();
+      jest.clearAllTimers();
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "libsetid",
+          cqlLibraryName: "testing1",
+          model: Model.QICORE,
+          createdAt: "",
+          createdBy: "testuser@example.com", //#nosec
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: true, // need this to be true for UI to present delete option
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        },
+      ]);
+      const axiosError: AxiosError = {
+        response: {
+          status: 409,
+          data: {
+            status: 409,
+            error: "Conflict",
+            message: "GOOD PERSON DO BAD THING",
+          },
+        } as AxiosResponse,
+        toJSON: jest.fn(),
+      } as unknown as AxiosError;
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("testing1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).not.toBeDisabled();
+
+      const deleteButton = await screen.findByTestId("delete-action-btn");
+      expect(deleteButton).not.toBeDisabled();
+
+      userEvent.click(deleteButton);
+
+      expect(
+        await screen.findByText("This Action cannot be undone.")
+      ).toBeInTheDocument();
+
+      expect(
+        await screen.findByText("Delete draft of testing1?")
+      ).toBeInTheDocument();
+      userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
+      await waitFor(() => {
+        expect(
+          (mockCqlLibraryServiceApi.deleteDraft = jest
+            .fn()
+            .mockRejectedValueOnce(axiosError))
+        );
+      });
+      expect(
+        await screen.findByText(
+          "User is not authorized to delete this CQL Library."
+        )
+      ).toBeInTheDocument();
+    });
+  });
+  describe("Version Action Tests", () => {
+    beforeEach(() => {
+      jest.resetModules();
+      (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+        LibraryListCheckboxes: true,
+        LibraryListButtons: true,
+      }));
+      mockCqlLibraryServiceApi.createVersion = jest.fn().mockResolvedValue({});
+      mockCqlLibraryServiceApi.fetchCqlLibrary = jest
+        .fn()
+        .mockResolvedValue({});
+    });
+    afterEach(() => {
+      jest.clearAllMocks();
+      jest.clearAllTimers();
+    });
+    test("Version should work when everything is okay", async () => {
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "librarySetId1",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: "1",
+          createdBy: "testuseratexamplecom",
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: true,
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        },
+      ]);
+
+      mockCqlLibraryServiceApi.fetchCqlLibrary = jest
+        .fn()
+        .mockResolvedValueOnce({
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "librarySetId1",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: "1",
+          createdBy: "testuseratexamplecom",
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: true,
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        });
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).not.toBeDisabled();
+      const draftButton = await screen.findByTestId("draft-action-btn");
+      expect(draftButton).toBeDisabled();
+
+      userEvent.click(versionButton);
+      await waitFor(() => {
+        expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toBeCalled();
+      });
+      await waitFor(() => {
+        expect(screen.getByLabelText("Major")).toBeInTheDocument();
+      });
+      const majorButton = screen.getByLabelText("Major");
+      userEvent.click(majorButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("create-version-continue-button")
+        ).toBeInTheDocument();
+      });
+      const continueButton = screen.getByTestId(
+        "create-version-continue-button"
+      );
+      userEvent.click(continueButton);
+      await waitFor(() => {
+        expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toBeCalled();
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-list-snackBar")
+        ).toHaveTextContent(
+          "New version of CQL Library is Successfully created"
+        );
+      });
+    });
+    test("Version should not version when cancel is clicked", async () => {
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: null,
+          createdBy: null,
+          lastModifiedAt: null,
+          lastModifiedBy: null,
+          draft: true,
+        },
+      ]);
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).not.toBeDisabled();
+      const draftButton = await screen.findByTestId("draft-action-btn");
+      expect(draftButton).toBeDisabled();
+
+      userEvent.click(versionButton);
+      await waitFor(() => {
+        expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toBeCalled();
+      });
+      await waitFor(() => {
+        expect(screen.getByLabelText("Major")).toBeInTheDocument();
+      });
+
+      const cancelButton = screen.getByTestId("create-version-cancel-button");
+      await waitFor(() => {
+        expect(screen.getByLabelText("Major")).toBeInTheDocument();
+      });
+    });
+    it("should display unauthorized error while creating a version of a cql library", async () => {
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: null,
+          createdBy: null,
+          lastModifiedAt: null,
+          lastModifiedBy: null,
+          draft: true,
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        },
+      ]);
+      mockCqlLibraryServiceApi.fetchCqlLibrary = jest
+        .fn()
+        .mockResolvedValueOnce({
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "librarySetId1",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: "1",
+          createdBy: "testuseratexamplecom",
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: true,
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        });
+      const error = {
+        response: {
+          data: {
+            status: 403,
+          },
+        },
+      };
+
+      mockCqlLibraryServiceApi.createVersion = jest
+        .fn()
+        .mockRejectedValueOnce(error);
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).not.toBeDisabled();
+      userEvent.click(versionButton);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText("Major")).toBeInTheDocument();
+      });
+      const majorButton = screen.getByLabelText("Major");
+      userEvent.click(majorButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("create-version-continue-button")
+        ).toBeInTheDocument();
+      });
+      const continueButton = screen.getByTestId(
+        "create-version-continue-button"
+      );
+      userEvent.click(continueButton);
+      await waitFor(() => {
+        expect(
+          (mockCqlLibraryServiceApi.createVersion = jest
+            .fn()
+            .mockRejectedValueOnce(error))
+        );
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-list-snackBar")
+        ).toHaveTextContent("User is unauthorized to create a version");
+      });
+    });
+    it("should display unauthorized error while creating a version of a cql library", async () => {
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: null,
+          createdBy: null,
+          lastModifiedAt: null,
+          lastModifiedBy: null,
+          draft: true,
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        },
+      ]);
+      mockCqlLibraryServiceApi.fetchCqlLibrary = jest
+        .fn()
+        .mockResolvedValueOnce({
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "librarySetId1",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: "1",
+          createdBy: "testuseratexamplecom",
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: true,
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        });
+      const error = {
+        response: {
+          data: {
+            status: 400,
+          },
+        },
+      };
+
+      mockCqlLibraryServiceApi.createVersion = jest
+        .fn()
+        .mockRejectedValueOnce(error);
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).not.toBeDisabled();
+      userEvent.click(versionButton);
+
+      await waitFor(() => {
+        expect(screen.getByLabelText("Major")).toBeInTheDocument();
+      });
+      const majorButton = screen.getByLabelText("Major");
+      userEvent.click(majorButton);
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("create-version-continue-button")
+        ).toBeInTheDocument();
+      });
+      const continueButton = screen.getByTestId(
+        "create-version-continue-button"
+      );
+      userEvent.click(continueButton);
+      await waitFor(() => {
+        expect(
+          (mockCqlLibraryServiceApi.createVersion = jest
+            .fn()
+            .mockRejectedValueOnce(error))
+        );
+      });
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-list-snackBar")
+        ).toHaveTextContent("Requested Cql Library cannot be versioned");
+      });
+    });
+  });
+  describe("Draft Action Tests", () => {
+    beforeEach(() => {
+      jest.resetModules();
+      (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+        LibraryListCheckboxes: true,
+        LibraryListButtons: true,
+      }));
+      mockCqlLibraryServiceApi.createDraft = jest.fn().mockResolvedValue({});
+      mockCqlLibraryServiceApi.fetchCqlLibrary = jest
+        .fn()
+        .mockResolvedValue({});
+    });
+    afterEach(() => {
+      jest.clearAllMocks();
+      jest.clearAllTimers();
+    });
+    test("Draft should work when everything is okay", async () => {
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "librarySetId1",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: "1",
+          createdBy: "testuseratexamplecom",
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: false,
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        },
+      ]);
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).toBeDisabled();
+      const draftButton = await screen.findByTestId("draft-action-btn");
+      expect(draftButton).not.toBeDisabled();
+
+      userEvent.click(draftButton);
+      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      const cqlLibraryNameInput = screen.getByRole("textbox", {
+        name: "CQL Library Name",
+      });
+      userEvent.clear(cqlLibraryNameInput);
+      userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+      userEvent.click(screen.getByRole("button", { name: "Continue" }));
+      await waitFor(() => {
+        expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalled();
+      });
+    });
+    test("should display bad request error while creating a draft a cql library", async () => {
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "librarySetId1",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: "1",
+          createdBy: "testuseratexamplecom",
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: false,
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        },
+      ]);
+      const error = {
+        response: {
+          data: {
+            status: 400,
+          },
+        },
+      };
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).toBeDisabled();
+      const draftButton = await screen.findByTestId("draft-action-btn");
+      expect(draftButton).not.toBeDisabled();
+
+      userEvent.click(draftButton);
+      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      const cqlLibraryNameInput = screen.getByRole("textbox", {
+        name: "CQL Library Name",
+      });
+      userEvent.clear(cqlLibraryNameInput);
+      userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+      userEvent.click(screen.getByRole("button", { name: "Continue" }));
+      await waitFor(() => {
+        expect(
+          (mockCqlLibraryServiceApi.createDraft = jest
+            .fn()
+            .mockRejectedValueOnce(error))
+        );
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-list-snackBar")
+        ).toHaveTextContent("Requested Cql Library cannot be drafted");
+      });
+    });
+    test("should display unauthorized error while creating a draft a cql library", async () => {
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "librarySetId1",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: "1",
+          createdBy: "testuseratexamplecom",
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: false,
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        },
+      ]);
+      const error = {
+        response: {
+          data: {
+            status: 403,
+          },
+        },
+      };
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).toBeDisabled();
+      const draftButton = await screen.findByTestId("draft-action-btn");
+      expect(draftButton).not.toBeDisabled();
+
+      userEvent.click(draftButton);
+      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      const cqlLibraryNameInput = screen.getByRole("textbox", {
+        name: "CQL Library Name",
+      });
+      userEvent.clear(cqlLibraryNameInput);
+      userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+      userEvent.click(screen.getByRole("button", { name: "Continue" }));
+      await waitFor(() => {
+        expect(
+          (mockCqlLibraryServiceApi.createDraft = jest
+            .fn()
+            .mockRejectedValueOnce(error))
+        );
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-list-snackBar")
+        ).toHaveTextContent("User is unauthorized to create a draft");
+      });
+    });
+    test("should display server error while creating a draft a cql library", async () => {
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "librarySetId1",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: "1",
+          createdBy: "testuseratexamplecom",
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: false,
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        },
+      ]);
+      const error = {
+        response: {
+          data: {
+            status: 500,
+            message: "Internal server error",
+          },
+        },
+      };
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).toBeDisabled();
+      const draftButton = await screen.findByTestId("draft-action-btn");
+      expect(draftButton).not.toBeDisabled();
+
+      userEvent.click(draftButton);
+      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      const cqlLibraryNameInput = screen.getByRole("textbox", {
+        name: "CQL Library Name",
+      });
+      userEvent.clear(cqlLibraryNameInput);
+      userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+      userEvent.click(screen.getByRole("button", { name: "Continue" }));
+      await waitFor(() => {
+        expect(
+          (mockCqlLibraryServiceApi.createDraft = jest
+            .fn()
+            .mockRejectedValueOnce(error))
+        );
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-list-snackBar")
+        ).toHaveTextContent("Internal server error");
+      });
+    });
+    test("should display unique library name error for changing to already used name during draft a cql library", async () => {
+      // Set up mock specifically for this test
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest.fn().mockResolvedValue([
+        {
+          id: "622e1f46d1fd3729d861e6cb",
+          librarySetId: "librarySetId1",
+          cqlLibraryName: "TestCqlLibrary1",
+          model: Model.QICORE,
+          createdAt: "1",
+          createdBy: "testuseratexamplecom",
+          lastModifiedAt: "",
+          lastModifiedBy: "",
+          draft: false,
+          version: "0.0.000",
+          cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+          cqlErrors: false,
+          active: true,
+        },
+      ]);
+      const error = {
+        response: {
+          data: {
+            status: 400,
+            message: "Library name must be unique.",
+          },
+        },
+      };
+
+      render(
+        <ApiContextProvider value={serviceConfig}>
+          <NewCqlLibrary />
+        </ApiContextProvider>
+      );
+
+      await waitFor(() => {
+        const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+        expect(cqlLibrary1).toBeInTheDocument();
+      });
+
+      // Ensure the interactions are correct after rendering the library
+      const checkBoxes = await screen.findAllByRole("checkbox");
+      expect(checkBoxes.length).toBe(2);
+      userEvent.click(checkBoxes[1]);
+
+      const versionButton = await screen.findByTestId("version-action-btn");
+      expect(versionButton).toBeDisabled();
+      const draftButton = await screen.findByTestId("draft-action-btn");
+      expect(draftButton).not.toBeDisabled();
+
+      userEvent.click(draftButton);
+      expect(await screen.findByRole("dialog")).toBeInTheDocument();
+      const cqlLibraryNameInput = screen.getByRole("textbox", {
+        name: "CQL Library Name",
+      });
+      userEvent.clear(cqlLibraryNameInput);
+      userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
+      userEvent.click(screen.getByRole("button", { name: "Continue" }));
+      await waitFor(() => {
+        expect(
+          (mockCqlLibraryServiceApi.createDraft = jest
+            .fn()
+            .mockRejectedValueOnce(error))
+        );
+      });
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-list-snackBar")
+        ).toHaveTextContent(
+          "Requested Cql Library cannot be drafted. Library name must be unique."
+        );
+      });
+    });
   });
 });

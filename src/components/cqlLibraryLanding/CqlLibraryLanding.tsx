@@ -17,6 +17,11 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
 
+const INITIAL_DELETE_DRAFT_STATE = {
+  open: false,
+  cqlLibrary: null,
+};
+
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
   const featureFlags = useFeatureFlags();
@@ -28,6 +33,48 @@ function CqlLibraryLanding() {
   const [filter, setFilter] = useState("");
   const [currentFilter, setCurrentFilter] = useState("");
   const abortController = useRef(null);
+  const [selectedCQLLibrary, setSelectedCqlLibrary] =
+    useState<CqlLibrary>(null);
+
+  const [deleteDraftDialog, setDeleteDraftDialog] = useState({
+    ...INITIAL_DELETE_DRAFT_STATE,
+  });
+  const [createVersionDialog, setCreateVersionDialog] = useState({
+    open: false,
+    cqlLibraryId: "",
+    cqlLibraryError: null,
+    isCqlPresent: undefined,
+  });
+  const [createDraftDialog, setCreateDraftDialog] = useState({
+    open: false,
+    cqlLibrary: null,
+  });
+  const [snackBar, setSnackBar] = useState({
+    message: "",
+    open: false,
+    severity: null,
+  });
+
+  const createVersion = async () => {
+    await cqlLibraryServiceApi
+      .fetchCqlLibrary(selectedLibraries[0].id)
+      .then((cqlLibrary) => {
+        setSelectedCqlLibrary(cqlLibrary);
+        setCreateVersionDialog({
+          open: true,
+          cqlLibraryId: cqlLibrary.id,
+          cqlLibraryError: cqlLibrary.cqlErrors,
+          isCqlPresent: cqlLibrary && cqlLibrary.cql?.trim().length > 0,
+        });
+      })
+      .catch(() => {
+        setSnackBar({
+          message: "An error occurred while fetching the CQL Library!",
+          open: true,
+          severity: "error",
+        });
+      });
+  };
 
   // Libraries are fetched again, when a new draft or version is created
   const loadCqlLibraries = useCallback(async () => {
@@ -177,7 +224,13 @@ function CqlLibraryLanding() {
               </div>
               {featureFlags?.LibraryListButtons && (
                 <div className="action-center-holder">
-                  <ActionCenter libraries={selectedLibraries} />
+                  <ActionCenter
+                    libraries={selectedLibraries}
+                    setDeleteDraftDialog={setDeleteDraftDialog}
+                    setSelectedCqlLibrary={setSelectedCqlLibrary}
+                    setCreateDraftDialog={setCreateDraftDialog}
+                    createVersion={createVersion}
+                  />
                 </div>
               )}
             </div>
@@ -198,6 +251,16 @@ function CqlLibraryLanding() {
                 }
                 onListUpdate={loadCqlLibraries}
                 setSelectedLibraries={setSelectedLibraries}
+                deleteDraftDialog={deleteDraftDialog}
+                setDeleteDraftDialog={setDeleteDraftDialog}
+                selectedCQLLibrary={selectedCQLLibrary}
+                setSelectedCqlLibrary={setSelectedCqlLibrary}
+                createVersionDialog={createVersionDialog}
+                setCreateVersionDialog={setCreateVersionDialog}
+                createDraftDialog={createDraftDialog}
+                setCreateDraftDialog={setCreateDraftDialog}
+                snackBar={snackBar}
+                setSnackBar={setSnackBar}
               />
             )}
           </div>

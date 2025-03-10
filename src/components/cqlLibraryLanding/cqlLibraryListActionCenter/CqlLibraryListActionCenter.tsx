@@ -13,10 +13,20 @@ import {
 
 interface PropTypes {
   libraries: CqlLibrary[];
+  setDeleteDraftDialog: (value: any) => void;
+  setSelectedCqlLibrary: (value: any) => void;
+  setCreateDraftDialog: (value: any) => void;
+  createVersion: () => void;
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
-  const { libraries } = props;
+  const {
+    libraries,
+    setDeleteDraftDialog,
+    setSelectedCqlLibrary,
+    setCreateDraftDialog,
+    createVersion,
+  } = props;
 
   const canEdit = libraries
     ? checkUserCanEdit(
@@ -28,6 +38,19 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     ? checkUserCanDelete(libraries[0]?.librarySet?.owner, libraries[0]?.draft)
     : false;
 
+  function deleteLibrary() {
+    setDeleteDraftDialog({
+      open: true,
+      cqlLibrary: libraries[0],
+    });
+  }
+  function createDraft() {
+    setCreateDraftDialog({
+      open: true,
+      cqlLibrary: libraries[0],
+    });
+  }
+
   useEffect(() => {}, []);
   return (
     <div data-testid="action-center">
@@ -35,16 +58,20 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         libraries={libraries}
         canEdit={canEdit}
         canDelete={canDelete}
-        onClick={() => {}}
+        onClick={deleteLibrary}
       />
 
       <VersionAction
         libraries={libraries}
         canEdit={canEdit}
-        onClick={() => {}}
+        onClick={createVersion}
       />
 
-      <DraftAction libraries={libraries} canEdit={canEdit} onClick={() => {}} />
+      <DraftAction
+        libraries={libraries}
+        canEdit={canEdit}
+        onClick={createDraft}
+      />
     </div>
   );
 }

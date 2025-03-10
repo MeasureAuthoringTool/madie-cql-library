@@ -79,28 +79,19 @@ export default function CqlLibraryList({
   cqlLibraryList = [],
   onListUpdate,
   setSelectedLibraries,
+  deleteDraftDialog,
+  setDeleteDraftDialog,
+  selectedCQLLibrary,
+  setSelectedCqlLibrary,
+  createVersionDialog,
+  setCreateVersionDialog,
+  createDraftDialog,
+  setCreateDraftDialog,
+  setSnackBar,
+  snackBar,
 }) {
   const history = useHistory();
   const featureFlags = useFeatureFlags();
-
-  const [createVersionDialog, setCreateVersionDialog] = useState({
-    open: false,
-    cqlLibraryId: "",
-    cqlLibraryError: null,
-    isCqlPresent: undefined,
-  });
-  const [createDraftDialog, setCreateDraftDialog] = useState({
-    open: false,
-    cqlLibrary: null,
-  });
-  const [deleteDraftDialog, setDeleteDraftDialog] = useState({
-    ...INITIAL_DELETE_DRAFT_STATE,
-  });
-  const [snackBar, setSnackBar] = useState({
-    message: "",
-    open: false,
-    severity: null,
-  });
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
 
   const handleDialogClose = () => {
@@ -130,6 +121,7 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
+        table.resetRowSelection();
         setSnackBar({
           message: "New version of CQL Library is Successfully created",
           open: true,
@@ -167,6 +159,7 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
+        table.resetRowSelection();
         setSnackBar({
           message: "New Draft of CQL Library is Successfully created",
           open: true,
@@ -208,6 +201,7 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
+        table.resetRowSelection();
         setSnackBar({
           message: "The Draft CQL Library has been deleted.",
           open: true,
@@ -243,8 +237,6 @@ export default function CqlLibraryList({
   // Popover utilities
   const [optionsOpen, setOptionsOpen] = useState<boolean>(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedCQLLibrary, setSelectedCqlLibrary] =
-    useState<CqlLibrary>(null);
   const canEdit = checkUserCanEdit(
     selectedCQLLibrary?.librarySet?.owner,
     selectedCQLLibrary?.librarySet?.acls
@@ -361,20 +353,48 @@ export default function CqlLibraryList({
       },
       {
         header: "Actions",
-        cell: (info) => (
-          <Button
-            variant="outline-secondary"
-            style={{ borderColor: "#c8c8c8" }}
-            onClick={(e) => handleOpen(info.row.original, e)}
-            data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
-            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
-          >
-            View/Edit
-            <span>
-              <ExpandMoreIcon />
-            </span>
-          </Button>
-        ),
+
+        cell: (info) =>
+          !featureFlags?.LibraryListButtons ? (
+            <Button
+              variant="outline-secondary"
+              style={{ borderColor: "#c8c8c8" }}
+              onClick={(e) => handleOpen(info.row.original, e)}
+              data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
+              aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+            >
+              View/Edit
+              <span>
+                <ExpandMoreIcon />
+              </span>
+            </Button>
+          ) : (
+            <Button
+              variant="outline-secondary"
+              style={{ borderColor: "#c8c8c8" }}
+              onClick={() =>
+                history.push(
+                  `/cql-libraries/${info.row.original.id}/edit/details`
+                )
+              }
+              data-testid={
+                checkUserCanEdit(
+                  info.row.original.librarySet?.owner,
+                  info.row.original.librarySet?.acls
+                ) && info.row.original.draft
+                  ? `edit-cql-library-button-${info.row.original.id}`
+                  : `view-cql-library-button-${info.row.original.id}`
+              }
+              aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+            >
+              {checkUserCanEdit(
+                info.row.original.librarySet?.owner,
+                info.row.original.librarySet?.acls
+              ) && info.row.original.draft
+                ? "Edit"
+                : "View"}
+            </Button>
+          ),
       }
     );
 

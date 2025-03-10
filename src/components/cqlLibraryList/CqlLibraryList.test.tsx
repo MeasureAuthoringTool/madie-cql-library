@@ -56,11 +56,6 @@ const cqlLibrary: CqlLibrary[] = [
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
     active: true,
-    librarySet: {
-      id: "1",
-      librarySetId: "librarySetId1",
-      owner: "testuseratexamplecom",
-    },
   },
   {
     id: "622e1f46d1fd3729d861e6c1",
@@ -76,11 +71,6 @@ const cqlLibrary: CqlLibrary[] = [
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
     active: true,
-    librarySet: {
-      id: "2",
-      librarySetId: "librarySetId2",
-      owner: "anothertestuseratexamplecom",
-    },
   },
 ];
 
@@ -129,6 +119,16 @@ describe("CqlLibrary List component", () => {
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
         setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
       />
     );
     cqlLibrary.forEach((c) => {
@@ -167,825 +167,6 @@ describe("CqlLibrary List component", () => {
     );
   });
 
-  it("should display version button for draft libraries and on click should render dialog", async () => {
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-
-    const versionButton = screen.getByTestId(
-      `create-new-version-${cqlLibrary[0].id}-button`
-    );
-
-    await userEvent.click(versionButton);
-    expect(screen.getByTestId("create-version-dialog")).toBeInTheDocument();
-  });
-
-  it("should display edit button and on click should render CQL library edit page", () => {
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-
-    const editButton = screen.getByTestId(
-      `edit-cql-library-button-${cqlLibrary[0].id}-edit`
-    );
-    expect(editButton).toBeInTheDocument();
-    userEvent.click(editButton);
-
-    expect(mockPush).toHaveBeenNthCalledWith(
-      1,
-      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
-    );
-  });
-
-  it("should display draft button for version libraries and on click should render dialog", async () => {
-    const cqlLibrary: CqlLibrary[] = [
-      {
-        id: "622e1f46d1fd3729d861e6cb",
-        librarySetId: "librarySetId",
-        cqlLibraryName: "testing1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: false,
-        version: "0.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-      },
-    ];
-
-    useCqlLibraryServiceMockResolved.fetchCqlLibrary = jest
-      .fn()
-      .mockResolvedValue(cqlLibrary[0]);
-
-    useCqlLibraryServiceMock.mockImplementation(() => {
-      return useCqlLibraryServiceMockResolved;
-    });
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-
-    const draftButton = screen.getByTestId(
-      `create-new-draft-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(draftButton);
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-  });
-
-  it("should successfully draft a cql library", async () => {
-    useCqlLibraryServiceMockResolved.fetchCqlLibrary = jest
-      .fn()
-      .mockResolvedValue(cqlLibrary[0]);
-
-    useCqlLibraryServiceMock.mockImplementation(() => {
-      return useCqlLibraryServiceMockResolved;
-    });
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-    const draftButton = screen.getByTestId(
-      `create-new-draft-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(draftButton);
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByRole("textbox", {
-      name: "CQL Library Name",
-    });
-    userEvent.clear(cqlLibraryNameInput);
-    userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    userEvent.click(screen.getByRole("button", { name: "Continue" }));
-    await waitFor(() => {
-      expect(loadCqlLibraries).toHaveBeenCalled();
-    });
-  });
-
-  it("should display bad request error while creating a draft a cql library", async () => {
-    const error = {
-      response: {
-        data: {
-          status: 400,
-        },
-      },
-    };
-    const useCqlLibraryServiceMockRejected = {
-      createDraft: jest.fn().mockRejectedValue(error),
-      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
-    } as unknown as CqlLibraryServiceApi;
-
-    useCqlLibraryServiceMock.mockImplementation(() => {
-      return useCqlLibraryServiceMockRejected;
-    });
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-
-    const draftButton = screen.getByTestId(
-      `create-new-draft-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(draftButton);
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByRole("textbox", {
-      name: "CQL Library Name",
-    });
-    userEvent.clear(cqlLibraryNameInput);
-    userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    userEvent.click(screen.getByRole("button", { name: "Continue" }));
-    await waitFor(() => {
-      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
-        "Requested Cql Library cannot be drafted"
-      );
-    });
-  });
-
-  it("should display unauthorized error while creating a draft a cql library", async () => {
-    const error = {
-      response: {
-        data: {
-          status: 403,
-        },
-      },
-    };
-    const useCqlLibraryServiceMockRejected = {
-      createDraft: jest.fn().mockRejectedValue(error),
-      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
-    } as unknown as CqlLibraryServiceApi;
-
-    useCqlLibraryServiceMock.mockImplementation(() => {
-      return useCqlLibraryServiceMockRejected;
-    });
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-    const draftButton = screen.getByTestId(
-      `create-new-draft-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(draftButton);
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByRole("textbox", {
-      name: "CQL Library Name",
-    });
-    userEvent.clear(cqlLibraryNameInput);
-    userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    userEvent.click(screen.getByRole("button", { name: "Continue" }));
-    await waitFor(() => {
-      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
-        "User is unauthorized to create a draft"
-      );
-    });
-  });
-
-  it("should display server error while creating a draft a cql library", async () => {
-    const error = {
-      response: {
-        data: {
-          status: 500,
-          message: "Internal server error",
-        },
-      },
-    };
-    const useCqlLibraryServiceMockRejected = {
-      createDraft: jest.fn().mockRejectedValue(error),
-      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
-    } as unknown as CqlLibraryServiceApi;
-
-    useCqlLibraryServiceMock.mockImplementation(() => {
-      return useCqlLibraryServiceMockRejected;
-    });
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-
-    const draftButton = screen.getByTestId(
-      `create-new-draft-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(draftButton);
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByRole("textbox", {
-      name: "CQL Library Name",
-    });
-    userEvent.clear(cqlLibraryNameInput);
-    userEvent.type(cqlLibraryNameInput, "TestingLibraryName12");
-    userEvent.click(screen.getByRole("button", { name: "Continue" }));
-    await waitFor(() => {
-      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
-        "Internal server error"
-      );
-    });
-  });
-
-  it("should display unique library name error for changing to already used name during draft a cql library", async () => {
-    const error = {
-      response: {
-        data: {
-          status: 400,
-          message: "Library name must be unique.",
-        },
-      },
-    };
-    const useCqlLibraryServiceMockRejected = {
-      createDraft: jest.fn().mockRejectedValue(error),
-      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
-    } as unknown as CqlLibraryServiceApi;
-
-    useCqlLibraryServiceMock.mockImplementation(() => {
-      return useCqlLibraryServiceMockRejected;
-    });
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={[{ ...cqlLibrary[0], draft: false }]}
-        onListUpdate={loadCqlLibraries}
-        setSelectedLibraries={jest.fn()}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-    const draftButton = screen.getByTestId(
-      `create-new-draft-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(draftButton);
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    const cqlLibraryNameInput = screen.getByRole("textbox", {
-      name: "CQL Library Name",
-    });
-    userEvent.clear(cqlLibraryNameInput);
-    userEvent.type(cqlLibraryNameInput, "ExistingLibraryName");
-    userEvent.click(screen.getByRole("button", { name: "Continue" }));
-    await waitFor(() => {
-      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
-        "Requested Cql Library cannot be drafted. Library name must be unique."
-      );
-    });
-  });
-
-  it("should successfully version a cql library", async () => {
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId(`create-new-version-${cqlLibrary[0].id}-button`)
-      ).toBeInTheDocument();
-    });
-    const versionButton = screen.getByTestId(
-      `create-new-version-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(versionButton);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText("Major")).toBeInTheDocument();
-    });
-    const majorButton = screen.getByLabelText("Major");
-    userEvent.click(majorButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId("create-version-continue-button")
-      ).toBeInTheDocument();
-    });
-    const continueButton = screen.getByTestId("create-version-continue-button");
-    userEvent.click(continueButton);
-    await waitFor(() => {
-      expect(loadCqlLibraries).toHaveBeenCalled();
-    });
-  });
-
-  it("should display bad request error while creating a version of a cql library", async () => {
-    const error = {
-      response: {
-        data: {
-          status: 400,
-        },
-      },
-    };
-    const useCqlLibraryServiceMockRejected = {
-      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
-      createVersion: jest.fn().mockRejectedValue(error),
-    } as unknown as CqlLibraryServiceApi;
-
-    useCqlLibraryServiceMock.mockImplementation(() => {
-      return useCqlLibraryServiceMockRejected;
-    });
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId(`create-new-version-${cqlLibrary[0].id}-button`)
-      ).toBeInTheDocument();
-    });
-    const versionButton = screen.getByTestId(
-      `create-new-version-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(versionButton);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText("Major")).toBeInTheDocument();
-    });
-    const majorButton = screen.getByLabelText("Major");
-    userEvent.click(majorButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId("create-version-continue-button")
-      ).toBeInTheDocument();
-    });
-    const continueButton = screen.getByTestId("create-version-continue-button");
-    userEvent.click(continueButton);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
-        "Requested Cql Library cannot be versioned"
-      );
-    });
-  });
-
-  it("should display unauthorized error while creating a version of a cql library", async () => {
-    const error = {
-      response: {
-        data: {
-          status: 403,
-        },
-      },
-    };
-    const useCqlLibraryServiceMockRejected = {
-      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
-      createVersion: jest.fn().mockRejectedValue(error),
-    } as unknown as CqlLibraryServiceApi;
-
-    useCqlLibraryServiceMock.mockImplementation(() => {
-      return useCqlLibraryServiceMockRejected;
-    });
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId(`create-new-version-${cqlLibrary[0].id}-button`)
-      ).toBeInTheDocument();
-    });
-    const versionButton = screen.getByTestId(
-      `create-new-version-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(versionButton);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText("Major")).toBeInTheDocument();
-    });
-    const majorButton = screen.getByLabelText("Major");
-    userEvent.click(majorButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId("create-version-continue-button")
-      ).toBeInTheDocument();
-    });
-    const continueButton = screen.getByTestId("create-version-continue-button");
-    userEvent.click(continueButton);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
-        "User is unauthorized to create a version"
-      );
-    });
-  });
-
-  it("should display server error while creating a version of a cql library", async () => {
-    const error = {
-      response: {
-        data: {
-          status: 500,
-          message: "Internal server error",
-        },
-      },
-    };
-    const useCqlLibraryServiceMockRejected = {
-      createVersion: jest.fn().mockRejectedValue(error),
-      fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
-    } as unknown as CqlLibraryServiceApi;
-
-    useCqlLibraryServiceMock.mockImplementation(() => {
-      return useCqlLibraryServiceMockRejected;
-    });
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-    const viewEditButton = screen.getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(viewEditButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId(`create-new-version-${cqlLibrary[0].id}-button`)
-      ).toBeInTheDocument();
-    });
-    const versionButton = screen.getByTestId(
-      `create-new-version-${cqlLibrary[0].id}-button`
-    );
-    userEvent.click(versionButton);
-
-    await waitFor(() => {
-      expect(screen.getByLabelText("Major")).toBeInTheDocument();
-    });
-    const majorButton = screen.getByLabelText("Major");
-    userEvent.click(majorButton);
-
-    await waitFor(() => {
-      expect(
-        screen.getByTestId("create-version-continue-button")
-      ).toBeInTheDocument();
-    });
-    const continueButton = screen.getByTestId("create-version-continue-button");
-    userEvent.click(continueButton);
-
-    await waitFor(() => {
-      expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
-        "Internal server error"
-      );
-    });
-  });
-
-  it("should display delete draft button for owned, draft libraries and on click should render dialog", async () => {
-    const cqlLibrary: CqlLibrary[] = [
-      {
-        id: "622e1f46d1fd3729d861e6cb",
-        librarySetId: "libsetid",
-        cqlLibraryName: "testing1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: true,
-        version: "0.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-      },
-    ];
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-
-    userEvent.click(
-      screen.getByRole("button", {
-        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
-      })
-    );
-    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
-    expect(
-      await screen.findByText("Delete draft of testing1?")
-    ).toBeInTheDocument();
-  });
-
-  it("should delete draft library on confirmation", async () => {
-    const cqlLibrary: CqlLibrary[] = [
-      {
-        id: "622e1f46d1fd3729d861e6cb",
-        librarySetId: "libsetid",
-        cqlLibraryName: "testing1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: true,
-        version: "0.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-      },
-      {
-        id: "650359394b0427f896ced541",
-        librarySetId: "libsetid2",
-        cqlLibraryName: "versioned lib1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: false,
-        version: "1.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-      },
-    ];
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-
-    userEvent.click(
-      screen.getByRole("button", {
-        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
-      })
-    );
-    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
-    expect(
-      await screen.findByText("Delete draft of testing1?")
-    ).toBeInTheDocument();
-    userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
-    await waitFor(() => {
-      expect(useCqlLibraryServiceMockResolved.deleteDraft).toBeCalled();
-    });
-    expect(
-      await screen.findByText("The Draft CQL Library has been deleted.")
-    ).toBeInTheDocument();
-  });
-
-  it("should display error message for delete draft library when backend states not a draft", async () => {
-    // this scenario could possibly happen if the library document is versioned in a different window/tab
-    // or by a different user (once sharing is added) but current window thinks library document is still draft
-    const cqlLibrary: CqlLibrary[] = [
-      {
-        id: "622e1f46d1fd3729d861e6cb",
-        librarySetId: "libsetid",
-        cqlLibraryName: "testing1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: true, // need this to be true for UI to present delete option
-        version: "0.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-      },
-    ];
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-
-    const axiosError: AxiosError = {
-      response: {
-        status: 409,
-        data: {
-          status: 409,
-          error: "Conflict",
-          message: "GOOD PERSON DO BAD THING",
-        },
-      } as AxiosResponse,
-      toJSON: jest.fn(),
-    } as unknown as AxiosError;
-    useCqlLibraryServiceMockResolved.deleteDraft = jest
-      .fn()
-      .mockRejectedValueOnce(axiosError);
-
-    userEvent.click(
-      screen.getByRole("button", {
-        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
-      })
-    );
-    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
-    expect(
-      await screen.findByText("Delete draft of testing1?")
-    ).toBeInTheDocument();
-    userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
-    await waitFor(() => {
-      expect(useCqlLibraryServiceMockResolved.deleteDraft).toBeCalled();
-    });
-    expect(
-      await screen.findByText(
-        "This CQL Library is not in the correct state to be deleted."
-      )
-    ).toBeInTheDocument();
-  });
-
-  it("should display error message for delete draft library when non-owner attempts to delete", async () => {
-    // this scenario could possibly happen if the library is transferred while the former owner is still on the list page
-    const cqlLibrary: CqlLibrary[] = [
-      {
-        id: "622e1f46d1fd3729d861e6cb",
-        librarySetId: "libsetid",
-        cqlLibraryName: "testing1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: true, // need this to be true for UI to present delete option
-        version: "0.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-      },
-    ];
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-
-    const axiosError: AxiosError = {
-      response: {
-        status: 403,
-        data: {
-          status: 403,
-          error: "Forbidden",
-          message: "BAD PERSON DO BAD THING",
-        },
-      } as AxiosResponse,
-      toJSON: jest.fn(),
-    } as unknown as AxiosError;
-    useCqlLibraryServiceMockResolved.deleteDraft = jest
-      .fn()
-      .mockRejectedValueOnce(axiosError);
-
-    userEvent.click(
-      screen.getByRole("button", {
-        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
-      })
-    );
-    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
-    expect(
-      await screen.findByText("Delete draft of testing1?")
-    ).toBeInTheDocument();
-    userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
-    await waitFor(() => {
-      expect(useCqlLibraryServiceMockResolved.deleteDraft).toBeCalled();
-    });
-    expect(
-      await screen.findByText(
-        "User is not authorized to delete this CQL Library."
-      )
-    ).toBeInTheDocument();
-  });
-
-  it("should not delete draft library on cancel", async () => {
-    const cqlLibrary: CqlLibrary[] = [
-      {
-        id: "622e1f46d1fd3729d861e6cb",
-        librarySetId: "libsetid",
-        cqlLibraryName: "testing1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: true,
-        version: "0.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-      },
-      {
-        id: "650359394b0427f896ced541",
-        librarySetId: "libsetid2",
-        cqlLibraryName: "versioned lib1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: false,
-        version: "1.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-      },
-    ];
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-      />
-    );
-
-    userEvent.click(
-      screen.getByRole("button", {
-        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
-      })
-    );
-    userEvent.click(await screen.findByRole("button", { name: "Delete" }));
-    expect(
-      await screen.findByText("Delete draft of testing1?")
-    ).toBeInTheDocument();
-    userEvent.click(screen.getByRole("button", { name: "Cancel" }));
-    await waitFor(() => {
-      expect(useCqlLibraryServiceMockResolved.deleteDraft).not.toBeCalled();
-    });
-    expect(
-      screen.queryByText("The Draft CQL Library has been deleted.")
-    ).not.toBeInTheDocument();
-  });
-
   it("should not have delete draft option if not owner", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(false);
     (checkUserCanDelete as jest.Mock).mockReturnValue(false);
@@ -1011,6 +192,16 @@ describe("CqlLibrary List component", () => {
         setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
       />
     );
 
@@ -1050,6 +241,16 @@ describe("CqlLibrary List component", () => {
         setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
       />
     );
 
@@ -1110,11 +311,121 @@ describe("CqlLibrary List component", () => {
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
         setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
       />
     );
 
     const checkBoxes = await screen.findAllByRole("checkbox");
     expect(checkBoxes.length).toBe(3);
     fireEvent.click(checkBoxes[1]);
+  });
+
+  it("buttons featureflag: shows just a view button when cannot edit", async () => {
+    (checkUserCanEdit as jest.Mock).mockReturnValue(false);
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibraryListCheckboxes: true,
+      LibraryListButtons: true,
+    }));
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+      />
+    );
+
+    expect(
+      await screen.findByTestId(
+        "view-cql-library-button-622e1f46d1fd3729d861e6cb"
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "View/Edit" })
+    ).not.toBeInTheDocument();
+  });
+  it("buttons featureflag: shows just an edit button when can edit", async () => {
+    (checkUserCanEdit as jest.Mock).mockReturnValue(true);
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibraryListCheckboxes: true,
+      LibraryListButtons: true,
+    }));
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+      },
+    ];
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+      />
+    );
+    expect(
+      await screen.findByTestId(
+        "edit-cql-library-button-622e1f46d1fd3729d861e6cb"
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "View/Edit" })
+    ).not.toBeInTheDocument();
   });
 });

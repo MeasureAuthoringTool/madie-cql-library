@@ -35,15 +35,10 @@ export default function VersionAction(props: PropTypes) {
   }, [libraries, validateVersionActionState]);
 
   return (
-    <Tooltip
-      data-testid="version-action-tooltip"
-      title={tooltipMessage}
-      onMouseOver={validateVersionActionState}
-      arrow
-    >
+    <Tooltip data-testid="version-action-tooltip" title={tooltipMessage} arrow>
       <span>
         <IconButton
-          onClick={props.onClick}
+          onClick={onClick}
           disabled={disableVersionBtn}
           data-testid="version-action-btn"
         >
