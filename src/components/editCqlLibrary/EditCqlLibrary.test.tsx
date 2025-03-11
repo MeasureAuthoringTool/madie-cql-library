@@ -14,6 +14,7 @@ import {
   validateContent,
 } from "@madie/madie-editor";
 import { checkUserCanEdit } from "@madie/madie-util";
+import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 
 jest.mock("@madie/madie-util", () => ({
   checkUserCanEdit: jest.fn(() => {
@@ -64,6 +65,24 @@ const cqlLibrary = {
   experimental: false,
 } as CqlLibrary;
 
+const draftedLibrary = {
+  id: "cql-lib-1256",
+  cqlLibraryName: "Library1",
+  librarySetId: "",
+  model: Model.QICORE,
+  cqlErrors: false,
+  cql: "",
+  version: "testVersion",
+  draft: true,
+  createdAt: "",
+  createdBy: "john doe",
+  lastModifiedAt: "",
+  lastModifiedBy: "",
+  publisher: "Tester",
+  description: "testing stuff.",
+  experimental: false,
+} as CqlLibrary;
+
 const organizations = [
   {
     id: "1234",
@@ -79,6 +98,10 @@ const organizations = [
 
 jest.mock("../../api/axios-instance");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
+
+const mockCqlLibraryServiceApi = {
+  createDraft: jest.fn().mockResolvedValue(draftedLibrary),
+} as unknown as CqlLibraryServiceApi;
 
 // mocking useHistory
 const mockPush = jest.fn();
@@ -148,6 +171,9 @@ describe("Edit Cql Library Component", () => {
   beforeEach(() => {
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockCqlLibraryServiceApi.createDraft = jest
+      .fn()
+      .mockResolvedValue(draftedLibrary);
     global.ResizeObserver = class {
       observe() {}
       unobserve() {}
@@ -1205,6 +1231,32 @@ describe("Edit Cql Library Component", () => {
     userEvent.click(cancelButton);
     await waitFor(() => {
       expect(screen.queryByText("Create Version")).not.toBeVisible();
+    });
+  });
+
+  it("should create a draft measure when the draft event is triggered", async () => {
+    renderWithRouter();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+    const input = (await screen.getByTestId(
+      "cql-library-name-text-field-input"
+    )) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.value).toBe("Library1");
+    act(() => {
+      window.dispatchEvent(new Event("draft-library"));
+    });
+    expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+    const continueButton = await screen.findByTestId(
+      "create-draft-continue-button"
+    );
+    userEvent.click(continueButton);
+    await waitFor(() => {
+      const successMessage = screen.getByTestId("generic-success-text-header");
+      expect(successMessage.textContent).toEqual(
+        "New Draft of CQL Library is Successfully created"
+      );
     });
   });
 });
