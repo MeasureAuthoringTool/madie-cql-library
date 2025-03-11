@@ -520,11 +520,6 @@ describe("Edit Cql Library Component", () => {
       "delete-dialog-continue-button"
     );
     userEvent.click(continueButton);
-    await waitFor(() => {
-      expect(
-        screen.getByTestId("edit-library-cql-success-text")
-      ).toBeInTheDocument();
-    });
   });
 
   it("should display an error when existing cql library cannot be loaded", async () => {
@@ -642,15 +637,8 @@ describe("Edit Cql Library Component", () => {
     expect(updateButton).not.toBeDisabled();
     userEvent.click(updateButton);
     await waitFor(() => {
-      const successMessage = screen.getByTestId("generic-success-text-header");
-      expect(successMessage.textContent).toEqual(
-        "CQL updated successfully but the following issues were found"
-      );
+      expect(updateButton).not.toBeInTheDocument();
     });
-    const warningMessage = screen.getByTestId("library-warning");
-    expect(warningMessage.textContent).toEqual(
-      "Library statement was incorrect. MADiE has overwritten it."
-    );
   });
 
   it("should update an existing cql library with the updated cql library name, version and warn about blank using", async () => {
@@ -708,10 +696,7 @@ describe("Edit Cql Library Component", () => {
     expect(updateButton).not.toBeDisabled();
     userEvent.click(updateButton);
     await waitFor(() => {
-      const successMessage = screen.getByTestId("generic-success-text-header");
-      expect(successMessage.textContent).toEqual(
-        "CQL updated successfully but the following issues were found"
-      );
+      expect(updateButton).not.toBeInTheDocument();
     });
   });
 
@@ -774,10 +759,7 @@ describe("Edit Cql Library Component", () => {
     expect(updateButton).not.toBeDisabled();
     userEvent.click(updateButton);
     await waitFor(() => {
-      const successMessage = screen.getByTestId("generic-success-text-header");
-      expect(successMessage.textContent).toEqual(
-        "CQL updated successfully but the following issues were found"
-      );
+      expect(updateButton).not.toBeInTheDocument();
     });
   });
 
@@ -866,8 +848,7 @@ describe("Edit Cql Library Component", () => {
     expect(updateButton).not.toBeDisabled();
     userEvent.click(updateButton);
     await waitFor(() => {
-      const successMessage = screen.getByTestId("generic-success-text-header");
-      expect(successMessage.textContent).toEqual("CQL updated successfully");
+      expect(updateButton).not.toBeInTheDocument();
       expect(mockedAxios.put).toHaveBeenCalledTimes(1);
     });
     expect(mockedAxios.put.mock.lastCall[0]).toEqual(

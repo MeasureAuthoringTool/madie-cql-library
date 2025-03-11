@@ -196,10 +196,11 @@ const EditCqlLibrary = () => {
     cqlLibraryServiceApi
       .deleteDraft(id)
       .then(async () => {
-        //handleToast("success", "The Draft CQL Library has been deleted.", true);
-        setToastType("success");
-        setToastMessage("The Draft CQL Library has been deleted.");
-        setToastOpen(true);
+        setSuccess({
+          status: "success",
+          primaryMessage: "The Draft CQL Library has been deleted.",
+          secondaryMessages: "",
+        });
         setTimeout(() => {
           history.push("/cql-libraries");
         }, 1000);
@@ -209,9 +210,9 @@ const EditCqlLibrary = () => {
         if (error?.response?.data) {
           const errorData = error?.response?.data;
           const errorMessage = `${errorData?.status}: ${errorData?.error} ${errorData?.message}`;
-          //handleToast("danger", errorMessage, true);
+          setErrorMessage(errorMessage);
         } else {
-          // handleToast("danger", error.toString(), true);
+          setErrorMessage(error.toString());
         }
       });
   };
@@ -229,11 +230,11 @@ const EditCqlLibrary = () => {
       .createVersion(loadedCqlLibrary.id, isMajor)
       .then((response: AxiosResponse<CqlLibrary>) => {
         handleDialogClose();
-        // handleToast(
-        //   "success",
-        //   "New version of CQL Library is Successfully created.",
-        //   true
-        // );
+        setSuccess({
+          status: "success",
+          primaryMessage: "New version of CQL Library is Successfully created.",
+          secondaryMessages: "",
+        });
         cqlLibraryStore.updateLibrary(response?.data);
         resetForm({
           values: { ...response?.data },
@@ -244,9 +245,9 @@ const EditCqlLibrary = () => {
         if (error?.response?.data) {
           const errorData = error?.response?.data;
           const errorMessage = `${errorData?.status}: ${errorData?.error} ${errorData?.message}`;
-          //handleToast("danger", errorMessage, true);
+          setErrorMessage(errorMessage);
         } else {
-          //handleToast("danger", error.toString(), true);
+          setErrorMessage(error.toString());
         }
       });
   };
@@ -257,9 +258,11 @@ const EditCqlLibrary = () => {
       .createDraft(cqlLibrary.id, cqlLibrary.cqlLibraryName, model)
       .then((response: AxiosResponse<CqlLibrary>) => {
         handleDialogClose();
-        // setToastOpen(true);
-        // setToastType("success");
-        // setToastMessage("New draft created successfully.");
+        setSuccess({
+          status: "success",
+          primaryMessage: "New Draft of CQL Library is Successfully created",
+          secondaryMessages: "",
+        });
         cqlLibraryStore.updateLibrary(response?.data);
         resetForm({
           values: { ...response?.data },
@@ -268,11 +271,6 @@ const EditCqlLibrary = () => {
         setTimeout(() => {
           history.push(`/cql-libraries/${response.data.id}/edit/details`);
         }, 1000);
-        // setSnackBar({
-        //   message: "New Draft of CQL Library is Successfully created",
-        //   open: true,
-        //   severity: "success",
-        // });
       })
       .catch((error) => {
         const errorData = error?.response?.data;
@@ -281,23 +279,11 @@ const EditCqlLibrary = () => {
           if (error?.response?.data?.message) {
             message = `${message} ${error.response.data.message}`;
           }
-          //   setSnackBar({
-          //     message,
-          //     open: true,
-          //     severity: "error",
-          //   });
-          // } else if (errorData?.status == 403) {
-          //   setSnackBar({
-          //     message: "User is unauthorized to create a draft",
-          //     open: true,
-          //     severity: "error",
-          //   });
-          // } else {
-          //   setSnackBar({
-          //     message: errorData?.message,
-          //     open: true,
-          //     severity: "error",
-          //   });
+          setErrorMessage(message);
+        } else if (errorData?.status == 403) {
+          setErrorMessage("User is unauthorized to create a draft");
+        } else {
+          setErrorMessage(errorData?.message);
         }
       });
   };
