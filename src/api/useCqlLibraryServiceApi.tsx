@@ -88,7 +88,7 @@ export class CqlLibraryServiceApi {
     cqlLibraryId: string,
     cqlLibraryName: string,
     model: string
-  ): Promise<void> {
+  ): Promise<AxiosResponse<CqlLibrary>> {
     return await axios.post(
       `${this.baseUrl}/cql-libraries/draft/${cqlLibraryId}`,
       { cqlLibraryName: cqlLibraryName, model: model },

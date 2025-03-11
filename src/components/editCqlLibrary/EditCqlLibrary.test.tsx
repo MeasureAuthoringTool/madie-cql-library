@@ -434,6 +434,35 @@ describe("Edit Cql Library Component", () => {
     fireEvent.blur(input);
   });
 
+  it("should display a draft dialog when the event is triggered", async () => {
+    renderWithRouter();
+    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-name-text-field-input")
+      ).not.toHaveAttribute("disabled");
+    });
+    const input = (await screen.getByTestId(
+      "cql-library-name-text-field-input"
+    )) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.value).toBe("Library1");
+    act(() => {
+      window.dispatchEvent(new Event("draft-library"));
+    });
+    expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+    const cancelButton = await screen.findByTestId(
+      "create-draft-cancel-button"
+    );
+    userEvent.click(cancelButton);
+    await waitFor(() => {
+      expect(screen.queryByText("Create Draft")).not.toBeVisible();
+    });
+  });
+
   it("should display a delete dialog when the event is triggered", async () => {
     renderWithRouter();
     expect(mockedAxios.get).toHaveBeenCalled();
@@ -1172,5 +1201,29 @@ describe("Edit Cql Library Component", () => {
       "/cql-libraries/cql-lib-1234"
     );
     expect(mockedAxios.put.mock.lastCall[1]).toBeTruthy();
+  });
+
+  it("should display a version dialog when the event is triggered", async () => {
+    renderWithRouter();
+    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+    const input = (await screen.getByTestId(
+      "cql-library-name-text-field-input"
+    )) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.value).toBe("Library1");
+    act(() => {
+      window.dispatchEvent(new Event("version-library"));
+    });
+    expect(await screen.findByText("Create Version")).toBeInTheDocument();
+    const cancelButton = await screen.findByTestId(
+      "create-version-cancel-button"
+    );
+    userEvent.click(cancelButton);
+    await waitFor(() => {
+      expect(screen.queryByText("Create Version")).not.toBeVisible();
+    });
   });
 });

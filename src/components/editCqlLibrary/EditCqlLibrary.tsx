@@ -52,6 +52,7 @@ import Search from "@mui/icons-material/Search";
 import useFormikResetOnEvent from "../common/useFormikResetOnEvent";
 import CreateVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import { AxiosResponse } from "axios";
+import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -191,6 +192,7 @@ const EditCqlLibrary = () => {
   };
 
   const deleteDraftLibrary = async (id: string) => {
+    setActiveSpinner(true);
     cqlLibraryServiceApi
       .deleteDraft(id)
       .then(async () => {
@@ -200,17 +202,16 @@ const EditCqlLibrary = () => {
         setToastOpen(true);
         setTimeout(() => {
           history.push("/cql-libraries");
-        }, 3000);
+        }, 1000);
+        handleDialogClose();
       })
       .catch((error) => {
         if (error?.response?.data) {
           const errorData = error?.response?.data;
           const errorMessage = `${errorData?.status}: ${errorData?.error} ${errorData?.message}`;
           //handleToast("danger", errorMessage, true);
-          setOpenDeleteDraftDialog(false);
         } else {
           // handleToast("danger", error.toString(), true);
-          setOpenDeleteDraftDialog(false);
         }
       });
   };
@@ -218,19 +219,21 @@ const EditCqlLibrary = () => {
   const handleDialogClose = () => {
     setOpenCreateVersionDialog(false);
     setOpenDeleteDraftDialog(false);
+    setOpenCreateDraftDialog(false);
+    setActiveSpinner(false);
   };
 
-  const createVersion = async (isMajor: boolean) => {
+  const createVersionLibrary = async (isMajor: boolean) => {
     setActiveSpinner(true);
     await cqlLibraryServiceApi
       .createVersion(loadedCqlLibrary.id, isMajor)
       .then((response: AxiosResponse<CqlLibrary>) => {
+        handleDialogClose();
         // handleToast(
         //   "success",
         //   "New version of CQL Library is Successfully created.",
         //   true
         // );
-
         cqlLibraryStore.updateLibrary(response?.data);
         resetForm({
           values: { ...response?.data },
@@ -245,14 +248,59 @@ const EditCqlLibrary = () => {
         } else {
           //handleToast("danger", error.toString(), true);
         }
-      })
-      .finally(() => {
-        setActiveSpinner(false);
-        handleDialogClose();
       });
   };
 
-  const draftVersion = () => {};
+  const createDraftLibrary = async (cqlLibrary: CqlLibrary, model: string) => {
+    setActiveSpinner(true);
+    await cqlLibraryServiceApi
+      .createDraft(cqlLibrary.id, cqlLibrary.cqlLibraryName, model)
+      .then((response: AxiosResponse<CqlLibrary>) => {
+        handleDialogClose();
+        // setToastOpen(true);
+        // setToastType("success");
+        // setToastMessage("New draft created successfully.");
+        cqlLibraryStore.updateLibrary(response?.data);
+        resetForm({
+          values: { ...response?.data },
+        });
+        setLoadedCqlLibrary(response?.data);
+        setTimeout(() => {
+          history.push(`/cql-libraries/${response.data.id}/edit/details`);
+        }, 1000);
+        // setSnackBar({
+        //   message: "New Draft of CQL Library is Successfully created",
+        //   open: true,
+        //   severity: "success",
+        // });
+      })
+      .catch((error) => {
+        const errorData = error?.response?.data;
+        if (errorData?.status == 400) {
+          let message = "Requested Cql Library cannot be drafted.";
+          if (error?.response?.data?.message) {
+            message = `${message} ${error.response.data.message}`;
+          }
+          //   setSnackBar({
+          //     message,
+          //     open: true,
+          //     severity: "error",
+          //   });
+          // } else if (errorData?.status == 403) {
+          //   setSnackBar({
+          //     message: "User is unauthorized to create a draft",
+          //     open: true,
+          //     severity: "error",
+          //   });
+          // } else {
+          //   setSnackBar({
+          //     message: errorData?.message,
+          //     open: true,
+          //     severity: "error",
+          //   });
+        }
+      });
+  };
 
   const onChange = (value) => {
     formik.setFieldValue("cql", value);
@@ -770,17 +818,23 @@ const EditCqlLibrary = () => {
             open={openDeleteDraftDialog}
             dialogTitle={`Delete draft of ${loadedCqlLibrary?.cqlLibraryName}?`}
             name={`draft of ${loadedCqlLibrary?.cqlLibraryName}`}
-            onClose={() => setOpenDeleteDraftDialog(false)}
+            onClose={handleDialogClose}
             onContinue={() => deleteDraftLibrary(loadedCqlLibrary?.id)}
           />
           <CreateVersionDialog
             open={openCreateVersionDialog}
-            onClose={() => setOpenCreateVersionDialog(false)}
-            onSubmit={createVersion}
+            onClose={handleDialogClose}
+            onSubmit={createVersionLibrary}
             cqlLibraryError={null}
             isCqlPresent={
               loadedCqlLibrary && loadedCqlLibrary.cql?.trim().length > 0
             }
+          />
+          <CreateDraftDialog
+            open={openCreateDraftDialog}
+            onClose={handleDialogClose}
+            onSubmit={createDraftLibrary}
+            cqlLibrary={loadedCqlLibrary}
           />
         </form>
       )}
