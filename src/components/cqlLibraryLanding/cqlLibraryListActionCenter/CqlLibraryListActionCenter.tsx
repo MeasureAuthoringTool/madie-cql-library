@@ -3,12 +3,14 @@ import { Button, Grid } from "@material-ui/core";
 import DeleteAction from "./deleteAction/DeleteAction";
 import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";
+import ShareAction from "./shareAction/ShareAction";
 import { CqlLibrary } from "@madie/madie-models";
 
 import {
   checkUserCanDelete,
   checkUserCanEdit,
   useFeatureFlags,
+  useOktaTokens,
 } from "@madie/madie-util";
 
 interface PropTypes {
@@ -17,6 +19,7 @@ interface PropTypes {
   setSelectedCqlLibrary: (value: any) => void;
   setCreateDraftDialog: (value: any) => void;
   createVersion: () => void;
+  owners: string[];
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
@@ -26,8 +29,11 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     setSelectedCqlLibrary,
     setCreateDraftDialog,
     createVersion,
+    owners,
   } = props;
-
+  const featureFlags = useFeatureFlags();
+  const { getUserName } = useOktaTokens();
+  const userName = getUserName();
   const canEdit = libraries
     ? checkUserCanEdit(
         libraries[0]?.librarySet?.owner,
@@ -72,6 +78,15 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         canEdit={canEdit}
         onClick={createDraft}
       />
+      {featureFlags.ShareLibrary && (
+        <ShareAction
+          libraries={libraries}
+          canEdit={canEdit}
+          onClick={() => {}}
+          userName={userName}
+          owners={owners}
+        />
+      )}
     </div>
   );
 }

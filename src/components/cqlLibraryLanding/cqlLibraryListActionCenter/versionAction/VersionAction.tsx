@@ -35,7 +35,12 @@ export default function VersionAction(props: PropTypes) {
   }, [libraries, validateVersionActionState]);
 
   return (
-    <Tooltip data-testid="version-action-tooltip" title={tooltipMessage} arrow>
+    <Tooltip
+      data-testid="version-action-tooltip"
+      title={tooltipMessage}
+      placement="top"
+      arrow
+    >
       <span>
         <IconButton
           onClick={onClick}

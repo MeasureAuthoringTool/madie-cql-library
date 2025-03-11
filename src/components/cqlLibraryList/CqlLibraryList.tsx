@@ -34,6 +34,7 @@ import {
   Button,
   MadieDeleteDialog,
 } from "@madie/madie-design-system/dist/react";
+import { selectClasses } from "@mui/material";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -87,6 +88,7 @@ export default function CqlLibraryList({
   setCreateVersionDialog,
   createDraftDialog,
   setCreateDraftDialog,
+  setOwners,
   setSnackBar,
   snackBar,
 }) {
@@ -415,7 +417,21 @@ export default function CqlLibraryList({
 
   useEffect(() => {
     setSelectedLibraries(selectedLibraries);
-  }, [selectedLibraries?.length]);
+    const getAllOwners = async () => {
+      const getOwners = async () => {
+        if (selectedLibraries?.length > 0) {
+          return await cqlLibraryServiceApi.fetchAllOwners(
+            selectedLibraries?.map((lib) => lib.librarySetId)
+          );
+        }
+      };
+
+      const owners = await getOwners();
+      setOwners(owners);
+    };
+
+    getAllOwners();
+  }, [selectedLibraries?.length, setSelectedLibraries]);
 
   return (
     <div data-testid="cqlLibrary-list">

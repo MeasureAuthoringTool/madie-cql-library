@@ -49,6 +49,7 @@ function CqlLibraryLanding() {
     open: false,
     cqlLibrary: null,
   });
+  const [owners, setOwners] = useState([]);
   const [snackBar, setSnackBar] = useState({
     message: "",
     open: false,
@@ -230,6 +231,7 @@ function CqlLibraryLanding() {
                     setSelectedCqlLibrary={setSelectedCqlLibrary}
                     setCreateDraftDialog={setCreateDraftDialog}
                     createVersion={createVersion}
+                    owners={owners}
                   />
                 </div>
               )}
@@ -261,6 +263,7 @@ function CqlLibraryLanding() {
                 setCreateDraftDialog={setCreateDraftDialog}
                 snackBar={snackBar}
                 setSnackBar={setSnackBar}
+                setOwners={setOwners}
               />
             )}
           </div>
