@@ -50,6 +50,9 @@ import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
 import Search from "@mui/icons-material/Search";
 import useFormikResetOnEvent from "../common/useFormikResetOnEvent";
+import CreateVersionDialog from "../createVersionDialog/CreateVersionDialog";
+import { AxiosResponse } from "axios";
+import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -61,6 +64,10 @@ const EditCqlLibrary = () => {
   const { id } = useParams();
   const [loadedCqlLibrary, setLoadedCqlLibrary] = useState<CqlLibrary>(null);
   const [openDeleteDraftDialog, setOpenDeleteDraftDialog] =
+    useState<boolean>(false);
+  const [openCreateVersionDialog, setOpenCreateVersionDialog] =
+    useState<boolean>(false);
+  const [openCreateDraftDialog, setOpenCreateDraftDialog] =
     useState<boolean>(false);
 
   // on unmount forget library state.
@@ -77,6 +84,30 @@ const EditCqlLibrary = () => {
     window.addEventListener("delete-library", deleteListener, false);
     return () => {
       window.removeEventListener("delete-library", deleteListener, false);
+    };
+  }, []);
+
+  useEffect(() => {
+    const versionListener = () => {
+      setOpenCreateVersionDialog(true);
+    };
+    window.addEventListener("version-library", versionListener, {
+      passive: true,
+    });
+    return () => {
+      window.removeEventListener("version-library", versionListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const draftListener = () => {
+      setOpenCreateDraftDialog(true);
+    };
+    window.addEventListener("draft-library", draftListener, {
+      passive: true,
+    });
+    return () => {
+      window.removeEventListener("draft-library", draftListener);
     };
   }, []);
 
@@ -161,23 +192,98 @@ const EditCqlLibrary = () => {
   };
 
   const deleteDraftLibrary = async (id: string) => {
+    setActiveSpinner(true);
     cqlLibraryServiceApi
       .deleteDraft(id)
       .then(async () => {
-        handleToast("success", "The Draft CQL Library has been deleted.", true);
+        setSuccess({
+          status: "success",
+          primaryMessage: "The Draft CQL Library has been deleted.",
+          secondaryMessages: "",
+        });
         setTimeout(() => {
           history.push("/cql-libraries");
-        }, 3000);
+        }, 1000);
+        handleDialogClose();
       })
       .catch((error) => {
         if (error?.response?.data) {
           const errorData = error?.response?.data;
           const errorMessage = `${errorData?.status}: ${errorData?.error} ${errorData?.message}`;
-          handleToast("danger", errorMessage, true);
-          setOpenDeleteDraftDialog(false);
+          setErrorMessage(errorMessage);
         } else {
-          handleToast("danger", error.toString(), true);
-          setOpenDeleteDraftDialog(false);
+          setErrorMessage(error.toString());
+        }
+      });
+  };
+
+  const handleDialogClose = () => {
+    setOpenCreateVersionDialog(false);
+    setOpenDeleteDraftDialog(false);
+    setOpenCreateDraftDialog(false);
+    setActiveSpinner(false);
+  };
+
+  const createVersionLibrary = async (isMajor: boolean) => {
+    setActiveSpinner(true);
+    await cqlLibraryServiceApi
+      .createVersion(loadedCqlLibrary.id, isMajor)
+      .then((response: AxiosResponse<CqlLibrary>) => {
+        handleDialogClose();
+        setSuccess({
+          status: "success",
+          primaryMessage: "New version of CQL Library is Successfully created.",
+          secondaryMessages: "",
+        });
+        cqlLibraryStore.updateLibrary(response?.data);
+        resetForm({
+          values: { ...response?.data },
+        });
+        setLoadedCqlLibrary(response?.data);
+      })
+      .catch((error) => {
+        if (error?.response?.data) {
+          const errorData = error?.response?.data;
+          const errorMessage = `${errorData?.status}: ${errorData?.error} ${errorData?.message}`;
+          setErrorMessage(errorMessage);
+        } else {
+          setErrorMessage(error.toString());
+        }
+      });
+  };
+
+  const createDraftLibrary = async (cqlLibrary: CqlLibrary, model: string) => {
+    setActiveSpinner(true);
+    await cqlLibraryServiceApi
+      .createDraft(cqlLibrary.id, cqlLibrary.cqlLibraryName, model)
+      .then((response: AxiosResponse<CqlLibrary>) => {
+        handleDialogClose();
+        setSuccess({
+          status: "success",
+          primaryMessage: "New Draft of CQL Library is Successfully created",
+          secondaryMessages: "",
+        });
+        cqlLibraryStore.updateLibrary(response?.data);
+        resetForm({
+          values: { ...response?.data },
+        });
+        setLoadedCqlLibrary(response?.data);
+        setTimeout(() => {
+          history.push(`/cql-libraries/${response.data.id}/edit/details`);
+        }, 1000);
+      })
+      .catch((error) => {
+        const errorData = error?.response?.data;
+        if (errorData?.status == 400) {
+          let message = "Requested Cql Library cannot be drafted.";
+          if (error?.response?.data?.message) {
+            message = `${message} ${error.response.data.message}`;
+          }
+          setErrorMessage(message);
+        } else if (errorData?.status == 403) {
+          setErrorMessage("User is unauthorized to create a draft");
+        } else {
+          setErrorMessage(errorData?.message);
         }
       });
   };
@@ -409,273 +515,316 @@ const EditCqlLibrary = () => {
     window.dispatchEvent(event);
   };
   return (
-    <form
-      id="edit-library-page"
-      data-testId="edit-library-form"
-      onSubmit={formik.handleSubmit}
-    >
-      <StatusHandler
-        error={error}
-        errorMessage={errorMessage}
-        success={success}
-        outboundAnnotations={outboundAnnotations}
-      />
-      <div
-        className="allotment-wrapper"
-        data-testid="cql-library-editor-component"
-      >
-        <Allotment>
-          <Allotment.Pane>
-            <div className="left-panel" tw="flex-grow">
-              <IconButton
-                data-testid="editor-search-button"
-                aria-label="search button"
-                style={{
-                  color: "#0073c8",
-                }}
-                onClick={toggleSearch}
-              >
-                <Search />
-              </IconButton>
-              <CqlLibraryEditor
-                value={formik.values.cql}
-                onChange={onChange}
-                readOnly={!formik.values.draft || !canEdit}
-                valuesetSuccess={valuesetSuccess}
-                valuesetMsg={valuesetMsg}
-                inboundAnnotations={elmAnnotations}
-                setOutboundAnnotations={setOutboundAnnotations}
-              />
-            </div>
-          </Allotment.Pane>
-          <Allotment.Pane>
-            <div className="right-panel">
-              <NavTabs
-                activeTab={activeTab}
-                handleTabChange={handleTabChange}
-              />
-              <div style={{ height: "calc(100% - 48px)", overflowY: "auto" }}>
-                <div
-                  style={{
-                    paddingTop: 10,
-                    display: "flex",
-                    flexDirection: "row",
-                    justifyContent: "flex-end",
-                  }}
-                >
-                  <Typography
+    <div>
+      {activeSpinner ? (
+        <div data-testid="loading">
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <MadieSpinner style={{ height: 50, width: 50 }} />
+          </div>
+        </div>
+      ) : (
+        <form
+          id="edit-library-page"
+          data-testId="edit-library-form"
+          onSubmit={formik.handleSubmit}
+        >
+          <StatusHandler
+            error={error}
+            errorMessage={errorMessage}
+            success={success}
+            outboundAnnotations={outboundAnnotations}
+          />
+          <div
+            className="allotment-wrapper"
+            data-testid="cql-library-editor-component"
+          >
+            <Allotment>
+              <Allotment.Pane>
+                <div className="left-panel" tw="flex-grow">
+                  <IconButton
+                    data-testid="editor-search-button"
+                    aria-label="search button"
                     style={{
-                      fontSize: 14,
-                      fontWeight: 300,
-                      fontFamily: "Rubik",
-                      marginRight: 32,
+                      color: "#0073c8",
                     }}
+                    onClick={toggleSearch}
                   >
-                    <span
+                    <Search />
+                  </IconButton>
+                  <CqlLibraryEditor
+                    value={formik.values.cql}
+                    onChange={onChange}
+                    readOnly={!formik.values.draft || !canEdit}
+                    valuesetSuccess={valuesetSuccess}
+                    valuesetMsg={valuesetMsg}
+                    inboundAnnotations={elmAnnotations}
+                    setOutboundAnnotations={setOutboundAnnotations}
+                  />
+                </div>
+              </Allotment.Pane>
+              <Allotment.Pane>
+                <div className="right-panel">
+                  <NavTabs
+                    activeTab={activeTab}
+                    handleTabChange={handleTabChange}
+                  />
+                  <div
+                    style={{ height: "calc(100% - 48px)", overflowY: "auto" }}
+                  >
+                    <div
                       style={{
-                        color: "rgb(174, 28, 28)",
-                        marginRight: 3,
-                        fontWeight: 400,
+                        paddingTop: 10,
+                        display: "flex",
+                        flexDirection: "row",
+                        justifyContent: "flex-end",
                       }}
                     >
-                      *
-                    </span>
-                    Indicates required field
-                  </Typography>
-                </div>
-                <div className="inner-right">
-                  {activeTab === "details" && (
-                    <div id="details-tab" data-test-id="details-tab">
-                      {/* These are loaded in first instance and then removed why ? */}
-                      {!formik.values.draft && (
-                        <div className="form-row">
-                          <MadieAlert
-                            type="info"
-                            content={
-                              <p>
-                                CQL Library is not a draft. Only drafts can be
-                                edited.
-                              </p>
-                            }
-                            canClose={false}
-                          />
-                        </div>
-                      )}
-                      {!canEdit && (
-                        <div className="form-row">
-                          <MadieAlert
-                            type="info"
-                            content={
-                              <p>
-                                You are not the owner of the CQL Library. Only
-                                owner can edit it.
-                              </p>
-                            }
-                            canClose={false}
-                          />
-                        </div>
-                      )}
-
-                      <div className="form-row">
-                        <TextField
-                          label="CQL Library Name"
-                          required
-                          id="cqlLibraryName"
-                          data-testid="cql-library-name-text-field"
-                          disabled={!formik.values.draft || !canEdit}
-                          inputProps={{
-                            id: "cql-library-name-text-field-input",
-                            "data-testid": "cql-library-name-text-field-input",
-                            "aria-required": true,
-                            required: true,
+                      <Typography
+                        style={{
+                          fontSize: 14,
+                          fontWeight: 300,
+                          fontFamily: "Rubik",
+                          marginRight: 32,
+                        }}
+                      >
+                        <span
+                          style={{
+                            color: "rgb(174, 28, 28)",
+                            marginRight: 3,
+                            fontWeight: 400,
                           }}
-                          error={
-                            formik.touched.cqlLibraryName &&
-                            Boolean(formik.errors.cqlLibraryName)
-                          }
-                          {...formik.getFieldProps("cqlLibraryName")}
-                          helperText={formikErrorHandler(
-                            "cqlLibraryName",
-                            true
-                          )}
-                          placeholder="Enter a Cql Library Name"
-                        />
-                      </div>
-
-                      <div className="form-row">
-                        <TextArea
-                          label="Description"
-                          disabled={!formik.values.draft || !canEdit}
-                          required
-                          name="cql-library-description"
-                          id="cql-library-description"
-                          onChange={formik.handleChange}
-                          value={formik.values.description}
-                          placeholder="Description"
-                          data-testid={"cql-library-description"}
-                          {...formik.getFieldProps("description")}
-                          error={
-                            formik.touched.description &&
-                            Boolean(formik.errors.description)
-                          }
-                          helperText={formikErrorHandler("description", true)}
-                        />
-                      </div>
-
-                      <div className="form-row">
-                        <AutoComplete
-                          id="publisher"
-                          dataTestId="publisher"
-                          label="Publisher"
-                          placeholder="-"
-                          required={true}
-                          disabled={!formik.values.draft || !canEdit}
-                          error={
-                            formik.touched.publisher && formik.errors.publisher
-                          }
-                          helperText={
-                            formik.touched.publisher && formik.errors.publisher
-                          }
-                          options={organizations}
-                          {...formik.getFieldProps("publisher")}
-                          onChange={formik.setFieldValue}
-                        />
-                      </div>
-
-                      <div className="form-row">
-                        <FormControlLabel
-                          sx={{
-                            "& .MuiFormControlLabel-label": {
-                              fontSize: 16,
-                              fontWeight: 300,
-                            },
-                          }}
-                          control={
-                            <Checkbox
-                              id="experimental"
-                              data-testid="cql-library-experimental-checkbox"
-                              sx={{ "& .MuiSvgIcon-root": { fontSize: 28 } }}
-                              disabled={!formik.values.draft || !canEdit}
-                              {...formik.getFieldProps("experimental")}
-                              checked={formik.values.experimental}
-                              onChange={(event: any) => {
-                                formik.setFieldValue(
-                                  "experimental",
-                                  event.target.checked
-                                );
-                              }}
-                            />
-                          }
-                          label="Experimental"
-                        />
-                      </div>
+                        >
+                          *
+                        </span>
+                        Indicates required field
+                      </Typography>
                     </div>
-                  )}
+                    <div className="inner-right">
+                      {activeTab === "details" && (
+                        <div id="details-tab" data-test-id="details-tab">
+                          {/* These are loaded in first instance and then removed why ? */}
+                          {!formik.values.draft && (
+                            <div className="form-row">
+                              <MadieAlert
+                                type="info"
+                                content={
+                                  <p>
+                                    CQL Library is not a draft. Only drafts can
+                                    be edited.
+                                  </p>
+                                }
+                                canClose={false}
+                              />
+                            </div>
+                          )}
+                          {!canEdit && (
+                            <div className="form-row">
+                              <MadieAlert
+                                type="info"
+                                content={
+                                  <p>
+                                    You are not the owner of the CQL Library.
+                                    Only owner can edit it.
+                                  </p>
+                                }
+                                canClose={false}
+                              />
+                            </div>
+                          )}
+
+                          <div className="form-row">
+                            <TextField
+                              label="CQL Library Name"
+                              required
+                              id="cqlLibraryName"
+                              data-testid="cql-library-name-text-field"
+                              disabled={!formik.values.draft || !canEdit}
+                              inputProps={{
+                                id: "cql-library-name-text-field-input",
+                                "data-testid":
+                                  "cql-library-name-text-field-input",
+                                "aria-required": true,
+                                required: true,
+                              }}
+                              error={
+                                formik.touched.cqlLibraryName &&
+                                Boolean(formik.errors.cqlLibraryName)
+                              }
+                              {...formik.getFieldProps("cqlLibraryName")}
+                              helperText={formikErrorHandler(
+                                "cqlLibraryName",
+                                true
+                              )}
+                              placeholder="Enter a Cql Library Name"
+                            />
+                          </div>
+
+                          <div className="form-row">
+                            <TextArea
+                              label="Description"
+                              disabled={!formik.values.draft || !canEdit}
+                              required
+                              name="cql-library-description"
+                              id="cql-library-description"
+                              onChange={formik.handleChange}
+                              value={formik.values.description}
+                              placeholder="Description"
+                              data-testid={"cql-library-description"}
+                              {...formik.getFieldProps("description")}
+                              error={
+                                formik.touched.description &&
+                                Boolean(formik.errors.description)
+                              }
+                              helperText={formikErrorHandler(
+                                "description",
+                                true
+                              )}
+                            />
+                          </div>
+
+                          <div className="form-row">
+                            <AutoComplete
+                              id="publisher"
+                              dataTestId="publisher"
+                              label="Publisher"
+                              placeholder="-"
+                              required={true}
+                              disabled={!formik.values.draft || !canEdit}
+                              error={
+                                formik.touched.publisher &&
+                                formik.errors.publisher
+                              }
+                              helperText={
+                                formik.touched.publisher &&
+                                formik.errors.publisher
+                              }
+                              options={organizations}
+                              {...formik.getFieldProps("publisher")}
+                              onChange={formik.setFieldValue}
+                            />
+                          </div>
+
+                          <div className="form-row">
+                            <FormControlLabel
+                              sx={{
+                                "& .MuiFormControlLabel-label": {
+                                  fontSize: 16,
+                                  fontWeight: 300,
+                                },
+                              }}
+                              control={
+                                <Checkbox
+                                  id="experimental"
+                                  data-testid="cql-library-experimental-checkbox"
+                                  sx={{
+                                    "& .MuiSvgIcon-root": { fontSize: 28 },
+                                  }}
+                                  disabled={!formik.values.draft || !canEdit}
+                                  {...formik.getFieldProps("experimental")}
+                                  checked={formik.values.experimental}
+                                  onChange={(event: any) => {
+                                    formik.setFieldValue(
+                                      "experimental",
+                                      event.target.checked
+                                    );
+                                  }}
+                                />
+                              }
+                              label="Experimental"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </Allotment.Pane>
-        </Allotment>
-        {/* </div> */}
-      </div>
-      <div id="sticky-footer">
-        <Button
-          variant="outline"
-          tw="mx-2"
-          disabled={!formik.dirty}
-          data-testid="cql-library-cancel-button"
-          onClick={(e) => {
-            e.preventDefault();
-            setDiscardDialogOpen(true);
-          }}
-        >
-          Discard Changes
-        </Button>
-        <Button
-          tw="!mt-0 mx-2"
-          data-testid="cql-library-save-button"
-          role="button"
-          variant="cyan"
-          type="submit"
-          disabled={
-            !(formik.isValid && formik.dirty) ||
-            (!!id &&
-              (_.isNil(loadedCqlLibrary) || _.isNil(loadedCqlLibrary.id))) ||
-            !formik.values.draft
-          }
-        >
-          Save
-        </Button>
-      </div>
-      <Toast
-        toastKey="library-cql-editor-toast"
-        toastType={toastType}
-        testId={
-          toastType === "danger"
-            ? "edit-library-cql-generic-error-text"
-            : "edit-library-cql-success-text"
-        }
-        open={toastOpen}
-        message={toastMessage}
-        onClose={onToastClose}
-        autoHideDuration={6000}
-      />
-      <MadieDiscardDialog
-        open={discardDialogOpen}
-        onClose={() => setDiscardDialogOpen(false)}
-        onContinue={async () => {
-          await resetForm();
-          history.push("/cql-libraries");
-        }}
-      />
-      <MadieDeleteDialog
-        open={openDeleteDraftDialog}
-        dialogTitle={`Delete draft of ${loadedCqlLibrary?.cqlLibraryName}?`}
-        name={`draft of ${loadedCqlLibrary?.cqlLibraryName}`}
-        onClose={() => setOpenDeleteDraftDialog(false)}
-        onContinue={() => deleteDraftLibrary(loadedCqlLibrary?.id)}
-      />
-    </form>
+              </Allotment.Pane>
+            </Allotment>
+            {/* </div> */}
+          </div>
+          <div id="sticky-footer">
+            <Button
+              variant="outline"
+              tw="mx-2"
+              disabled={!formik.dirty}
+              data-testid="cql-library-cancel-button"
+              onClick={(e) => {
+                e.preventDefault();
+                setDiscardDialogOpen(true);
+              }}
+            >
+              Discard Changes
+            </Button>
+            <Button
+              tw="!mt-0 mx-2"
+              data-testid="cql-library-save-button"
+              role="button"
+              variant="cyan"
+              type="submit"
+              disabled={
+                !(formik.isValid && formik.dirty) ||
+                (!!id &&
+                  (_.isNil(loadedCqlLibrary) ||
+                    _.isNil(loadedCqlLibrary.id))) ||
+                !formik.values.draft
+              }
+            >
+              Save
+            </Button>
+          </div>
+          <Toast
+            toastKey="library-cql-editor-toast"
+            toastType={toastType}
+            testId={
+              toastType === "danger"
+                ? "edit-library-cql-generic-error-text"
+                : "edit-library-cql-success-text"
+            }
+            open={toastOpen}
+            message={toastMessage}
+            onClose={onToastClose}
+            autoHideDuration={6000}
+          />
+          <MadieDiscardDialog
+            open={discardDialogOpen}
+            onClose={() => setDiscardDialogOpen(false)}
+            onContinue={async () => {
+              await resetForm();
+              history.push("/cql-libraries");
+            }}
+          />
+          <MadieDeleteDialog
+            open={openDeleteDraftDialog}
+            dialogTitle={`Delete draft of ${loadedCqlLibrary?.cqlLibraryName}?`}
+            name={`draft of ${loadedCqlLibrary?.cqlLibraryName}`}
+            onClose={handleDialogClose}
+            onContinue={() => deleteDraftLibrary(loadedCqlLibrary?.id)}
+          />
+          <CreateVersionDialog
+            open={openCreateVersionDialog}
+            onClose={handleDialogClose}
+            onSubmit={createVersionLibrary}
+            cqlLibraryError={null}
+            isCqlPresent={
+              loadedCqlLibrary && loadedCqlLibrary.cql?.trim().length > 0
+            }
+          />
+          <CreateDraftDialog
+            open={openCreateDraftDialog}
+            onClose={handleDialogClose}
+            onSubmit={createDraftLibrary}
+            cqlLibrary={loadedCqlLibrary}
+          />
+        </form>
+      )}
+    </div>
   );
 };
 
