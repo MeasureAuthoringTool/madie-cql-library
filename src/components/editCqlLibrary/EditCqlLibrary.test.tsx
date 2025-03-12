@@ -1173,4 +1173,69 @@ describe("Edit Cql Library Component", () => {
     );
     expect(mockedAxios.put.mock.lastCall[1]).toBeTruthy();
   });
+
+  it("should update an existing cql library with the updated cql library name, version and warn about blank using", async () => {
+    (synchingEditorCqlContent as jest.Mock)
+      .mockClear()
+      .mockImplementation(() => {
+        return {
+          cql:
+            "library RemoveConceptTest version '0.0.000'\n" +
+            "\n" +
+            "using QICore version '4.1.1'\n",
+          isLibraryStatementChanged: false,
+          isUsingStatementChanged: false,
+          isValueSetChanged: false,
+          isConceptRemoved: true,
+        };
+      });
+    isUsingEmpty.mockClear().mockImplementation(() => false);
+    mockedAxios.put.mockResolvedValue({
+      data: {
+        ...cqlLibrary,
+        cql: synchingEditorCqlContent,
+      },
+    });
+    renderWithRouter("/cql-libraries/:id/edit", [
+      "/cql-libraries/cql-lib-1234/edit",
+    ]);
+
+    expect(mockedAxios.get).toHaveBeenCalled();
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Save",
+      })
+    ).toBeInTheDocument();
+
+    const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
+    expect(input).toHaveValue("");
+
+    fireEvent.change(screen.getByTestId("cql-library-editor"), {
+      target: {
+        value:
+          "library RemoveConceptTest version '0.0.000'\n" +
+          "\n" +
+          "using QICore version '4.1.1'\n" +
+          "\n" +
+          'concept "Type B Hepatitis": { "Hepatitis Type B (SNOMED)", "Hepatitis Type B (ICD-10)" } display \'Type B Hepatitis\'\n',
+      },
+    });
+
+    const updateButton = screen.getByRole("button", {
+      name: "Save",
+    });
+    expect(updateButton).not.toBeDisabled();
+    userEvent.click(updateButton);
+    await waitFor(() => {
+      const successMessage = screen.getByTestId("generic-success-text-header");
+      expect(successMessage.textContent).toEqual(
+        "CQL updated successfully but the following issues were found"
+      );
+    });
+    const warningMessage = screen.getByTestId("library-warning");
+    expect(warningMessage.textContent).toEqual(
+      "Concept Constructs are not supported in MADiE. It has been removed."
+    );
+  });
 });
