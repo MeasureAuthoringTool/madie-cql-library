@@ -26,7 +26,6 @@ const CreateDraftDialog = ({
   cqlLibrary,
 }: CreateDraftDialogProps) => {
   let modelOptions = Object.keys(Model);
-  const featureFlags = useFeatureFlags();
 
   const formik = useFormik({
     initialValues: {
