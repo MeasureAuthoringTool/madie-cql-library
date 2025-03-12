@@ -23,6 +23,7 @@ import { check } from "prettier";
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
     getAccessToken: () => "test.jwt",
+    getUserName: () => "test user",
   }),
   checkUserCanEdit: jest.fn(() => {
     return true;
@@ -86,6 +87,7 @@ const useCqlLibraryServiceMockResolved = {
   createDraft: jest.fn().mockResolvedValue({}),
   deleteDraft: jest.fn().mockResolvedValue({}),
   fetchCqlLibrary: jest.fn().mockResolvedValue({}),
+  fetchAllOwners: jest.fn().mockResolvedValue(["owner1", "owner2"]),
 } as unknown as CqlLibraryServiceApi;
 
 describe("CqlLibrary List component", () => {
@@ -129,6 +131,7 @@ describe("CqlLibrary List component", () => {
         setCreateDraftDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
       />
     );
     cqlLibrary.forEach((c) => {
@@ -202,6 +205,7 @@ describe("CqlLibrary List component", () => {
         setCreateDraftDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
       />
     );
 
@@ -251,6 +255,7 @@ describe("CqlLibrary List component", () => {
         setCreateDraftDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
       />
     );
 
@@ -321,6 +326,7 @@ describe("CqlLibrary List component", () => {
         setCreateDraftDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
       />
     );
 
@@ -367,6 +373,7 @@ describe("CqlLibrary List component", () => {
         setCreateDraftDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
       />
     );
 
@@ -417,6 +424,7 @@ describe("CqlLibrary List component", () => {
         setCreateDraftDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
       />
     );
     expect(

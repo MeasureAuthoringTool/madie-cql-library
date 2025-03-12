@@ -31,6 +31,7 @@ jest.mock("@madie/madie-util", () => ({
   useDocumentTitle: jest.fn(),
   useOktaTokens: () => ({
     getAccessToken: () => "test.jwt",
+    getUserName: () => "test user",
   }),
   checkUserCanEdit: jest.fn(() => {
     return true;
@@ -84,6 +85,7 @@ jest.mock("../../api/useCqlLibraryServiceApi", () =>
 const mockCqlLibraryServiceApi = {
   fetchCqlLibraries: jest.fn().mockResolvedValue(cqlLibrary),
   fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
+  fetchAllOwners: jest.fn().mockResolvedValue(["owner1", "owner2"]),
   deleteDraft: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
 

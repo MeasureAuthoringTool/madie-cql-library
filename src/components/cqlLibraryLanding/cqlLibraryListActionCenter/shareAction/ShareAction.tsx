@@ -28,7 +28,7 @@ export default function ShareAction(props: PropTypes) {
 
   const validateShareActionState = useCallback(() => {
     setDisableShareBtn(true);
-    if (libraries?.length === 0) {
+    if (libraries?.length === 0 || props.owners?.length === 0) {
       setTooltipMessage(NOTHING_SELECTED);
     } else if (
       props.owners?.length > 1 ||

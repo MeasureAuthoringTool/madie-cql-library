@@ -35,12 +35,19 @@ const qiCoreMeasure = {
 
 describe("ShareAction", () => {
   it("Should disable share action btn if no measure selected", () => {
-    render(<ShareAction measures={[]} onClick={() => {}} canEdit={true} />);
-    expect(screen.getByTestId("share-action-btn")).toBeDisabled();
+    render(
+      <ShareAction
+        measures={[]}
+        onClick={() => {}}
+        canEdit={true}
+        owners={[]}
+      />
+    );
     expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
       "aria-label",
       NOTHING_SELECTED
     );
+    expect(screen.getByTestId("share-action-btn")).toBeDisabled();
   });
 
   it("Should disable share action btn if user selects one measure but canEdit is false", () => {
@@ -49,6 +56,7 @@ describe("ShareAction", () => {
         measures={[qiCoreMeasure]}
         onClick={() => {}}
         canEdit={false}
+        owners={["bad user1"]}
       />
     );
     expect(screen.getByTestId("share-action-btn")).toBeDisabled();
