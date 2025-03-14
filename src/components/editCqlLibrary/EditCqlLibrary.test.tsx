@@ -1279,7 +1279,10 @@ describe("Edit Cql Library Component", () => {
     mockedAxios.put.mockResolvedValue({
       data: {
         ...cqlLibrary,
-        cql: synchingEditorCqlContent,
+        cql:
+          "library RemoveConceptTest version '0.0.000'\n" +
+          "\n" +
+          "using QICore version '4.1.1'\n",
       },
     });
     renderWithRouter("/cql-libraries/:id/edit", [

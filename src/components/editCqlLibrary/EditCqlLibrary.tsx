@@ -817,7 +817,9 @@ const EditCqlLibrary = () => {
             onClose={handleDialogClose}
             onSubmit={createVersionLibrary}
             cqlLibraryError={null}
-            isCqlPresent={loadedCqlLibrary && loadedCqlLibrary.cql?.length > 0}
+            isCqlPresent={
+              loadedCqlLibrary && loadedCqlLibrary.cql?.trim().length > 0
+            }
           />
           <CreateDraftDialog
             open={openCreateDraftDialog}
