@@ -34,7 +34,6 @@ import {
   Button,
   MadieDeleteDialog,
 } from "@madie/madie-design-system/dist/react";
-import { selectClasses } from "@mui/material";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
