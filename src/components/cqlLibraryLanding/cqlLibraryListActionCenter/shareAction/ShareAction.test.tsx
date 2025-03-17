@@ -1,0 +1,132 @@
+import * as React from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { Measure, MeasureSet, Model } from "@madie/madie-models";
+import ShareAction, {
+  INVALID_SHARE_MEASURE,
+  NOTHING_SELECTED,
+  VALID_SHARE_MEASURE,
+} from "./ShareAction";
+
+const mockUser = "test user";
+jest.mock("@madie/madie-util", () => ({
+  useOktaTokens: () => ({
+    getUserName: () => mockUser,
+  }),
+}));
+
+const mockMeasureSet = {
+  cmsId: "124",
+  measureSetId: "1-2-3-4",
+  owner: mockUser,
+} as unknown as MeasureSet;
+
+const qdmMeasure = {
+  model: Model.QDM_5_6,
+  measureSet: mockMeasureSet,
+  measureSetId: "1-2-3-4",
+} as Measure;
+
+const qiCoreMeasure = {
+  model: Model.QICORE,
+  measureSet: { ...mockMeasureSet, cmsId: null },
+  measureSetId: "1-2-3-4",
+  measureMetaData: { draft: true },
+} as unknown as Measure;
+
+describe("ShareAction", () => {
+  it("Should disable share action btn if no measure selected", () => {
+    render(
+      <ShareAction
+        measures={[]}
+        onClick={() => {}}
+        canEdit={true}
+        owners={[]}
+      />
+    );
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      NOTHING_SELECTED
+    );
+    expect(screen.getByTestId("share-action-btn")).toBeDisabled();
+  });
+
+  it("Should disable share action btn if user selects one measure but canEdit is false", () => {
+    render(
+      <ShareAction
+        measures={[qiCoreMeasure]}
+        onClick={() => {}}
+        canEdit={false}
+        owners={["bad user1"]}
+      />
+    );
+    expect(screen.getByTestId("share-action-btn")).toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      INVALID_SHARE_MEASURE
+    );
+  });
+
+  it("Should enable share action btn if user selects one measure and canEdit is true", () => {
+    render(
+      <ShareAction
+        measures={[qiCoreMeasure]}
+        onClick={() => {}}
+        canEdit={true}
+      />
+    );
+    expect(screen.getByTestId("share-action-btn")).not.toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      VALID_SHARE_MEASURE
+    );
+  });
+
+  it("Should enable share action btn if user selects two measures and canEdit is true", () => {
+    const measure2 = { ...qiCoreMeasure, model: Model.QDM_5_6 };
+    render(
+      <ShareAction
+        measures={[qdmMeasure, measure2]}
+        onClick={() => {}}
+        canEdit={true}
+      />
+    );
+    expect(screen.getByTestId("share-action-btn")).not.toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      VALID_SHARE_MEASURE
+    );
+  });
+
+  it("Should display menu items when the share action btn is clicked and call associated onClick method when menu item is clicked", () => {
+    const onClick = jest.fn();
+    render(
+      <ShareAction
+        measures={[qiCoreMeasure]}
+        onClick={onClick}
+        canEdit={true}
+      />
+    );
+    const shareButton = screen.getByTestId("share-action-btn");
+
+    expect(shareButton).not.toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      VALID_SHARE_MEASURE
+    );
+
+    fireEvent.click(shareButton);
+
+    const shareWithMenuItem = screen.getByTestId("Share With-option");
+    const unsharehMenuItem = screen.getByTestId("Unshare-option");
+
+    expect(shareWithMenuItem).toBeInTheDocument();
+    expect(unsharehMenuItem).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Share With" }));
+    expect(onClick).toHaveBeenCalledWith("Share With");
+
+    fireEvent.click(shareButton);
+    fireEvent.click(screen.getByRole("menuitem", { name: "Unshare" }));
+    expect(onClick).toHaveBeenCalledWith("Unshare");
+  });
+});

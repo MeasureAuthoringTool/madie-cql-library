@@ -33,7 +33,12 @@ export default function DeleteAction(props: PropTypes) {
   }, [libraries, validateDeleteActionState]);
 
   return (
-    <Tooltip data-testid="delete-action-tooltip" title={tooltipMessage} arrow>
+    <Tooltip
+      data-testid="delete-action-tooltip"
+      title={tooltipMessage}
+      placement="top"
+      arrow
+    >
       <span>
         <IconButton
           onClick={() => props.onClick()}

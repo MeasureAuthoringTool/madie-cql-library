@@ -107,6 +107,28 @@ export class CqlLibraryServiceApi {
       },
     });
   }
+
+  async fetchAllOwners(librarySetIds: string[]): Promise<any> {
+    const idsParam = librarySetIds.join(",");
+    try {
+      const response = await axios.get<any>(
+        `${this.baseUrl}/cql-libraries/getAllOwners`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+          params: {
+            librarySetIds: idsParam,
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      const message = `Unable to fetch library owners`;
+      console.error(message, err);
+      throw new Error(message);
+    }
+  }
 }
 
 export default function useCqlLibraryServiceApi() {
