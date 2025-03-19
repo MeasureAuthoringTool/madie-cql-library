@@ -39,7 +39,7 @@ export default function ShareAction(props: PropTypes) {
       setTooltipMessage(VALID_SHARE_LIBRARY);
       setDisableShareBtn(false);
     }
-  }, [libraries, canEdit]);
+  }, [libraries, canEdit, props.owners]);
 
   useEffect(() => {
     validateShareActionState();
