@@ -128,15 +128,6 @@ jest.mock("../../api/useCqlLibraryServiceApi", () =>
   jest.fn(() => mockCqlLibraryServiceApi)
 );
 
-// mocking useHistory
-const mockPush = jest.fn();
-jest.mock("react-router-dom", () => ({
-  useHistory: () => {
-    const push = () => mockPush("/example");
-    return { push };
-  },
-}));
-
 describe("Cql Library Page", () => {
   let mockNavigate: jest.Mock;
   beforeEach(() => {
