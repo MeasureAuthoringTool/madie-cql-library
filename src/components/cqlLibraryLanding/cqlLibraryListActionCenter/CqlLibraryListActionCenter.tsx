@@ -1,5 +1,4 @@
-import React, { useEffect } from "react";
-import { Button, Grid } from "@material-ui/core";
+import React from "react";
 import DeleteAction from "./deleteAction/DeleteAction";
 import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";
@@ -12,6 +11,7 @@ import {
   useFeatureFlags,
   useOktaTokens,
 } from "@madie/madie-util";
+import { checkUserCanDelete, checkUserCanEdit } from "@madie/madie-util";
 
 interface PropTypes {
   libraries: CqlLibrary[];
@@ -57,7 +57,6 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     });
   }
 
-  useEffect(() => {}, []);
   return (
     <div data-testid="action-center">
       <DeleteAction

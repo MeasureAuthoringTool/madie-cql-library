@@ -1,11 +1,5 @@
 import * as React from "react";
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CqlLibraryList from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
@@ -17,8 +11,6 @@ import {
   checkUserCanDelete,
   useFeatureFlags,
 } from "@madie/madie-util";
-import { AxiosError, AxiosResponse } from "axios";
-import { check } from "prettier";
 
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
@@ -32,14 +24,6 @@ jest.mock("@madie/madie-util", () => ({
     return true;
   }),
   useFeatureFlags: jest.fn().mockReturnValue({}),
-}));
-
-const mockPush = jest.fn();
-jest.mock("react-router-dom", () => ({
-  useHistory: () => {
-    const push = (path: string) => mockPush(path);
-    return { push };
-  },
 }));
 
 const cqlLibrary: CqlLibrary[] = [
@@ -79,8 +63,15 @@ const loadCqlLibraries = jest.fn();
 
 // Mocking the service calls to create Draft and version
 jest.mock("../../api/useCqlLibraryServiceApi");
+const mockLocation = jest.fn();
+const mockPush = jest.fn();
 const useCqlLibraryServiceMock =
   useCqlLibraryServiceApi as jest.Mock<CqlLibraryServiceApi>;
+jest.mock("react-router-dom", () => ({
+  ...(jest.requireActual("react-router-dom") as any),
+  useNavigate: () => mockPush,
+  useLocation: () => mockLocation,
+}));
 
 const useCqlLibraryServiceMockResolved = {
   createVersion: jest.fn().mockResolvedValue({}),

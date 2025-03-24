@@ -1,9 +1,25 @@
 import "@testing-library/jest-dom";
-import { cleanup, render, waitFor } from "@testing-library/react";
-import { MemoryRouter } from "react-router";
+import { cleanup, render, waitFor, screen } from "@testing-library/react";
 import * as React from "react";
-import CqlLibraryRoutes from "./CqlLibraryRoutes";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
+import { routesConfig } from "./CqlLibraryRoutes";
 
+const { getByTestId } = screen;
+const serviceConfig: ServiceConfig = {
+  measureService: {
+    baseUrl: "base.url",
+  },
+  elmTranslationService: {
+    baseUrl: "",
+  },
+  cqlLibraryService: {
+    baseUrl: "",
+  },
+  terminologyService: {
+    baseUrl: "",
+  },
+};
 jest.mock("../cqlLibraryLanding/CqlLibraryLanding", () => () => (
   <div data-testid="cql-library-landing-mocked" />
 ));
@@ -12,44 +28,32 @@ jest.mock("../editCqlLibrary/EditCqlLibrary", () => () => (
   <div data-testid="edit-cql-library-mocked" />
 ));
 
-jest.mock("../createNewLibrary/CreateNewLibrary", () => () => (
-  <div data-testid="create-cql-library-mocked" />
-));
-
 beforeEach(cleanup);
+
+const renderWithRouter = (
+  initialEntries = [{ pathname: "/cql-libraries/cql-lib-1234/edit/details" }]
+) => {
+  const router = createMemoryRouter(routesConfig, {
+    initialEntries,
+  });
+
+  render(
+    <ApiContextProvider value={serviceConfig}>
+      <RouterProvider router={router} />
+    </ApiContextProvider>
+  );
+};
 
 describe("CqlLibraryRoutes Component", () => {
   it("should redirect to Cql Landing component", async () => {
-    const { getByTestId } = render(
-      <MemoryRouter initialEntries={["/cql-libraries"]}>
-        <CqlLibraryRoutes />
-      </MemoryRouter>
-    );
-
+    renderWithRouter([{ pathname: "/cql-libraries" }]);
     await waitFor(() => {
       expect(getByTestId("cql-library-landing-mocked")).toBeInTheDocument();
     });
   });
 
-  it("should redirect to create new cql library component", async () => {
-    const { getByTestId } = render(
-      <MemoryRouter initialEntries={["/cql-libraries/create"]}>
-        <CqlLibraryRoutes />
-      </MemoryRouter>
-    );
-
-    await waitFor(() => {
-      expect(getByTestId("create-cql-library-mocked")).toBeInTheDocument();
-    });
-  });
-
   it("should redirect to create edit cql library component", async () => {
-    const { getByTestId } = render(
-      <MemoryRouter initialEntries={["/cql-libraries/lib1234/edit/details"]}>
-        <CqlLibraryRoutes />
-      </MemoryRouter>
-    );
-
+    renderWithRouter([{ pathname: "/cql-libraries/lib1234/edit/details" }]);
     await waitFor(() => {
       expect(getByTestId("edit-cql-library-mocked")).toBeInTheDocument();
     });
