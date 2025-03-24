@@ -117,6 +117,7 @@ const mockCqlLibraryServiceApi = {
   fetchCqlLibraries: jest.fn().mockResolvedValue({ mockPageableVal }),
   fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
   deleteDraft: jest.fn().mockResolvedValue({ data: "test" }),
+  fetchAllOwners: jest.fn().mockResolvedValue(["owner1", "owner2"]),
 } as unknown as CqlLibraryServiceApi;
 
 jest.mock("react-router-dom", () => ({
@@ -126,13 +127,6 @@ jest.mock("react-router-dom", () => ({
 jest.mock("../../api/useCqlLibraryServiceApi", () =>
   jest.fn(() => mockCqlLibraryServiceApi)
 );
-
-const mockCqlLibraryServiceApi = {
-  fetchCqlLibraries: jest.fn().mockResolvedValue(cqlLibrary),
-  fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
-  fetchAllOwners: jest.fn().mockResolvedValue(["owner1", "owner2"]),
-  deleteDraft: jest.fn().mockResolvedValue({}),
-} as unknown as CqlLibraryServiceApi;
 
 // mocking useHistory
 const mockPush = jest.fn();

@@ -146,25 +146,24 @@ const cqlToElmExternalErrors: ElmTranslationExternalError[] = [
   },
 ];
 
+jest.mock("../../hooks/useOktaTokens", () =>
+  jest.fn(() => ({
+    getAccessToken: () => "test.jwt",
+  }))
+);
+
 const renderWithRouter = (
   initialEntries = [{ pathname: "/cql-libraries/cql-lib-1234/edit/details" }]
 ) => {
   const router = createMemoryRouter(routesConfig, {
     initialEntries,
   });
-
   render(
     <ApiContextProvider value={serviceConfig}>
       <RouterProvider router={router} />
     </ApiContextProvider>
   );
 };
-
-jest.mock("../../hooks/useOktaTokens", () =>
-  jest.fn(() => ({
-    getAccessToken: () => "test.jwt",
-  }))
-);
 
 describe("Edit Cql Library Component", () => {
   beforeEach(() => {
@@ -1259,9 +1258,7 @@ describe("Edit Cql Library Component", () => {
           "using QICore version '4.1.1'\n",
       },
     });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
+    renderWithRouter();
 
     expect(mockedAxios.get).toHaveBeenCalled();
 
