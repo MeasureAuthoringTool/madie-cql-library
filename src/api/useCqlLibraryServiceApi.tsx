@@ -32,7 +32,7 @@ export class CqlLibraryServiceApi {
       if (err.message === "canceled") {
         throw new Error(err.message);
       }
-      const message = `Unable to fetch Cql Lvraries`;
+      const message = `Unable to fetch Cql Libraries`;
       console.error(message);
       console.error(err);
 

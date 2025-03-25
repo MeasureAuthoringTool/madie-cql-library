@@ -43,7 +43,6 @@ function CqlLibraryLanding() {
   const activeTab: number = values.tab ? Number(values.tab) : 0;
   const [offset, setOffset] = useState<number>(0);
   const [searchCriteria, setSearchCriteria] = useState<String>(null);
-  const [errMsg, setErrMsg] = useState(undefined);
 
   const [selectedLibraries, setSelectedLibraries] = useState<CqlLibrary[]>([]);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
@@ -97,7 +96,6 @@ function CqlLibraryLanding() {
     async (tab, limit, page, searchCriteria) => {
       setLoading(true);
       abortController.current = new AbortController();
-      setErrMsg(null);
       cqlLibraryServiceApi
         .fetchCqlLibraries(
           tab === 0,
