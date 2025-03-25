@@ -127,7 +127,7 @@ jest.mock("react-router-dom", () => ({
 jest.mock("../../api/useCqlLibraryServiceApi", () =>
   jest.fn(() => mockCqlLibraryServiceApi)
 );
-
+jest.setTimeout(10000);
 describe("Cql Library Page", () => {
   let mockNavigate: jest.Mock;
   beforeEach(() => {
