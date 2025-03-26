@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from "uuid";
 interface TestProps {
   open: boolean;
   onClose(): any;
-  onSuccess?(): any;
+  onSuccess?(): Promise<void>;
 }
 
 const CreateNewLibraryDialog: React.FC<TestProps> = ({

@@ -7,27 +7,35 @@ import { AxiosResponse } from "axios";
 
 export class CqlLibraryServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}
-
   async fetchCqlLibraries(
     filterByCurrentUser: boolean,
+    limit: number = 25,
+    page: number = 0,
+    searchCriteria,
     signal
-  ): Promise<CqlLibrary[]> {
+  ): Promise<any> {
     try {
-      const response = await axios.get<CqlLibrary[]>(
-        `${this.baseUrl}/cql-libraries`,
-        {
-          headers: {
-            Authorization: `Bearer ${this.getAccessToken()}`,
-          },
-          params: {
-            currentUser: filterByCurrentUser,
-          },
-          signal: signal,
-        }
-      );
+      const response = await axios.get<any>(`${this.baseUrl}/cql-libraries`, {
+        headers: {
+          Authorization: `Bearer ${this.getAccessToken()}`,
+        },
+        params: {
+          currentUser: filterByCurrentUser,
+          limit,
+          page,
+          searchCriteria,
+        },
+        signal,
+      });
       return response.data;
     } catch (err) {
-      const message = `Unable to fetch cql libraries`;
+      if (err.message === "canceled") {
+        throw new Error(err.message);
+      }
+      const message = `Unable to fetch Cql Libraries`;
+      console.error(message);
+      console.error(err);
+
       throw new Error(message);
     }
   }
@@ -100,7 +108,7 @@ export class CqlLibraryServiceApi {
     );
   }
 
-  async deleteDraft(id: string): Promise<CqlLibrary> {
+  async deleteDraft(id: string): Promise<AxiosResponse<CqlLibrary>> {
     return await axios.delete(`${this.baseUrl}/cql-libraries/${id}`, {
       headers: {
         Authorization: `Bearer ${this.getAccessToken()}`,

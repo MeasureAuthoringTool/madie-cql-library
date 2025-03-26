@@ -1,8 +1,7 @@
 import * as React from "react";
-import CreateEditCqlLibrary from "./EditCqlLibrary";
 import { fireEvent, render, waitFor, screen } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
-import { MemoryRouter, Route } from "react-router";
+import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { act, Simulate } from "react-dom/test-utils";
@@ -15,7 +14,9 @@ import {
 } from "@madie/madie-editor";
 import { checkUserCanEdit } from "@madie/madie-util";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
+import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 
+const { getByTestId, queryByTestId, queryByText } = screen;
 jest.mock("@madie/madie-util", () => ({
   checkUserCanEdit: jest.fn(() => {
     return true;
@@ -103,14 +104,13 @@ const mockCqlLibraryServiceApi = {
   createDraft: jest.fn().mockResolvedValue(draftedLibrary),
 } as unknown as CqlLibraryServiceApi;
 
-// mocking useHistory
+// mocking navigate and location
+const mockLocation = jest.fn();
 const mockPush = jest.fn();
 jest.mock("react-router-dom", () => ({
   ...(jest.requireActual("react-router-dom") as any),
-  useHistory: () => {
-    const push = (path: string) => mockPush(path);
-    return { push };
-  },
+  useNavigate: () => mockPush,
+  useLocation: () => mockLocation,
 }));
 
 const serviceConfig: ServiceConfig = {
@@ -146,26 +146,24 @@ const cqlToElmExternalErrors: ElmTranslationExternalError[] = [
   },
 ];
 
-const renderWithRouter = (
-  path = "/cql-libraries/:id/edit/details",
-  initialEntries = ["/cql-libraries/cql-lib-1234/edit/details"]
-) => {
-  return render(
-    <ApiContextProvider value={serviceConfig}>
-      <MemoryRouter initialEntries={initialEntries}>
-        <Route path={path}>
-          <CreateEditCqlLibrary />
-        </Route>
-      </MemoryRouter>
-    </ApiContextProvider>
-  );
-};
-
 jest.mock("../../hooks/useOktaTokens", () =>
   jest.fn(() => ({
     getAccessToken: () => "test.jwt",
   }))
 );
+
+const renderWithRouter = (
+  initialEntries = [{ pathname: "/cql-libraries/cql-lib-1234/edit/details" }]
+) => {
+  const router = createMemoryRouter(routesConfig, {
+    initialEntries,
+  });
+  render(
+    <ApiContextProvider value={serviceConfig}>
+      <RouterProvider router={router} />
+    </ApiContextProvider>
+  );
+};
 
 describe("Edit Cql Library Component", () => {
   beforeEach(() => {
@@ -182,7 +180,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should render form and cql library editor", () => {
-    const { getByTestId } = renderWithRouter();
+    renderWithRouter();
     const cqlLibraryEditor = getByTestId("cql-library-editor-component");
     const form = getByTestId("edit-library-form");
     const input = getByTestId("cql-library-editor") as HTMLInputElement;
@@ -192,7 +190,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should generate field level error for required Cql Library name", async () => {
-    const { getByTestId } = renderWithRouter();
+    renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
     ) as HTMLInputElement;
@@ -211,7 +209,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should generate field level error for at least one alphabet in cql library name", async () => {
-    const { getByTestId } = renderWithRouter();
+    renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
     ) as HTMLInputElement;
@@ -237,7 +235,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should generate field level error for underscore in cql library name for QI-Core", async () => {
-    const { getByTestId } = renderWithRouter();
+    renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
     ) as HTMLInputElement;
@@ -271,7 +269,7 @@ describe("Edit Cql Library Component", () => {
     mockedAxios.get.mockResolvedValue({
       data: { ...cqlLibrary, model: Model.QDM_5_6 },
     });
-    const { getByTestId, queryByTestId } = renderWithRouter();
+    renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
     ) as HTMLInputElement;
@@ -299,7 +297,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should generate field level error for library name starting with lower case", async () => {
-    const { getByTestId } = renderWithRouter();
+    renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
     ) as HTMLInputElement;
@@ -325,7 +323,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should generate field level error for library name with a space", async () => {
-    const { getByTestId } = renderWithRouter();
+    renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
     ) as HTMLInputElement;
@@ -351,7 +349,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should close dialog on cancel", async () => {
-    const { getByTestId, queryByText } = renderWithRouter();
+    renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
     ) as HTMLInputElement;
@@ -383,7 +381,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should navigate away on continue", async () => {
-    const { getByTestId } = renderWithRouter();
+    renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
     ) as HTMLInputElement;
@@ -410,12 +408,11 @@ describe("Edit Cql Library Component", () => {
     fireEvent.click(continueButton);
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/cql-libraries");
-      // expect(queryByText("You have unsaved changes.")).not.toBeVisible();
     });
   });
 
   it("should have Save button disabled until form is valid and dirty", async () => {
-    const { getByTestId } = renderWithRouter();
+    renderWithRouter();
     const input = getByTestId(
       "cql-library-name-text-field-input"
     ) as HTMLInputElement;
@@ -557,9 +554,7 @@ describe("Edit Cql Library Component", () => {
         },
       },
     });
-    renderWithRouter("/cql-libraries/:id/edit/details", [
-      "/cql-libraries/cql-lib-1234/edit/details",
-    ]);
+    renderWithRouter();
 
     expect(mockedAxios.get).toHaveBeenCalled();
 
@@ -581,9 +576,7 @@ describe("Edit Cql Library Component", () => {
         },
       },
     });
-    renderWithRouter("/cql-libraries/:id/edit/details", [
-      "/cql-libraries/cql-lib-1234/edit/details",
-    ]);
+    renderWithRouter();
 
     const updateButton1 = await screen.findByRole("button", {
       name: "Save",
@@ -626,9 +619,7 @@ describe("Edit Cql Library Component", () => {
         cql: synchingEditorCqlContent,
       },
     });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
+    renderWithRouter();
 
     expect(mockedAxios.get).toHaveBeenCalled();
 
@@ -685,9 +676,8 @@ describe("Edit Cql Library Component", () => {
         cql: synchingEditorCqlContent,
       },
     });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
+
+    renderWithRouter();
 
     expect(mockedAxios.get).toHaveBeenCalled();
 
@@ -748,10 +738,8 @@ describe("Edit Cql Library Component", () => {
         cql: synchingEditorCqlContent,
       },
     });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
 
+    renderWithRouter();
     expect(mockedAxios.get).toHaveBeenCalled();
 
     expect(
@@ -822,9 +810,7 @@ describe("Edit Cql Library Component", () => {
         cql: synchingEditorCqlContent,
       },
     });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
+    renderWithRouter();
 
     expect(mockedAxios.get).toHaveBeenCalled();
 
@@ -904,9 +890,8 @@ describe("Edit Cql Library Component", () => {
 
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
+
+    renderWithRouter();
 
     expect(mockedAxios.get).toHaveBeenCalled();
 
@@ -945,9 +930,8 @@ describe("Edit Cql Library Component", () => {
     };
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
+
+    renderWithRouter();
     (validateContent as jest.Mock).mockClear().mockImplementation(() => {
       return Promise.resolve({
         errors: [],
@@ -982,9 +966,7 @@ describe("Edit Cql Library Component", () => {
 
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
+    renderWithRouter();
 
     expect(
       await screen.findByText(
@@ -1042,10 +1024,7 @@ describe("Edit Cql Library Component", () => {
 
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
-
+    renderWithRouter();
     expect(
       await screen.findByText(
         "You are not the owner of the CQL Library. Only owner can edit it."
@@ -1103,10 +1082,7 @@ describe("Edit Cql Library Component", () => {
         },
       },
     });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
-
+    renderWithRouter();
     expect(mockedAxios.get).toHaveBeenCalled();
 
     expect(
@@ -1171,10 +1147,7 @@ describe("Edit Cql Library Component", () => {
     mockedAxios.put.mockRejectedValueOnce({
       error: "error",
     });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
-
+    renderWithRouter();
     expect(mockedAxios.get).toHaveBeenCalled();
 
     expect(
@@ -1285,9 +1258,7 @@ describe("Edit Cql Library Component", () => {
           "using QICore version '4.1.1'\n",
       },
     });
-    renderWithRouter("/cql-libraries/:id/edit", [
-      "/cql-libraries/cql-lib-1234/edit",
-    ]);
+    renderWithRouter();
 
     expect(mockedAxios.get).toHaveBeenCalled();
 

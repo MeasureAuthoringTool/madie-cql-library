@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Divider, TextField, IconButton } from "@mui/material";
+import { TextField, IconButton } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import { CqlLibraryListActionCenter as ActionCenter } from "./cqlLibraryListActionCenter/CqlLibraryListActionCenter";
@@ -17,6 +17,8 @@ import InputAdornment from "@material-ui/core/InputAdornment";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
 
+import queryString from "query-string";
+import { useNavigate, useLocation } from "react-router-dom";
 const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
   cqlLibrary: null,
@@ -25,13 +27,26 @@ const INITIAL_DELETE_DRAFT_STATE = {
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
   const featureFlags = useFeatureFlags();
-  const [activeTab, setActiveTab] = useState(0);
+  let navigate = useNavigate();
+  const { search } = useLocation();
+
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // utilities for pagination
+  const values = queryString.parse(search);
+  const curLimit = values.limit && Number(values.limit);
+  const curPage = (values.page && Number(values.page)) || 1;
+  const [totalPages, setTotalPages] = useState<number>(0);
+  const [totalItems, setTotalItems] = useState<number>(0);
+  const [visibleItems, setVisibleItems] = useState<number>(0);
+  const activeTab: number = values.tab ? Number(values.tab) : 0;
+  const [offset, setOffset] = useState<number>(0);
+  const [searchCriteria, setSearchCriteria] = useState<String>(null);
+
   const [selectedLibraries, setSelectedLibraries] = useState<CqlLibrary[]>([]);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [filter, setFilter] = useState("");
-  const [currentFilter, setCurrentFilter] = useState("");
   const abortController = useRef(null);
   const [selectedCQLLibrary, setSelectedCqlLibrary] =
     useState<CqlLibrary>(null);
@@ -77,37 +92,72 @@ function CqlLibraryLanding() {
       });
   };
 
-  // Libraries are fetched again, when a new draft or version is created
-  const loadCqlLibraries = useCallback(async () => {
-    abortController.current = new AbortController();
-    const cqlLibraries: CqlLibrary[] =
-      await cqlLibraryServiceApi.fetchCqlLibraries(
-        activeTab === 0,
-        abortController.current.signal
-      );
-    setLoading(false);
-    return setCqlLibraryList(() =>
-      _.orderBy(cqlLibraries, ["createdAt"], ["desc"])
-    );
-  }, [activeTab, cqlLibraryServiceApi]);
+  const retrieveLibraries = useCallback(
+    async (tab, limit, page, searchCriteria) => {
+      setLoading(true);
+      abortController.current = new AbortController();
+      cqlLibraryServiceApi
+        .fetchCqlLibraries(
+          tab === 0,
+          limit,
+          page,
+          searchCriteria,
+          abortController.current.signal
+        )
+        .then((data) => {
+          setPageProps(data);
+        })
+        .catch((error) => {
+          if (error.message != "canceled") {
+            setSnackBar({
+              message: "An error occurred while fetching the CQL Library!",
+              open: true,
+              severity: "error",
+            });
+          }
+        })
+        .finally(() => {
+          return setLoading(false);
+        });
+    },
+    [cqlLibraryServiceApi]
+  );
 
-  useEffect(() => {
-    (async () => await loadCqlLibraries())();
-  }, [activeTab, cqlLibraryServiceApi, loadCqlLibraries]);
-
-  //If a filter exists then this will set it again on tab change
-  useEffect(() => {
-    if (cqlLibraryList != null && cqlLibraryList.length > 0) {
-      setCurrentFilter(filter);
+  const setPageProps = (data) => {
+    if (data) {
+      const { content, totalPages, totalElements, numberOfElements, pageable } =
+        data;
+      setTotalPages(totalPages);
+      setTotalItems(totalElements);
+      setVisibleItems(numberOfElements);
+      setCqlLibraryList(content);
+      setOffset(pageable.offset);
     }
-  }, [cqlLibraryList]);
-
-  const handleTabChange = (event, nextTab) => {
-    setCqlLibraryList(null);
-    setCurrentFilter("");
-    setActiveTab(nextTab);
-    abortController.current && abortController.current.abort();
   };
+
+  useEffect(() => {
+    retrieveLibraries(
+      activeTab,
+      curLimit === undefined ? 10 : curLimit,
+      curPage - 1,
+      searchCriteria
+    );
+  }, [
+    retrieveLibraries,
+    activeTab,
+    curLimit,
+    curPage,
+    cqlLibraryServiceApi,
+    searchCriteria,
+  ]);
+  // Libraries are fetched again, when a new draft or version is created
+  const handleTabChange = (event, nextTab) => {
+    abortController.current.abort();
+    setCqlLibraryList(null);
+    const limit = values?.limit || 10;
+    navigate(`?tab=${nextTab}&page=0&limit=${limit}`);
+  };
+
   // Create Dialog utilities
   const [createLibOpen, setCreateLibOpen] = useState<boolean>(false);
   useEffect(() => {
@@ -130,9 +180,9 @@ function CqlLibraryLanding() {
 
   const submitFilter = (e) => {
     e.preventDefault();
-    setFilter(filter.trim());
-    if (cqlLibraryList != null && cqlLibraryList.length > 0) {
-      setCurrentFilter(filter);
+    if (filter) {
+      // handle null to string edge
+      setSearchCriteria(filter.trim());
     }
   };
 
@@ -146,8 +196,8 @@ function CqlLibraryLanding() {
       <IconButton
         aria-label="Clear-Search"
         onClick={() => {
-          setFilter("");
-          setCurrentFilter("");
+          setSearchCriteria("");
+          setFilter(""); // probably could also be a q param,
         }}
       >
         <ClearIcon />
@@ -155,11 +205,14 @@ function CqlLibraryLanding() {
     ),
   };
 
+  const onListUpdate = async () => {
+    await retrieveLibraries(activeTab, curLimit, 0, searchCriteria);
+  };
   return (
     <div id="cql-library-landing" data-testid="cql-library-landing">
       <CreateNewLibraryDialog
         open={createLibOpen}
-        onSuccess={loadCqlLibraries}
+        onSuccess={onListUpdate}
         onClose={() => {
           setCreateLibOpen(false);
         }}
@@ -242,16 +295,13 @@ function CqlLibraryLanding() {
           <div className="table">
             {!loading && (
               <CqlLibraryList
-                cqlLibraryList={
-                  currentFilter == ""
-                    ? cqlLibraryList
-                    : cqlLibraryList.filter((library) =>
-                        library.cqlLibraryName
-                          .toLowerCase()
-                          .includes(currentFilter.toLowerCase())
-                      )
-                }
-                onListUpdate={loadCqlLibraries}
+                cqlLibraryList={cqlLibraryList}
+                offset={offset}
+                activeTab={activeTab}
+                totalPages={totalPages}
+                visibleItems={visibleItems}
+                totalItems={totalItems}
+                onListUpdate={onListUpdate}
                 setSelectedLibraries={setSelectedLibraries}
                 deleteDraftDialog={deleteDraftDialog}
                 setDeleteDraftDialog={setDeleteDraftDialog}

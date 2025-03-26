@@ -1,23 +1,25 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import CqlLibraryLanding from "../cqlLibraryLanding/CqlLibraryLanding";
 import EditCqlLibrary from "../editCqlLibrary/EditCqlLibrary";
-import CreateNewLibrary from "../createNewLibrary/CreateNewLibrary";
 
-export function CqlLibraryRoutes() {
+export const routesConfig = [
+  {
+    children: [
+      { path: "/cql-libraries/:id/edit/:tab", element: <EditCqlLibrary /> },
+      { path: "/cql-libraries", element: <CqlLibraryLanding /> },
+    ],
+  },
+];
+
+const router = createBrowserRouter(routesConfig);
+
+const CqlLibraryRoutes = () => {
   return (
-    <>
-      <Switch>
-        <Route exact path="/cql-libraries" component={CqlLibraryLanding} />
-        <Route
-          exact
-          path="/cql-libraries/create"
-          component={CreateNewLibrary}
-        />
-        <Route path="/cql-libraries/:id/edit/:tab" component={EditCqlLibrary} />
-      </Switch>
-    </>
+    <div data-testid="cql-library-browser-router">
+      <RouterProvider router={router} />
+    </div>
   );
-}
+};
 
 export default CqlLibraryRoutes;
