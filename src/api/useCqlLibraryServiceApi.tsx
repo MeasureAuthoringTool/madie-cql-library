@@ -129,6 +129,73 @@ export class CqlLibraryServiceApi {
       throw new Error(message);
     }
   }
+
+  async shareLibraries(libraries: Map<string, string[]>): Promise<any> {
+    try {
+      const response = await axios.put(
+        `${this.baseUrl}/cql-libraries/shared`,
+        Object.fromEntries(libraries),
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      const message =
+        "Unable to share the selected libraries with the added users. If the error persists, please contact the help desk.";
+      console.error(message, err);
+      throw new Error(message);
+    }
+  }
+
+  async getSharedLibraries(libraryIds: string[]): Promise<any> {
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/cql-libraries/shared?libraryIds=${libraryIds}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      const message =
+        "Unable to retrieve users that the selected libraries is shared with. If the error persists, please contact the help desk.";
+      console.error(message, err);
+      throw new Error(message);
+    }
+  }
+
+  async getRecentLibrariesByLibrarySetId(
+    librarySetIds: string[]
+  ): Promise<any> {
+    const idsParam = librarySetIds.join(",");
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/cql-libraries/recentsByLibrarySetId`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+          params: {
+            librarySetIds: idsParam,
+          },
+        }
+      );
+      if (response.data) {
+        return response.data;
+      }
+    } catch (error) {
+      console.error(
+        "error requesting Libraries By multiple librarySetIds ",
+        error
+      );
+      throw error;
+    }
+  }
 }
 
 export default function useCqlLibraryServiceApi() {

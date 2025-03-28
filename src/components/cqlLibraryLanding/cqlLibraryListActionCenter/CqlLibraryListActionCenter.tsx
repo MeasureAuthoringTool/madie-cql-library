@@ -1,11 +1,10 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Button, Grid } from "@material-ui/core";
 import DeleteAction from "./deleteAction/DeleteAction";
 import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";
 import ShareAction from "./shareAction/ShareAction";
 import { CqlLibrary } from "@madie/madie-models";
-
 import {
   checkUserCanDelete,
   checkUserCanEdit,
@@ -18,6 +17,7 @@ interface PropTypes {
   setDeleteDraftDialog: (value: any) => void;
   setSelectedCqlLibrary: (value: any) => void;
   setCreateDraftDialog: (value: any) => void;
+  setShareDialog: (value: any) => void;
   createVersion: () => void;
   owners: string[];
 }
@@ -57,7 +57,13 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     });
   }
 
-  useEffect(() => {}, []);
+  const shareLibrary = (option: string) => {
+    props.setShareDialog({
+      open: true,
+      option,
+    });
+  };
+
   return (
     <div data-testid="action-center">
       <DeleteAction
@@ -82,7 +88,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         <ShareAction
           libraries={libraries}
           canEdit={canEdit}
-          onClick={() => {}}
+          onClick={shareLibrary}
           userName={userName}
           owners={owners}
         />
