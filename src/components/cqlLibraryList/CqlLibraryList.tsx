@@ -8,7 +8,6 @@ import React, {
   SyntheticEvent,
   MouseEvent,
 } from "react";
-import { useHistory } from "react-router-dom";
 import {
   useReactTable,
   ColumnDef,
@@ -33,8 +32,11 @@ import {
 import {
   Button,
   MadieDeleteDialog,
+  Pagination,
 } from "@madie/madie-design-system/dist/react";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
+import { useNavigate, useLocation } from "react-router-dom";
+import queryString from "query-string";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -93,11 +95,31 @@ export default function CqlLibraryList({
   setOwners,
   setSnackBar,
   snackBar,
+  totalItems,
+  activeTab,
+  totalPages,
+  visibleItems,
+  offset,
 }) {
-  const history = useHistory();
   const featureFlags = useFeatureFlags();
-  const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  const navigate = useNavigate();
+  const { search } = useLocation();
+  const values = queryString.parse(search);
+  const handlePageChange = (e, v) => {
+    navigate(`?tab=${activeTab}&page=${v}&limit=${values?.limit || 10}`);
+  };
+  const handleLimitChange = (e) => {
+    navigate(`?tab=${activeTab}&page=${0}&limit=${e.target.value}`);
+  };
 
+  const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  // pull info from some query url
+  const curPage = (values.page && Number(values.page)) || 1;
+  // can we do stuff
+  const canGoNext = (() => {
+    return curPage < totalPages;
+  })();
+  const canGoPrev = Number(values?.page) > 1;
   const handleDialogClose = () => {
     setCreateVersionDialog({
       open: false,
@@ -199,8 +221,8 @@ export default function CqlLibraryList({
       });
   };
 
-  const deleteDraft = () => {
-    cqlLibraryServiceApi
+  const deleteDraft = async () => {
+    await cqlLibraryServiceApi
       .deleteDraft(deleteDraftDialog.cqlLibrary?.id)
       .then(async () => {
         handleDialogClose();
@@ -318,9 +340,7 @@ export default function CqlLibraryList({
           <button
             type="button"
             onClick={() =>
-              history.push(
-                `/cql-libraries/${info.row.original.id}/edit/details`
-              )
+              navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
             }
             data-testid={`cqlLibrary-button-${info.row.original.id}`}
           >
@@ -335,9 +355,7 @@ export default function CqlLibraryList({
           <button
             type="button"
             onClick={() =>
-              history.push(
-                `/cql-libraries/${info.row.original.id}/edit/details`
-              )
+              navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
             }
             data-testid={`cqlLibrary-button-${info.row.original.id}-model`}
           >
@@ -377,9 +395,7 @@ export default function CqlLibraryList({
               variant="outline-secondary"
               style={{ borderColor: "#c8c8c8" }}
               onClick={() =>
-                history.push(
-                  `/cql-libraries/${info.row.original.id}/edit/details`
-                )
+                navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
               }
               data-testid={
                 checkUserCanEdit(
@@ -403,7 +419,7 @@ export default function CqlLibraryList({
     );
 
     return columnDefs;
-  }, [history, featureFlags?.LibraryListCheckboxes]);
+  }, [navigate, featureFlags?.LibraryListCheckboxes]);
 
   const table = useReactTable({
     data: cqlLibraryList ?? [],
@@ -549,7 +565,7 @@ export default function CqlLibraryList({
             <div className="btn-container">
               <button
                 onClick={() => {
-                  history.push(
+                  navigate(
                     `/cql-libraries/${selectedCQLLibrary.id}/edit/details`
                   );
                 }}
@@ -664,6 +680,22 @@ export default function CqlLibraryList({
                   ))}
                 </tbody>
               </table>
+              <div className="pagination-container">
+                <Pagination
+                  totalItems={totalItems}
+                  visibleItems={visibleItems}
+                  limitOptions={[10, 25, 50]}
+                  offset={offset}
+                  handlePageChange={handlePageChange}
+                  handleLimitChange={handleLimitChange}
+                  page={Number(values?.page) || 1}
+                  limit={Number(values?.limit) || 10}
+                  count={totalPages}
+                  shape="rounded"
+                  hideNextButton={!canGoNext}
+                  hidePrevButton={!canGoPrev}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,4 @@
 import React from "react";
-import { Button, Grid } from "@material-ui/core";
 import DeleteAction from "./deleteAction/DeleteAction";
 import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";

@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import tw from "twin.macro";
 import "styled-components/macro";
-import { useHistory, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useFormik } from "formik";
-import { CqlLibrary, Model } from "@madie/madie-models";
+import { CqlLibrary } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import queryString from "query-string";
 import { Allotment } from "allotment";
@@ -57,7 +57,7 @@ import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog"
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
-  const history = useHistory();
+  const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
   const activeTab: string = (values.tab && values.tab.toString()) || "details";
@@ -234,7 +234,7 @@ const EditCqlLibrary = () => {
           secondaryMessages: "",
         });
         setTimeout(() => {
-          history.push("/cql-libraries");
+          navigate("/cql-libraries");
         }, 1000);
         handleDialogClose();
       })
@@ -301,7 +301,7 @@ const EditCqlLibrary = () => {
         });
         setLoadedCqlLibrary(response?.data);
         setTimeout(() => {
-          history.push(`/cql-libraries/${response.data.id}/edit/details`);
+          navigate(`/cql-libraries/${response.data.id}/edit/details`);
         }, 1000);
       })
       .catch((error) => {
@@ -545,7 +545,7 @@ const EditCqlLibrary = () => {
   };
 
   const handleTabChange = (event, nextTab) => {
-    history.push(`?tab=${nextTab}`);
+    navigate(`?tab=${nextTab}`);
   };
   const toggleSearch = () => {
     const event = new CustomEvent("toggleEditorSearchBox");
@@ -850,7 +850,7 @@ const EditCqlLibrary = () => {
             onClose={() => setDiscardDialogOpen(false)}
             onContinue={async () => {
               await resetForm();
-              history.push("/cql-libraries");
+              navigate("/cql-libraries");
             }}
           />
           <MadieDeleteDialog
