@@ -1298,4 +1298,24 @@ describe("Edit Cql Library Component", () => {
       "Concept Constructs are not supported in MADiE. It has been removed."
     );
   });
+
+  it("should display a share dialog when the event is triggered and delete succeeds", async () => {
+    renderWithRouter();
+    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+    const input = (await screen.getByTestId(
+      "cql-library-name-text-field-input"
+    )) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.value).toBe("Library1");
+    act(() => {
+      window.dispatchEvent(new Event("share-library"));
+    });
+    expect(queryByTestId("share-dialog")).toBeVisible();
+    const cancelButton = getByTestId("share-cancel-button");
+    fireEvent.click(cancelButton);
+    expect(queryByTestId("share-dialog")).toBeVisible();
+  });
 });
