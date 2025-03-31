@@ -104,19 +104,3 @@
     }
   }
 }
-
-.cql-library-list {
-  > tr {
-    > td {
-      &:last-of-type {
-        padding-left: 0 !important;
-        max-width: 41px;
-      }
-
-      &:nth-of-type(5) {
-        padding-right: 0 !important;
-        max-width: 62px;
-      }
-    }
-  }
-}
