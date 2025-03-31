@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import GlobalStyles from "../../../styles/GlobalStyles";
-import { Backdrop, Checkbox, Typography } from "@mui/material";
+import { Backdrop, Typography } from "@mui/material";
 import {
   TextField,
   MadieDialog,
@@ -26,8 +26,6 @@ import {
 import { CqlLibrary } from "@madie/madie-models";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import tw from "twin.macro";
 import "styled-components/macro";
 import useCqlLibraryServiceApi from "../../../api/useCqlLibraryServiceApi";
@@ -55,8 +53,6 @@ export interface SharedUser {
 }
 
 const TH = tw.th`p-3 text-left text-sm font-bold capitalize`;
-const icon = <CheckBoxOutlineBlankIcon fontSize="large" />;
-const checkedIcon = <CheckBoxIcon fontSize="large" />;
 const keyboardArrowStyles = {
   color: "#0073C8",
   width: 40,
@@ -291,12 +287,7 @@ const LibraryShareDialog = ({
               dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
             />
           ) : (
-            <Checkbox
-              icon={icon}
-              checkedIcon={checkedIcon}
-              checked={true}
-              data-testid={`unshare-checkbox-${info.row.original.userId}_${info.row.original.libraryId}`}
-            />
+            <></>
           ),
         accessorKey: "cqlLibraryName",
       });
