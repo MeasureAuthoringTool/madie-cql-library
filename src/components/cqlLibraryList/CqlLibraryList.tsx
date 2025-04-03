@@ -451,17 +451,19 @@ export default function CqlLibraryList({
     getAllOwners();
   }, [selectedLibraries?.length, setSelectedLibraries]);
 
-  const handleShareDialogClose = ({ type = "danger", message = "" } = {}) => {
+  const handleShareDialogClose = (type, message) => {
     setShareDialog({
       open: false,
       option: "",
     });
 
-    setSnackBar({
-      message: message,
-      open: true,
-      severity: type,
-    });
+    if (message) {
+      setSnackBar({
+        message: message,
+        open: true,
+        severity: type,
+      });
+    }
   };
 
   return (
