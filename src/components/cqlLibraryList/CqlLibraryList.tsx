@@ -7,6 +7,7 @@ import React, {
   useEffect,
   SyntheticEvent,
   MouseEvent,
+  useCallback,
 } from "react";
 import {
   useReactTable,
@@ -451,20 +452,23 @@ export default function CqlLibraryList({
     getAllOwners();
   }, [selectedLibraries?.length, setSelectedLibraries]);
 
-  const handleShareDialogClose = (type, message) => {
-    setShareDialog({
-      open: false,
-      option: "",
-    });
-
-    if (message) {
-      setSnackBar({
-        message: message,
-        open: true,
-        severity: type,
+  const handleShareDialogClose = useCallback(
+    (type, message) => {
+      setShareDialog({
+        open: false,
+        option: "",
       });
-    }
-  };
+
+      if (message) {
+        setSnackBar({
+          message: message,
+          open: true,
+          severity: type,
+        });
+      }
+    },
+    [setShareDialog]
+  );
 
   return (
     <div data-testid="cqlLibrary-list">

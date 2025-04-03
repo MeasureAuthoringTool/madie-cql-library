@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import GlobalStyles from "../../../styles/GlobalStyles";
-import { Backdrop, Typography } from "@mui/material";
+import { Backdrop, Checkbox, Typography } from "@mui/material";
 import {
   TextField,
   MadieDialog,
@@ -26,6 +26,8 @@ import {
 import { CqlLibrary } from "@madie/madie-models";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import tw from "twin.macro";
 import "styled-components/macro";
 import useCqlLibraryServiceApi from "../../../api/useCqlLibraryServiceApi";
@@ -53,6 +55,8 @@ export interface SharedUser {
 }
 
 const TH = tw.th`p-3 text-left text-sm font-bold capitalize`;
+const icon = <CheckBoxOutlineBlankIcon fontSize="large" />;
+const checkedIcon = <CheckBoxIcon fontSize="large" />;
 const keyboardArrowStyles = {
   color: "#0073C8",
   width: 40,
@@ -264,89 +268,94 @@ const LibraryShareDialog = ({
 
   const columns = useMemo<ColumnDef<SharedLibrary>[]>(() => {
     let columnDefs = [];
-    if (option === "Share With") {
-      columnDefs.push({
-        header: "Library",
-        cell: (info) => (
-          <TruncateText
-            text={info.row.original.cqlLibraryName}
-            maxLength={120}
-            dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
-          />
-        ),
-        accessorKey: "cqlLibraryName",
-      });
-    } else if (option === "Unshare") {
-      columnDefs.push({
-        header: "Library",
-        cell: (info) =>
-          info.row.original.cqlLibraryName ? (
+    if (libraries.length > 0) {
+      if (option === "Share With") {
+        columnDefs.push({
+          header: "Library",
+          cell: (info) => (
             <TruncateText
               text={info.row.original.cqlLibraryName}
               maxLength={120}
               dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
             />
-          ) : (
-            <></>
           ),
-        accessorKey: "cqlLibraryName",
-      });
+          accessorKey: "cqlLibraryName",
+        });
+      } else if (option === "Unshare") {
+        columnDefs.push({
+          header: "Library",
+          cell: (info) =>
+            info.row.original.cqlLibraryName ? (
+              <TruncateText
+                text={info.row.original.cqlLibraryName}
+                maxLength={120}
+                dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
+              />
+            ) : (
+              <></>
+            ),
+          accessorKey: "cqlLibraryName",
+        });
+      }
+
+      columnDefs = [
+        ...columnDefs,
+        {
+          header: "User",
+          cell: (info) => (
+            <TruncateText
+              text={info.row.original.userId}
+              maxLength={120}
+              dataTestId={`user-${info.row.original.userId}_${info.row.original.libraryId}`}
+            />
+          ),
+          accessorKey: "userId",
+        },
+        {
+          header: "Date Shared",
+          cell: (info) => (
+            <TruncateText
+              text={
+                info.row.original.dateShared === "-"
+                  ? "-"
+                  : info.row.original.dateShared
+                  ? convertDate(info.row.original.dateShared)
+                  : ""
+              }
+              maxLength={120}
+              dataTestId={`date-shared-${info.row.original.dateShared}_${info.row.original.libraryId}`}
+            />
+          ),
+          accessorKey: "dateShared",
+        },
+        {
+          cell: ({ row }) => (
+            <>
+              {row.getCanExpand() ? (
+                <button
+                  type="button"
+                  data-testid={`expand-button-${row.original.libraryId}`}
+                  onClick={row.getToggleExpandedHandler()}
+                  style={{ cursor: "pointer" }}
+                >
+                  {row.getIsExpanded() ? (
+                    <KeyboardArrowDownIcon sx={keyboardArrowStyles} />
+                  ) : (
+                    <KeyboardArrowRightIcon sx={keyboardArrowStyles} />
+                  )}
+                </button>
+              ) : null}
+            </>
+          ),
+          id: "expand-button",
+        },
+      ];
     }
 
-    columnDefs = [
-      ...columnDefs,
-      {
-        header: "User",
-        cell: (info) => (
-          <TruncateText
-            text={info.row.original.userId}
-            maxLength={120}
-            dataTestId={`user-${info.row.original.userId}_${info.row.original.libraryId}`}
-          />
-        ),
-        accessorKey: "userId",
-      },
-      {
-        header: "Date Shared",
-        cell: (info) => (
-          <TruncateText
-            text={
-              info.row.original.dateShared === "-"
-                ? "-"
-                : info.row.original.dateShared
-                ? convertDate(info.row.original.dateShared)
-                : ""
-            }
-            maxLength={120}
-            dataTestId={`date-shared-${info.row.original.dateShared}_${info.row.original.libraryId}`}
-          />
-        ),
-        accessorKey: "dateShared",
-      },
-      {
-        cell: ({ row }) => (
-          <>
-            {row.getCanExpand() ? (
-              <button
-                type="button"
-                data-testid={`expand-button-${row.original.libraryId}`}
-                onClick={row.getToggleExpandedHandler()}
-                style={{ cursor: "pointer" }}
-              >
-                {row.getIsExpanded() ? (
-                  <KeyboardArrowDownIcon sx={keyboardArrowStyles} />
-                ) : (
-                  <KeyboardArrowRightIcon sx={keyboardArrowStyles} />
-                )}
-              </button>
-            ) : null}
-          </>
-        ),
-        id: "expand-button",
-      },
-    ];
     return columnDefs;
   }, [libraries]);
+
+  //console.log(sharedLibraries);
 
   const table = useReactTable({
     data: sharedLibraries,
@@ -360,7 +369,7 @@ const LibraryShareDialog = ({
     getExpandedRowModel: getExpandedRowModel(),
     getSubRows: (row) => row.subRows,
   });
-
+  console.log(sharedLibraries);
   return (
     <>
       <GlobalStyles />
@@ -475,6 +484,7 @@ const LibraryShareDialog = ({
                         }}
                       >
                         {row.getVisibleCells().map((cell) => {
+                          console.log(cell.column.id);
                           if (cell.column.id === "expand-button") {
                             return (
                               <td key={cell.id}>
@@ -486,6 +496,14 @@ const LibraryShareDialog = ({
                             );
                           }
 
+                          {
+                            <Checkbox
+                              icon={icon}
+                              checkedIcon={checkedIcon}
+                              checked={true}
+                              //data-testid={`unshare-checkbox-${info.row.original.userId}_${info.row.original.measureId}`}
+                            />;
+                          }
                           return (
                             <td
                               key={cell.id}
@@ -495,6 +513,23 @@ const LibraryShareDialog = ({
                             </td>
                           );
                         })}
+
+                        {/* cqlLibraryName
+LibraryShareDialog.tsx:490 userId
+LibraryShareDialog.tsx:490 dateShared
+LibraryShareDialog.tsx:490 expand-button */}
+
+                        {/* {sharedLibraries.length>0 && row.getVisibleCells().map((cell) => (
+                          <td
+                            key={cell.id}
+                            data-testid={`${cell.id}_${cell.row.original.libraryId}`}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        ))} */}
                       </tr>
                     ))
                   )}
