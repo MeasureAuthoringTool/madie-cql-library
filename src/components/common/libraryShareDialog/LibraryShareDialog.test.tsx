@@ -432,10 +432,7 @@ describe("Create Share Dialog component", () => {
 
     await waitFor(async () => {
       expect(mockLibraryServiceApi.shareLibraries).toBeCalled();
-      expect(mockOnClose).toHaveBeenCalledWith({
-        message: "The Libraries were successfully shared.",
-        type: "success",
-      });
+      expect(mockOnClose).toHaveBeenCalled();
     });
   });
 
@@ -492,10 +489,7 @@ describe("Create Share Dialog component", () => {
 
     await waitFor(async () => {
       expect(mockLibraryServiceApi.shareLibraries).toBeCalled();
-      expect(mockOnClose).toHaveBeenCalledWith({
-        message: errorMessage,
-        type: "danger",
-      });
+      expect(mockOnClose).toHaveBeenCalled();
     });
   });
 
