@@ -174,15 +174,9 @@ const LibraryShareDialog = ({
     try {
       await libraryServiceApi.shareLibraries(sharedLibrariesRequest);
 
-      onClose({
-        type: "success",
-        message: "The Libraries were successfully shared.",
-      });
+      onClose("success", "The Libraries were successfully shared.");
     } catch (error) {
-      onClose({
-        type: "danger",
-        message: error.message,
-      });
+      onClose("danger", error.message);
     } finally {
       setExecuting(false);
     }
@@ -489,7 +483,6 @@ const LibraryShareDialog = ({
                               </td>
                             );
                           }
-
                           return (
                             <td
                               key={cell.id}
