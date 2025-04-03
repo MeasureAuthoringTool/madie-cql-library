@@ -38,6 +38,7 @@ import {
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import queryString from "query-string";
+import * as _ from "lodash";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -458,7 +459,7 @@ export default function CqlLibraryList({
       option: "",
     });
 
-    if (message) {
+    if (!_.isEmpty(message)) {
       setSnackBar({
         message: message,
         open: true,
