@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import tw from "twin.macro";
 import "styled-components/macro";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
@@ -552,20 +552,23 @@ const EditCqlLibrary = () => {
     window.dispatchEvent(event);
   };
 
-  const handleShareDialogClose = ({ type = "danger", message = "" } = {}) => {
-    setShareDialog({
-      open: false,
-      option: "",
-    });
-
-    if (!_.isEmpty(message)) {
-      setSuccess({
-        status: type,
-        primaryMessage: message,
-        secondaryMessages: "",
+  const handleShareDialogClose = useCallback(
+    (type, message) => {
+      setShareDialog({
+        open: false,
+        option: "",
       });
-    }
-  };
+
+      if (!_.isEmpty(message)) {
+        setSuccess({
+          status: type,
+          primaryMessage: message,
+          secondaryMessages: "",
+        });
+      }
+    },
+    [setShareDialog]
+  );
 
   return (
     <div>

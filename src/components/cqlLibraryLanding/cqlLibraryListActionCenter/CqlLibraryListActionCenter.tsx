@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import DeleteAction from "./deleteAction/DeleteAction";
 import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";
@@ -56,12 +56,15 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     });
   }
 
-  const shareLibrary = (option: string) => {
-    props.setShareDialog({
-      open: true,
-      option,
-    });
-  };
+  const shareLibrary = useCallback(
+    (option: string) => {
+      props.setShareDialog({
+        open: true,
+        option,
+      });
+    },
+    [props.setShareDialog]
+  );
 
   return (
     <div data-testid="action-center">
