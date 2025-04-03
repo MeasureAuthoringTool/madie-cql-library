@@ -6,7 +6,7 @@ import React, {
   useCallback,
 } from "react";
 import GlobalStyles from "../../../styles/GlobalStyles";
-import { Backdrop, Checkbox, Typography } from "@mui/material";
+import { Backdrop, Typography } from "@mui/material";
 import {
   TextField,
   MadieDialog,
@@ -55,8 +55,6 @@ export interface SharedUser {
 }
 
 const TH = tw.th`p-3 text-left text-sm font-bold capitalize`;
-const icon = <CheckBoxOutlineBlankIcon fontSize="large" />;
-const checkedIcon = <CheckBoxIcon fontSize="large" />;
 const keyboardArrowStyles = {
   color: "#0073C8",
   width: 40,
@@ -355,8 +353,6 @@ const LibraryShareDialog = ({
     return columnDefs;
   }, [libraries]);
 
-  //console.log(sharedLibraries);
-
   const table = useReactTable({
     data: sharedLibraries,
     columns,
@@ -369,7 +365,6 @@ const LibraryShareDialog = ({
     getExpandedRowModel: getExpandedRowModel(),
     getSubRows: (row) => row.subRows,
   });
-  console.log(sharedLibraries);
   return (
     <>
       <GlobalStyles />
@@ -484,7 +479,6 @@ const LibraryShareDialog = ({
                         }}
                       >
                         {row.getVisibleCells().map((cell) => {
-                          console.log(cell.column.id);
                           if (cell.column.id === "expand-button") {
                             return (
                               <td key={cell.id}>
@@ -496,14 +490,6 @@ const LibraryShareDialog = ({
                             );
                           }
 
-                          {
-                            <Checkbox
-                              icon={icon}
-                              checkedIcon={checkedIcon}
-                              checked={true}
-                              //data-testid={`unshare-checkbox-${info.row.original.userId}_${info.row.original.measureId}`}
-                            />;
-                          }
                           return (
                             <td
                               key={cell.id}
@@ -513,23 +499,6 @@ const LibraryShareDialog = ({
                             </td>
                           );
                         })}
-
-                        {/* cqlLibraryName
-LibraryShareDialog.tsx:490 userId
-LibraryShareDialog.tsx:490 dateShared
-LibraryShareDialog.tsx:490 expand-button */}
-
-                        {/* {sharedLibraries.length>0 && row.getVisibleCells().map((cell) => (
-                          <td
-                            key={cell.id}
-                            data-testid={`${cell.id}_${cell.row.original.libraryId}`}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </td>
-                        ))} */}
                       </tr>
                     ))
                   )}
