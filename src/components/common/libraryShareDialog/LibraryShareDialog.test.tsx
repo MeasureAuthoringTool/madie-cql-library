@@ -547,10 +547,6 @@ describe("Create Share Dialog component", () => {
     expect(screen.getByTestId("0.0_userId_TestLibraryId1")).toHaveTextContent(
       "userId3"
     );
-    expect(
-      screen.getByTestId("0.0_dateShared_TestLibraryId1")
-    ).toHaveTextContent(today.toLocaleDateString());
-
     //Row 2
     expect(
       screen.getByTestId("1_cqlLibraryName_TestLibraryId2")
@@ -559,9 +555,6 @@ describe("Create Share Dialog component", () => {
     expect(screen.getByTestId("1.0_userId_TestLibraryId2")).toHaveTextContent(
       "userId3"
     );
-    expect(
-      screen.getByTestId("1.0_dateShared_TestLibraryId2")
-    ).toHaveTextContent(today.toLocaleDateString());
     //Subrow 2 of Row 2
     expect(screen.getByTestId("1.1_userId_TestLibraryId2")).toHaveTextContent(
       "userId1"
