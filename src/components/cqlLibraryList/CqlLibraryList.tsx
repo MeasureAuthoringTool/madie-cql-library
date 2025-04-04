@@ -453,20 +453,23 @@ export default function CqlLibraryList({
     getAllOwners();
   }, [selectedLibraries?.length, setSelectedLibraries]);
 
-  const handleShareDialogClose = (type, message) => {
-    setShareDialog({
-      open: false,
-      option: "",
-    });
-
-    if (!_.isEmpty(message)) {
-      setSnackBar({
-        message: message,
-        open: true,
-        severity: type,
+  const handleShareDialogClose = useCallback(
+    (type, message) => {
+      setShareDialog({
+        open: false,
+        option: "",
       });
-    }
-  };
+
+      if (!_.isEmpty(message)) {
+        setSnackBar({
+          message: message,
+          open: true,
+          severity: type,
+        });
+      }
+    },
+    [shareDialog]
+  );
 
   return (
     <div data-testid="cqlLibrary-list">

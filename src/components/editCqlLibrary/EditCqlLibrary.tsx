@@ -552,20 +552,23 @@ const EditCqlLibrary = () => {
     window.dispatchEvent(event);
   };
 
-  const handleShareDialogClose = (type, message) => {
-    setShareDialog({
-      open: false,
-      option: "",
-    });
-
-    if (!_.isEmpty(message)) {
-      setSuccess({
-        status: type,
-        primaryMessage: message,
-        secondaryMessages: "",
+  const handleShareDialogClose = useCallback(
+    (type, message) => {
+      setShareDialog({
+        open: false,
+        option: "",
       });
-    }
-  };
+
+      if (!_.isEmpty(message)) {
+        setSuccess({
+          status: type,
+          primaryMessage: message,
+          secondaryMessages: "",
+        });
+      }
+    },
+    [shareDialog]
+  );
 
   return (
     <div>
