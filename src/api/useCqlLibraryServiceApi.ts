@@ -141,7 +141,7 @@ export class CqlLibraryServiceApi {
   async shareLibraries(libraries: Map<string, string[]>): Promise<any> {
     try {
       const response = await axios.put(
-        `${this.baseUrl}/cql-libraries/shared`,
+        `${this.baseUrl}/cql-libraries/share`,
         Object.fromEntries(libraries),
         {
           headers: {
