@@ -16,6 +16,7 @@ import {
 import InputAdornment from "@material-ui/core/InputAdornment";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
+import "./CqlLibraryLanding.scss";
 
 import queryString from "query-string";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -70,6 +71,7 @@ function CqlLibraryLanding() {
     open: false,
     severity: null,
   });
+  const [shareDialog, setShareDialog] = useState({ open: false, option: "" });
 
   const createVersion = async () => {
     await cqlLibraryServiceApi
@@ -217,7 +219,7 @@ function CqlLibraryLanding() {
           setCreateLibOpen(false);
         }}
       />
-      <div className="measure-table">
+      <div className="cql-library-table">
         <section
           tw="flex flex-row"
           style={{ borderBottom: "1px solid #8c8c8c" }}
@@ -283,6 +285,7 @@ function CqlLibraryLanding() {
                     setDeleteDraftDialog={setDeleteDraftDialog}
                     setSelectedCqlLibrary={setSelectedCqlLibrary}
                     setCreateDraftDialog={setCreateDraftDialog}
+                    setShareDialog={setShareDialog}
                     createVersion={createVersion}
                     owners={owners}
                   />
@@ -309,6 +312,8 @@ function CqlLibraryLanding() {
                 setSelectedCqlLibrary={setSelectedCqlLibrary}
                 createVersionDialog={createVersionDialog}
                 setCreateVersionDialog={setCreateVersionDialog}
+                shareDialog={shareDialog}
+                setShareDialog={setShareDialog}
                 createDraftDialog={createDraftDialog}
                 setCreateDraftDialog={setCreateDraftDialog}
                 snackBar={snackBar}

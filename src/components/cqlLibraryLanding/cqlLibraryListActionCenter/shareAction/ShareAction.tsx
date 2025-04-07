@@ -17,7 +17,12 @@ export const INVALID_SHARE_LIBRARY =
   "You cannot share/unshare a library you do not own";
 export const VALID_SHARE_LIBRARY = "Share/Unshare";
 
-const options = ["Share With", "Unshare"];
+export enum SharedOptions {
+  SHARE_WITH = "Share With",
+  UNSHARE = "Unshare",
+}
+
+const options = [SharedOptions.SHARE_WITH, SharedOptions.UNSHARE];
 
 export default function ShareAction(props: PropTypes) {
   const { libraries, canEdit, userName } = props;
