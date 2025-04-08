@@ -89,18 +89,16 @@
     }
   }
 
-  .expanded-row {
+  .subtr {
     background-color: #f8f8f8;
-
-    td {
-      padding: 10px;
-      border-bottom: 1px solid #8c8c8c;
-      border-top: 1px solid #8c8c8c;
-      height: 72px;
-
-      &:nth-of-type(2) {
-        padding-left: 40px !important;
-      }
-    }
   }
+}
+
+.share-unshare-dialog-info-text {
+  color: #515151;
+  font-weight: 400;
+  font-family: "Rubik";
+  margin-left: 32px;
+  margin-right: 32px;
+  padding-bottom: 17px;
 }

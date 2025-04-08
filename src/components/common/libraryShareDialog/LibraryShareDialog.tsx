@@ -425,9 +425,16 @@ const LibraryShareDialog = ({
               </div>
             </div>
           )}
-          <div style={{ marginLeft: 32, marginRight: 32 }}>
-            When sharing a library, all versions and drafts are shared, so only
-            the most recent library name appears here.
+          <div className="share-unshare-dialog-info-text">
+            <div>
+              When sharing a library, all versions and drafts are shared, so
+              only the most recent library name appears here.
+            </div>
+            {option === "Unshare" && (
+              <div>
+                Deselect the users with whom you want to unshare the library(s).
+              </div>
+            )}
           </div>
           <div className="cql-library-table no-margin-top">
             <div className="table" style={{ overflow: "auto" }}>
