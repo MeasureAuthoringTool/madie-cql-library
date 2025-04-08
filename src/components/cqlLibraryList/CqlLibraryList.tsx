@@ -7,6 +7,7 @@ import React, {
   useEffect,
   SyntheticEvent,
   MouseEvent,
+  useCallback,
 } from "react";
 import {
   useReactTable,
@@ -34,8 +35,10 @@ import {
   MadieDeleteDialog,
   Pagination,
 } from "@madie/madie-design-system/dist/react";
+import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import queryString from "query-string";
+import * as _ from "lodash";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -88,6 +91,8 @@ export default function CqlLibraryList({
   createVersionDialog,
   setCreateVersionDialog,
   createDraftDialog,
+  shareDialog,
+  setShareDialog,
   setCreateDraftDialog,
   setOwners,
   setSnackBar,
@@ -448,22 +453,42 @@ export default function CqlLibraryList({
     getAllOwners();
   }, [selectedLibraries?.length, setSelectedLibraries]);
 
+  const handleShareDialogClose = useCallback(
+    (type, message) => {
+      setShareDialog({
+        open: false,
+        option: "",
+      });
+
+      if (!_.isEmpty(message)) {
+        setSnackBar({
+          message: message,
+          open: true,
+          severity: type,
+        });
+      }
+    },
+    [shareDialog]
+  );
+
   return (
     <div data-testid="cqlLibrary-list">
-      <Snackbar
-        open={snackBar.open}
-        autoHideDuration={6000}
-        onClose={handleSnackBarClose}
-        data-testid="cql-library-list-snackBar"
-      >
-        <Alert
+      {snackBar.message !== "backdropClick" && (
+        <Snackbar
+          open={snackBar.open}
+          autoHideDuration={6000}
           onClose={handleSnackBarClose}
-          severity={snackBar.severity}
-          sx={{ width: "100%" }}
+          data-testid="cql-library-list-snackBar"
         >
-          {snackBar.message}
-        </Alert>
-      </Snackbar>
+          <Alert
+            onClose={handleSnackBarClose}
+            severity={snackBar.severity}
+            sx={{ width: "100%" }}
+          >
+            {snackBar.message}
+          </Alert>
+        </Snackbar>
+      )}
       <CreatVersionDialog
         open={createVersionDialog.open}
         onClose={handleDialogClose}
@@ -483,6 +508,12 @@ export default function CqlLibraryList({
         name={`draft of ${deleteDraftDialog.cqlLibrary?.cqlLibraryName}`}
         onClose={() => setDeleteDraftDialog({ ...INITIAL_DELETE_DRAFT_STATE })}
         onContinue={deleteDraft}
+      />
+      <LibraryShareDialog
+        libraries={selectedLibraries}
+        open={shareDialog.open}
+        option={shareDialog.option}
+        onClose={handleShareDialogClose}
       />
       <Popover
         open={optionsOpen}
