@@ -176,7 +176,7 @@ const LibraryShareDialog = ({
     try {
       await libraryServiceApi.shareLibraries(sharedLibrariesRequest);
 
-      onClose("success", "The Libraries were successfully shared.");
+      onClose("success", "The Library(ies) were successfully shared.");
     } catch (error) {
       onClose("danger", error.message);
     } finally {
