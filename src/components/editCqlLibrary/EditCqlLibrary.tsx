@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import tw from "twin.macro";
 import "styled-components/macro";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
@@ -53,6 +53,7 @@ import useFormikResetOnEvent from "../common/useFormikResetOnEvent";
 import CreateVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import { AxiosResponse } from "axios";
 import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
+import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -69,6 +70,7 @@ const EditCqlLibrary = () => {
     useState<boolean>(false);
   const [openCreateDraftDialog, setOpenCreateDraftDialog] =
     useState<boolean>(false);
+  const [shareDialog, setShareDialog] = useState({ open: false, option: "" });
 
   // on unmount forget library state.
   useEffect(() => {
@@ -108,6 +110,36 @@ const EditCqlLibrary = () => {
     });
     return () => {
       window.removeEventListener("draft-library", draftListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const shareListener = () => {
+      setShareDialog({
+        open: true,
+        option: "Share With",
+      });
+    };
+    window.addEventListener("share-library", shareListener, {
+      passive: true,
+    });
+    return () => {
+      window.removeEventListener("share-library", shareListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const unshareListener = () => {
+      setShareDialog({
+        open: true,
+        option: "Unshare",
+      });
+    };
+    window.addEventListener("unshare-library", unshareListener, {
+      passive: true,
+    });
+    return () => {
+      window.removeEventListener("unshare-library", unshareListener);
     };
   }, []);
 
@@ -519,6 +551,25 @@ const EditCqlLibrary = () => {
     const event = new CustomEvent("toggleEditorSearchBox");
     window.dispatchEvent(event);
   };
+
+  const handleShareDialogClose = useCallback(
+    (type, message) => {
+      setShareDialog({
+        open: false,
+        option: "",
+      });
+
+      if (!_.isEmpty(message)) {
+        setSuccess({
+          status: type,
+          primaryMessage: message,
+          secondaryMessages: "",
+        });
+      }
+    },
+    [shareDialog]
+  );
+
   return (
     <div>
       {activeSpinner ? (
@@ -811,6 +862,12 @@ const EditCqlLibrary = () => {
             name={`draft of ${loadedCqlLibrary?.cqlLibraryName}`}
             onClose={handleDialogClose}
             onContinue={() => deleteDraftLibrary(loadedCqlLibrary?.id)}
+          />
+          <LibraryShareDialog
+            libraries={[loadedCqlLibrary]}
+            open={shareDialog.open}
+            option={shareDialog.option}
+            onClose={handleShareDialogClose}
           />
           <CreateVersionDialog
             open={openCreateVersionDialog}
