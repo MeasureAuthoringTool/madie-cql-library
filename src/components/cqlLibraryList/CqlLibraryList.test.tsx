@@ -1,5 +1,11 @@
 import * as React from "react";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CqlLibraryList from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
@@ -26,7 +32,7 @@ jest.mock("@madie/madie-util", () => ({
   useFeatureFlags: jest.fn().mockReturnValue({}),
 }));
 
-const cqlLibrary: CqlLibrary[] = [
+const cqlLibrary = [
   {
     id: "622e1f46d1fd3729d861e6cb",
     librarySetId: "librarySetId1",
@@ -41,6 +47,7 @@ const cqlLibrary: CqlLibrary[] = [
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
     active: true,
+    hasAssociatedLibraries: false,
   },
   {
     id: "622e1f46d1fd3729d861e6c1",
@@ -56,6 +63,7 @@ const cqlLibrary: CqlLibrary[] = [
     cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
     cqlErrors: false,
     active: true,
+    hasAssociatedLibraries: false,
   },
 ];
 
@@ -79,6 +87,7 @@ const useCqlLibraryServiceMockResolved = {
   deleteDraft: jest.fn().mockResolvedValue({}),
   fetchCqlLibrary: jest.fn().mockResolvedValue({}),
   fetchAllOwners: jest.fn().mockResolvedValue(["owner1", "owner2"]),
+  getLibrariesByLibrarySetId: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
 
 describe("CqlLibrary List component", () => {
@@ -94,6 +103,9 @@ describe("CqlLibrary List component", () => {
       .fn()
       .mockResolvedValue({});
     useCqlLibraryServiceMockResolved.fetchCqlLibrary = jest
+      .fn()
+      .mockResolvedValue({});
+    useCqlLibraryServiceMockResolved.getLibrariesByLibrarySetId = jest
       .fn()
       .mockResolvedValue({});
     useCqlLibraryServiceMock.mockReset().mockImplementation(() => {
@@ -214,7 +226,7 @@ describe("CqlLibrary List component", () => {
   });
 
   it("should not have delete draft option if owner but versioned library", async () => {
-    const cqlLibrary: CqlLibrary[] = [
+    const cqlLibrary = [
       {
         id: "622e1f46d1fd3729d861e6cb",
         librarySetId: "libsetid",
@@ -229,6 +241,7 @@ describe("CqlLibrary List component", () => {
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
         active: true,
+        hasAssociatedLibraries: false,
       },
     ];
     render(
@@ -426,5 +439,90 @@ describe("CqlLibrary List component", () => {
     expect(
       screen.queryByRole("button", { name: "View/Edit" })
     ).not.toBeInTheDocument();
+  });
+
+  it("Expansion should be possible when there is child libraries", async () => {
+    (checkUserCanEdit as jest.Mock).mockReturnValue(true);
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibraryListCheckboxes: true,
+      LibraryListButtons: true,
+      LibrarySearch: true,
+    }));
+    const cqlLibrary = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: false,
+        version: "1.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+        hasAssociatedLibraries: true,
+      },
+      {
+        id: "622e1f46d1fd3729d861e6ca",
+        librarySetId: "librarySetId1",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "1",
+        createdBy: "testuseratexamplecom",
+        lastModifiedAt: "",
+        lastModifiedBy: "",
+        draft: false,
+        version: "2.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+        hasAssociatedLibraries: true,
+      },
+    ];
+
+    useCqlLibraryServiceMockResolved.getLibrariesByLibrarySetId = jest
+      .fn()
+      .mockReturnValue(cqlLibrary);
+
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
+      />
+    );
+
+    expect(
+      await screen.findByTestId(
+        "view-cql-library-button-622e1f46d1fd3729d861e6cb"
+      )
+    ).toBeInTheDocument();
+
+    expect(
+      screen.queryByTestId("cqlLibrary-expanded-622e1f46d1fd3729d861e6ca")
+    ).not.toBeInTheDocument();
+
+    const expandSection = screen.getByTestId("cqlLibrary-button-0_expandArrow");
+    expect(expandSection).toBeInTheDocument();
+    const expandButton = await within(expandSection).getByRole("button");
+    fireEvent.click(expandButton);
+
+    expect(
+      await screen.findByTestId("cqlLibrary-expanded-622e1f46d1fd3729d861e6ca")
+    ).toBeInTheDocument();
   });
 });

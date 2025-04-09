@@ -137,6 +137,32 @@ export class CqlLibraryServiceApi {
       throw new Error(message);
     }
   }
+
+  async getLibrariesByLibrarySetId(
+    librarySetId: string,
+    sortByLatestVersion?: boolean
+  ): Promise<any> {
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/cql-libraries/byLibrarySetId`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+          params: {
+            librarySetId: librarySetId,
+            sortByLatestVersion: sortByLatestVersion,
+          },
+        }
+      );
+      if (response.data) {
+        return response.data;
+      }
+    } catch (err) {
+      console.error("Failed to get libraries by library set id ", err);
+      throw err;
+    }
+  }
 }
 
 export default function useCqlLibraryServiceApi() {

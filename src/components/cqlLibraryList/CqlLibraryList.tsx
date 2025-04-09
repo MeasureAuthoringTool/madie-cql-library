@@ -36,6 +36,7 @@ import {
 } from "@madie/madie-design-system/dist/react";
 import { useNavigate, useLocation } from "react-router-dom";
 import queryString from "query-string";
+import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -98,6 +99,13 @@ export default function CqlLibraryList({
   visibleItems,
   offset,
 }) {
+  const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
+  const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
+  const [selectedExpandedLibrariesIds, setSelectedExpandedLibrariesIds] =
+    useState([]);
+  const [expandedSectionData, setExpandedSectionData] = useState<CqlLibrary[]>(
+    []
+  );
   const featureFlags = useFeatureFlags();
   const navigate = useNavigate();
   const { search } = useLocation();
@@ -291,6 +299,92 @@ export default function CqlLibraryList({
     setAnchorEl(null);
   };
 
+  const columnsToBeAdded = [
+    {
+      header: "Name",
+      accessorKey: "cqlLibraryName",
+      cell: (info) => (
+        <button
+          type="button"
+          onClick={() =>
+            navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
+          }
+          data-testid={`cqlLibrary-button-${info.row.original.id}`}
+        >
+          {info.getValue()}
+        </button>
+      ),
+    },
+    {
+      header: "Model",
+      accessorKey: "model",
+      cell: (info) => (
+        <button
+          type="button"
+          onClick={() =>
+            navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
+          }
+          data-testid={`cqlLibrary-button-${info.row.original.id}-model`}
+        >
+          {info.getValue()}
+        </button>
+      ),
+    },
+    {
+      header: "Version",
+      accessorKey: "version",
+      cell: (info) => (
+        <p>
+          {info.row.original.draft && "Draft "}
+          {info.getValue()}
+        </p>
+      ),
+    },
+    {
+      header: "Actions",
+
+      cell: (info) =>
+        !featureFlags?.LibraryListButtons ? (
+          <Button
+            variant="outline-secondary"
+            style={{ borderColor: "#c8c8c8" }}
+            onClick={(e) => handleOpen(info.row.original, e)}
+            data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
+            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+          >
+            View/Edit
+            <span>
+              <ExpandMoreIcon />
+            </span>
+          </Button>
+        ) : (
+          <Button
+            variant="outline-secondary"
+            style={{ borderColor: "#c8c8c8" }}
+            onClick={() =>
+              navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
+            }
+            data-testid={
+              checkUserCanEdit(
+                info.row.original.librarySet?.owner,
+                info.row.original.librarySet?.acls
+              ) && info.row.original.draft
+                ? `edit-cql-library-button-${info.row.original.id}`
+                : `view-cql-library-button-${info.row.original.id}`
+            }
+            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+          >
+            {checkUserCanEdit(
+              info.row.original.librarySet?.owner,
+              info.row.original.librarySet?.acls
+            ) && info.row.original.draft
+              ? "Edit"
+              : "View"}
+          </Button>
+        ),
+    },
+  ];
+
   const columns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     const columnDefs = [];
 
@@ -328,95 +422,100 @@ export default function CqlLibraryList({
         },
       });
 
-    // Add other columns similar to the second example
-    columnDefs.push(
-      {
-        header: "Name",
-        accessorKey: "cqlLibraryName",
-        cell: (info) => (
-          <button
-            type="button"
-            onClick={() =>
-              navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
-            }
-            data-testid={`cqlLibrary-button-${info.row.original.id}`}
-          >
-            {info.getValue()}
-          </button>
-        ),
-      },
-      {
-        header: "Model",
-        accessorKey: "model",
-        cell: (info) => (
-          <button
-            type="button"
-            onClick={() =>
-              navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
-            }
-            data-testid={`cqlLibrary-button-${info.row.original.id}-model`}
-          >
-            {info.getValue()}
-          </button>
-        ),
-      },
-      {
-        header: "Version",
-        accessorKey: "version",
-        cell: (info) => (
-          <p>
-            {info.row.original.draft && "Draft "}
-            {info.getValue()}
-          </p>
-        ),
-      },
-      {
-        header: "Actions",
+    columnDefs.push(...columnsToBeAdded);
 
-        cell: (info) =>
-          !featureFlags?.LibraryListButtons ? (
-            <Button
-              variant="outline-secondary"
-              style={{ borderColor: "#c8c8c8" }}
-              onClick={(e) => handleOpen(info.row.original, e)}
-              data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
-              aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
-            >
-              View/Edit
-              <span>
-                <ExpandMoreIcon />
+    if (featureFlags?.LibrarySearch) {
+      columnDefs.push({
+        header: "",
+        cell: (info) => {
+          if (info.row.original?.hasAssociatedLibraries) {
+            const handleKeyDown = (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                setSelectedExpandedLibrariesIds([]);
+                handleRowClick(info.row.original);
+              }
+            };
+            return (
+              <span
+                role="button"
+                tabIndex={0}
+                onClick={() => {
+                  setSelectedExpandedLibrariesIds([]);
+                  handleRowClick(info.row.original);
+                }}
+                onKeyDown={handleKeyDown}
+                style={{
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {isRowExpanded &&
+                selectedIdForExpansion === info.row.original.librarySetId ? (
+                  <CollapseIcon />
+                ) : (
+                  <ExpandIcon />
+                )}
               </span>
-            </Button>
-          ) : (
-            <Button
-              variant="outline-secondary"
-              style={{ borderColor: "#c8c8c8" }}
-              onClick={() =>
-                navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
-              }
-              data-testid={
-                checkUserCanEdit(
-                  info.row.original.librarySet?.owner,
-                  info.row.original.librarySet?.acls
-                ) && info.row.original.draft
-                  ? `edit-cql-library-button-${info.row.original.id}`
-                  : `view-cql-library-button-${info.row.original.id}`
-              }
-              aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
-            >
-              {checkUserCanEdit(
-                info.row.original.librarySet?.owner,
-                info.row.original.librarySet?.acls
-              ) && info.row.original.draft
-                ? "Edit"
-                : "View"}
-            </Button>
-          ),
-      }
-    );
+            );
+          } else {
+            return <></>;
+          }
+        },
+        accessorKey: "expandArrow",
+        enableSorting: false,
+      });
+    }
 
     return columnDefs;
-  }, [navigate, featureFlags?.LibraryListCheckboxes]);
+  }, [
+    navigate,
+    featureFlags?.LibraryListCheckboxes,
+    featureFlags?.LibrarySearch,
+    selectedIdForExpansion,
+    isRowExpanded,
+  ]);
+
+  const expandedcolumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
+    return [
+      {
+        id: "select",
+        accessorKey: "select",
+        header: "Select",
+        cell: (info) => {
+          const isChecked = selectedExpandedLibrariesIds.includes(
+            info.row.original.id
+          );
+          return (
+            <input
+              type="checkbox"
+              checked={isChecked}
+              onChange={(event) => {
+                const checked = event.target.checked;
+                if (checked) {
+                  setSelectedExpandedLibrariesIds((prev) => [
+                    ...prev,
+                    info.row.original.id,
+                  ]);
+                } else {
+                  setSelectedExpandedLibrariesIds((prev) =>
+                    prev.filter((id) => id !== info.row.original.id)
+                  );
+                }
+              }}
+            />
+          );
+        },
+      },
+      ...columnsToBeAdded,
+      {
+        header: "",
+        cell: (info) => <></>,
+        accessorKey: "",
+      },
+    ];
+  }, [selectedExpandedLibrariesIds, isRowExpanded]);
 
   const table = useReactTable({
     data: cqlLibraryList ?? [],
@@ -424,11 +523,49 @@ export default function CqlLibraryList({
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const selectedLibraries = cqlLibraryList?.filter((library) => {
-    return table
-      .getSelectedRowModel()
-      .rows.find((row) => row.original.id === library.id);
-  });
+  const parentLibraries =
+    cqlLibraryList?.filter((library) => {
+      return table
+        .getSelectedRowModel()
+        .rows.find((row) => row.original.id === library.id);
+    }) || [];
+
+  const expandedLibraries = selectedExpandedLibrariesIds?.map(
+    (expandedLibraryId) => {
+      return expandedSectionData?.find(
+        (data) => data?.id === expandedLibraryId
+      );
+    }
+  );
+
+  const selectedLibraries =
+    parentLibraries?.length === 0 && expandedLibraries?.length === 0
+      ? []
+      : [
+          ...parentLibraries,
+          ...expandedLibraries?.filter(
+            (expLibrary) => expLibrary !== undefined
+          ),
+        ];
+
+  const handleRowClick = async (actions) => {
+    if (!isRowExpanded || selectedIdForExpansion !== actions?.librarySetId) {
+      setSelectedIdForExpansion(actions?.librarySetId);
+      const results = await cqlLibraryServiceApi.getLibrariesByLibrarySetId(
+        actions?.librarySetId,
+        true
+      );
+      const filteredResults = results.filter(
+        (result) => result.id !== actions?.id
+      );
+      setIsRowExpanded(true);
+      setExpandedSectionData(filteredResults);
+    } else {
+      setIsRowExpanded(false);
+      setExpandedSectionData(null);
+      setSelectedIdForExpansion(null);
+    }
+  };
 
   useEffect(() => {
     setSelectedLibraries(selectedLibraries);
@@ -638,23 +775,51 @@ export default function CqlLibraryList({
                 </thead>
                 <tbody data-testid="table-body" className="table-body">
                   {table.getRowModel().rows.map((row) => (
-                    <tr
-                      key={row.id}
-                      data-testid="row-item"
-                      style={{ borderTop: "solid 1px #8c8c8c" }}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td
-                          key={cell.id}
-                          data-testid={`cqlLibrary-button-${cell.id}`}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </td>
-                      ))}
-                    </tr>
+                    <React.Fragment key={row.id}>
+                      <tr
+                        key={row.id}
+                        data-testid="row-item"
+                        style={{ borderTop: "solid 1px #8c8c8c" }}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <td
+                            key={cell.id}
+                            data-testid={`cqlLibrary-button-${cell.id}`}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                      {featureFlags?.LibrarySearch &&
+                        selectedIdForExpansion === row.original.librarySetId &&
+                        expandedSectionData?.map((subRow) => (
+                          <tr
+                            key={subRow.id}
+                            className="expanded-row"
+                            data-testid={`cqlLibrary-expanded-${subRow.id}`}
+                          >
+                            {expandedcolumns.map((column: any) =>
+                              column?.accessorKey === "expandArrow" ? (
+                                <td></td>
+                              ) : (
+                                <td key={column?.accessorKey || column.id}>
+                                  {flexRender(
+                                    column.cell ?? column.accessorKey,
+                                    {
+                                      row: { original: subRow },
+                                      getValue: () =>
+                                        subRow[column.accessorKey],
+                                    }
+                                  )}
+                                </td>
+                              )
+                            )}
+                          </tr>
+                        ))}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
