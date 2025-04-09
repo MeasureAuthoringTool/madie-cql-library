@@ -220,6 +220,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               onBlur={() => {
                 onBlur("cqlLibraryName");
               }}
+              maxLength={500}
             />
           </Box>
           <Box sx={formRowGapped}>
