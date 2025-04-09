@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import * as React from "react";
-import LibraryShareDialog, { SharedUser } from "./LibraryShareDialog";
+import LibraryShareDialog, { convertDate } from "./LibraryShareDialog";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../../api/useCqlLibraryServiceApi";
@@ -84,10 +84,15 @@ const mockShareLibraries = jest.fn().mockResolvedValue({
   [mockCqlLibrary2.id]: mockCqlLibrary2?.librarySet?.acls,
 });
 
+const mockUnshareLibraries = jest.fn().mockResolvedValue({
+  [mockCqlLibrary1.id]: mockCqlLibrary1?.librarySet?.acls,
+});
+
 const mockLibraryServiceApi = {
   getSharedLibraries: mockGetSharedCqlLibraries,
   shareLibraries: mockShareLibraries,
   getRecentLibrariesByLibrarySetId: mockGetRecentLibrariesByLibrarySetId,
+  unshareLibraries: mockUnshareLibraries,
 } as unknown as CqlLibraryServiceApi;
 
 describe("Create Share Dialog component", () => {
@@ -144,7 +149,7 @@ describe("Create Share Dialog component", () => {
 
   it("should render share dialog and display error message if getSharedLibaries call throws an exception", async () => {
     const errorMessage =
-      "Unable to retrieve users that the selected libraries is shared with. If the error persists, please contact the help desk.";
+      "Unable to retrieve users that the selected library(s) is shared with. If the error persists, please contact the help desk.";
 
     const mockLibraryServiceApi = {
       getSharedLibraries: jest.fn().mockRejectedValue(new Error(errorMessage)),
@@ -276,7 +281,7 @@ describe("Create Share Dialog component", () => {
     expect(saveBtn).toBeDisabled();
     expect(harpIdInput.value).toBe("userId1");
     const helperText = await screen.findByText(
-      "The selected Libraries are already shared with this user."
+      "The selected library(s) are already shared with this user."
     );
     expect(helperText).toBeVisible();
   });
@@ -329,6 +334,7 @@ describe("Create Share Dialog component", () => {
         onClose={jest.fn()}
       />
     );
+
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
     expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
@@ -367,29 +373,34 @@ describe("Create Share Dialog component", () => {
 
     //Row 1
     expect(
-      screen.getByTestId("0_cqlLibraryName_TestLibraryId1")
+      screen.getByTestId("TestLibraryId1_cqlLibraryName")
     ).toHaveTextContent("mockCqlLibrary1");
     //Subrow 1 of Row 1
-    expect(screen.getByTestId("0.0_userId_TestLibraryId1")).toHaveTextContent(
-      "userId3"
-    );
+    expect(
+      screen.getByTestId("TestLibraryId1 userId3_userId")
+    ).toHaveTextContent("userId3");
 
     //Row 2
     expect(
-      screen.getByTestId("1_cqlLibraryName_TestLibraryId2")
-    ).toHaveTextContent("mockCqlLibrary2");
-    //Subrow 1 of Row 2
-    expect(screen.getByTestId("1.0_userId_TestLibraryId2")).toHaveTextContent(
-      "userId3"
-    );
+      screen.getByTestId("TestLibraryId2 userId3_userId")
+    ).toHaveTextContent("userId3");
+    expect(
+      screen.getByTestId("TestLibraryId2 userId3_dateShared")
+    ).toHaveTextContent(convertDate(today.toLocaleDateString()));
     //Subrow 2 of Row 2
-    expect(screen.getByTestId("1.1_userId_TestLibraryId2")).toHaveTextContent(
-      "userId1"
-    );
+    expect(
+      screen.getByTestId("TestLibraryId2 userId1_userId")
+    ).toHaveTextContent("userId1");
+    expect(
+      screen.getByTestId("TestLibraryId2 userId1_dateShared")
+    ).toHaveTextContent(convertDate(yesterday.toLocaleDateString()));
     //Subrow 3 of Row 2
-    expect(screen.getByTestId("1.2_userId_TestLibraryId2")).toHaveTextContent(
-      "userId2"
-    );
+    expect(
+      screen.getByTestId("TestLibraryId2 userId2_userId")
+    ).toHaveTextContent("userId2");
+    expect(
+      screen.getByTestId("TestLibraryId2 userId2_dateShared")
+    ).toHaveTextContent(convertDate(yesterday.toLocaleDateString()));
   });
 
   it("should add a user row to the grid for each library that does not already have that user and save successfully after clicking Save button.", async () => {
@@ -406,6 +417,7 @@ describe("Create Share Dialog component", () => {
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
     expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -541,27 +553,198 @@ describe("Create Share Dialog component", () => {
 
     //Row 1
     expect(
-      screen.getByTestId("0_cqlLibraryName_TestLibraryId1")
+      screen.getByTestId("TestLibraryId1_cqlLibraryName")
     ).toHaveTextContent("mockCqlLibrary1");
     //Subrow 1 of Row 1
-    expect(screen.getByTestId("0.0_userId_TestLibraryId1")).toHaveTextContent(
-      "userId3"
-    );
+    expect(
+      screen.getByTestId("TestLibraryId1 userId3_userId")
+    ).toHaveTextContent("userId3");
+
     //Row 2
     expect(
-      screen.getByTestId("1_cqlLibraryName_TestLibraryId2")
-    ).toHaveTextContent("mockCqlLibrary2");
-    //Subrow 1 of Row 2
-    expect(screen.getByTestId("1.0_userId_TestLibraryId2")).toHaveTextContent(
-      "userId3"
-    );
+      screen.getByTestId("TestLibraryId2 userId3_userId")
+    ).toHaveTextContent("userId3");
+    expect(
+      screen.getByTestId("TestLibraryId2 userId3_dateShared")
+    ).toHaveTextContent(convertDate(today.toLocaleDateString()));
     //Subrow 2 of Row 2
-    expect(screen.getByTestId("1.1_userId_TestLibraryId2")).toHaveTextContent(
-      "userId1"
-    );
+    expect(
+      screen.getByTestId("TestLibraryId2 userId1_userId")
+    ).toHaveTextContent("userId1");
+    expect(
+      screen.getByTestId("TestLibraryId2 userId1_dateShared")
+    ).toHaveTextContent(convertDate(yesterday.toLocaleDateString()));
     //Subrow 3 of Row 2
-    expect(screen.getByTestId("1.2_userId_TestLibraryId2")).toHaveTextContent(
-      "userId2"
+    expect(
+      screen.getByTestId("TestLibraryId2 userId2_userId")
+    ).toHaveTextContent("userId2");
+    expect(
+      screen.getByTestId("TestLibraryId2 userId2_dateShared")
+    ).toHaveTextContent(convertDate(yesterday.toLocaleDateString()));
+  });
+
+  it("should display share library table", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
     );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+
+    const table = await screen.findByTestId("share-library-tbl");
+    const tableHeaders = table.querySelectorAll("thead th");
+
+    expect(tableHeaders[0]).toHaveTextContent("Library");
+    expect(tableHeaders[1]).toHaveTextContent("User");
+    expect(tableHeaders[2]).toHaveTextContent("Date Shared");
+    //Expand row column has no header
+    expect(tableHeaders[3]).toHaveTextContent("");
+
+    const tableRows = table.querySelectorAll("tbody tr");
+
+    expect(tableRows[0]).toHaveTextContent(mockCqlLibrary1.cqlLibraryName);
+    expect(tableRows[1]).toHaveTextContent(mockCqlLibrary2.cqlLibraryName);
+  });
+
+  it("should display unshare library table", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"Unshare"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+
+    const table = await screen.findByTestId("share-library-tbl");
+    const tableHeaders = table.querySelectorAll("thead th");
+
+    expect(tableHeaders[0]).toHaveTextContent("Library");
+    expect(tableHeaders[1]).toHaveTextContent("User");
+    expect(tableHeaders[2]).toHaveTextContent("Date Shared");
+    //Expand row column has no header
+    expect(tableHeaders[3]).toHaveTextContent("");
+
+    const tableRows = table.querySelectorAll("tbody tr");
+
+    expect(tableRows[0]).toHaveTextContent(mockCqlLibrary1.cqlLibraryName);
+    expect(tableRows[1]).toHaveTextContent(mockCqlLibrary2.cqlLibraryName);
+  });
+
+  it("should successfully unshare a user from a library.", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"Unshare"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+
+    const saveBtn = await screen.findByTestId("share-save-button");
+    expect(saveBtn).toBeDisabled();
+
+    const expandButton = await screen.findByTestId(
+      `expand-button-${mockCqlLibrary2.id}`
+    );
+    fireEvent.click(expandButton);
+
+    const checkBoxes = await screen.findAllByRole("checkbox");
+    expect(checkBoxes.length).toBe(2);
+    expect(checkBoxes[0]).toBeChecked();
+    expect(checkBoxes[1]).toBeChecked();
+
+    fireEvent.click(checkBoxes[0]);
+
+    await waitFor(() => expect(checkBoxes[0]).not.toBeChecked());
+    expect(saveBtn).toBeEnabled();
+
+    fireEvent.click(saveBtn);
+
+    expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
+
+    const acceptBtn = await screen.findByTestId(
+      "share-confirmation-dialog-accept-button"
+    );
+    expect(acceptBtn).toBeEnabled();
+
+    fireEvent.click(acceptBtn);
+    await waitFor(async () => {
+      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+    });
+  });
+
+  it("should fail to unshare a user from a library.", async () => {
+    const errorMessage =
+      "Unable to unshare the selected library(s) with the users who were unchecked. If the error persists, please contact the help desk.";
+
+    const mockLibraryServiceApi = {
+      getSharedLibraries: mockGetSharedCqlLibraries,
+      getRecentLibrariesByLibrarySetId: mockGetRecentLibrariesByLibrarySetId,
+      unshareLibraries: jest.fn().mockRejectedValue(new Error(errorMessage)),
+    } as unknown as CqlLibraryServiceApi;
+
+    useLibraryServiceMock.mockImplementation(() => {
+      return mockLibraryServiceApi;
+    });
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"Unshare"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+
+    const saveBtn = await screen.findByTestId("share-save-button");
+    expect(saveBtn).toBeDisabled();
+
+    const expandButton = await screen.findByTestId(
+      `expand-button-${mockCqlLibrary2.id}`
+    );
+    fireEvent.click(expandButton);
+
+    const checkBoxes = await screen.findAllByRole("checkbox");
+    expect(checkBoxes.length).toBe(2);
+    expect(checkBoxes[0]).toBeChecked();
+    expect(checkBoxes[1]).toBeChecked();
+
+    fireEvent.click(checkBoxes[0]);
+
+    await waitFor(() => expect(checkBoxes[0]).not.toBeChecked());
+    expect(saveBtn).toBeEnabled();
+
+    fireEvent.click(saveBtn);
+
+    expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
+
+    const acceptBtn = await screen.findByTestId(
+      "share-confirmation-dialog-accept-button"
+    );
+    expect(acceptBtn).toBeEnabled();
+
+    fireEvent.click(acceptBtn);
+    await waitFor(async () => {
+      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+    });
   });
 });

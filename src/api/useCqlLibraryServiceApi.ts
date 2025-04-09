@@ -204,6 +204,28 @@ export class CqlLibraryServiceApi {
       throw error;
     }
   }
+
+  async unshareLibraries(
+    libraryUserIdMap: Map<string, string[]>
+  ): Promise<any> {
+    {
+      try {
+        const response = await axios.put(
+          `${this.baseUrl}/cql-libraries/unshare`,
+          Object.fromEntries(libraryUserIdMap),
+          {
+            headers: {
+              Authorization: `Bearer ${this.getAccessToken()}`,
+            },
+          }
+        );
+        return response.data;
+      } catch (err) {
+        console.error("Failed to unshare libraries", err);
+        throw err;
+      }
+    }
+  }
 }
 
 export default function useCqlLibraryServiceApi() {

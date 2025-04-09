@@ -64,7 +64,7 @@ const keyboardArrowStyles = {
 };
 
 //Convert date string to format of mm/dd/yyyy with no leading zeroes in month
-const convertDate = (date: string) => {
+export const convertDate = (date: string) => {
   if (!date) {
     return "";
   }
@@ -76,12 +76,23 @@ const convertDate = (date: string) => {
 };
 
 const sortSharedLibraries = (a: SharedLibrary, b: SharedLibrary) => {
-  //Move SharedLibraries with dateShared of "-" to end of list
   if (a.dateShared === "-" || b.dateShared === "-") {
     return -1;
   }
 
   return new Date(b.dateShared).getTime() - new Date(a.dateShared).getTime();
+};
+
+const getErrorMessage = (error, baseMessage: string) => {
+  let toastMessage;
+
+  if (error?.response?.data?.message) {
+    toastMessage = error.response.data.message;
+  } else {
+    toastMessage = baseMessage;
+  }
+
+  return toastMessage;
 };
 
 const LibraryShareDialog = ({
@@ -92,29 +103,47 @@ const LibraryShareDialog = ({
 }: ShareDialogProps) => {
   const libraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
 
-  const [sharedLibraries, setSharedLibraries] = useState<SharedLibrary[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const [sharedWithAllSelectedLibraries, setSharedWithAllSelectedLibraries] =
-    useState<boolean>(false);
   const [saveDisabled, setSaveDisabled] = useState<boolean>(true);
   const [executing, setExecuting] = useState<boolean>(false);
-  const [sharedLibrariesRequest, setSharedLibrariesRequest] = useState(
+  const [errorMessage, setErrorMessage] = useState<string>("");
+
+  const [libraryMap, setLibraryMap] = useState(new Map<string, CqlLibrary>());
+  const [sharedLibraries, setSharedLibraries] = useState<SharedLibrary[]>([]);
+  const [sharedWithAllSelectedLibraries, setSharedWithAllSelectedLibraries] =
+    useState<boolean>(false);
+  const [shareLibrariesRequest, setShareLibrariesRequest] = useState(
+    new Map<string, string[]>()
+  );
+  const [unshareLibrariesRequest, setUnshareLibrariesRequest] = useState(
     new Map<string, string[]>()
   );
 
-  const updateSharedLibraries = (LibraryId, harpId) => {
-    setSharedLibrariesRequest((map) => {
-      const current = map.get(LibraryId) || [];
+  const [rowSelection, setRowSelection] = useState({});
+  const [initialRowIdsSelected, setInitialRowIdsSelected] = useState([]);
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+
+  const updateSharedLibrariesRequest = (libraryId, harpId) => {
+    setShareLibrariesRequest((map) => {
+      const current = map.get(libraryId) || [];
       current.push(harpId);
 
-      return map.set(LibraryId, current);
+      return map.set(libraryId, current);
+    });
+  };
+
+  const updateUnsharedLibrariesRequest = (libraryId, harpId) => {
+    setUnshareLibrariesRequest((map) => {
+      const current = map.get(libraryId) || [];
+      current.push(harpId);
+
+      return map.set(libraryId, current);
     });
   };
 
   const harpIdCheck = (isSharedWithAllSelectedLibraries: boolean) => {
     return {
-      message: `The selected Libraries are already shared with this user.`,
+      message: `The selected library(s) are already shared with this user.`,
       test: () => {
         return !isSharedWithAllSelectedLibraries;
       },
@@ -133,7 +162,7 @@ const LibraryShareDialog = ({
 
     let sharedWithAllSelectedLibraries = true;
 
-    const updatedSharedLibraries = sharedLibraries.map((library) => {
+    const updateSharedLibraries = sharedLibraries.map((library) => {
       if (
         library.subRows.length &&
         library.subRows.some((subRow) => subRow.userId === harpId)
@@ -142,7 +171,7 @@ const LibraryShareDialog = ({
       } else {
         sharedWithAllSelectedLibraries = false;
 
-        updateSharedLibraries(library.libraryId, harpId);
+        updateSharedLibrariesRequest(library.libraryId, harpId);
 
         return {
           ...library,
@@ -160,29 +189,15 @@ const LibraryShareDialog = ({
       }
     });
 
-    setSharedLibraries(updatedSharedLibraries);
+    setSharedLibraries(updateSharedLibraries);
+    setSharedWithAllSelectedLibraries(sharedWithAllSelectedLibraries);
 
     if (!sharedWithAllSelectedLibraries) {
       setSaveDisabled(false);
       formik.resetForm();
     }
-
-    setSharedWithAllSelectedLibraries(sharedWithAllSelectedLibraries);
   };
 
-  const handleSubmit = async () => {
-    setExecuting(true);
-
-    try {
-      await libraryServiceApi.shareLibraries(sharedLibrariesRequest);
-
-      onClose("success", "The Library(ies) were successfully shared.");
-    } catch (error) {
-      onClose("danger", error.message);
-    } finally {
-      setExecuting(false);
-    }
-  };
   const getSharedLibrary = useCallback(async () => {
     if ((libraries && libraries?.length === 0) || !open) {
       return;
@@ -201,11 +216,11 @@ const LibraryShareDialog = ({
         await libraryServiceApi.getRecentLibrariesByLibrarySetId(
           uniqueLibrarySets.map((librarySet) => librarySet.librarySetId)
         );
-
       const libraryIds = responses.map((library) => library.id);
-      const libraryMap = new Map(
+      const libraryMap = new Map<string, CqlLibrary>(
         responses.map((library) => [library.id, library])
       );
+      setLibraryMap(libraryMap);
 
       const sharedLibraries = await libraryServiceApi.getSharedLibraries(
         libraryIds
@@ -228,12 +243,103 @@ const LibraryShareDialog = ({
             .sort(sortSharedLibraries),
         }))
       );
+
+      table.toggleAllRowsSelected(true);
+      setInitialRowIdsSelected(Object.keys(table.getState().rowSelection));
     } catch (error) {
-      setErrorMessage(error.message);
+      setErrorMessage(
+        getErrorMessage(
+          error,
+          "Unable to retrieve users that the selected library(s) is shared with. If the error persists, please contact the help desk."
+        )
+      );
     } finally {
       setLoading(false);
     }
   }, [open]);
+
+  const handleSave = async () => {
+    setConfirmationDialogOpen(false);
+    setExecuting(true);
+
+    if (option === "Share With") {
+      try {
+        await libraryServiceApi.shareLibraries(shareLibrariesRequest);
+
+        onClose("success", "The Library(ies) were successfully shared.");
+      } catch (error) {
+        onClose(
+          "danger",
+          getErrorMessage(
+            error,
+            "Unable to share the selected library(s) with the added users. If the error persists, please contact the help desk."
+          )
+        );
+      } finally {
+        setExecuting(false);
+      }
+    } else if (option === "Unshare") {
+      try {
+        await libraryServiceApi.unshareLibraries(unshareLibrariesRequest);
+
+        onClose("success", "The Library(ies) were successfully unshared.");
+      } catch (error) {
+        onClose(
+          "danger",
+          getErrorMessage(
+            error,
+            "Unable to unshare the selected library(s) with the users who were unchecked. If the error persists, please contact the help desk."
+          )
+        );
+      } finally {
+        setExecuting(false);
+      }
+    }
+  };
+
+  const onRowSelectionChange = useCallback(async () => {
+    if (initialRowIdsSelected.length) {
+      const rowIdsSelected = Object.keys(rowSelection);
+
+      const rowIdsUnselected: string[] = initialRowIdsSelected.filter(
+        (element) => !rowIdsSelected.includes(element)
+      );
+
+      setUnshareLibrariesRequest(new Map<string, string[]>());
+
+      rowIdsUnselected.map((rowId) => {
+        const [libraryId, userId] = rowId.split(" ");
+        updateUnsharedLibrariesRequest(libraryId, userId);
+      });
+    }
+  }, [rowSelection]);
+
+  const confirmationDialogWarningContent = () => {
+    return (
+      <div>
+        <div className="confirmation-dialog-content">
+          You are about to unshare
+        </div>
+        {Array.from(unshareLibrariesRequest).map(([libraryId, userIds]) => (
+          <>
+            <div className="confirmation-dialog-content">
+              <div className="library-name">
+                {libraryMap.get(libraryId)
+                  ? libraryMap.get(libraryId).cqlLibraryName
+                  : libraryId}
+              </div>
+              <div> with the following users:</div>
+              <ul>
+                {userIds.map((userId) => (
+                  <li>{userId}</li>
+                ))}
+              </ul>
+            </div>
+          </>
+        ))}
+      </div>
+    );
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -242,7 +348,120 @@ const LibraryShareDialog = ({
     validationSchema: Yup.object().shape({
       harpId: Yup.string().test(harpIdCheck(sharedWithAllSelectedLibraries)),
     }),
-    onSubmit: handleSubmit,
+    onSubmit: handleSave,
+  });
+
+  const columns = useMemo<ColumnDef<SharedLibrary>[]>(() => {
+    let columnDefs = [];
+
+    if (option === "Share With") {
+      columnDefs.push({
+        header: "Library",
+        cell: (info) => (
+          <TruncateText
+            text={info.row.original.cqlLibraryName}
+            maxLength={120}
+            dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
+          />
+        ),
+        accessorKey: "cqlLibraryName",
+      });
+    } else if (option === "Unshare") {
+      columnDefs.push({
+        header: "Library",
+        cell: (info) =>
+          info.row.original.cqlLibraryName ? (
+            <TruncateText
+              text={info.row.original.cqlLibraryName}
+              maxLength={120}
+              dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
+            />
+          ) : (
+            <Checkbox
+              icon={icon}
+              checkedIcon={checkedIcon}
+              checked={info.row.getIsSelected()}
+              onChange={info.row.getToggleSelectedHandler()}
+              data-testid={`unshare-checkbox-${info.row.original.userId}_${info.row.original.libraryId}`}
+            />
+          ),
+        accessorKey: "cqlLibraryName",
+      });
+    }
+
+    columnDefs = [
+      ...columnDefs,
+      {
+        header: "User",
+        cell: (info) => (
+          <TruncateText
+            text={info.row.original.userId}
+            maxLength={120}
+            dataTestId={`user-${info.row.original.userId}_${info.row.original.libraryId}`}
+          />
+        ),
+        accessorKey: "userId",
+      },
+      {
+        header: "Date Shared",
+        cell: (info) => (
+          <TruncateText
+            text={
+              info.row.original.dateShared === "-"
+                ? "-"
+                : info.row.original.dateShared
+                ? convertDate(info.row.original.dateShared)
+                : ""
+            }
+            maxLength={120}
+            dataTestId={`date-shared-${info.row.original.dateShared}_${info.row.original.libraryId}`}
+          />
+        ),
+        accessorKey: "dateShared",
+      },
+      {
+        cell: ({ row }) => (
+          <>
+            {row.getCanExpand() ? (
+              <button
+                type="button"
+                data-testid={`expand-button-${row.original.libraryId}`}
+                onClick={row.getToggleExpandedHandler()}
+                style={{ cursor: "pointer" }}
+              >
+                {row.getIsExpanded() ? (
+                  <KeyboardArrowDownIcon sx={keyboardArrowStyles} />
+                ) : (
+                  <KeyboardArrowRightIcon sx={keyboardArrowStyles} />
+                )}
+              </button>
+            ) : null}
+          </>
+        ),
+        id: "expandButton",
+      },
+    ];
+
+    return columnDefs;
+  }, [libraries]);
+
+  const table = useReactTable({
+    data: sharedLibraries,
+    getRowId: (row) => `${row.libraryId}${row.userId ? ` ${row.userId}` : ""}`,
+    columns,
+    defaultColumn: {
+      size: 200,
+      minSize: 50,
+      maxSize: 500,
+    },
+    getCoreRowModel: getCoreRowModel(),
+    getExpandedRowModel: getExpandedRowModel(),
+    getSubRows: (row) => row.subRows,
+    enableRowSelection: true,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      rowSelection,
+    },
   });
 
   useEffect(() => {
@@ -254,119 +473,19 @@ const LibraryShareDialog = ({
   }, [sharedWithAllSelectedLibraries]);
 
   useEffect(() => {
+    onRowSelectionChange();
+  }, [table.getState().rowSelection]);
+
+  useEffect(() => {
     setSaveDisabled(true);
-    setSharedLibrariesRequest(new Map<string, string[]>());
+    setShareLibrariesRequest(new Map<string, string[]>());
+    setUnshareLibrariesRequest(new Map<string, string[]>());
+    setInitialRowIdsSelected([]);
+    table.resetRowSelection();
     table.resetExpanded();
     formik.resetForm();
   }, [onClose]);
 
-  const columns = useMemo<ColumnDef<SharedLibrary>[]>(() => {
-    let columnDefs = [];
-    if (libraries.length > 0) {
-      if (option === "Share With") {
-        columnDefs.push({
-          header: "Library",
-          cell: (info) => (
-            <TruncateText
-              text={info.row.original.cqlLibraryName}
-              maxLength={120}
-              dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
-            />
-          ),
-          accessorKey: "cqlLibraryName",
-        });
-      } else if (option === "Unshare") {
-        columnDefs.push({
-          header: "Library",
-          cell: (info) =>
-            info.row.original.cqlLibraryName ? (
-              <TruncateText
-                text={info.row.original.cqlLibraryName}
-                maxLength={120}
-                dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
-              />
-            ) : (
-              <Checkbox
-                icon={icon}
-                checkedIcon={checkedIcon}
-                checked={info.row.getIsSelected()}
-                onChange={info.row.getToggleSelectedHandler()}
-                data-testid={`unshare-checkbox-${info.row.original.userId}_${info.row.original.libraryId}`}
-              />
-            ),
-          accessorKey: "cqlLibraryName",
-        });
-      }
-
-      columnDefs = [
-        ...columnDefs,
-        {
-          header: "User",
-          cell: (info) => (
-            <TruncateText
-              text={info.row.original.userId}
-              maxLength={120}
-              dataTestId={`user-${info.row.original.userId}_${info.row.original.libraryId}`}
-            />
-          ),
-          accessorKey: "userId",
-        },
-        {
-          header: "Date Shared",
-          cell: (info) => (
-            <TruncateText
-              text={
-                info.row.original.dateShared === "-"
-                  ? "-"
-                  : info.row.original.dateShared
-                  ? convertDate(info.row.original.dateShared)
-                  : ""
-              }
-              maxLength={120}
-              dataTestId={`date-shared-${info.row.original.dateShared}_${info.row.original.libraryId}`}
-            />
-          ),
-          accessorKey: "dateShared",
-        },
-        {
-          cell: ({ row }) => (
-            <>
-              {row.getCanExpand() ? (
-                <button
-                  type="button"
-                  data-testid={`expand-button-${row.original.libraryId}`}
-                  onClick={row.getToggleExpandedHandler()}
-                  style={{ cursor: "pointer" }}
-                >
-                  {row.getIsExpanded() ? (
-                    <KeyboardArrowDownIcon sx={keyboardArrowStyles} />
-                  ) : (
-                    <KeyboardArrowRightIcon sx={keyboardArrowStyles} />
-                  )}
-                </button>
-              ) : null}
-            </>
-          ),
-          id: "expand-button",
-        },
-      ];
-    }
-
-    return columnDefs;
-  }, [libraries]);
-
-  const table = useReactTable({
-    data: sharedLibraries,
-    columns,
-    defaultColumn: {
-      size: 200,
-      minSize: 50,
-      maxSize: 500,
-    },
-    getCoreRowModel: getCoreRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    getSubRows: (row) => row.subRows,
-  });
   return (
     <>
       <GlobalStyles />
@@ -376,7 +495,11 @@ const LibraryShareDialog = ({
         dialogProps={{
           onClose,
           open,
-          onSubmit: formik.handleSubmit,
+          onSubmit: () => {
+            option === "Share With"
+              ? formik.handleSubmit()
+              : setConfirmationDialogOpen(true);
+          },
           maxWidth: "lg",
           "data-testid": "share-dialog",
         }}
@@ -391,7 +514,10 @@ const LibraryShareDialog = ({
           type: "submit",
           continueText: "Save",
           "data-testid": "share-save-button",
-          disabled: saveDisabled || !formik.isValid || executing,
+          disabled:
+            option === "Share With"
+              ? saveDisabled || !formik.isValid || executing
+              : table.getIsAllRowsSelected() || executing,
         }}
       >
         <div id="library-landing" data-testid="library-landing">
@@ -427,7 +553,7 @@ const LibraryShareDialog = ({
           )}
           <div className="share-unshare-dialog-info-text">
             <div>
-              When sharing a library, all versions and drafts are shared, so
+              When sharing a Library, all versions and drafts are shared, so
               only the most recent library name appears here.
             </div>
             {option === "Unshare" && (
@@ -436,7 +562,7 @@ const LibraryShareDialog = ({
               </div>
             )}
           </div>
-          <div className="cql-library-table no-margin-top">
+          <div className="cql-library-table">
             <div className="table" style={{ overflow: "auto" }}>
               <table
                 tw="min-w-full"
@@ -487,18 +613,14 @@ const LibraryShareDialog = ({
                           borderSpacing: "0 2em !important",
                         }}
                       >
-                        {sharedLibraries.length > 0 &&
-                          row.getVisibleCells().map((cell) => (
-                            <td
-                              key={cell.id}
-                              data-testid={`${cell.id}_${cell.row.original.libraryId}`}
-                            >
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )}
-                            </td>
-                          ))}
+                        {row.getVisibleCells().map((cell) => (
+                          <td key={cell.id} data-testid={`${cell.id}`}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </td>
+                        ))}
                       </tr>
                     ))
                   )}
@@ -509,11 +631,44 @@ const LibraryShareDialog = ({
         </div>
         <Backdrop
           sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
-          open={loading}
+          open={loading || executing}
         >
           <MadieSpinner style={{ height: 50, width: 50 }} />
-          <Typography color="inherit">Loading shared Libraries...</Typography>
+          {loading && (
+            <Typography color="inherit">Loading shared libraries...</Typography>
+          )}
+          {executing && <Typography color="inherit">Saving...</Typography>}
         </Backdrop>
+      </MadieDialog>
+
+      <MadieDialog
+        title="Are you sure?"
+        dialogProps={{
+          open: confirmationDialogOpen,
+          onClose: () => {
+            setConfirmationDialogOpen(false);
+          },
+          "data-testid": "share-confirmation-dialog",
+        }}
+        cancelButtonProps={{
+          onClick: () => {
+            setConfirmationDialogOpen(false);
+          },
+          cancelText: "Cancel",
+          "data-testid": "share-confirmation-dialog-cancel-button",
+        }}
+        continueButtonProps={{
+          type: "submit",
+          continueText: "Accept",
+          onClick: formik.handleSubmit,
+          "data-testid": "share-confirmation-dialog-accept-button",
+        }}
+      >
+        <div id="discard-changes-dialog-body">
+          <section className="dialog-warning-body">
+            {confirmationDialogWarningContent()}
+          </section>
+        </div>
       </MadieDialog>
     </>
   );
