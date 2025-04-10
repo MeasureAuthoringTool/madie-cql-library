@@ -266,7 +266,7 @@ const LibraryShareDialog = ({
       try {
         await libraryServiceApi.shareLibraries(shareLibrariesRequest);
 
-        onClose("success", "The Library(ies) were successfully shared.");
+        onClose("success", "The Library(s) were successfully shared.");
       } catch (error) {
         onClose(
           "danger",
@@ -282,7 +282,7 @@ const LibraryShareDialog = ({
       try {
         await libraryServiceApi.unshareLibraries(unshareLibrariesRequest);
 
-        onClose("success", "The Library(ies) were successfully unshared.");
+        onClose("success", "The Library(s) were successfully unshared.");
       } catch (error) {
         onClose(
           "danger",
@@ -348,7 +348,9 @@ const LibraryShareDialog = ({
     validationSchema: Yup.object().shape({
       harpId: Yup.string().test(harpIdCheck(sharedWithAllSelectedLibraries)),
     }),
-    onSubmit: handleSave,
+    onSubmit: () => {
+      option === "Share With" ? handleSave() : setConfirmationDialogOpen(true);
+    },
   });
 
   const columns = useMemo<ColumnDef<SharedLibrary>[]>(() => {
@@ -495,11 +497,7 @@ const LibraryShareDialog = ({
         dialogProps={{
           onClose,
           open,
-          onSubmit: () => {
-            option === "Share With"
-              ? formik.handleSubmit()
-              : setConfirmationDialogOpen(true);
-          },
+          onSubmit: formik.handleSubmit,
           maxWidth: "lg",
           "data-testid": "share-dialog",
         }}
@@ -660,7 +658,7 @@ const LibraryShareDialog = ({
         continueButtonProps={{
           type: "submit",
           continueText: "Accept",
-          onClick: formik.handleSubmit,
+          onClick: handleSave,
           "data-testid": "share-confirmation-dialog-accept-button",
         }}
       >
