@@ -53,6 +53,7 @@ declare module "@madie/madie-util" {
     LibraryListCheckboxes: boolean;
     LibraryListButtons: boolean;
     ShareLibrary: boolean;
+    LibrarySearch: boolean;
   }
 
   export function useFeatureFlags(): FeatureFlags;
