@@ -397,17 +397,6 @@ export default function CqlLibraryList({
     featureFlags?.LibraryListCheckboxes &&
       columnDefs.push({
         id: "select",
-        header: ({ table }) => {
-          return (
-            <IndeterminateCheckbox
-              {...{
-                checked: table.getIsAllRowsSelected(),
-                indeterminate: table.getIsSomePageRowsSelected(),
-                onChange: table.getToggleAllPageRowsSelectedHandler(),
-              }}
-            />
-          );
-        },
         cell: ({ row }) => {
           return (
             <div className="px-1">
