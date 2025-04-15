@@ -163,7 +163,7 @@ describe("Cql Library Page", () => {
   test("shows my Cql Libraries on page load", async () => {
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     renderWithRouter();
     await waitFor(() => {
       const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
@@ -179,13 +179,11 @@ describe("Cql Library Page", () => {
       null,
       abortController.signal
     );
-    const myCqlLibrariesTab = screen.getByRole("tab", {
-      name: "My CQL Libraries",
-    });
+    const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
     expect(myCqlLibrariesTab).toBeInTheDocument();
     expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
     const allCqlLibrariesTab = screen.getByRole("tab", {
-      name: "All CQL Libraries",
+      name: "All Libraries(10)",
     });
     expect(allCqlLibrariesTab).toBeInTheDocument();
     expect(allCqlLibrariesTab).not.toHaveClass("Mui-selected");
@@ -207,12 +205,10 @@ describe("Cql Library Page", () => {
       null,
       abortController.signal
     );
-    const myCqlLibrariesTab = screen.getByRole("tab", {
-      name: "My CQL Libraries",
-    });
+    const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
     expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
     const allCqlLibrariesTab = screen.getByRole("tab", {
-      name: "All CQL Libraries",
+      name: "All Libraries(10)",
     });
 
     userEvent.click(allCqlLibrariesTab);
@@ -256,7 +252,7 @@ describe("Cql Library Page", () => {
   test("Checkbox interactions", async () => {
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibraryListCheckboxes: true,
       LibraryListButtons: true,
@@ -287,7 +283,7 @@ describe("Cql Library Page", () => {
     }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
 
     renderWithRouter();
 
@@ -326,7 +322,7 @@ describe("Cql Library Page", () => {
     }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     renderWithRouter();
 
     await waitFor(() => {
@@ -367,7 +363,7 @@ describe("Cql Library Page", () => {
     }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     const axiosError: AxiosError = {
       response: {
         status: 403,
@@ -433,7 +429,7 @@ describe("Cql Library Page", () => {
     } as unknown as AxiosError;
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     mockCqlLibraryServiceApi.deleteDraft = jest
       .fn()
       .mockRejectedValueOnce(axiosError);
@@ -483,7 +479,7 @@ describe("Cql Library Page", () => {
     }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     mockCqlLibraryServiceApi.createVersion = jest
       .fn()
       .mockResolvedValueOnce(mockPageableVal.content[0]);
@@ -532,10 +528,7 @@ describe("Cql Library Page", () => {
     }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
-    mockCqlLibraryServiceApi.fetchCqlLibraries = jest
-      .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     renderWithRouter();
 
     await waitFor(() => {
@@ -580,7 +573,7 @@ describe("Cql Library Page", () => {
     }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     mockCqlLibraryServiceApi.fetchCqlLibrary = jest.fn().mockResolvedValueOnce({
       id: "622e1f46d1fd3729d861e6cb",
       librarySetId: "librarySetId1",
@@ -842,7 +835,7 @@ describe("Cql Library Page", () => {
     updatedPageableVal.content[0].draft = false;
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     renderWithRouter();
 
     await waitFor(() => {
@@ -896,7 +889,7 @@ describe("Cql Library Page", () => {
     updatedPageableVal.content[0].draft = false;
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
 
     renderWithRouter();
 
@@ -953,7 +946,7 @@ describe("Cql Library Page", () => {
     updatedPageableVal.content[0].draft = false;
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
-      .mockResolvedValueOnce(mockPageableVal);
+      .mockResolvedValue(mockPageableVal);
     renderWithRouter();
 
     await waitFor(() => {

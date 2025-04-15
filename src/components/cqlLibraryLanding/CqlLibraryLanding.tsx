@@ -52,6 +52,57 @@ function CqlLibraryLanding() {
   const [selectedCQLLibrary, setSelectedCqlLibrary] =
     useState<CqlLibrary>(null);
 
+  const [numberMyCqlLibraries, setNumberMyCqlLibraries] = useState(0);
+  const [numberAllCqlLibraries, setNumberAllCqlLibraries] = useState(0);
+  useEffect(() => {
+    cqlLibraryServiceApi
+      .fetchCqlLibraries(
+        false,
+        curLimit,
+        curPage,
+        "",
+        abortController.current?.signal
+      )
+      .then((data) => {
+        setNumberAllCqlLibraries(data?.totalElements);
+      })
+      .catch((error) => {
+        if (error.message != "canceled") {
+          setSnackBar({
+            message: "An error occurred while fetching the CQL Library!",
+            open: true,
+            severity: "error",
+          });
+        }
+      })
+      .finally(() => {
+        return setLoading(false);
+      });
+    cqlLibraryServiceApi
+      .fetchCqlLibraries(
+        true,
+        curLimit,
+        curPage,
+        "",
+        abortController.current?.signal
+      )
+      .then((data) => {
+        setNumberMyCqlLibraries(data?.totalElements);
+      })
+      .catch((error) => {
+        if (error.message != "canceled") {
+          setSnackBar({
+            message: "An error occurred while fetching the CQL Library!",
+            open: true,
+            severity: "error",
+          });
+        }
+      })
+      .finally(() => {
+        return setLoading(false);
+      });
+  }, [numberAllCqlLibraries, numberMyCqlLibraries]);
+
   const [deleteDraftDialog, setDeleteDraftDialog] = useState({
     ...INITIAL_DELETE_DRAFT_STATE,
   });
@@ -108,6 +159,11 @@ function CqlLibraryLanding() {
         )
         .then((data) => {
           setPageProps(data);
+          if (tab === 0) {
+            setNumberMyCqlLibraries(data?.totalElements);
+          } else {
+            setNumberAllCqlLibraries(data?.totalElements);
+          }
         })
         .catch((error) => {
           if (error.message != "canceled") {
@@ -228,12 +284,12 @@ function CqlLibraryLanding() {
             <Tabs type="B" value={activeTab} onChange={handleTabChange}>
               <Tab
                 type="B"
-                label={`My CQL Libraries`}
+                label={`My Libraries(${numberMyCqlLibraries})`}
                 data-testid="my-cql-libraries-tab"
               />
               <Tab
                 type="B"
-                label="All CQL Libraries"
+                label={`All Libraries(${numberAllCqlLibraries})`}
                 data-testid="all-cql-libraries-tab"
               />
             </Tabs>
