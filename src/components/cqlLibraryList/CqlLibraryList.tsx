@@ -599,22 +599,23 @@ export default function CqlLibraryList({
 
   return (
     <div data-testid="cqlLibrary-list">
-      {snackBar.message !== "backdropClick" && (
-        <Snackbar
-          open={snackBar.open}
-          autoHideDuration={6000}
-          onClose={handleSnackBarClose}
-          data-testid="cql-library-list-snackBar"
-        >
-          <Alert
+      {snackBar.message !== "backdropClick" &&
+        snackBar.message !== "escapeKeyDown" && (
+          <Snackbar
+            open={snackBar.open}
+            autoHideDuration={6000}
             onClose={handleSnackBarClose}
-            severity={snackBar.severity}
-            sx={{ width: "100%" }}
+            data-testid="cql-library-list-snackBar"
           >
-            {snackBar.message}
-          </Alert>
-        </Snackbar>
-      )}
+            <Alert
+              onClose={handleSnackBarClose}
+              severity={snackBar.severity}
+              sx={{ width: "100%" }}
+            >
+              {snackBar.message}
+            </Alert>
+          </Snackbar>
+        )}
       <CreatVersionDialog
         open={createVersionDialog.open}
         onClose={handleDialogClose}
