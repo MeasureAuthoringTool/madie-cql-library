@@ -34,6 +34,7 @@ import {
   Button,
   MadieDeleteDialog,
   Pagination,
+  TruncateText,
 } from "@madie/madie-design-system/dist/react";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -309,30 +310,26 @@ export default function CqlLibraryList({
       header: "Name",
       accessorKey: "cqlLibraryName",
       cell: (info) => (
-        <button
-          type="button"
-          onClick={() =>
-            navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
-          }
-          data-testid={`cqlLibrary-button-${info.row.original.id}`}
-        >
-          {info.getValue()}
-        </button>
+        <>
+          <TruncateText
+            text={info.row.original.cqlLibraryName}
+            maxLength={60}
+            dataTestId={`cqlLibrary-button-${info.row.original.id}`}
+          />
+        </>
       ),
     },
     {
       header: "Model",
       accessorKey: "model",
       cell: (info) => (
-        <button
-          type="button"
-          onClick={() =>
-            navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
-          }
-          data-testid={`cqlLibrary-button-${info.row.original.id}-model`}
-        >
-          {info.getValue()}
-        </button>
+        <>
+          <TruncateText
+            text={info.row.original.model}
+            maxLength={60}
+            dataTestId={`cqlLibrary-button-${info.row.original.id}-model`}
+          />
+        </>
       ),
     },
     {
