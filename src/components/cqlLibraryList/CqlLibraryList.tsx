@@ -482,7 +482,7 @@ export default function CqlLibraryList({
     isRowExpanded,
   ]);
 
-  const expandedcolumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
+  const expandedColumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     return [
       {
         id: "select",
@@ -832,7 +832,7 @@ export default function CqlLibraryList({
                             className="expanded-row"
                             data-testid={`cqlLibrary-expanded-${subRow.id}`}
                           >
-                            {expandedcolumns.map((column: any) =>
+                            {expandedColumns.map((column: any) =>
                               column?.accessorKey === "expandArrow" ? (
                                 <td></td>
                               ) : (

@@ -109,6 +109,7 @@ const CreateDraftDialog = ({
               Boolean(formik.errors.cqlLibraryName)
             }
             helperText={formik.errors["cqlLibraryName"]}
+            maxLength={500}
           />
         </Box>
         <>
