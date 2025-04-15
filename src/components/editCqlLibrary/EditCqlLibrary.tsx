@@ -719,7 +719,7 @@ const EditCqlLibrary = () => {
                                 true
                               )}
                               placeholder="Enter a Cql Library Name"
-                              maxLength={500}
+                              maxLength={64}
                             />
                           </div>
 
