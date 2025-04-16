@@ -2,6 +2,7 @@ import * as React from "react";
 import {
   cleanup,
   fireEvent,
+  getByRole,
   render,
   screen,
   within,
@@ -123,12 +124,11 @@ describe("CqlLibrary List component", () => {
         setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
-        setSelectedLibraries={jest.fn()}
         deleteDraftDialog={jest.fn()}
         setDeleteDraftDialog={jest.fn()}
         shareDialog={jest.fn()}
         setShareDialog={jest.fn()}
-        selectedCQLLibrary={jest.fn()}
+        selectedCQLLibrary={cqlLibrary[0]}
         setSelectedCqlLibrary={jest.fn()}
         createVersionDialog={jest.fn()}
         setCreateVersionDialog={jest.fn()}
@@ -142,35 +142,20 @@ describe("CqlLibrary List component", () => {
     cqlLibrary.forEach((c) => {
       expect(getByText(c.cqlLibraryName)).toBeInTheDocument();
       expect(
-        screen.getByTestId(`cqlLibrary-button-${c.id}`)
+        screen.getByTestId(`cqlLibrary-button-${c.id}-content`)
       ).toBeInTheDocument();
     });
 
-    const cqlLibraryModelButton = getByTestId(
-      `cqlLibrary-button-${cqlLibrary[0].id}-model`
-    );
-    expect(cqlLibraryModelButton).toBeInTheDocument();
-    userEvent.click(cqlLibraryModelButton);
-    expect(mockPush).toHaveBeenNthCalledWith(
-      1,
-      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
-    );
-
     const cqlLibraryButton = getByTestId(
-      `cqlLibrary-button-${cqlLibrary[0].id}`
+      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
     );
     userEvent.click(cqlLibraryButton);
-    expect(mockPush).toHaveBeenNthCalledWith(
-      2,
-      "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
-    );
 
-    const editCqlLibraryButton = getByTestId(
-      `cqlLibrary-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(editCqlLibraryButton);
+    // expect(getByRole("button", { name: "View" })).toBeInTheDocument();
+    const viewLibraryButton = screen.getByRole("button", { name: "Edit" });
+    userEvent.click(viewLibraryButton);
     expect(mockPush).toHaveBeenNthCalledWith(
-      3,
+      1,
       "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
     );
   });
