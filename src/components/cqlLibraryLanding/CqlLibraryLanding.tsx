@@ -3,7 +3,6 @@ import { TextField, IconButton } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import { CqlLibraryListActionCenter as ActionCenter } from "./cqlLibraryListActionCenter/CqlLibraryListActionCenter";
-import * as _ from "lodash";
 import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle, useFeatureFlags } from "@madie/madie-util";
@@ -48,7 +47,7 @@ function CqlLibraryLanding() {
   const [selectedLibraries, setSelectedLibraries] = useState<CqlLibrary[]>([]);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [filter, setFilter] = useState("");
-  const abortController = useRef(null);
+  const abortController = useRef<AbortController | null>(null);
   const [selectedCQLLibrary, setSelectedCqlLibrary] =
     useState<CqlLibrary>(null);
 
@@ -58,8 +57,8 @@ function CqlLibraryLanding() {
   const [createVersionDialog, setCreateVersionDialog] = useState({
     open: false,
     cqlLibraryId: "",
-    cqlLibraryError: null,
-    isCqlPresent: undefined,
+    cqlLibraryError: false,
+    isCqlPresent: false,
   });
   const [createDraftDialog, setCreateDraftDialog] = useState({
     open: false,
@@ -69,9 +68,25 @@ function CqlLibraryLanding() {
   const [snackBar, setSnackBar] = useState({
     message: "",
     open: false,
-    severity: null,
+    severity: "",
   });
   const [shareDialog, setShareDialog] = useState({ open: false, option: "" });
+
+  // Fetches total count of My Libraries and All Libraries
+  const [myLibrariesCount, setMyLibrariesCount] = useState(0);
+  const [allLibrariesCount, setAllLibrariesCount] = useState(0);
+  const fetchTotalCounts = useCallback(async () => {
+    try {
+      const [myLibs, allLibs] = await Promise.all([
+        cqlLibraryServiceApi.fetchCqlLibraries(true, 1, 0, "", null),
+        cqlLibraryServiceApi.fetchCqlLibraries(false, 1, 0, "", null),
+      ]);
+      setMyLibrariesCount(myLibs?.totalElements || 0);
+      setAllLibrariesCount(allLibs?.totalElements || 0);
+    } catch (e) {
+      console.error("Error fetching counts", e);
+    }
+  }, [cqlLibraryServiceApi]);
 
   const createVersion = async () => {
     await cqlLibraryServiceApi
@@ -136,6 +151,10 @@ function CqlLibraryLanding() {
       setOffset(pageable.offset);
     }
   };
+
+  useEffect(() => {
+    fetchTotalCounts();
+  }, []);
 
   useEffect(() => {
     retrieveLibraries(
@@ -209,7 +228,9 @@ function CqlLibraryLanding() {
 
   const onListUpdate = async () => {
     await retrieveLibraries(activeTab, curLimit, 0, searchCriteria);
+    await fetchTotalCounts();
   };
+
   return (
     <div id="cql-library-landing" data-testid="cql-library-landing">
       <CreateNewLibraryDialog
@@ -228,12 +249,12 @@ function CqlLibraryLanding() {
             <Tabs type="B" value={activeTab} onChange={handleTabChange}>
               <Tab
                 type="B"
-                label={`My CQL Libraries`}
+                label={`My Libraries(${myLibrariesCount})`}
                 data-testid="my-cql-libraries-tab"
               />
               <Tab
                 type="B"
-                label="All CQL Libraries"
+                label={`All Libraries(${allLibrariesCount})`}
                 data-testid="all-cql-libraries-tab"
               />
             </Tabs>
