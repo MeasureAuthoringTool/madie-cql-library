@@ -37,10 +37,12 @@ import {
   TruncateText,
 } from "@madie/madie-design-system/dist/react";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { useNavigate, useLocation } from "react-router-dom";
 import queryString from "query-string";
 import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 import * as _ from "lodash";
+import { Chip } from "@mui/material";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -386,6 +388,111 @@ export default function CqlLibraryList({
         ),
     },
   ];
+  const columnsBehindFlag = [
+    {
+      header: "Library",
+      accessorKey: "cqlLibraryName",
+      cell: (info) => (
+        <>
+          <TruncateText
+            text={info.row.original.cqlLibraryName}
+            maxLength={60}
+            dataTestId={`cqlLibrary-button-${info.row.original.id}`}
+          />
+        </>
+      ),
+    },
+    {
+      header: "Version",
+      accessorKey: "version",
+      cell: (info) => <p>{info.getValue()}</p>, // Removed draft status text
+    },
+    {
+      header: "Status",
+      accessorKey: "status",
+      cell: (info) => (
+        <div>
+          {info.row.original.draft && (
+            <Chip tw="ml-6" className="chip-draft" label="Draft" />
+          )}
+          {/* {info.getValue()} */}
+        </div>
+      ),
+    },
+    {
+      header: "Model",
+      accessorKey: "model",
+      cell: (info) => (
+        <>
+          <TruncateText
+            text={info.row.original.model}
+            maxLength={60}
+            dataTestId={`cqlLibrary-button-${info.row.original.id}-model`}
+          />
+        </>
+      ),
+    },
+    {
+      header: "Shared",
+      accessorKey: "shared",
+      cell: (info) => (
+        <p>
+          {info.row.original.librarySet?.acls?.length > 0 && (
+            <CheckCircleOutlineIcon sx={{ color: "#4CAF50" }} />
+          )}
+        </p>
+      ),
+    },
+    {
+      header: "Updated",
+      accessorKey: "lastUpdated",
+      cell: (info) => (
+        <p>{new Date(info.row.original.lastModifiedAt).toLocaleDateString()}</p>
+      ),
+    },
+    {
+      header: "Actions",
+      cell: (info) =>
+        !featureFlags?.LibraryListButtons ? (
+          <Button
+            variant="outline-secondary"
+            style={{ borderColor: "#c8c8c8" }}
+            onClick={(e) => handleOpen(info.row.original, e)}
+            data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
+            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+          >
+            View/Edit
+            <span>
+              <ExpandMoreIcon />
+            </span>
+          </Button>
+        ) : (
+          <Button
+            variant="outline-secondary"
+            style={{ borderColor: "#c8c8c8" }}
+            onClick={() =>
+              navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
+            }
+            data-testid={
+              checkUserCanEdit(
+                info.row.original.librarySet?.owner,
+                info.row.original.librarySet?.acls
+              ) && info.row.original.draft
+                ? `edit-cql-library-button-${info.row.original.id}`
+                : `view-cql-library-button-${info.row.original.id}`
+            }
+            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+          >
+            {checkUserCanEdit(
+              info.row.original.librarySet?.owner,
+              info.row.original.librarySet?.acls
+            ) && info.row.original.draft
+              ? "Edit"
+              : "View"}
+          </Button>
+        ),
+    },
+  ];
 
   const columns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     const columnDefs = [];
@@ -413,7 +520,9 @@ export default function CqlLibraryList({
         },
       });
 
-    columnDefs.push(...columnsToBeAdded);
+    columnDefs.push(
+      ...(featureFlags?.LibrarySearch ? columnsBehindFlag : columnsToBeAdded)
+    );
 
     if (featureFlags?.LibrarySearch) {
       columnDefs.push({
@@ -499,7 +608,7 @@ export default function CqlLibraryList({
           );
         },
       },
-      ...columnsToBeAdded,
+      ...(featureFlags?.LibrarySearch ? columnsBehindFlag : columnsToBeAdded),
       {
         header: "",
         cell: (info) => <></>,
