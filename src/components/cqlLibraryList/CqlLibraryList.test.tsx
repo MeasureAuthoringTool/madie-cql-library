@@ -524,4 +524,68 @@ describe("CqlLibrary List component", () => {
       await screen.findByTestId("cqlLibrary-expanded-622e1f46d1fd3729d861e6ca")
     ).toBeInTheDocument();
   });
+
+  it("should render columnsBehindFlag when LibrarySearch is true", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibrarySearch: true,
+    }));
+
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: "QI-Core v4.1.1",
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "2023-01-01T00:00:00Z",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+        librarySet: { acls: [{ userId: "user1" }] },
+      },
+    ];
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={jest.fn()}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
+      />
+    );
+
+    // Verify columns rendered from columnsBehindFlag
+    expect(screen.getByText("Library")).toBeInTheDocument();
+    expect(screen.getByText("Version")).toBeInTheDocument();
+    expect(screen.getByText("Status")).toBeInTheDocument();
+    expect(screen.getByText("Model")).toBeInTheDocument();
+    expect(screen.getByText("Shared")).toBeInTheDocument();
+    expect(screen.getByText("Updated")).toBeInTheDocument();
+
+    // Verify data rendered in the table
+    expect(screen.getByText("testing1")).toBeInTheDocument();
+    expect(screen.getByText("0.0.000")).toBeInTheDocument();
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(
+      screen.getByText((content) => content.startsWith("QI-Core"))
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
+    expect(screen.getByText("12/31/2022")).toBeInTheDocument();
+  });
 });
