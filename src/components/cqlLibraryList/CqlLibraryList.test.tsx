@@ -582,9 +582,7 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("testing1")).toBeInTheDocument();
     expect(screen.getByText("0.0.000")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument();
-    expect(
-      screen.getByText((content) => content.startsWith("QI-Core"))
-    ).toBeInTheDocument();
+    expect(screen.getByText("QI-Core v4.1.1")).toBeInTheDocument();
     expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
     expect(screen.getByText("12/31/2022")).toBeInTheDocument();
   });
