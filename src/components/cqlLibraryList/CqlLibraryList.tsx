@@ -393,13 +393,11 @@ export default function CqlLibraryList({
       header: "Library",
       accessorKey: "cqlLibraryName",
       cell: (info) => (
-        <>
-          <TruncateText
-            text={info.row.original.cqlLibraryName}
-            maxLength={60}
-            dataTestId={`cqlLibrary-button-${info.row.original.id}`}
-          />
-        </>
+        <TruncateText
+          text={info.row.original.cqlLibraryName}
+          maxLength={60}
+          dataTestId={`cqlLibrary-button-${info.row.original.id}`}
+        />
       ),
     },
     {
