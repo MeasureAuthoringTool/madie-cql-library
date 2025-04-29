@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { TextField, IconButton } from "@mui/material";
+import { TextField, IconButton, InputAdornment } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import { CqlLibraryListActionCenter as ActionCenter } from "./cqlLibraryListActionCenter/CqlLibraryListActionCenter";
@@ -12,13 +12,13 @@ import {
   Tabs,
   Tab,
 } from "@madie/madie-design-system/dist/react";
-import InputAdornment from "@material-ui/core/InputAdornment";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
 import "./CqlLibraryLanding.scss";
 
 import queryString from "query-string";
 import { useNavigate, useLocation } from "react-router-dom";
+
 const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
   cqlLibrary: null,
@@ -32,7 +32,6 @@ function CqlLibraryLanding() {
 
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const [loading, setLoading] = useState(true);
-
   // utilities for pagination
   const values = queryString.parse(search);
   const curLimit = values.limit && Number(values.limit);

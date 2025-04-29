@@ -50,12 +50,7 @@ export default function DraftAction(props: PropTypes) {
   }, [libraries, validateDraftActionState]);
 
   return (
-    <Tooltip
-      data-testid="draft-action-tooltip"
-      title={tooltipMessage}
-      arrow
-      placement="top"
-    >
+    <Tooltip data-testid="draft-action-tooltip" title={tooltipMessage} arrow>
       <span>
         <IconButton
           onClick={props.onClick}

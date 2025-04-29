@@ -3,7 +3,6 @@ import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary } from "@madie/madie-models";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import { grey, red } from "@mui/material/colors";
 
 interface PropTypes {
   libraries: CqlLibrary[];
@@ -33,21 +32,15 @@ export default function DeleteAction(props: PropTypes) {
   }, [libraries, validateDeleteActionState]);
 
   return (
-    <Tooltip
-      data-testid="delete-action-tooltip"
-      title={tooltipMessage}
-      placement="top"
-      arrow
-    >
+    <Tooltip data-testid="delete-action-tooltip" title={tooltipMessage} arrow>
       <span>
         <IconButton
           onClick={() => props.onClick()}
           disabled={disableDeleteBtn}
           data-testid="delete-action-btn"
+          className="DeleteClass"
         >
-          <DeleteOutlinedIcon
-            sx={disableDeleteBtn ? { color: grey[500] } : { color: red[500] }}
-          />
+          <DeleteOutlinedIcon />
         </IconButton>
       </span>
     </Tooltip>
