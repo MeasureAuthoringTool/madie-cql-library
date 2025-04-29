@@ -2,6 +2,8 @@ import React from "react";
 import CqlLibraryRoutes from "./cqlLibraryRoutes/CqlLibraryRoutes";
 import { ApiContextProvider } from "../api/ServiceContext";
 import useGetServiceConfig from "./config/useGetServiceConfig";
+import { ThemeProvider } from "@mui/material/styles";
+import { theme } from "@madie/madie-design-system/dist/react";
 
 export default function Home() {
   const errorPage = (
@@ -12,7 +14,9 @@ export default function Home() {
 
   const loadedState = (
     <ApiContextProvider value={config}>
-      <CqlLibraryRoutes />
+      <ThemeProvider theme={theme}>
+        <CqlLibraryRoutes />
+      </ThemeProvider>
     </ApiContextProvider>
   );
   let result = config === null ? loadingState : loadedState;
