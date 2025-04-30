@@ -411,7 +411,7 @@ export default function CqlLibraryList({
       cell: (info) => (
         <div>
           {info.row.original.draft && (
-            <Chip tw="ml-6" className="chip-draft" label="Draft" />
+            <Chip className="chip-draft" label="Draft" />
           )}
           {/* {info.getValue()} */}
         </div>
@@ -684,7 +684,7 @@ export default function CqlLibraryList({
   }, [selectedLibraries?.length, setSelectedLibraries]);
 
   const handleShareDialogClose = useCallback(
-    (type, message) => {
+    async (type, message) => {
       setShareDialog({
         open: false,
         option: "",
@@ -696,6 +696,10 @@ export default function CqlLibraryList({
           open: true,
           severity: type,
         });
+        if (message.includes("successfully")) {
+          await onListUpdate();
+          table.resetRowSelection();
+        }
       }
     },
     [shareDialog]
