@@ -338,15 +338,21 @@ export default function CqlLibraryList({
       header: "Version",
       accessorKey: "version",
       cell: (info) => (
-        <p>
-          {info.row.original.draft && "Draft "}
-          {info.getValue()}
-        </p>
+        <>
+          <TruncateText
+            text={info.row.original.version}
+            maxLength={60}
+            dataTestId={`cqlLibrary-button-${info.row.original.id}-version`}
+          />
+          {`${info.row.original.draft}` === "true" && (
+            <Chip tw="ml-6" className="chip-draft" label="Draft" />
+          )}
+        </>
       ),
     },
     {
       header: "Actions",
-
+      accessorKey: "Actions",
       cell: (info) =>
         !featureFlags?.LibraryListButtons ? (
           <Button
@@ -403,7 +409,13 @@ export default function CqlLibraryList({
     {
       header: "Version",
       accessorKey: "version",
-      cell: (info) => <p>{info.getValue()}</p>, // Removed draft status text
+      cell: (info) => (
+        <TruncateText
+          text={info.row.original.version}
+          maxLength={60}
+          dataTestId={`cqlLibrary-button-${info.row.original.id}-version`}
+        />
+      ), // Removed draft status text
     },
     {
       header: "Status",
@@ -450,6 +462,7 @@ export default function CqlLibraryList({
     },
     {
       header: "Actions",
+      accessorKey: "Actions",
       cell: (info) =>
         !featureFlags?.LibraryListButtons ? (
           <Button
@@ -499,6 +512,7 @@ export default function CqlLibraryList({
     featureFlags?.LibraryListCheckboxes &&
       columnDefs.push({
         id: "select",
+        accessorKey: "select",
         cell: ({ row }) => {
           return (
             <div className="px-1">
@@ -934,7 +948,10 @@ export default function CqlLibraryList({
                               column?.accessorKey === "expandArrow" ? (
                                 <td></td>
                               ) : (
-                                <td key={column?.accessorKey || column.id}>
+                                <td
+                                  key={column?.accessorKey || column.id}
+                                  data-testid={`cqlLibrary-button-${subRow.id}_${column.accessorKey}`}
+                                >
                                   {flexRender(
                                     column.cell ?? column.accessorKey,
                                     {
