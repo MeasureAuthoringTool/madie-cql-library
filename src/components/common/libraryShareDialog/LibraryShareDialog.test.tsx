@@ -386,21 +386,21 @@ describe("Create Share Dialog component", () => {
     ).toHaveTextContent("userId3");
     expect(
       screen.getByTestId("TestLibraryId2 userId3_dateShared")
-    ).toHaveTextContent(convertDate(today.toLocaleDateString()));
+    ).toHaveTextContent(convertDate(today.toUTCString()));
     //Subrow 2 of Row 2
     expect(
       screen.getByTestId("TestLibraryId2 userId1_userId")
     ).toHaveTextContent("userId1");
     expect(
       screen.getByTestId("TestLibraryId2 userId1_dateShared")
-    ).toHaveTextContent(convertDate(yesterday.toLocaleDateString()));
+    ).toHaveTextContent(convertDate(yesterday.toUTCString()));
     //Subrow 3 of Row 2
     expect(
       screen.getByTestId("TestLibraryId2 userId2_userId")
     ).toHaveTextContent("userId2");
     expect(
       screen.getByTestId("TestLibraryId2 userId2_dateShared")
-    ).toHaveTextContent(convertDate(yesterday.toLocaleDateString()));
+    ).toHaveTextContent(convertDate(yesterday.toUTCString()));
   });
 
   it("should add a user row to the grid for each library that does not already have that user and save successfully after clicking Save button.", async () => {
@@ -566,21 +566,21 @@ describe("Create Share Dialog component", () => {
     ).toHaveTextContent("userId3");
     expect(
       screen.getByTestId("TestLibraryId2 userId3_dateShared")
-    ).toHaveTextContent(convertDate(today.toLocaleDateString()));
+    ).toHaveTextContent(convertDate(today.toUTCString()));
     //Subrow 2 of Row 2
     expect(
       screen.getByTestId("TestLibraryId2 userId1_userId")
     ).toHaveTextContent("userId1");
     expect(
       screen.getByTestId("TestLibraryId2 userId1_dateShared")
-    ).toHaveTextContent(convertDate(yesterday.toLocaleDateString()));
+    ).toHaveTextContent(convertDate(yesterday.toUTCString()));
     //Subrow 3 of Row 2
     expect(
       screen.getByTestId("TestLibraryId2 userId2_userId")
     ).toHaveTextContent("userId2");
     expect(
       screen.getByTestId("TestLibraryId2 userId2_dateShared")
-    ).toHaveTextContent(convertDate(yesterday.toLocaleDateString()));
+    ).toHaveTextContent(convertDate(yesterday.toUTCString()));
   });
 
   it("should display share library table", async () => {
