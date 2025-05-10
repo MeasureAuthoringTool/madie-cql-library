@@ -59,6 +59,7 @@ const generateMadieAlertWithContent = (
         </div>
       }
       canClose={false}
+      copyButton="true"
     />
   );
 };
