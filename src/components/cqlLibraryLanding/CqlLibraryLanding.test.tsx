@@ -118,6 +118,7 @@ const mockCqlLibraryServiceApi = {
   fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
   deleteDraft: jest.fn().mockResolvedValue({ data: "test" }),
   fetchAllOwners: jest.fn().mockResolvedValue(["owner1", "owner2"]),
+  getLibrariesByLibrarySetId: jest.fn().mockResolvedValue([]),
 } as unknown as CqlLibraryServiceApi;
 
 jest.mock("react-router-dom", () => ({
