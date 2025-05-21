@@ -4,7 +4,6 @@ import CreateDraftDialog from "./CreateDraftDialog";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import clearAllMocks = jest.clearAllMocks;
-import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 
 const cqlLibrary: CqlLibrary = {
   cqlErrors: false,
@@ -28,13 +27,6 @@ jest.mock("@madie/madie-util", () => ({
   }),
 }));
 
-const mockCqlLibraryServiceApi = {
-  getLibrariesByLibrarySetId: jest.fn().mockResolvedValue([]),
-} as unknown as CqlLibraryServiceApi;
-jest.mock("../../api/useCqlLibraryServiceApi", () =>
-  jest.fn(() => mockCqlLibraryServiceApi)
-);
-
 describe("Create Draft Dialog component", () => {
   beforeEach(() => {
     clearAllMocks();
@@ -53,30 +45,6 @@ describe("Create Draft Dialog component", () => {
     expect(
       screen.getByRole("textbox", { name: "CQL Library Name" })
     ).toHaveValue(cqlLibrary.cqlLibraryName);
-  });
-
-  it("should render Draft dialog and disable Continue button if QI-Core 6.0.0 exists", async () => {
-    // Arrange: mock libraries to include a QI-Core 6.0.0 library
-    const libraries: CqlLibrary[] = [
-      { ...cqlLibrary },
-      { ...cqlLibrary, id: "other-id", model: Model.QICORE_6_0_0 },
-    ];
-    mockCqlLibraryServiceApi.getLibrariesByLibrarySetId = jest
-      .fn()
-      .mockResolvedValue(libraries);
-
-    render(
-      <CreateDraftDialog
-        open={true}
-        onClose={jest.fn()}
-        onSubmit={jest.fn()}
-        cqlLibrary={cqlLibrary}
-      />
-    );
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-
-    // Assert: Continue button is disabled
-    expect(screen.getByTestId("create-draft-continue-button")).toBeDisabled();
   });
 
   it("should generate field level error for required Cql Library name", async () => {
@@ -100,14 +68,6 @@ describe("Create Draft Dialog component", () => {
   });
 
   it("should display a model version option for QI-Core measures", async () => {
-    const libraries: CqlLibrary[] = [
-      { ...cqlLibrary },
-      { ...cqlLibrary, id: "other-id", model: Model.QICORE },
-    ];
-    mockCqlLibraryServiceApi.getLibrariesByLibrarySetId = jest
-      .fn()
-      .mockResolvedValue(libraries);
-
     render(
       <CreateDraftDialog
         open={true}

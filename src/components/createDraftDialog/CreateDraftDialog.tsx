@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import "twin.macro";
 import "styled-components/macro";
 import { DialogContent, Box, MenuItem, Typography } from "@mui/material";
@@ -10,7 +10,6 @@ import {
   Select,
   TextField,
 } from "@madie/madie-design-system/dist/react";
-import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 
 interface CreateDraftDialogProps {
   open: boolean;
@@ -26,44 +25,6 @@ const CreateDraftDialog = ({
   cqlLibrary,
 }: CreateDraftDialogProps) => {
   let modelOptions = Object.keys(Model);
-
-  const [disableDraft, setDisableDraft] = useState(false);
-  const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
-  const isQiCore411AndHasQiCore600Library = async () => {
-    let shouldEnableDraft = true;
-    if (cqlLibrary?.model === Model.QICORE) {
-      const promiseResults = await Promise.allSettled([
-        cqlLibraryServiceApi.getLibrariesByLibrarySetId(
-          cqlLibrary?.librarySetId,
-          true
-        ),
-      ]);
-
-      // Extract fulfilled values and flatten the array
-      const libraries: CqlLibrary[] = promiseResults
-        .filter((result) => result.status === "fulfilled")
-        .flatMap(
-          (result) =>
-            (result as PromiseFulfilledResult<CqlLibrary[]>).value || []
-        )
-        .filter(Boolean); // Remove any null/undefined
-
-      const libs = libraries?.filter(
-        (library) =>
-          library.id !== cqlLibrary.id && library.model === Model.QICORE_6_0_0
-      );
-      shouldEnableDraft = libs && libs.length > 0 ? false : true;
-    }
-    return shouldEnableDraft;
-  };
-
-  useEffect(() => {
-    const checkDraft = async () => {
-      const shouldEnableDraft = await isQiCore411AndHasQiCore600Library();
-      setDisableDraft(!shouldEnableDraft);
-    };
-    checkDraft();
-  }, [cqlLibrary]);
 
   const formik = useFormik({
     initialValues: {
@@ -118,13 +79,6 @@ const CreateDraftDialog = ({
         variant: "cyan",
         type: "submit",
         "data-testid": "create-draft-continue-button",
-        disabled:
-          !formik.isValid ||
-          (disableDraft && cqlLibrary?.model === Model.QICORE),
-        tooltipText:
-          disableDraft && cqlLibrary?.model === Model.QICORE
-            ? "You cannot draft a 4.1.1 library when a 6.0.0 version is available"
-            : "",
         continueText: "Continue",
       }}
     >

@@ -1,7 +1,13 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import DraftAction, { DRAFT_LIBRARY, NOTHING_SELECTED } from "./DraftAction";
+import userEvent from "@testing-library/user-event";
+import DraftAction, {
+  DRAFT_LIBRARY,
+  NOTHING_SELECTED,
+  CANNOT_DRAFT_LIBRARY_WITH_600,
+} from "./DraftAction";
 import { CqlLibrary, Model } from "@madie/madie-models";
+import { CqlLibraryServiceApi } from "../../../../api/useCqlLibraryServiceApi";
 
 const mockUser = "test user";
 jest.mock("@madie/madie-util", () => ({
@@ -27,6 +33,13 @@ const libraryDraft = {
   version: "0.0.000",
   draft: true,
 } as CqlLibrary;
+
+const mockCqlLibraryServiceApi = {
+  getLibrariesByLibrarySetId: jest.fn().mockResolvedValue([]),
+} as unknown as CqlLibraryServiceApi;
+jest.mock("../../../../api/useCqlLibraryServiceApi", () =>
+  jest.fn(() => mockCqlLibraryServiceApi)
+);
 
 describe("DraftAction", () => {
   beforeEach(() => {
@@ -128,6 +141,32 @@ describe("DraftAction", () => {
         screen.getByTestId("draft-button-error-toast-text")
       ).toHaveTextContent(
         "Error fetching draft statuses: Error: Network Error"
+      );
+    });
+  });
+
+  it("should disable action if QI-Core 6.0.0 exists and show the right tooltip text", async () => {
+    // Arrange: mock libraries to include a QI-Core 6.0.0 library
+    const libraries: CqlLibrary[] = [
+      { ...libraryVersion },
+      { ...libraryDraft, id: "other-id", model: Model.QICORE_6_0_0 },
+    ];
+    mockCqlLibraryServiceApi.getLibrariesByLibrarySetId = jest
+      .fn()
+      .mockResolvedValue(libraries);
+
+    render(
+      <DraftAction
+        libraries={[libraryVersion]}
+        onClick={() => {}}
+        canEdit={true}
+      />
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId("draft-action-btn")).toBeDisabled();
+      expect(screen.getByTestId("draft-action-tooltip")).toHaveAttribute(
+        "aria-label",
+        CANNOT_DRAFT_LIBRARY_WITH_600
       );
     });
   });
