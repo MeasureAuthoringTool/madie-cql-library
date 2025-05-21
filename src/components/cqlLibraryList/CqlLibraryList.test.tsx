@@ -449,7 +449,7 @@ describe("CqlLibrary List component", () => {
       {
         id: "622e1f46d1fd3729d861e6cb",
         librarySetId: "libsetid",
-        cqlLibraryName: "testing1",
+        cqlLibraryName: "testing",
         model: Model.QICORE,
         createdAt: "",
         createdBy: "testuser@example.com", //#nosec
@@ -502,6 +502,8 @@ describe("CqlLibrary List component", () => {
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
       />
     );
 
@@ -567,6 +569,8 @@ describe("CqlLibrary List component", () => {
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
       />
     );
 

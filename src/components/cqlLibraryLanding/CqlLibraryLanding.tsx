@@ -77,8 +77,8 @@ function CqlLibraryLanding() {
   const fetchTotalCounts = useCallback(async () => {
     try {
       const [myLibs, allLibs] = await Promise.all([
-        cqlLibraryServiceApi.fetchCqlLibraries(true, 1, 0, "", null),
-        cqlLibraryServiceApi.fetchCqlLibraries(false, 1, 0, "", null),
+        cqlLibraryServiceApi.fetchCqlLibraries(true, 1, 0, "", null, null),
+        cqlLibraryServiceApi.fetchCqlLibraries(false, 1, 0, "", null, null),
       ]);
       setMyLibrariesCount(myLibs?.totalElements || 0);
       setAllLibrariesCount(allLibs?.totalElements || 0);
@@ -109,7 +109,7 @@ function CqlLibraryLanding() {
   };
 
   const retrieveLibraries = useCallback(
-    async (tab, limit, page, searchCriteria) => {
+    async (tab, limit, page, searchCriteria, sortingThatWeCareAbout) => {
       setLoading(true);
       abortController.current = new AbortController();
       cqlLibraryServiceApi
@@ -118,6 +118,7 @@ function CqlLibraryLanding() {
           limit,
           page,
           searchCriteria,
+          sortingThatWeCareAbout,
           abortController.current.signal
         )
         .then((data) => {
@@ -154,13 +155,28 @@ function CqlLibraryLanding() {
   useEffect(() => {
     fetchTotalCounts();
   }, []);
+  // sort logic
+  const [sorting, setSorting] = useState(null);
+  let sortID = sorting?.[0]?.id;
+  if (sortID === "librarySet_acls") {
+    sortID = "librarySet.acls";
+  }
+  const sortingString = sortID ? `${sortID},${sorting[0]?.desc}` : "";
+  const handleSort = (sort) => {
+    if (featureFlags?.LibrarySearch) {
+      setSorting(sort);
+      navigate(`?tab=${activeTab}&page=1&limit=${values?.limit || 10}`);
+    }
+  };
+  // sort logic end.
 
   useEffect(() => {
     retrieveLibraries(
       activeTab,
       curLimit === undefined ? 10 : curLimit,
       curPage - 1,
-      searchCriteria
+      searchCriteria,
+      sortingString
     );
   }, [
     retrieveLibraries,
@@ -169,6 +185,7 @@ function CqlLibraryLanding() {
     curPage,
     cqlLibraryServiceApi,
     searchCriteria,
+    sortingString,
   ]);
   // Libraries are fetched again, when a new draft or version is created
   const handleTabChange = (event, nextTab) => {
@@ -226,7 +243,13 @@ function CqlLibraryLanding() {
   };
 
   const onListUpdate = async () => {
-    await retrieveLibraries(activeTab, curLimit, 0, searchCriteria);
+    await retrieveLibraries(
+      activeTab,
+      curLimit,
+      0,
+      searchCriteria,
+      sortingString
+    );
     await fetchTotalCounts();
   };
 
@@ -339,6 +362,8 @@ function CqlLibraryLanding() {
                 snackBar={snackBar}
                 setSnackBar={setSnackBar}
                 setOwners={setOwners}
+                sorting={sorting}
+                handleSort={handleSort}
               />
             )}
           </div>

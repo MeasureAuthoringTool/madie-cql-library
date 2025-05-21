@@ -12,6 +12,7 @@ export class CqlLibraryServiceApi {
     limit: number = 25,
     page: number = 0,
     searchCriteria,
+    sortInfo,
     signal
   ): Promise<any> {
     try {
@@ -23,7 +24,8 @@ export class CqlLibraryServiceApi {
           currentUser: filterByCurrentUser,
           limit,
           page,
-          searchCriteria,
+          searchCriteria: searchCriteria || undefined,
+          sortInfo: sortInfo || undefined,
         },
         signal,
       });
