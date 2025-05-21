@@ -218,7 +218,7 @@ describe("Cql Library Page", () => {
     expect(mockNavigate).toHaveBeenCalledWith("?tab=1&page=0&limit=10");
   });
 
-  test.only("Should trigger onClick sort", async () => {
+  test("Should trigger onClick sort", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibrarySearch: true,
       LibraryListButtons: true,
