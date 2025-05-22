@@ -703,18 +703,6 @@ export default function CqlLibraryList({
       const descending = sorting?.[0]?.desc; // bool whether the list should be descending
       if (sortBy) {
         filteredResults = sortResults(filteredResults, sortBy, descending);
-
-        filteredResults = filteredResults.sort((a, b) => {
-          const aValue = a[sortBy];
-          const bValue = b[sortBy];
-          if (typeof aValue === "string" && typeof bValue === "string") {
-            return descending
-              ? bValue.localeCompare(aValue)
-              : aValue.localeCompare(bValue);
-          }
-          // It's not a string numeric comparison
-          return descending ? bValue - aValue : aValue - bValue;
-        });
       }
 
       setIsRowExpanded(true);
