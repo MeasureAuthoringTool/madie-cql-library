@@ -2,13 +2,12 @@ import * as React from "react";
 import {
   cleanup,
   fireEvent,
-  getByRole,
   render,
   screen,
   within,
 } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
-import CqlLibraryList from "./CqlLibraryList";
+import CqlLibraryList, { sortResults } from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
@@ -590,5 +589,38 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
     //this line fails on my machine because of timezone issues
     // expect(screen.getByText("1/1/2023")).toBeInTheDocument();
+  });
+});
+
+describe("sortResults", () => {
+  const data = [
+    { name: "cat", age: 30 },
+    { name: "apple", age: 25 },
+    { name: "bat", age: 35 },
+  ];
+
+  it("sorts by string field ascending", () => {
+    const result = sortResults(data, "name", false);
+    expect(result.map((r) => r.name)).toEqual(["apple", "bat", "cat"]);
+  });
+
+  it("sorts by string field descending", () => {
+    const result = sortResults(data, "name", true);
+    expect(result.map((r) => r.name)).toEqual(["cat", "bat", "apple"]);
+  });
+
+  it("sorts by number field ascending", () => {
+    const result = sortResults(data, "age", false);
+    expect(result.map((r) => r.age)).toEqual([25, 30, 35]);
+  });
+
+  it("sorts by number field descending", () => {
+    const result = sortResults(data, "age", true);
+    expect(result.map((r) => r.age)).toEqual([35, 30, 25]);
+  });
+
+  it("returns data unmodified if sortBy is null", () => {
+    const result = sortResults(data, null);
+    expect(result).toEqual(data);
   });
 });

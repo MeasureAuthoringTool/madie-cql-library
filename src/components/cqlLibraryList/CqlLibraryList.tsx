@@ -56,6 +56,27 @@ const INITIAL_DELETE_DRAFT_STATE = {
   cqlLibrary: null,
 };
 
+export function sortResults(data, sortBy, descending = false) {
+  // no sort, return same
+  if (!sortBy) return data;
+  return [...data].sort((a, b) => {
+    const aValue = a[sortBy];
+    const bValue = b[sortBy];
+
+    // decide how to sort based on type
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      //and direction
+      return descending
+        ? bValue.localeCompare(aValue)
+        : aValue.localeCompare(bValue);
+    }
+    //type
+    return descending //direction
+      ? (bValue as any) - (aValue as any)
+      : (aValue as any) - (bValue as any);
+  });
+}
+
 function IndeterminateCheckbox({
   indeterminate,
   className = "",
@@ -681,6 +702,8 @@ export default function CqlLibraryList({
       const sortBy = sorting?.[0]?.id; // string for property to sort
       const descending = sorting?.[0]?.desc; // bool whether the list should be descending
       if (sortBy) {
+        filteredResults = sortResults(filteredResults, sortBy, descending);
+
         filteredResults = filteredResults.sort((a, b) => {
           const aValue = a[sortBy];
           const bValue = b[sortBy];
