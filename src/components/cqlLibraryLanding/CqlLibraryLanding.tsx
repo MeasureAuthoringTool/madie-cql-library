@@ -109,7 +109,7 @@ function CqlLibraryLanding() {
   };
 
   const retrieveLibraries = useCallback(
-    async (tab, limit, page, searchCriteria, sortingThatWeCareAbout) => {
+    async (tab, limit, page, searchCriteria, relevantSorting) => {
       setLoading(true);
       abortController.current = new AbortController();
       cqlLibraryServiceApi
@@ -118,7 +118,7 @@ function CqlLibraryLanding() {
           limit,
           page,
           searchCriteria,
-          sortingThatWeCareAbout,
+          relevantSorting,
           abortController.current.signal
         )
         .then((data) => {
