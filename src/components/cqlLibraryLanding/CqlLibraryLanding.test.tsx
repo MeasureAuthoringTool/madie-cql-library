@@ -178,6 +178,7 @@ describe("Cql Library Page", () => {
       10,
       0,
       null,
+      "",
       abortController.signal
     );
     const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
@@ -204,6 +205,7 @@ describe("Cql Library Page", () => {
       10,
       0,
       null,
+      "",
       abortController.signal
     );
     const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
@@ -214,6 +216,100 @@ describe("Cql Library Page", () => {
 
     userEvent.click(allCqlLibrariesTab);
     expect(mockNavigate).toHaveBeenCalledWith("?tab=1&page=0&limit=10");
+  });
+
+  test("Should trigger onClick sort", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibrarySearch: true,
+      LibraryListButtons: true,
+    }));
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+      .fn()
+      .mockResolvedValue(mockPageableVal);
+    renderWithRouter();
+    await waitFor(() => {
+      const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+      expect(cqlLibrary1).toBeInTheDocument();
+    });
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+      true,
+      10,
+      0,
+      null,
+      "",
+      expect.any(AbortSignal)
+    );
+
+    const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
+    expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
+
+    const aclHeader = screen.getByTestId("header-librarySet_acls");
+    expect(aclHeader).toBeInTheDocument();
+
+    userEvent.click(screen.getByTestId("header-librarySet_acls"));
+    await waitFor(() => {
+      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+        true,
+        10,
+        0,
+        null,
+        "librarySet.acls,false",
+        expect.any(AbortSignal)
+      );
+    });
+    userEvent.click(screen.getByTestId("header-librarySet_acls"));
+    await waitFor(() => {
+      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+        true,
+        10,
+        0,
+        null,
+        "librarySet.acls,true",
+        expect.any(AbortSignal)
+      );
+    });
+    userEvent.click(screen.getByTestId("header-librarySet_acls"));
+    await waitFor(() => {
+      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+        true,
+        10,
+        0,
+        null,
+        "",
+        expect.any(AbortSignal)
+      );
+    });
+
+    aclHeader.focus();
+
+    // Press Enter
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => {
+      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+        true,
+        10,
+        0,
+        null,
+        "librarySet.acls,false",
+        expect.any(AbortSignal)
+      );
+    });
+    // Press Space
+    await userEvent.keyboard(" ");
+    await waitFor(() => {
+      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
+        true,
+        10,
+        0,
+        null,
+        "librarySet.acls,true",
+        expect.any(AbortSignal)
+      );
+    });
+    // hit extra code coverage. nothing happens.
+    const target = screen.getByTestId("header-Actions");
+    target.focus();
+    userEvent.keyboard("{Enter}");
   });
 
   test("When passing search, we navigate to test search", async () => {
@@ -231,6 +327,7 @@ describe("Cql Library Page", () => {
       10,
       0,
       null,
+      "",
       abortController.signal
     );
 
@@ -246,6 +343,7 @@ describe("Cql Library Page", () => {
       10,
       0,
       "test",
+      "",
       abortController.signal
     );
   });
