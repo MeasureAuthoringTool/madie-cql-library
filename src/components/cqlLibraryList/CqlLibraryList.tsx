@@ -618,7 +618,6 @@ export default function CqlLibraryList({
       {
         id: "select",
         accessorKey: "select",
-        header: "Select",
         cell: (info) => {
           const isChecked = selectedExpandedLibrariesIds.includes(
             info.row.original.id
