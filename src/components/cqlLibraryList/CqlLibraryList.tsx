@@ -537,7 +537,7 @@ export default function CqlLibraryList({
       columnDefs.push({
         id: "select",
         accessorKey: "select",
-        header: "select",
+        header: "",
         cell: ({ row }) => {
           return (
             <div className="px-1">
@@ -618,7 +618,6 @@ export default function CqlLibraryList({
       {
         id: "select",
         accessorKey: "select",
-        header: "Select",
         cell: (info) => {
           const isChecked = selectedExpandedLibrariesIds.includes(
             info.row.original.id
