@@ -215,7 +215,7 @@ describe("Cql Library Page", () => {
     });
 
     userEvent.click(allCqlLibrariesTab);
-    expect(mockNavigate).toHaveBeenCalledWith("?tab=1&page=0&limit=10");
+    expect(mockNavigate).toHaveBeenCalledWith("?tab=1&page=1&limit=10");
   });
 
   test("Should trigger onClick sort", async () => {
