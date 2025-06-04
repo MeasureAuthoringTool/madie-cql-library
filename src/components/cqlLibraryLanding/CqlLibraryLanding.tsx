@@ -202,7 +202,7 @@ function CqlLibraryLanding() {
   const handleTabChange = (event, nextTab) => {
     abortController.current.abort();
     setCqlLibraryList(null);
-    const limit = values?.limit || curLimit;
+    const limit = values?.limit || 10;
     //when switching tabs to all libraries, All libraries option is not available so we set limit to max val
     const updatedLimit = activeTab === 0 && limit === "All" ? 50 : limit;
     localStorage.setItem(
