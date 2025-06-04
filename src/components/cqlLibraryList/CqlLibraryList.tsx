@@ -144,7 +144,10 @@ export default function CqlLibraryList({
   const values = queryString.parse(search);
   const handlePageChange = (e, v) => {
     const updatedPage = v;
-    const updatedLimit = values?.limit || curLimit;
+    const updatedLimit =
+      curLimit !== undefined ? (curLimit === "All" ? 50 : curLimit) : 10;
+
+    // Save page and limit to local storage
     localStorage.setItem(
       "cqlLibraryPageOptions",
       JSON.stringify({
@@ -1092,7 +1095,7 @@ export default function CqlLibraryList({
                   handlePageChange={handlePageChange}
                   handleLimitChange={handleLimitChange}
                   page={curPage}
-                  limit={curLimit === "All" && totalItems < 50 ? 50 : curLimit}
+                  limit={curLimit === "All" && totalItems < 51 ? 50 : curLimit}
                   count={totalPages}
                   shape="rounded"
                   hideNextButton={!canGoNext}
