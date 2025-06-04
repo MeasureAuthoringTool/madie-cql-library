@@ -45,6 +45,10 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
 
   let modelOptions = Object.keys(Model);
   const featureFlags = useFeatureFlags();
+  if (!featureFlags.qiCore7) {
+    // remove QI-Core 7.0.0 from model options if the feature flag is not enabled
+    modelOptions = modelOptions.filter((model) => model !== "QICORE_7_0_0");
+  }
 
   // fetch organizations DB using measure service and sorts alphabetically
   useEffect(() => {
