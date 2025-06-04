@@ -90,14 +90,15 @@ const formikInfo = {
   draft: true,
 };
 
+const onFormSubmit = jest.fn();
+const onFormCancel = jest.fn();
+
 describe("Library Dialog", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
 
   test("An open Dialog has all the required elements", async () => {
-    const onFormSubmit = jest.fn();
-    const onFormCancel = jest.fn();
     await act(async () => {
       render(
         <ApiContextProvider value={serviceConfig}>
@@ -159,8 +160,6 @@ describe("Library Dialog", () => {
   });
 
   test("Allows creation of a QDM library", async () => {
-    const onFormSubmit = jest.fn();
-    const onFormCancel = jest.fn();
     render(
       <ApiContextProvider value={serviceConfig}>
         <div>
@@ -237,8 +236,6 @@ describe("Library Dialog", () => {
   }, 20000);
 
   test("Does not allow creation of a QI-Core library with special charater", async () => {
-    const onFormSubmit = jest.fn();
-    const onFormCancel = jest.fn();
     render(
       <ApiContextProvider value={serviceConfig}>
         <div>
@@ -306,8 +303,6 @@ describe("Library Dialog", () => {
         qiCore6: true,
       };
     });
-    const onFormSubmit = jest.fn();
-    const onFormCancel = jest.fn();
     render(
       <ApiContextProvider value={serviceConfig}>
         <div>
@@ -332,5 +327,257 @@ describe("Library Dialog", () => {
         })) as HTMLInputElement
       ).value
     ).toEqual("QI-Core v6.0.0");
+  }, 20000);
+
+  test("QI-Core 7 is enabled", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
+      return {
+        qiCore7: true,
+      };
+    });
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const modelSelect = await getByTestId("cql-library-model-select");
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(4);
+    userEvent.click(options[2]);
+    expect(
+      (
+        (await within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        })) as HTMLInputElement
+      ).value
+    ).toEqual("QI-Core v7.0.0");
+  }, 20000);
+
+  test("QI-Core 7 is not enabled", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
+      return {
+        qiCore7: false,
+      };
+    });
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const modelSelect = await getByTestId("cql-library-model-select");
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(3);
+    userEvent.click(options[1]);
+    expect(
+      (
+        (await within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        })) as HTMLInputElement
+      ).value
+    ).toEqual("QI-Core v6.0.0");
+  }, 20000);
+
+  test("Creation of a QDM library fails", async () => {
+    (
+      mockCqlLibraryServiceApi.createCqlLibrary as jest.Mock
+    ).mockRejectedValueOnce(new Error("Failed to create CQL Library"));
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const cancelButton = await findByTestId("cql-library-cancel-button");
+
+    expect(cancelButton).toBeInTheDocument();
+    expect(cancelButton).toBeEnabled();
+
+    const submitButton = await findByTestId("continue-button");
+    expect(submitButton).toBeInTheDocument();
+    expect(submitButton).toBeDisabled();
+
+    const libraryName = screen.getByRole("textbox", {
+      name: "Library Name",
+    }) as HTMLInputElement;
+    userEvent.type(libraryName, "QdmLibrary_1");
+    await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary_1"));
+
+    const libraryDescription = screen.getByRole("textbox", {
+      name: "Description required",
+    }) as HTMLInputElement;
+    userEvent.type(libraryDescription, "QDM Library Description");
+    await waitFor(() =>
+      expect(libraryDescription.value).toEqual("QDM Library Description")
+    );
+
+    const modelSelect = await getByTestId("cql-library-model-select");
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(3);
+    userEvent.click(options[2]);
+    expect(
+      (
+        (await within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        })) as HTMLInputElement
+      ).value
+    ).toEqual("QDM v5.6");
+
+    const publisherSelect = screen.getByRole("combobox", { name: "Publisher" });
+    userEvent.click(publisherSelect);
+    const publisherListbox = screen.getByRole("listbox", { name: "Publisher" });
+    const publisherOptions = await within(publisherListbox).findAllByRole(
+      "option"
+    );
+    expect(publisherOptions.length).toEqual(2);
+    userEvent.click(publisherOptions[1]);
+    await waitFor(() => expect(publisherSelect).toHaveValue("Org2"));
+
+    await waitFor(() => expect(submitButton).not.toBeDisabled());
+    userEvent.click(submitButton);
+    expect(
+      await screen.findByText(
+        "An error occurred while creating the CQL Library"
+      )
+    ).toBeInTheDocument();
+    expect(mockCqlLibraryServiceApi.createCqlLibrary).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cqlLibraryName: "QdmLibrary_1",
+        model: "QDM v5.6",
+        cql: "",
+        draft: true,
+        description: "QDM Library Description",
+        publisher: "Org2",
+      })
+    );
+  }, 20000);
+
+  test("Creation of a QDM library fails with validation error", async () => {
+    (
+      mockCqlLibraryServiceApi.createCqlLibrary as jest.Mock
+    ).mockRejectedValueOnce({
+      response: {
+        data: {
+          message: "Validation error",
+          validationErrors: ["Library Name is required"],
+        },
+      },
+    });
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const cancelButton = await findByTestId("cql-library-cancel-button");
+
+    expect(cancelButton).toBeInTheDocument();
+    expect(cancelButton).toBeEnabled();
+
+    const submitButton = await findByTestId("continue-button");
+    expect(submitButton).toBeInTheDocument();
+    expect(submitButton).toBeDisabled();
+
+    const libraryName = screen.getByRole("textbox", {
+      name: "Library Name",
+    }) as HTMLInputElement;
+    userEvent.type(libraryName, "QdmLibrary_1");
+    await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary_1"));
+
+    const libraryDescription = screen.getByRole("textbox", {
+      name: "Description required",
+    }) as HTMLInputElement;
+    userEvent.type(libraryDescription, "QDM Library Description");
+    await waitFor(() =>
+      expect(libraryDescription.value).toEqual("QDM Library Description")
+    );
+
+    const modelSelect = await getByTestId("cql-library-model-select");
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(3);
+    userEvent.click(options[2]);
+    expect(
+      (
+        (await within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        })) as HTMLInputElement
+      ).value
+    ).toEqual("QDM v5.6");
+
+    const publisherSelect = screen.getByRole("combobox", { name: "Publisher" });
+    userEvent.click(publisherSelect);
+    const publisherListbox = screen.getByRole("listbox", { name: "Publisher" });
+    const publisherOptions = await within(publisherListbox).findAllByRole(
+      "option"
+    );
+    expect(publisherOptions.length).toEqual(2);
+    userEvent.click(publisherOptions[1]);
+    await waitFor(() => expect(publisherSelect).toHaveValue("Org2"));
+
+    await waitFor(() => expect(submitButton).not.toBeDisabled());
+    userEvent.click(submitButton);
+    expect(
+      await screen.findByText("Validation error 0 : Library Name is required")
+    ).toBeInTheDocument();
+    expect(mockCqlLibraryServiceApi.createCqlLibrary).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cqlLibraryName: "QdmLibrary_1",
+        model: "QDM v5.6",
+        cql: "",
+        draft: true,
+        description: "QDM Library Description",
+        publisher: "Org2",
+      })
+    );
+  }, 20000);
+
+  test("Cancel create QDM library", async () => {
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const cancelButton = await findByTestId("cql-library-cancel-button");
+
+    expect(cancelButton).toBeInTheDocument();
+    expect(cancelButton).toBeEnabled();
+    userEvent.click(cancelButton);
+    expect(onFormCancel).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.createCqlLibrary).not.toHaveBeenCalled();
   }, 20000);
 });
