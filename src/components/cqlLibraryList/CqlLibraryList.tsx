@@ -1092,7 +1092,7 @@ export default function CqlLibraryList({
                   handlePageChange={handlePageChange}
                   handleLimitChange={handleLimitChange}
                   page={curPage}
-                  limit={curLimit}
+                  limit={curLimit === "All" && totalItems < 50 ? 50 : curLimit}
                   count={totalPages}
                   shape="rounded"
                   hideNextButton={!canGoNext}

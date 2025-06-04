@@ -122,12 +122,11 @@ function CqlLibraryLanding() {
   const retrieveLibraries = useCallback(
     async (tab, limit, page, searchCriteria, relevantSorting) => {
       setLoading(true);
-      limit = limit === "All" ? 1000 : limit; // if limit is "All", set it to a high number to fetch all results
       abortController.current = new AbortController();
       cqlLibraryServiceApi
         .fetchCqlLibraries(
           tab === 0,
-          limit,
+          limit === "All" ? 1000 : limit, // if limit is "All", set it to a high number to fetch all results
           page,
           searchCriteria,
           relevantSorting,
@@ -204,15 +203,17 @@ function CqlLibraryLanding() {
     abortController.current.abort();
     setCqlLibraryList(null);
     const limit = values?.limit || curLimit;
+    //when switching tabs to all libraries, All libraries option is not available so we set limit to max val
+    const updatedLimit = activeTab === 0 && limit === "All" ? 50 : limit;
     localStorage.setItem(
       "cqlLibraryPageOptions",
       JSON.stringify({
         page: 1,
-        limit,
+        limit: updatedLimit,
       })
     );
 
-    navigate(`?tab=${nextTab}&page=1&limit=${limit}`);
+    navigate(`?tab=${nextTab}&page=1&limit=${updatedLimit}`);
   };
 
   // Create Dialog utilities

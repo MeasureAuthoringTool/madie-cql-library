@@ -9,14 +9,13 @@ export class CqlLibraryServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}
   async fetchCqlLibraries(
     filterByCurrentUser: boolean,
-    limit: string | number = 25,
+    limit: number = 25,
     page: number = 0,
     searchCriteria,
     sortInfo,
     signal
   ): Promise<any> {
     try {
-      //limit = limit === "All" ? 1000 : limit; // if limit is "All", set it to a high number to fetch all results
       const response = await axios.get<any>(`${this.baseUrl}/cql-libraries`, {
         headers: {
           Authorization: `Bearer ${this.getAccessToken()}`,
