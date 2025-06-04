@@ -333,4 +333,72 @@ describe("Library Dialog", () => {
       ).value
     ).toEqual("QI-Core v6.0.0");
   }, 20000);
+
+  test("QI-Core 7 is enabled", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
+      return {
+        qiCore7: true,
+      };
+    });
+    const onFormSubmit = jest.fn();
+    const onFormCancel = jest.fn();
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const modelSelect = await getByTestId("cql-library-model-select");
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(4);
+    userEvent.click(options[2]);
+    expect(
+      (
+        (await within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        })) as HTMLInputElement
+      ).value
+    ).toEqual("QI-Core v7.0.0");
+  }, 20000);
+
+  test("QI-Core 7 is not enabled", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
+      return {
+        qiCore7: false,
+      };
+    });
+    const onFormSubmit = jest.fn();
+    const onFormCancel = jest.fn();
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const modelSelect = await getByTestId("cql-library-model-select");
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(3);
+    userEvent.click(options[1]);
+    expect(
+      (
+        (await within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        })) as HTMLInputElement
+      ).value
+    ).toEqual("QI-Core v6.0.0");
+  }, 20000);
 });
