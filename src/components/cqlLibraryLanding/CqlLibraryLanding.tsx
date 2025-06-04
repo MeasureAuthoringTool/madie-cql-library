@@ -34,8 +34,19 @@ function CqlLibraryLanding() {
   const [loading, setLoading] = useState(true);
   // utilities for pagination
   const values = queryString.parse(search);
-  const curLimit = values.limit && Number(values.limit);
-  const curPage = (values.page && Number(values.page)) || 1;
+  const cqlLibraryPageOptions = JSON.parse(
+    window.localStorage.getItem("cqlLibraryPageOptions")
+  );
+  const curLimit = cqlLibraryPageOptions?.limit
+    ? cqlLibraryPageOptions.limit
+    : values.limit
+    ? values.limit
+    : 10;
+  const curPage = cqlLibraryPageOptions?.page
+    ? cqlLibraryPageOptions.page
+    : values.page
+    ? Number(values.page)
+    : 1;
   const [totalPages, setTotalPages] = useState<number>(0);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [visibleItems, setVisibleItems] = useState<number>(0);
@@ -191,8 +202,16 @@ function CqlLibraryLanding() {
   const handleTabChange = (event, nextTab) => {
     abortController.current.abort();
     setCqlLibraryList(null);
-    const limit = values?.limit || 10;
-    navigate(`?tab=${nextTab}&page=0&limit=${limit}`);
+    const limit = values?.limit || curLimit;
+    localStorage.setItem(
+      "cqlLibraryPageOptions",
+      JSON.stringify({
+        page: 1,
+        limit,
+      })
+    );
+
+    navigate(`?tab=${nextTab}&page=1&limit=${limit}`);
   };
 
   // Create Dialog utilities
@@ -342,6 +361,7 @@ function CqlLibraryLanding() {
             {!loading && (
               <CqlLibraryList
                 cqlLibraryList={cqlLibraryList}
+                curLimit={curLimit}
                 offset={offset}
                 activeTab={activeTab}
                 totalPages={totalPages}

@@ -127,6 +127,7 @@ export default function CqlLibraryList({
   totalPages,
   visibleItems,
   offset,
+  curLimit,
   sorting,
   handleSort,
 }) {
@@ -142,11 +143,45 @@ export default function CqlLibraryList({
   const { search } = useLocation();
   const values = queryString.parse(search);
   const handlePageChange = (e, v) => {
-    navigate(`?tab=${activeTab}&page=${v}&limit=${values?.limit || 10}`);
+    const updatedPage = v;
+    const updatedLimit = values?.limit || curLimit;
+    localStorage.setItem(
+      "cqlLibraryPageOptions",
+      JSON.stringify({
+        page: updatedPage,
+        limit: updatedLimit,
+      })
+    );
+
+    navigate(`?tab=${activeTab}&page=${updatedPage}&limit=${updatedLimit}`);
   };
   const handleLimitChange = (e) => {
-    navigate(`?tab=${activeTab}&page=${0}&limit=${e.target.value}`);
+    const updatedLimit = e.target.value;
+    localStorage.setItem(
+      "cqlLibraryPageOptions",
+      JSON.stringify({
+        page: 1,
+        limit: updatedLimit,
+      })
+    );
+    navigate(`?tab=${activeTab}&page=1&limit=${updatedLimit}`);
   };
+
+  useEffect(() => {
+    const cqlLibraryPageOptions = JSON.parse(
+      window.localStorage.getItem("cqlLibraryPageOptions")
+    );
+
+    if (cqlLibraryPageOptions) {
+      if (
+        !Object.keys(values).length &&
+        Object.keys(cqlLibraryPageOptions).length
+      ) {
+        const { page, limit } = cqlLibraryPageOptions;
+        navigate(`?tab=${activeTab}&page=${page}&limit=${limit}`);
+      }
+    }
+  }, [values, navigate, activeTab]);
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   // pull info from some query url
@@ -1047,12 +1082,17 @@ export default function CqlLibraryList({
                 <Pagination
                   totalItems={totalItems}
                   visibleItems={visibleItems}
-                  limitOptions={[10, 25, 50]}
+                  limitOptions={[
+                    10,
+                    25,
+                    50,
+                    ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
+                  ]}
                   offset={offset}
                   handlePageChange={handlePageChange}
                   handleLimitChange={handleLimitChange}
-                  page={Number(values?.page) || 1}
-                  limit={Number(values?.limit) || 10}
+                  page={curPage}
+                  limit={curLimit}
                   count={totalPages}
                   shape="rounded"
                   hideNextButton={!canGoNext}
