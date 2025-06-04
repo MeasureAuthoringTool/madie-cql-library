@@ -122,6 +122,7 @@ function CqlLibraryLanding() {
   const retrieveLibraries = useCallback(
     async (tab, limit, page, searchCriteria, relevantSorting) => {
       setLoading(true);
+      limit = limit === "All" ? 1000 : limit; // if limit is "All", set it to a high number to fetch all results
       abortController.current = new AbortController();
       cqlLibraryServiceApi
         .fetchCqlLibraries(
