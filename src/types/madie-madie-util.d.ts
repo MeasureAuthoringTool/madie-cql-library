@@ -50,7 +50,7 @@ declare module "@madie/madie-util" {
   };
 
   interface FeatureFlags {
-    minimizeAlerts: boolean;
+    MinimizeAlerts: boolean;
     LibraryListCheckboxes: boolean;
     LibraryListButtons: boolean;
     ShareLibrary: boolean;

@@ -23,7 +23,7 @@ const generateMadieAlertWithContent = (
   });
   return (
     <MadieAlert
-      minimizeAlerts={featureFlags?.minimizeAlerts}
+      minimizeAlerts={featureFlags?.MinimizeAlerts}
       type={type}
       content={
         <div aria-live="polite" role="alert">
