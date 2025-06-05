@@ -143,27 +143,10 @@ export default function CqlLibraryList({
   const { search } = useLocation();
   const values = queryString.parse(search);
   const handlePageChange = (e, v) => {
-    const updatedPage = v;
-    const updatedLimit = values?.limit || curLimit;
-    localStorage.setItem(
-      "cqlLibraryPageOptions",
-      JSON.stringify({
-        page: updatedPage,
-        limit: updatedLimit,
-      })
-    );
-
-    navigate(`?tab=${activeTab}&page=${updatedPage}&limit=${updatedLimit}`);
+    navigate(`?tab=${activeTab}&page=${v}&limit=${values?.limit || 10}`);
   };
   const handleLimitChange = (e) => {
     const updatedLimit = e.target.value;
-    localStorage.setItem(
-      "cqlLibraryPageOptions",
-      JSON.stringify({
-        page: 1,
-        limit: updatedLimit,
-      })
-    );
     navigate(`?tab=${activeTab}&page=1&limit=${updatedLimit}`);
   };
 
@@ -297,6 +280,22 @@ export default function CqlLibraryList({
       .deleteDraft(deleteDraftDialog.cqlLibrary?.id)
       .then(async () => {
         handleDialogClose();
+
+        const values = queryString.parse(search);
+        const currentLimit = values.limit === "All" ? 50 : values.limit;
+
+        localStorage.setItem(
+          "cqlLibraryPageOptions",
+          JSON.stringify({
+            page: values.page || 1,
+            limit: currentLimit,
+          })
+        );
+
+        navigate(
+          `?tab=${activeTab}&page=${values.page || 1}&limit=${currentLimit}`
+        );
+
         await onListUpdate();
         table.resetRowSelection();
         setSnackBar({

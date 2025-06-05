@@ -182,14 +182,27 @@ function CqlLibraryLanding() {
   // sort logic end.
 
   useEffect(() => {
+    const values = queryString.parse(search);
+    const updatedPage = values.page ? Number(values.page) : curPage;
+    const updatedLimit = values.limit || curLimit;
+
+    localStorage.setItem(
+      "cqlLibraryPageOptions",
+      JSON.stringify({
+        page: updatedPage,
+        limit: updatedLimit,
+      })
+    );
+
     retrieveLibraries(
       activeTab,
-      curLimit === undefined ? 10 : curLimit,
-      curPage - 1,
+      updatedLimit,
+      updatedPage - 1,
       searchCriteria,
       sortingString
     );
   }, [
+    search,
     retrieveLibraries,
     activeTab,
     curLimit,
@@ -203,15 +216,16 @@ function CqlLibraryLanding() {
     abortController.current.abort();
     setCqlLibraryList(null);
     const limit = values?.limit || curLimit;
+    const updatedLimit = nextTab === 1 && limit === "All" ? 50 : limit;
     localStorage.setItem(
       "cqlLibraryPageOptions",
       JSON.stringify({
         page: 1,
-        limit,
+        limit: updatedLimit,
       })
     );
 
-    navigate(`?tab=${nextTab}&page=1&limit=${limit}`);
+    navigate(`?tab=${nextTab}&page=1&limit=${updatedLimit}`);
   };
 
   // Create Dialog utilities
