@@ -80,7 +80,6 @@ const StatusHandler = ({
   outboundAnnotations,
 }) => {
   const featureFlags = useFeatureFlags();
-
   if (success.status === "success") {
     if (outboundAnnotations?.length > 0) {
       return generateMadieAlertWithContent(
