@@ -280,7 +280,6 @@ export default function CqlLibraryList({
       .deleteDraft(deleteDraftDialog.cqlLibrary?.id)
       .then(async () => {
         handleDialogClose();
-
         const values = queryString.parse(search);
         const currentLimit = values.limit === "All" ? 50 : values.limit;
 
@@ -291,7 +290,6 @@ export default function CqlLibraryList({
             limit: currentLimit,
           })
         );
-
         navigate(
           `?tab=${activeTab}&page=${values.page || 1}&limit=${currentLimit}`
         );
