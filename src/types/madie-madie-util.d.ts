@@ -51,6 +51,7 @@ declare module "@madie/madie-util" {
 
   interface FeatureFlags {
     LibrarySearch: boolean;
+    qiCore7: boolean;
   }
 
   export function useFeatureFlags(): FeatureFlags;

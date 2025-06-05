@@ -56,6 +56,27 @@ const INITIAL_DELETE_DRAFT_STATE = {
   cqlLibrary: null,
 };
 
+export function sortResults(data, sortBy, descending = false) {
+  // no sort, return same
+  if (!sortBy) return data;
+  return [...data].sort((a, b) => {
+    const aValue = a[sortBy];
+    const bValue = b[sortBy];
+
+    // decide how to sort based on type
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      //and direction
+      return descending
+        ? bValue.localeCompare(aValue)
+        : aValue.localeCompare(bValue);
+    }
+    //type
+    return descending //direction
+      ? (bValue as any) - (aValue as any)
+      : (aValue as any) - (bValue as any);
+  });
+}
+
 function IndeterminateCheckbox({
   indeterminate,
   className = "",
@@ -106,6 +127,8 @@ export default function CqlLibraryList({
   totalPages,
   visibleItems,
   offset,
+  sorting,
+  handleSort,
 }) {
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
@@ -404,14 +427,14 @@ export default function CqlLibraryList({
       ), // Removed draft status text
     },
     {
+      sortDescFirst: false, // This needs to be added because tanstack implicitly starts desc true bc of many nulls
       header: "Status",
-      accessorKey: "status",
+      accessorKey: "draft",
       cell: (info) => (
         <div>
           {info.row.original.draft && (
             <Chip className="chip-draft" label="Draft" />
           )}
-          {/* {info.getValue()} */}
         </div>
       ),
     },
@@ -429,8 +452,9 @@ export default function CqlLibraryList({
       ),
     },
     {
+      sortDescFirst: false, // This needs to be added because tanstack implicitly starts desc true bc of many nulls
       header: "Shared",
-      accessorKey: "shared",
+      accessorKey: "librarySet.acls",
       cell: (info) => (
         <p>
           {info.row.original.librarySet?.acls?.length > 0 && (
@@ -441,7 +465,7 @@ export default function CqlLibraryList({
     },
     {
       header: "Updated",
-      accessorKey: "lastUpdated",
+      accessorKey: "lastModifiedAt",
       cell: (info) => (
         <p>{new Date(info.row.original.lastModifiedAt).toLocaleDateString()}</p>
       ),
@@ -483,6 +507,7 @@ export default function CqlLibraryList({
     columnDefs.push({
       id: "select",
       accessorKey: "select",
+      header: "",
       cell: ({ row }) => {
         return (
           <div className="px-1">
@@ -563,7 +588,6 @@ export default function CqlLibraryList({
       {
         id: "select",
         accessorKey: "select",
-        header: "Select",
         cell: (info) => {
           const isChecked = selectedExpandedLibrariesIds.includes(
             info.row.original.id
@@ -602,8 +626,12 @@ export default function CqlLibraryList({
     data: cqlLibraryList ?? [],
     columns,
     getCoreRowModel: getCoreRowModel(),
+    manualSorting: true,
+    state: {
+      sorting,
+    },
+    onSortingChange: handleSort,
   });
-
   const parentLibraries =
     cqlLibraryList?.filter((library) => {
       return table
@@ -636,9 +664,16 @@ export default function CqlLibraryList({
         actions?.librarySetId,
         true
       );
-      const filteredResults = results.filter(
+      let filteredResults = results.filter(
         (result) => result.id !== actions?.id
       );
+      //property version is a string here. does not appear to work as expected.
+      const sortBy = sorting?.[0]?.id; // string for property to sort
+      const descending = sorting?.[0]?.desc; // bool whether the list should be descending
+      if (sortBy) {
+        filteredResults = sortResults(filteredResults, sortBy, descending);
+      }
+
       setIsRowExpanded(true);
       setExpandedSectionData(filteredResults);
     } else {
@@ -688,6 +723,13 @@ export default function CqlLibraryList({
     [shareDialog]
   );
 
+  const isButton = (header) => {
+    return (
+      header.column.columnDef.header !== "Actions" &&
+      header.column.columnDef.header !== "select" &&
+      header.column.columnDef.header !== ""
+    );
+  };
   return (
     <div data-testid="cqlLibrary-list">
       {snackBar.message !== "backdropClick" &&
@@ -872,16 +914,48 @@ export default function CqlLibraryList({
                 <thead tw="bg-slate">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => (
-                        <th key={header.id} scope="col" className="col-header">
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </th>
-                      ))}
+                      {headerGroup.headers.map((header) => {
+                        const button = isButton(header);
+                        return (
+                          <th
+                            key={header.id}
+                            data-testId={`header-${header.id}`}
+                            scope="col"
+                            role={button ? "button" : ""}
+                            tabIndex={button ? 0 : undefined}
+                            className="col-header"
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter" || e.key === " ") {
+                                e.preventDefault();
+                                if (button) {
+                                  const handler =
+                                    header.column.getToggleSortingHandler();
+                                  handler(e);
+                                }
+                              }
+                            }}
+                            onClick={
+                              button
+                                ? (e) =>
+                                    header.column.getToggleSortingHandler()(e)
+                                : undefined
+                            }
+                            style={button ? { cursor: "pointer" } : null}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                            {/* boilder plate logic for later to show the order */}
+                            {/* {header.column.columnDef.header !== "Actions" &&
+                            ({
+                              asc: " 🔼",
+                              desc: " 🔽",
+                            }[header.column.getIsSorted() as string] ||
+                              null)} */}
+                          </th>
+                        );
+                      })}
                     </tr>
                   ))}
                 </thead>
@@ -913,6 +987,7 @@ export default function CqlLibraryList({
                             className="expanded-row"
                             data-testid={`cqlLibrary-expanded-${subRow.id}`}
                           >
+                            {/* This is lost between renders. I guess we may need to instead retain an expansion ref? */}
                             {expandedColumns.map((column: any) =>
                               column?.accessorKey === "expandArrow" ? (
                                 <td></td>
