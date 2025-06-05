@@ -137,7 +137,7 @@ function CqlLibraryLanding() {
 
           // Dynamically update limit in the URL if totalItems < 50
           const updatedLimit =
-            limit === "All" && data.totalElements < 50 ? 50 : limit;
+            limit === "All" && data.totalElements <= 50 ? 50 : limit;
           localStorage.setItem(
             "cqlLibraryPageOptions",
             JSON.stringify({
