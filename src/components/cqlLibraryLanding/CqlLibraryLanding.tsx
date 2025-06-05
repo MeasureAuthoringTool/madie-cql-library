@@ -134,9 +134,21 @@ function CqlLibraryLanding() {
         )
         .then((data) => {
           setPageProps(data);
+
+          // Dynamically update limit in the URL if totalItems < 50
+          const updatedLimit =
+            limit === "All" && data.totalElements < 50 ? 50 : limit;
+          localStorage.setItem(
+            "cqlLibraryPageOptions",
+            JSON.stringify({
+              page: page + 1, // Convert 0-based page to 1-based for UI
+              limit: updatedLimit,
+            })
+          );
+          navigate(`?tab=${tab}&page=${page + 1}&limit=${updatedLimit}`);
         })
         .catch((error) => {
-          if (error.message != "canceled") {
+          if (error.message !== "canceled") {
             setSnackBar({
               message: "An error occurred while fetching the CQL Library!",
               open: true,
@@ -202,13 +214,12 @@ function CqlLibraryLanding() {
   const handleTabChange = (event, nextTab) => {
     abortController.current.abort();
     setCqlLibraryList(null);
-    const limit = values?.limit || 10;
     //when switching tabs to all libraries, All libraries option is not available so we set limit to max val
     const updatedLimit =
-      values?.limit !== undefined
-        ? nextTab === 1 && limit === "All"
+      curLimit !== undefined
+        ? nextTab === 1 && curLimit === "All"
           ? 50
-          : limit
+          : curLimit
         : 10;
     localStorage.setItem(
       "cqlLibraryPageOptions",
@@ -246,6 +257,19 @@ function CqlLibraryLanding() {
     if (filter) {
       // handle null to string edge
       setSearchCriteria(filter.trim());
+      const submitFilter = (e) => {
+        e.preventDefault();
+        if (filter) {
+          setSearchCriteria(filter.trim());
+          retrieveLibraries(
+            activeTab,
+            curLimit,
+            0, // Reset to the first page
+            filter.trim(),
+            sortingString
+          );
+        }
+      };
     }
   };
 
