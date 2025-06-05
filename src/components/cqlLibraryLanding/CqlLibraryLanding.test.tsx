@@ -132,10 +132,6 @@ jest.setTimeout(10000);
 describe("Cql Library Page", () => {
   let mockNavigate: jest.Mock;
   beforeEach(() => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
     mockNavigate = jest.fn();
     (useNavigate as jest.Mock).mockReturnValue(mockNavigate);
     (useFeatureFlags as jest.Mock).mockReturnValue({
@@ -254,10 +250,6 @@ describe("Cql Library Page", () => {
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
     renderWithRouter();
     await waitFor(() => {
       const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
@@ -278,10 +270,6 @@ describe("Cql Library Page", () => {
 
   test("Delete should work when everything is okay", async () => {
     // Set up mock specifically for this test
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -317,10 +305,7 @@ describe("Cql Library Page", () => {
   });
   test("Delete should not delete when cancel is clicked", async () => {
     // Set up mock specifically for this test
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -358,10 +343,7 @@ describe("Cql Library Page", () => {
   });
 
   test("Delete should display error message for delete draft library when non-owner attempts to delete", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -413,10 +395,7 @@ describe("Cql Library Page", () => {
     });
   });
   test("Delete should display error message for delete draft library when backend states not a draft", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+
     const axiosError: AxiosError = {
       response: {
         status: 409,
@@ -474,10 +453,6 @@ describe("Cql Library Page", () => {
 
   test("Version should work when everything is okay", async () => {
     // Set up mock specifically for this test
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -522,11 +497,7 @@ describe("Cql Library Page", () => {
     });
   });
   test("Version should not version when cancel is clicked", async () => {
-    // Set up mock specifically for this test
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+    
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -568,10 +539,7 @@ describe("Cql Library Page", () => {
   });
 
   it("should display unauthorized error while creating a version of a cql library", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+    
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -644,10 +612,7 @@ describe("Cql Library Page", () => {
   });
 
   it("should display unauthorized error while creating a version of a cql library", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+    
     const updatedPageableVal = { ...mockPageableVal };
     updatedPageableVal.content[0].draft = true;
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
@@ -719,11 +684,7 @@ describe("Cql Library Page", () => {
   });
 
   test("Draft should work when everything is okay", async () => {
-    // Set up mock specifically for this test
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+   
     const updatedPageableVal = { ...mockPageableVal };
     updatedPageableVal.content[0].draft = false;
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
@@ -760,11 +721,7 @@ describe("Cql Library Page", () => {
     });
   });
   test("should display bad request error while creating a draft a cql library", async () => {
-    // Set up mock specifically for this test
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+    
     const error = {
       response: {
         data: {
@@ -817,11 +774,7 @@ describe("Cql Library Page", () => {
     });
   });
   test("should display unauthorized error while creating a draft a cql library", async () => {
-    // Set up mock specifically for this test
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+    /
     const error = {
       response: {
         data: {
@@ -873,11 +826,7 @@ describe("Cql Library Page", () => {
     });
   });
   test("should display server error while creating a draft a cql library", async () => {
-    // Set up mock specifically for this test
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+    
     const error = {
       response: {
         data: {
@@ -931,10 +880,7 @@ describe("Cql Library Page", () => {
     });
   });
   test("should display unique library name error for changing to already used name during draft a cql library", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
+    
     const error = {
       response: {
         data: {
