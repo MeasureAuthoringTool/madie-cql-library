@@ -437,7 +437,10 @@ export default function CqlLibraryList({
                 ? `edit-cql-library-button-${info.row.original.id}`
                 : `view-cql-library-button-${info.row.original.id}`
             }
-            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+            aria-live="polite"
+            aria-label={`Edit Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft}`}
+            tabIndex={0}
+            role="button"
           >
             {checkUserCanEdit(
               info.row.original.librarySet?.owner,
