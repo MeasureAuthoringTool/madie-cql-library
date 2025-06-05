@@ -441,7 +441,6 @@ describe("Cql Library Page", () => {
   });
 
   test("Delete should display error message for delete draft library when non-owner attempts to delete", async () => {
-
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -493,7 +492,6 @@ describe("Cql Library Page", () => {
     });
   });
   test("Delete should display error message for delete draft library when backend states not a draft", async () => {
-
     const axiosError: AxiosError = {
       response: {
         status: 409,
@@ -595,7 +593,6 @@ describe("Cql Library Page", () => {
     });
   });
   test("Version should not version when cancel is clicked", async () => {
-    
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -637,7 +634,6 @@ describe("Cql Library Page", () => {
   });
 
   it("should display unauthorized error while creating a version of a cql library", async () => {
-    
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -710,7 +706,6 @@ describe("Cql Library Page", () => {
   });
 
   it("should display unauthorized error while creating a version of a cql library", async () => {
-    
     const updatedPageableVal = { ...mockPageableVal };
     updatedPageableVal.content[0].draft = true;
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
@@ -782,7 +777,6 @@ describe("Cql Library Page", () => {
   });
 
   test("Draft should work when everything is okay", async () => {
-   
     const updatedPageableVal = { ...mockPageableVal };
     updatedPageableVal.content[0].draft = false;
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
@@ -819,7 +813,6 @@ describe("Cql Library Page", () => {
     });
   });
   test("should display bad request error while creating a draft a cql library", async () => {
-    
     const error = {
       response: {
         data: {
@@ -923,7 +916,6 @@ describe("Cql Library Page", () => {
     });
   });
   test("should display server error while creating a draft a cql library", async () => {
-    
     const error = {
       response: {
         data: {
@@ -977,7 +969,6 @@ describe("Cql Library Page", () => {
     });
   });
   test("should display unique library name error for changing to already used name during draft a cql library", async () => {
-    
     const error = {
       response: {
         data: {
