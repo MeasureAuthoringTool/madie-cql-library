@@ -872,7 +872,6 @@ describe("Cql Library Page", () => {
     });
   });
   test("should display unauthorized error while creating a draft a cql library", async () => {
-    /
     const error = {
       response: {
         data: {
