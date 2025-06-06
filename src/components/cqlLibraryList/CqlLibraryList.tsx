@@ -437,14 +437,14 @@ export default function CqlLibraryList({
                 ? `edit-cql-library-button-${info.row.original.id}`
                 : `view-cql-library-button-${info.row.original.id}`
             }
-            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+            aria-live="polite"
+            aria-label={`Edit Library ${info.row.original.cqlLibraryName} ${
+              info.row.original.version
+            }${info.row.original.draft ? " Draft" : ""}`}
+            tabIndex={0}
+            role="button"
           >
-            {checkUserCanEdit(
-              info.row.original.librarySet?.owner,
-              info.row.original.librarySet?.acls
-            ) && info.row.original.draft
-              ? "Edit"
-              : "View"}
+            {canEdit && info.row.original.draft ? "Edit" : "View"}
           </Button>
         ),
     },
@@ -526,7 +526,16 @@ export default function CqlLibraryList({
             style={{ borderColor: "#c8c8c8" }}
             onClick={(e) => handleOpen(info.row.original, e)}
             data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
-            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+            aria-label={`${
+              checkUserCanEdit(
+                info.row.original.librarySet?.owner,
+                info.row.original.librarySet?.acls
+              ) && info.row.original.draft
+                ? `Edit`
+                : `View`
+            } Library ${info.row.original.cqlLibraryName} ${
+              info.row.original.version
+            }${info.row.original.draft ? " Draft" : ""}`}
           >
             View/Edit
             <span>
@@ -548,7 +557,16 @@ export default function CqlLibraryList({
                 ? `edit-cql-library-button-${info.row.original.id}`
                 : `view-cql-library-button-${info.row.original.id}`
             }
-            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+            aria-label={`${
+              checkUserCanEdit(
+                info.row.original.librarySet?.owner,
+                info.row.original.librarySet?.acls
+              ) && info.row.original.draft
+                ? `Edit`
+                : `View`
+            } Library ${info.row.original.cqlLibraryName} ${
+              info.row.original.version
+            }${info.row.original.draft ? " Draft" : ""}`}
           >
             {checkUserCanEdit(
               info.row.original.librarySet?.owner,
