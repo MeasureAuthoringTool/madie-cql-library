@@ -527,7 +527,12 @@ export default function CqlLibraryList({
             onClick={(e) => handleOpen(info.row.original, e)}
             data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
             aria-label={`${
-              canEdit && info.row.original.draft ? `Edit` : `View`
+              checkUserCanEdit(
+                info.row.original.librarySet?.owner,
+                info.row.original.librarySet?.acls
+              ) && info.row.original.draft
+                ? `Edit`
+                : `View`
             } Library ${info.row.original.cqlLibraryName} ${
               info.row.original.version
             }${info.row.original.draft ? " Draft" : ""}`}
@@ -545,17 +550,30 @@ export default function CqlLibraryList({
               navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
             }
             data-testid={
-              canEdit && info.row.original.draft
+              checkUserCanEdit(
+                info.row.original.librarySet?.owner,
+                info.row.original.librarySet?.acls
+              ) && info.row.original.draft
                 ? `edit-cql-library-button-${info.row.original.id}`
                 : `view-cql-library-button-${info.row.original.id}`
             }
             aria-label={`${
-              canEdit && info.row.original.draft ? `Edit` : `View`
+              checkUserCanEdit(
+                info.row.original.librarySet?.owner,
+                info.row.original.librarySet?.acls
+              ) && info.row.original.draft
+                ? `Edit`
+                : `View`
             } Library ${info.row.original.cqlLibraryName} ${
               info.row.original.version
             }${info.row.original.draft ? " Draft" : ""}`}
           >
-            {canEdit && info.row.original.draft ? "Edit" : "View"}
+            {checkUserCanEdit(
+              info.row.original.librarySet?.owner,
+              info.row.original.librarySet?.acls
+            ) && info.row.original.draft
+              ? "Edit"
+              : "View"}
           </Button>
         ),
     },
