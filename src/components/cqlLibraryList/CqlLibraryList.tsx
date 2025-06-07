@@ -129,6 +129,7 @@ export default function CqlLibraryList({
   offset,
   sorting,
   handleSort,
+  curLimit,
 }) {
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
@@ -145,8 +146,25 @@ export default function CqlLibraryList({
     navigate(`?tab=${activeTab}&page=${v}&limit=${values?.limit || 10}`);
   };
   const handleLimitChange = (e) => {
-    navigate(`?tab=${activeTab}&page=${0}&limit=${e.target.value}`);
+    const updatedLimit = e.target.value;
+    navigate(`?tab=${activeTab}&page=1&limit=${updatedLimit}`);
   };
+
+  useEffect(() => {
+    const cqlLibraryPageOptions = JSON.parse(
+      window.localStorage.getItem("cqlLibraryPageOptions")
+    );
+
+    if (cqlLibraryPageOptions) {
+      if (
+        !Object.keys(values).length &&
+        Object.keys(cqlLibraryPageOptions).length
+      ) {
+        const { page, limit } = cqlLibraryPageOptions;
+        navigate(`?tab=${activeTab}&page=${page}&limit=${limit}`);
+      }
+    }
+  }, [values, navigate, activeTab]);
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   // pull info from some query url
@@ -262,6 +280,20 @@ export default function CqlLibraryList({
       .deleteDraft(deleteDraftDialog.cqlLibrary?.id)
       .then(async () => {
         handleDialogClose();
+        const values = queryString.parse(search);
+        const currentLimit = values.limit === "All" ? 50 : values.limit;
+
+        localStorage.setItem(
+          "cqlLibraryPageOptions",
+          JSON.stringify({
+            page: values.page || 1,
+            limit: currentLimit,
+          })
+        );
+        navigate(
+          `?tab=${activeTab}&page=${values.page || 1}&limit=${currentLimit}`
+        );
+
         await onListUpdate();
         table.resetRowSelection();
         setSnackBar({
@@ -391,14 +423,14 @@ export default function CqlLibraryList({
               ? `edit-cql-library-button-${info.row.original.id}`
               : `view-cql-library-button-${info.row.original.id}`
           }
-          aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+          aria-live="polite"
+          aria-label={`Edit Library ${info.row.original.cqlLibraryName} ${
+            info.row.original.version
+          }${info.row.original.draft ? " Draft" : ""}`}
+          tabIndex={0}
+          role="button"
         >
-          {checkUserCanEdit(
-            info.row.original.librarySet?.owner,
-            info.row.original.librarySet?.acls
-          ) && info.row.original.draft
-            ? "Edit"
-            : "View"}
+          {canEdit && info.row.original.draft ? "Edit" : "View"}
         </Button>
       ),
     },
@@ -488,7 +520,16 @@ export default function CqlLibraryList({
               ? `edit-cql-library-button-${info.row.original.id}`
               : `view-cql-library-button-${info.row.original.id}`
           }
-          aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
+          aria-label={`${
+            checkUserCanEdit(
+              info.row.original.librarySet?.owner,
+              info.row.original.librarySet?.acls
+            ) && info.row.original.draft
+              ? `Edit`
+              : `View`
+          } Library ${info.row.original.cqlLibraryName} ${
+            info.row.original.version
+          }${info.row.original.draft ? " Draft" : ""}`}
         >
           {checkUserCanEdit(
             info.row.original.librarySet?.owner,
@@ -1017,12 +1058,17 @@ export default function CqlLibraryList({
                 <Pagination
                   totalItems={totalItems}
                   visibleItems={visibleItems}
-                  limitOptions={[10, 25, 50]}
+                  limitOptions={[
+                    10,
+                    25,
+                    50,
+                    ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
+                  ]}
                   offset={offset}
                   handlePageChange={handlePageChange}
                   handleLimitChange={handleLimitChange}
-                  page={Number(values?.page) || 1}
-                  limit={Number(values?.limit) || 10}
+                  page={curPage}
+                  limit={curLimit}
                   count={totalPages}
                   shape="rounded"
                   hideNextButton={!canGoNext}
