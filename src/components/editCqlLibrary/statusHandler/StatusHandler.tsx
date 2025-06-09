@@ -2,12 +2,14 @@ import React from "react";
 import { MadieAlert } from "@madie/madie-design-system/dist/react";
 import "./StatusHandler.scss";
 import * as _ from "lodash";
+import { useFeatureFlags } from "@madie/madie-util";
 
 const generateMadieAlertWithContent = (
   type,
   header,
   secondaryMessages,
-  outboundAnnotations
+  outboundAnnotations,
+  featureFlags
 ) => {
   const errorAnnotation = _.filter(outboundAnnotations, { type: "error" });
   const errors = errorAnnotation?.map((el) => (
@@ -21,6 +23,7 @@ const generateMadieAlertWithContent = (
   });
   return (
     <MadieAlert
+      minimizeAlerts={featureFlags?.MinimizeAlerts}
       type={type}
       content={
         <div aria-live="polite" role="alert">
@@ -76,20 +79,23 @@ const StatusHandler = ({
   errorMessage,
   outboundAnnotations,
 }) => {
+  const featureFlags = useFeatureFlags();
   if (success.status === "success") {
     if (outboundAnnotations?.length > 0) {
       return generateMadieAlertWithContent(
         success.status,
         success.primaryMessage,
         success.secondaryMessages,
-        outboundAnnotations
+        outboundAnnotations,
+        featureFlags
       );
     } else {
       return generateMadieAlertWithContent(
         success.status,
         success.primaryMessage,
         success.secondaryMessages,
-        null
+        null,
+        featureFlags
       );
     }
   }
@@ -101,36 +107,43 @@ const StatusHandler = ({
           "error",
           errorMessage,
           null,
-          outboundAnnotations
+          outboundAnnotations,
+          featureFlags
         );
       } else {
-        return generateMadieAlertWithContent("error", errorMessage, null, null);
+        return generateMadieAlertWithContent(
+          "error",
+          errorMessage,
+          null,
+          null,
+          featureFlags
+        );
       }
     } else if (outboundAnnotations?.length > 0) {
-      // if we have outboundAnnotations but no error message tied to it
       return generateMadieAlertWithContent(
         "error",
         "Following issues were found within the CQL",
         null,
-        outboundAnnotations
+        outboundAnnotations,
+        featureFlags
       );
     } else {
-      // if error flag is true but no information is supplied and no annotations provided
       return generateMadieAlertWithContent(
         "error",
         "Issues were found within the CQL",
         null,
-        null
+        null,
+        featureFlags
       );
     }
   } else {
-    // if the error flag is not true, but we still have errors within the cql
     if (outboundAnnotations?.length > 0) {
       return generateMadieAlertWithContent(
         "error",
         "Following issues were found within the CQL",
         null,
-        outboundAnnotations
+        outboundAnnotations,
+        featureFlags
       );
     }
     return <></>;

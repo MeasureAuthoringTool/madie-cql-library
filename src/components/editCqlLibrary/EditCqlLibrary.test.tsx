@@ -22,6 +22,7 @@ jest.mock("@madie/madie-util", () => ({
     return true;
   }),
   useDocumentTitle: jest.fn(),
+  useFeatureFlags: jest.fn(() => ({ MinimizeAlerts: false })),
   cqlLibraryStore: {
     state: null,
     initialState: null,
@@ -104,7 +105,6 @@ const mockCqlLibraryServiceApi = {
   createDraft: jest.fn().mockResolvedValue(draftedLibrary),
 } as unknown as CqlLibraryServiceApi;
 
-// mocking navigate and location
 const mockLocation = jest.fn();
 const mockPush = jest.fn();
 jest.mock("react-router-dom", () => ({
@@ -428,7 +428,6 @@ describe("Edit Cql Library Component", () => {
     expect(input.value).toBe("");
     userEvent.type(input, "TestinglibraryName12");
     expect(input.value).toBe("TestinglibraryName12");
-    // for some reason, immediately after editing the button is not disabled during the test
     await waitFor(() => {
       expect(
         screen.getByRole("button", {
@@ -638,7 +637,6 @@ describe("Edit Cql Library Component", () => {
     userEvent.type(libraryNameInput, "UpdatedName1");
     fireEvent.blur(libraryNameInput);
     expect(libraryNameInput.value).toBe("UpdatedName1");
-    // await waitFor(() => expect(libraryNameInput.value).toBe("UpdatedName1"));
     const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
     expect(input).toHaveValue("");
 
@@ -696,7 +694,6 @@ describe("Edit Cql Library Component", () => {
     userEvent.type(libraryNameInput, "UpdatedName1");
     fireEvent.blur(libraryNameInput);
     expect(libraryNameInput.value).toBe("UpdatedName1");
-    // await waitFor(() => expect(libraryNameInput.value).toBe("UpdatedName1"));
     const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
     expect(input).toHaveValue("");
 
@@ -896,9 +893,7 @@ describe("Edit Cql Library Component", () => {
     expect(mockedAxios.get).toHaveBeenCalled();
 
     expect(
-      await screen.findByRole("button", {
-        name: "Save",
-      })
+      await screen.findByRole("button", { name: "Save" })
     ).toBeInTheDocument();
 
     const libraryNameInput = screen.getByTestId(
