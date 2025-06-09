@@ -1,6 +1,11 @@
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
 import StatusHandler, { transformAnnotation } from "./StatusHandler";
+import { useFeatureFlags } from "@madie/madie-util";
+
+jest.mock("@madie/madie-util", () => ({
+  useFeatureFlags: jest.fn(() => ({ minimizeAlerts: false })),
+}));
 
 describe("StatusHandler Component", () => {
   const { getByTestId } = screen;
