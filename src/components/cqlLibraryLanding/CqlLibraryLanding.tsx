@@ -24,6 +24,9 @@ const INITIAL_DELETE_DRAFT_STATE = {
   cqlLibrary: null,
 };
 
+export const getStorageKey = (tab) =>
+  tab === 0 ? "myCqlLibraryPageOptions" : "allCqlLibraryPageOptions";
+
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
   const featureFlags = useFeatureFlags();
@@ -34,23 +37,16 @@ function CqlLibraryLanding() {
   const [loading, setLoading] = useState(true);
   // utilities for pagination
   const values = queryString.parse(search);
+  const activeTab = Number(localStorage.getItem("cqlLibraryPageTab")) || 0;
   const cqlLibraryPageOptions = JSON.parse(
-    window.localStorage.getItem("cqlLibraryPageOptions")
-  );
-  const curLimit = cqlLibraryPageOptions?.limit
-    ? cqlLibraryPageOptions.limit
-    : values.limit
-    ? values.limit
-    : 10;
-  const curPage = cqlLibraryPageOptions?.page
-    ? cqlLibraryPageOptions.page
-    : values.page
-    ? Number(values.page)
-    : 1;
+    localStorage.getItem(getStorageKey(activeTab))
+  ) || { page: 1, limit: 10 };
+
+  const curLimit = cqlLibraryPageOptions?.limit;
+  const curPage = cqlLibraryPageOptions?.page;
   const [totalPages, setTotalPages] = useState<number>(0);
   const [totalItems, setTotalItems] = useState<number>(0);
   const [visibleItems, setVisibleItems] = useState<number>(0);
-  const activeTab: number = values.tab ? Number(values.tab) : 0;
   const [offset, setOffset] = useState<number>(0);
   const [searchCriteria, setSearchCriteria] = useState<String>(null);
 
@@ -183,11 +179,35 @@ function CqlLibraryLanding() {
 
   useEffect(() => {
     const values = queryString.parse(search);
-    const updatedPage = values.page ? Number(values.page) : curPage;
-    const updatedLimit = values.limit || curLimit;
+    const tabFromUrl =
+      values.tab !== undefined ? Number(values.tab) : activeTab;
 
+    // Update activeTab and localStorage if the tab in the URL differs
+    if (tabFromUrl !== activeTab) {
+      localStorage.setItem("cqlLibraryPageTab", tabFromUrl.toString());
+    }
+
+    const tabStorageKey = getStorageKey(tabFromUrl);
+    const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
+      page: 1,
+      limit: 10,
+    };
+
+    // Determine the current page and limit
+    const updatedPage = values.page ? Number(values.page) : tabPageOptions.page;
+    const updatedLimit = values.limit || tabPageOptions.limit;
+
+    // If query parameters are missing, update the URL
+    if (!values.page || !values.limit || values.tab === undefined) {
+      navigate(
+        `?tab=${tabFromUrl}&page=${updatedPage}&limit=${updatedLimit}`,
+        { replace: true } // Use replace to avoid adding unnecessary history entries
+      );
+    }
+
+    // Save updated page and limit to local storage
     localStorage.setItem(
-      "cqlLibraryPageOptions",
+      tabStorageKey,
       JSON.stringify({
         page: updatedPage,
         limit: updatedLimit,
@@ -195,37 +215,42 @@ function CqlLibraryLanding() {
     );
 
     retrieveLibraries(
-      activeTab,
+      tabFromUrl,
       updatedLimit,
       updatedPage - 1,
       searchCriteria,
       sortingString
     );
-  }, [
-    search,
-    retrieveLibraries,
-    activeTab,
-    curLimit,
-    curPage,
-    cqlLibraryServiceApi,
-    searchCriteria,
-    sortingString,
-  ]);
+  }, [search, retrieveLibraries, activeTab, searchCriteria, sortingString]);
   // Libraries are fetched again, when a new draft or version is created
   const handleTabChange = (event, nextTab) => {
     abortController.current.abort();
     setCqlLibraryList(null);
-    const limit = values?.limit || curLimit;
-    const updatedLimit = nextTab === 1 && limit === "All" ? 50 : limit;
+    const tabStorageKey = getStorageKey(nextTab);
+    const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
+      page: 1,
+      limit: 10,
+    };
+
+    const updatedLimit =
+      tabPageOptions.limit !== undefined
+        ? nextTab === 1 && tabPageOptions.limit === "All"
+          ? 50
+          : tabPageOptions.limit
+        : 10;
+
+    localStorage.setItem("cqlLibraryPageTab", nextTab);
     localStorage.setItem(
-      "cqlLibraryPageOptions",
+      tabStorageKey,
       JSON.stringify({
-        page: 1,
+        page: tabPageOptions.page,
         limit: updatedLimit,
       })
     );
 
-    navigate(`?tab=${nextTab}&page=1&limit=${updatedLimit}`);
+    navigate(
+      `?tab=${nextTab}&page=${tabPageOptions.page}&limit=${updatedLimit}`
+    );
   };
 
   // Create Dialog utilities
@@ -276,10 +301,16 @@ function CqlLibraryLanding() {
   };
 
   const onListUpdate = async () => {
+    const tabStorageKey = getStorageKey(activeTab);
+    const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
+      page: 1,
+      limit: 10,
+    };
+
     await retrieveLibraries(
       activeTab,
-      curLimit,
-      0,
+      tabPageOptions.limit,
+      tabPageOptions.page - 1,
       searchCriteria,
       sortingString
     );

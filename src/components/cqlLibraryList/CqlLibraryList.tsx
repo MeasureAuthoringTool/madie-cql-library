@@ -143,11 +143,12 @@ export default function CqlLibraryList({
   const { search } = useLocation();
   const values = queryString.parse(search);
   const handlePageChange = (e, v) => {
-    navigate(`?tab=${activeTab}&page=${v}&limit=${values?.limit || 10}`);
+    const updatedLimit =
+      curLimit !== undefined ? (curLimit === "All" ? 50 : curLimit) : 10;
+    navigate(`?tab=${activeTab}&page=${v}&limit=${updatedLimit}`);
   };
   const handleLimitChange = (e) => {
-    const updatedLimit = e.target.value;
-    navigate(`?tab=${activeTab}&page=1&limit=${updatedLimit}`);
+    navigate(`?tab=${activeTab}&page=1&limit=${e.target.value}`);
   };
 
   useEffect(() => {
