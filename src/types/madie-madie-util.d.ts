@@ -51,9 +51,6 @@ declare module "@madie/madie-util" {
 
   interface FeatureFlags {
     MinimizeAlerts: boolean;
-    LibraryListCheckboxes: boolean;
-    LibraryListButtons: boolean;
-    ShareLibrary: boolean;
     LibrarySearch: boolean;
     qiCore7: boolean;
   }

@@ -86,15 +86,13 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         canEdit={canEdit}
         onClick={createDraft}
       />
-      {featureFlags.ShareLibrary && (
-        <ShareAction
-          libraries={libraries}
-          canEdit={canEdit}
-          onClick={shareLibrary}
-          userName={userName}
-          owners={owners}
-        />
-      )}
+      <ShareAction
+        libraries={libraries}
+        canEdit={canEdit}
+        onClick={shareLibrary}
+        userName={userName}
+        owners={owners}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
@@ -146,133 +147,17 @@ describe("CqlLibrary List component", () => {
     });
 
     const cqlLibraryButton = getByTestId(
-      `view/edit-cqlLibrary-button-${cqlLibrary[0].id}`
+      `edit-cql-library-button-${cqlLibrary[0].id}`
     );
     userEvent.click(cqlLibraryButton);
 
-    // expect(getByRole("button", { name: "View" })).toBeInTheDocument();
-    const viewLibraryButton = screen.getByRole("button", { name: "Edit" });
-    userEvent.click(viewLibraryButton);
     expect(mockPush).toHaveBeenNthCalledWith(
       1,
       "/cql-libraries/622e1f46d1fd3729d861e6cb/edit/details"
     );
   });
 
-  it("should not have delete draft option if not owner", async () => {
-    (checkUserCanEdit as jest.Mock).mockReturnValue(false);
-    (checkUserCanDelete as jest.Mock).mockReturnValue(false);
-    const cqlLibrary: CqlLibrary[] = [
-      {
-        id: "622e1f46d1fd3729d861e6cb",
-        librarySetId: "libsetid",
-        cqlLibraryName: "testing1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: true,
-        version: "0.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-      },
-    ];
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-        deleteDraftDialog={jest.fn()}
-        setDeleteDraftDialog={jest.fn()}
-        selectedCQLLibrary={jest.fn()}
-        setSelectedCqlLibrary={jest.fn()}
-        createVersionDialog={jest.fn()}
-        setCreateVersionDialog={jest.fn()}
-        shareDialog={jest.fn()}
-        setShareDialog={jest.fn()}
-        createDraftDialog={jest.fn()}
-        setCreateDraftDialog={jest.fn()}
-        snackBar={jest.fn()}
-        setSnackBar={jest.fn()}
-        setOwners={jest.fn()}
-      />
-    );
-
-    userEvent.click(
-      screen.getByRole("button", {
-        name: "CQL Library testing1 version 0.0.000 draft status true View / Edit",
-      })
-    );
-    expect(
-      await screen.findByRole("button", { name: "View" })
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Delete" })
-    ).not.toBeInTheDocument();
-  });
-
-  it("should not have delete draft option if owner but versioned library", async () => {
-    const cqlLibrary = [
-      {
-        id: "622e1f46d1fd3729d861e6cb",
-        librarySetId: "libsetid",
-        cqlLibraryName: "testing1",
-        model: Model.QICORE,
-        createdAt: "",
-        createdBy: "testuser@example.com", //#nosec
-        lastModifiedAt: "",
-        lastModifiedBy: "",
-        draft: false,
-        version: "0.0.000",
-        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
-        cqlErrors: false,
-        active: true,
-        hasAssociatedLibraries: false,
-      },
-    ];
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-        deleteDraftDialog={jest.fn()}
-        setDeleteDraftDialog={jest.fn()}
-        selectedCQLLibrary={jest.fn()}
-        setSelectedCqlLibrary={jest.fn()}
-        createVersionDialog={jest.fn()}
-        setCreateVersionDialog={jest.fn()}
-        shareDialog={jest.fn()}
-        setShareDialog={jest.fn()}
-        createDraftDialog={jest.fn()}
-        setCreateDraftDialog={jest.fn()}
-        snackBar={jest.fn()}
-        setSnackBar={jest.fn()}
-        setOwners={jest.fn()}
-      />
-    );
-
-    userEvent.click(
-      screen.getByRole("button", {
-        name: "CQL Library testing1 version 0.0.000 draft status false View / Edit",
-      })
-    );
-    expect(
-      await screen.findByRole("button", { name: "View" })
-    ).toBeInTheDocument();
-    expect(
-      await screen.findByRole("button", { name: "Draft" })
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Delete" })
-    ).not.toBeInTheDocument();
-  });
-
   it("should show checkboxes when featureflag is enabled", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-    }));
     const cqlLibrary: CqlLibrary[] = [
       {
         id: "622e1f46d1fd3729d861e6cb",
@@ -333,10 +218,6 @@ describe("CqlLibrary List component", () => {
 
   it("buttons featureflag: shows just a view button when cannot edit", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(false);
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
     const cqlLibrary: CqlLibrary[] = [
       {
         id: "622e1f46d1fd3729d861e6cb",
@@ -386,10 +267,6 @@ describe("CqlLibrary List component", () => {
   });
   it("buttons featureflag: shows just an edit button when can edit", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(true);
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
-    }));
     const cqlLibrary: CqlLibrary[] = [
       {
         id: "622e1f46d1fd3729d861e6cb",
@@ -440,8 +317,6 @@ describe("CqlLibrary List component", () => {
   it("Expansion should be possible when there is child libraries", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(true);
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryListCheckboxes: true,
-      LibraryListButtons: true,
       LibrarySearch: true,
     }));
     const cqlLibrary = [

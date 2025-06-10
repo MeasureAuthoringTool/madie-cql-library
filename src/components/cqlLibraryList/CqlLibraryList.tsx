@@ -408,45 +408,31 @@ export default function CqlLibraryList({
     {
       header: "Actions",
       accessorKey: "Actions",
-      cell: (info) =>
-        !featureFlags?.LibraryListButtons ? (
-          <Button
-            variant="outline-secondary"
-            style={{ borderColor: "#c8c8c8" }}
-            onClick={(e) => handleOpen(info.row.original, e)}
-            data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
-            aria-label={`CQL Library ${info.row.original.cqlLibraryName} version ${info.row.original.version} draft status ${info.row.original.draft} View / Edit`}
-          >
-            View/Edit
-            <span>
-              <ExpandMoreIcon />
-            </span>
-          </Button>
-        ) : (
-          <Button
-            variant="outline-secondary"
-            style={{ borderColor: "#c8c8c8" }}
-            onClick={() =>
-              navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
-            }
-            data-testid={
-              checkUserCanEdit(
-                info.row.original.librarySet?.owner,
-                info.row.original.librarySet?.acls
-              ) && info.row.original.draft
-                ? `edit-cql-library-button-${info.row.original.id}`
-                : `view-cql-library-button-${info.row.original.id}`
-            }
-            aria-live="polite"
-            aria-label={`Edit Library ${info.row.original.cqlLibraryName} ${
-              info.row.original.version
-            }${info.row.original.draft ? " Draft" : ""}`}
-            tabIndex={0}
-            role="button"
-          >
-            {canEdit && info.row.original.draft ? "Edit" : "View"}
-          </Button>
-        ),
+      cell: (info) => (
+        <Button
+          variant="outline-secondary"
+          style={{ borderColor: "#c8c8c8" }}
+          onClick={() =>
+            navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
+          }
+          data-testid={
+            checkUserCanEdit(
+              info.row.original.librarySet?.owner,
+              info.row.original.librarySet?.acls
+            ) && info.row.original.draft
+              ? `edit-cql-library-button-${info.row.original.id}`
+              : `view-cql-library-button-${info.row.original.id}`
+          }
+          aria-live="polite"
+          aria-label={`Edit Library ${info.row.original.cqlLibraryName} ${
+            info.row.original.version
+          }${info.row.original.draft ? " Draft" : ""}`}
+          tabIndex={0}
+          role="button"
+        >
+          {canEdit && info.row.original.draft ? "Edit" : "View"}
+        </Button>
+      ),
     },
   ];
   const columnsBehindFlag = [
@@ -519,93 +505,69 @@ export default function CqlLibraryList({
     {
       header: "Actions",
       accessorKey: "Actions",
-      cell: (info) =>
-        !featureFlags?.LibraryListButtons ? (
-          <Button
-            variant="outline-secondary"
-            style={{ borderColor: "#c8c8c8" }}
-            onClick={(e) => handleOpen(info.row.original, e)}
-            data-testid={`view/edit-cqlLibrary-button-${info.row.original.id}`}
-            aria-label={`${
-              checkUserCanEdit(
-                info.row.original.librarySet?.owner,
-                info.row.original.librarySet?.acls
-              ) && info.row.original.draft
-                ? `Edit`
-                : `View`
-            } Library ${info.row.original.cqlLibraryName} ${
-              info.row.original.version
-            }${info.row.original.draft ? " Draft" : ""}`}
-          >
-            View/Edit
-            <span>
-              <ExpandMoreIcon />
-            </span>
-          </Button>
-        ) : (
-          <Button
-            variant="outline-secondary"
-            style={{ borderColor: "#c8c8c8" }}
-            onClick={() =>
-              navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
-            }
-            data-testid={
-              checkUserCanEdit(
-                info.row.original.librarySet?.owner,
-                info.row.original.librarySet?.acls
-              ) && info.row.original.draft
-                ? `edit-cql-library-button-${info.row.original.id}`
-                : `view-cql-library-button-${info.row.original.id}`
-            }
-            aria-label={`${
-              checkUserCanEdit(
-                info.row.original.librarySet?.owner,
-                info.row.original.librarySet?.acls
-              ) && info.row.original.draft
-                ? `Edit`
-                : `View`
-            } Library ${info.row.original.cqlLibraryName} ${
-              info.row.original.version
-            }${info.row.original.draft ? " Draft" : ""}`}
-          >
-            {checkUserCanEdit(
+      cell: (info) => (
+        <Button
+          variant="outline-secondary"
+          style={{ borderColor: "#c8c8c8" }}
+          onClick={() =>
+            navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
+          }
+          data-testid={
+            checkUserCanEdit(
               info.row.original.librarySet?.owner,
               info.row.original.librarySet?.acls
             ) && info.row.original.draft
-              ? "Edit"
-              : "View"}
-          </Button>
-        ),
+              ? `edit-cql-library-button-${info.row.original.id}`
+              : `view-cql-library-button-${info.row.original.id}`
+          }
+          aria-label={`${
+            checkUserCanEdit(
+              info.row.original.librarySet?.owner,
+              info.row.original.librarySet?.acls
+            ) && info.row.original.draft
+              ? `Edit`
+              : `View`
+          } Library ${info.row.original.cqlLibraryName} ${
+            info.row.original.version
+          }${info.row.original.draft ? " Draft" : ""}`}
+        >
+          {checkUserCanEdit(
+            info.row.original.librarySet?.owner,
+            info.row.original.librarySet?.acls
+          ) && info.row.original.draft
+            ? "Edit"
+            : "View"}
+        </Button>
+      ),
     },
   ];
 
   const columns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     const columnDefs = [];
 
-    // Add the select column with checkboxes conditionally based on feature flag
-    featureFlags?.LibraryListCheckboxes &&
-      columnDefs.push({
-        id: "select",
-        accessorKey: "select",
-        header: "",
-        cell: ({ row }) => {
-          return (
-            <div className="px-1">
-              {
-                <IndeterminateCheckbox
-                  {...{
-                    checked: row.getIsSelected(),
-                    disabled: !row.getCanSelect(),
-                    indeterminate: row.getIsSomeSelected(),
-                    onChange: row.getToggleSelectedHandler(),
-                    id: row.original.id,
-                  }}
-                />
-              }
-            </div>
-          );
-        },
-      });
+    columnDefs.push({
+      id: "select",
+      accessorKey: "select",
+      header: "",
+      cell: ({ row }) => {
+        return (
+          <div className="px-1">
+            {
+              <IndeterminateCheckbox
+                {...{
+                  checked: row.getIsSelected(),
+                  disabled: !row.getCanSelect(),
+                  indeterminate: row.getIsSomeSelected(),
+                  onChange: row.getToggleSelectedHandler(),
+                  id: row.original.id,
+                }}
+              />
+            }
+          </div>
+        );
+      },
+    });
+
     columnDefs.push(
       ...(featureFlags?.LibrarySearch ? columnsBehindFlag : columnsToBeAdded)
     );
@@ -657,7 +619,6 @@ export default function CqlLibraryList({
     return columnDefs;
   }, [
     navigate,
-    featureFlags?.LibraryListCheckboxes,
     featureFlags?.LibrarySearch,
     selectedIdForExpansion,
     isRowExpanded,

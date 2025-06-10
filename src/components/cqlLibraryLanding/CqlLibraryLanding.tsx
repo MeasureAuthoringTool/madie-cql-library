@@ -354,19 +354,17 @@ function CqlLibraryLanding() {
                   Filter
                 </Button>
               </div>
-              {featureFlags?.LibraryListButtons && (
-                <div className="action-center-holder">
-                  <ActionCenter
-                    libraries={selectedLibraries}
-                    setDeleteDraftDialog={setDeleteDraftDialog}
-                    setSelectedCqlLibrary={setSelectedCqlLibrary}
-                    setCreateDraftDialog={setCreateDraftDialog}
-                    setShareDialog={setShareDialog}
-                    createVersion={createVersion}
-                    owners={owners}
-                  />
-                </div>
-              )}
+              <div className="action-center-holder">
+                <ActionCenter
+                  libraries={selectedLibraries}
+                  setDeleteDraftDialog={setDeleteDraftDialog}
+                  setSelectedCqlLibrary={setSelectedCqlLibrary}
+                  setCreateDraftDialog={setCreateDraftDialog}
+                  setShareDialog={setShareDialog}
+                  createVersion={createVersion}
+                  owners={owners}
+                />
+              </div>
             </div>
           </form>
         </div>
