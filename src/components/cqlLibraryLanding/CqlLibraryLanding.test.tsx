@@ -138,6 +138,7 @@ describe("Cql Library Page", () => {
       TestCaseListActionCenter: true,
       CopyTestCases: true,
     });
+    localStorage.clear();
   });
   afterEach(() => {
     jest.clearAllMocks();
