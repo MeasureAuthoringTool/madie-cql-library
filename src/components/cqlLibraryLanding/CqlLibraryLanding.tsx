@@ -136,7 +136,7 @@ function CqlLibraryLanding() {
               replace: true,
             });
           }
-          
+
           setPageProps(data);
         })
         .catch((error) => {
