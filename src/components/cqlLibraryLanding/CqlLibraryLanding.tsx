@@ -129,6 +129,11 @@ function CqlLibraryLanding() {
           abortController.current.signal
         )
         .then((data) => {
+          const updatedLimit =
+            limit === "All" && data.totalElements < 50 ? 50 : limit;
+          navigate(`?tab=${tab}&page=1&limit=${updatedLimit}`, {
+            replace: true,
+          });
           setPageProps(data);
         })
         .catch((error) => {
