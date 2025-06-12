@@ -425,13 +425,25 @@ export default function CqlLibraryList({
               : `view-cql-library-button-${info.row.original.id}`
           }
           aria-live="polite"
-          aria-label={`Edit Library ${info.row.original.cqlLibraryName} ${
+          aria-label={`${
+            checkUserCanEdit(
+              info.row.original.librarySet?.owner,
+              info.row.original.librarySet?.acls
+            ) && info.row.original.draft
+              ? `Edit`
+              : `View`
+          } Library ${info.row.original.cqlLibraryName} ${
             info.row.original.version
           }${info.row.original.draft ? " Draft" : ""}`}
           tabIndex={0}
           role="button"
         >
-          {canEdit && info.row.original.draft ? "Edit" : "View"}
+          {checkUserCanEdit(
+            info.row.original.librarySet?.owner,
+            info.row.original.librarySet?.acls
+          ) && info.row.original.draft
+            ? "Edit"
+            : "View"}
         </Button>
       ),
     },
@@ -531,6 +543,9 @@ export default function CqlLibraryList({
           } Library ${info.row.original.cqlLibraryName} ${
             info.row.original.version
           }${info.row.original.draft ? " Draft" : ""}`}
+          aria-live="polite"
+          tabIndex={0}
+          role="button"
         >
           {checkUserCanEdit(
             info.row.original.librarySet?.owner,
