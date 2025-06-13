@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 
-import React from "react";
+import * as React from "react";
 import {
   render,
   fireEvent,

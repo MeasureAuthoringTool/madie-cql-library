@@ -33,6 +33,7 @@ import {
   Button,
   MadieDiscardDialog,
   TextField,
+  TextArea,
   MadieAlert,
   MadieSpinner,
   AutoComplete,
@@ -46,7 +47,6 @@ import {
   FormControlLabel,
   Typography,
 } from "@mui/material";
-import TextArea from "../common/TextArea";
 import StatusHandler from "./statusHandler/StatusHandler";
 import Search from "@mui/icons-material/Search";
 import useFormikResetOnEvent from "../common/useFormikResetOnEvent";

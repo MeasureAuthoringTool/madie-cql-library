@@ -181,7 +181,7 @@ describe("Edit Cql Library Component", () => {
 
   it("should render form and cql library editor", () => {
     renderWithRouter();
-    const cqlLibraryEditor = getByTestId("cql-library-editor-component");
+    const cqlLibraryEditor = screen.getByTestId("cql-library-editor-component");
     const form = getByTestId("edit-library-form");
     const input = getByTestId("cql-library-editor") as HTMLInputElement;
     expect(form).toBeInTheDocument();

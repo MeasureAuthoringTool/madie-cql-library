@@ -7,14 +7,14 @@ import {
   MadieDialog,
   Select,
   TextField,
+  TextArea,
   Toast,
   AutoComplete,
 } from "@madie/madie-design-system/dist/react";
 import { Box } from "@mui/system";
-import { FormHelperText, MenuItem } from "@mui/material";
+import { MenuItem } from "@mui/material";
 import { useFormik } from "formik";
 import { useOrganizationApi, useFeatureFlags } from "@madie/madie-util";
-import TextArea from "./TextArea";
 import { v4 as uuidv4 } from "uuid";
 
 interface TestProps {
