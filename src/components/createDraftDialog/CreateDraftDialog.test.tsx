@@ -1,9 +1,10 @@
 import * as React from "react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CreateDraftDialog from "./CreateDraftDialog";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import clearAllMocks = jest.clearAllMocks;
+import { useFeatureFlags } from "@madie/madie-util";
 
 const cqlLibrary: CqlLibrary = {
   cqlErrors: false,
@@ -24,6 +25,7 @@ const cqlLibrary: CqlLibrary = {
 jest.mock("@madie/madie-util", () => ({
   useFeatureFlags: jest.fn().mockReturnValue({
     qiCore6: true,
+    qiCore7: true,
   }),
 }));
 
@@ -285,6 +287,259 @@ describe("Create Draft Dialog component", () => {
         },
         "QI-Core v4.1.1"
       );
+    });
+  });
+
+  describe("Test model version options when feature flag qicore7 is true", () => {
+    it("should display all model version options for QI-Core", async () => {
+      cqlLibrary.model = Model.QICORE;
+      render(
+        <CreateDraftDialog
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+          cqlLibrary={cqlLibrary}
+        />
+      );
+      const cqlLibraryName = (await screen.findByRole("textbox", {
+        name: "CQL Library Name",
+      })) as HTMLInputElement;
+      expect(cqlLibraryName.value).toEqual(cqlLibrary.cqlLibraryName);
+      expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+      expect(
+        await screen.findByText("Update Model Version")
+      ).toBeInTheDocument();
+      expect(await screen.findByText("QI-Core v4.1.1")).toBeInTheDocument();
+
+      const modelSelect = await screen.getByTestId("cql-library-model-select");
+      const modelSelectComboBox = await within(modelSelect).getByRole(
+        "combobox"
+      );
+      userEvent.click(modelSelectComboBox);
+      const options = await screen.findAllByRole("option");
+      expect(options.length).toEqual(3);
+      userEvent.click(options[0]);
+      expect(
+        (
+          (await within(modelSelect).getByRole("textbox", {
+            hidden: true,
+          })) as HTMLInputElement
+        ).value
+      ).toEqual("QI-Core v4.1.1");
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-model-option-QI-Core v4.1.1")
+        ).toBeInTheDocument();
+        expect(
+          screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
+        ).toBeInTheDocument();
+        expect(
+          screen.getByTestId("cql-library-model-option-QI-Core v7.0.0")
+        ).toBeInTheDocument();
+
+        expect(
+          screen.queryByTestId("cql-library-model-option-QDM 5.6")
+        ).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
+    });
+
+    it("should display model version options for QI-Core v6.0.0", async () => {
+      cqlLibrary.model = Model.QICORE_6_0_0;
+      render(
+        <CreateDraftDialog
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+          cqlLibrary={cqlLibrary}
+        />
+      );
+      const cqlLibraryName = (await screen.findByRole("textbox", {
+        name: "CQL Library Name",
+      })) as HTMLInputElement;
+      expect(cqlLibraryName.value).toEqual(cqlLibrary.cqlLibraryName);
+      expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+      expect(
+        await screen.findByText("Update Model Version")
+      ).toBeInTheDocument();
+      expect(await screen.findByText("QI-Core v6.0.0")).toBeInTheDocument();
+
+      const modelSelect = await screen.getByTestId("cql-library-model-select");
+      const modelSelectComboBox = await within(modelSelect).getByRole(
+        "combobox"
+      );
+      userEvent.click(modelSelectComboBox);
+      const options = await screen.findAllByRole("option");
+      expect(options.length).toEqual(2);
+      userEvent.click(options[0]);
+      expect(
+        (
+          (await within(modelSelect).getByRole("textbox", {
+            hidden: true,
+          })) as HTMLInputElement
+        ).value
+      ).toEqual("QI-Core v6.0.0");
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
+        ).toBeInTheDocument();
+        expect(
+          screen.getByTestId("cql-library-model-option-QI-Core v7.0.0")
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByTestId("cql-library-model-option-QI-Core v4.1.1")
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByTestId("cql-library-model-option-QDM 5.6")
+        ).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
+    });
+
+    it("should display model version options for QI-Core v7.0.0", async () => {
+      cqlLibrary.model = Model.QICORE_7_0_0;
+      render(
+        <CreateDraftDialog
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+          cqlLibrary={cqlLibrary}
+        />
+      );
+      const cqlLibraryName = (await screen.findByRole("textbox", {
+        name: "CQL Library Name",
+      })) as HTMLInputElement;
+      expect(cqlLibraryName.value).toEqual(cqlLibrary.cqlLibraryName);
+      expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+      expect(
+        await screen.findByText("Update Model Version")
+      ).toBeInTheDocument();
+      expect(await screen.findByText("QI-Core v7.0.0")).toBeInTheDocument();
+
+      const modelInput = await screen.getByTestId("cql-library-model-input");
+      expect(modelInput).toBeDisabled();
+
+      expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
+    });
+  });
+
+  describe("Test model version options when feature flag qicore7 is false", () => {
+    beforeEach(() => {
+      (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
+        return {
+          qiCore7: false,
+        };
+      });
+    });
+    it("should display all model version options for QI-Core", async () => {
+      cqlLibrary.model = Model.QICORE;
+      render(
+        <CreateDraftDialog
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+          cqlLibrary={cqlLibrary}
+        />
+      );
+      const cqlLibraryName = (await screen.findByRole("textbox", {
+        name: "CQL Library Name",
+      })) as HTMLInputElement;
+      expect(cqlLibraryName.value).toEqual(cqlLibrary.cqlLibraryName);
+      expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+      expect(
+        await screen.findByText("Update Model Version")
+      ).toBeInTheDocument();
+      expect(await screen.findByText("QI-Core v4.1.1")).toBeInTheDocument();
+
+      const modelSelect = await screen.getByTestId("cql-library-model-select");
+      const modelSelectComboBox = await within(modelSelect).getByRole(
+        "combobox"
+      );
+      userEvent.click(modelSelectComboBox);
+      const options = await screen.findAllByRole("option");
+      expect(options.length).toEqual(2);
+      userEvent.click(options[0]);
+      expect(
+        (
+          (await within(modelSelect).getByRole("textbox", {
+            hidden: true,
+          })) as HTMLInputElement
+        ).value
+      ).toEqual("QI-Core v4.1.1");
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-model-option-QI-Core v4.1.1")
+        ).toBeInTheDocument();
+        expect(
+          screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByTestId("cql-library-model-option-QI-Core v7.0.0")
+        ).not.toBeInTheDocument();
+
+        expect(
+          screen.queryByTestId("cql-library-model-option-QDM 5.6")
+        ).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
+    });
+
+    it("should display model version options for QI-Core v6.0.0", async () => {
+      cqlLibrary.model = Model.QICORE_6_0_0;
+      render(
+        <CreateDraftDialog
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+          cqlLibrary={cqlLibrary}
+        />
+      );
+      const cqlLibraryName = (await screen.findByRole("textbox", {
+        name: "CQL Library Name",
+      })) as HTMLInputElement;
+      expect(cqlLibraryName.value).toEqual(cqlLibrary.cqlLibraryName);
+      expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+      expect(
+        await screen.findByText("Update Model Version")
+      ).toBeInTheDocument();
+      expect(await screen.findByText("QI-Core v6.0.0")).toBeInTheDocument();
+
+      const modelInput = await screen.getByTestId("cql-library-model-input");
+      expect(modelInput).toBeDisabled();
+
+      expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
+    });
+
+    it("should display model version options for QI-Core v7.0.0", async () => {
+      cqlLibrary.model = Model.QICORE_7_0_0;
+      render(
+        <CreateDraftDialog
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+          cqlLibrary={cqlLibrary}
+        />
+      );
+      const cqlLibraryName = (await screen.findByRole("textbox", {
+        name: "CQL Library Name",
+      })) as HTMLInputElement;
+      expect(cqlLibraryName.value).toEqual(cqlLibrary.cqlLibraryName);
+      expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+      expect(
+        await screen.findByText("Update Model Version")
+      ).toBeInTheDocument();
+      expect(await screen.findByText("QI-Core v7.0.0")).toBeInTheDocument();
+
+      const modelInput = await screen.getByTestId("cql-library-model-input");
+      expect(modelInput).toBeDisabled();
+
+      expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
     });
   });
 });
