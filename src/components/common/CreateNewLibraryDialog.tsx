@@ -264,6 +264,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
               required={true}
               name="cql-library-description"
               id="cql-library-description"
+              data-testid="cql-library-description"
               onChange={formik.handleChange}
               value={formik.values.description}
               placeholder="Description"
