@@ -10,6 +10,7 @@ import {
   Select,
   TextField,
 } from "@madie/madie-design-system/dist/react";
+import { useFeatureFlags } from "@madie/madie-util";
 
 interface CreateDraftDialogProps {
   open: boolean;
@@ -25,6 +26,27 @@ const CreateDraftDialog = ({
   cqlLibrary,
 }: CreateDraftDialogProps) => {
   let modelOptions = Object.keys(Model);
+
+  const featureFlags = useFeatureFlags();
+
+  const getModelOptions = (model) => {
+    if (!featureFlags.qiCore7) {
+      if (model === Model.QICORE) {
+        modelOptions = modelOptions.filter((model) => model !== "QICORE_7_0_0");
+      } else if (model === Model.QICORE_6_0_0) {
+        modelOptions = modelOptions.filter((model) => model === "QICORE_6_0_0");
+      } else {
+        modelOptions = modelOptions.filter((model) => model === "QICORE_7_0_0");
+      }
+    } else {
+      if (model === Model.QICORE_6_0_0) {
+        modelOptions = modelOptions.filter((model) => model !== "QICORE");
+      } else if (model === Model.QICORE_7_0_0) {
+        modelOptions = modelOptions.filter((model) => model === "QICORE_7_0_0");
+      }
+    }
+    return modelOptions;
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -116,8 +138,8 @@ const CreateDraftDialog = ({
               <Select
                 placeHolder={{ name: "Model", value: "" }}
                 required
-                readOnly={cqlLibrary?.model === Model.QICORE_6_0_0}
-                disabled={cqlLibrary?.model === Model.QICORE_6_0_0}
+                readOnly={getModelOptions(cqlLibrary?.model)?.length === 1}
+                disabled={getModelOptions(cqlLibrary?.model)?.length === 1}
                 label="Update Model Version"
                 id="model-select"
                 inputProps={{
@@ -134,7 +156,7 @@ const CreateDraftDialog = ({
                 error={formik.touched.model && Boolean(formik.errors.model)}
                 helperText={formik.touched.model && formik.errors.model}
                 size="small"
-                options={modelOptions.map((modelKey) => {
+                options={getModelOptions(cqlLibrary?.model)?.map((modelKey) => {
                   if (!modelKey.startsWith("QDM")) {
                     return (
                       <MenuItem
