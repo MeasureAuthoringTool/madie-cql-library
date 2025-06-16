@@ -187,7 +187,7 @@ describe("Library Dialog", () => {
     await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary_1"));
 
     const libraryDescription = screen.getByRole("textbox", {
-      name: "Description required",
+      name: "Description",
     }) as HTMLInputElement;
     userEvent.type(libraryDescription, "QDM Library Description");
     await waitFor(() =>
@@ -263,7 +263,7 @@ describe("Library Dialog", () => {
     await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary_1"));
 
     const libraryDescription = screen.getByRole("textbox", {
-      name: "Description required",
+      name: "Description",
     }) as HTMLInputElement;
     userEvent.type(libraryDescription, "QDM Library Description");
     await waitFor(() =>
@@ -424,7 +424,7 @@ describe("Library Dialog", () => {
     await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary_1"));
 
     const libraryDescription = screen.getByRole("textbox", {
-      name: "Description required",
+      name: "Description",
     }) as HTMLInputElement;
     userEvent.type(libraryDescription, "QDM Library Description");
     await waitFor(() =>
@@ -512,7 +512,7 @@ describe("Library Dialog", () => {
     await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary_1"));
 
     const libraryDescription = screen.getByRole("textbox", {
-      name: "Description required",
+      name: "Description",
     }) as HTMLInputElement;
     userEvent.type(libraryDescription, "QDM Library Description");
     await waitFor(() =>

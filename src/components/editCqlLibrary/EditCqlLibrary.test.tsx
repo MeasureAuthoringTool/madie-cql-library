@@ -143,6 +143,7 @@ const cqlToElmExternalErrors: ElmTranslationExternalError[] = [
     targetIncludeLibraryId: "QICoreCommon",
     targetIncludeLibraryVersionId: "1.0.000",
     type: "CqlToElmError",
+    draft: true,
   },
 ];
 
@@ -191,12 +192,13 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for required Cql Library name", async () => {
     renderWithRouter();
-    const input = getByTestId(
-      "cql-library-name-text-field-input"
-    ) as HTMLInputElement;
+    let input;
     await waitFor(() => {
-      expect(input.value).toBe("Library1");
+      input = getByTestId(
+        "cql-library-name-text-field-input"
+      ) as HTMLInputElement;
     });
+    expect(input.value).toBe("Library1");
     userEvent.clear(input);
     expect(input.value).toBe("");
     fireEvent.blur(input);
@@ -210,12 +212,13 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for at least one alphabet in cql library name", async () => {
     renderWithRouter();
-    const input = getByTestId(
-      "cql-library-name-text-field-input"
-    ) as HTMLInputElement;
+    let input;
     await waitFor(() => {
-      expect(input.value).toBe("Library1");
+      input = getByTestId(
+        "cql-library-name-text-field-input"
+      ) as HTMLInputElement;
     });
+    expect(input.value).toBe("Library1");
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
@@ -236,12 +239,13 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for underscore in cql library name for QI-Core", async () => {
     renderWithRouter();
-    const input = getByTestId(
-      "cql-library-name-text-field-input"
-    ) as HTMLInputElement;
+    let input;
     await waitFor(() => {
-      expect(input.value).toBe("Library1");
+      input = getByTestId(
+        "cql-library-name-text-field-input"
+      ) as HTMLInputElement;
     });
+    expect(input.value).toBe("Library1");
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
@@ -270,12 +274,13 @@ describe("Edit Cql Library Component", () => {
       data: { ...cqlLibrary, model: Model.QDM_5_6 },
     });
     renderWithRouter();
-    const input = getByTestId(
-      "cql-library-name-text-field-input"
-    ) as HTMLInputElement;
+    let input;
     await waitFor(() => {
-      expect(input.value).toBe("Library1");
+      input = getByTestId(
+        "cql-library-name-text-field-input"
+      ) as HTMLInputElement;
     });
+    expect(input.value).toBe("Library1");
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
@@ -298,12 +303,13 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for library name starting with lower case", async () => {
     renderWithRouter();
-    const input = getByTestId(
-      "cql-library-name-text-field-input"
-    ) as HTMLInputElement;
+    let input;
     await waitFor(() => {
-      expect(input.value).toBe("Library1");
+      input = getByTestId(
+        "cql-library-name-text-field-input"
+      ) as HTMLInputElement;
     });
+    expect(input.value).toBe("Library1");
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
@@ -324,12 +330,13 @@ describe("Edit Cql Library Component", () => {
 
   it("should generate field level error for library name with a space", async () => {
     renderWithRouter();
-    const input = getByTestId(
-      "cql-library-name-text-field-input"
-    ) as HTMLInputElement;
+    let input;
     await waitFor(() => {
-      expect(input.value).toBe("Library1");
+      input = getByTestId(
+        "cql-library-name-text-field-input"
+      ) as HTMLInputElement;
     });
+    expect(input.value).toBe("Library1");
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
@@ -350,12 +357,13 @@ describe("Edit Cql Library Component", () => {
 
   it("should close dialog on cancel", async () => {
     renderWithRouter();
-    const input = getByTestId(
-      "cql-library-name-text-field-input"
-    ) as HTMLInputElement;
+    let input;
     await waitFor(() => {
-      expect(input.value).toBe("Library1");
+      input = getByTestId(
+        "cql-library-name-text-field-input"
+      ) as HTMLInputElement;
     });
+    expect(input.value).toBe("Library1");
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
@@ -382,12 +390,13 @@ describe("Edit Cql Library Component", () => {
 
   it("should navigate away on continue", async () => {
     renderWithRouter();
-    const input = getByTestId(
-      "cql-library-name-text-field-input"
-    ) as HTMLInputElement;
+    let input;
     await waitFor(() => {
-      expect(input.value).toBe("Library1");
+      input = getByTestId(
+        "cql-library-name-text-field-input"
+      ) as HTMLInputElement;
     });
+    expect(input.value).toBe("Library1");
     await waitFor(() => {
       expect(
         screen.getByTestId("cql-library-name-text-field-input")
@@ -413,12 +422,13 @@ describe("Edit Cql Library Component", () => {
 
   it("should have Save button disabled until form is valid and dirty", async () => {
     renderWithRouter();
-    const input = getByTestId(
-      "cql-library-name-text-field-input"
-    ) as HTMLInputElement;
+    let input;
     await waitFor(() => {
-      expect(input.value).toBe("Library1");
+      input = getByTestId(
+        "cql-library-name-text-field-input"
+      ) as HTMLInputElement;
     });
+    expect(input.value).toBe("Library1");
     expect(
       screen.getByRole("button", {
         name: "Save",
@@ -589,8 +599,8 @@ describe("Edit Cql Library Component", () => {
     ).toBeInTheDocument();
 
     expect(
-      screen.getByTestId("cql-library-name-text-field-input")
-    ).toHaveAttribute("disabled");
+      screen.getByRole("textbox", { name: "CQL Library Name" })
+    ).toHaveAttribute("readonly");
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
 
     expect(
@@ -941,7 +951,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should render all fields in read-only mode when loaded library is not a draft", async () => {
-    const cqlLibrary: CqlLibrary = {
+    const cqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
       librarySetId: "",
@@ -957,7 +967,7 @@ describe("Edit Cql Library Component", () => {
       createdBy: "",
       lastModifiedAt: "",
       lastModifiedBy: "",
-    };
+    } as CqlLibrary;
 
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
@@ -973,12 +983,14 @@ describe("Edit Cql Library Component", () => {
       "readonly"
     );
     expect(
-      screen.getByTestId("cql-library-name-text-field-input")
-    ).toHaveAttribute("disabled");
+      screen.getByRole("textbox", { name: "CQL Library Name" })
+    ).toHaveAttribute("readonly");
     expect(
-      screen.getByRole("textbox", { name: "Description required" })
-    ).toHaveAttribute("disabled");
-    expect(screen.getByRole("combobox", { name: "Publisher" })).toBeDisabled();
+      screen.getByRole("textbox", { name: "Description" })
+    ).toHaveAttribute("readonly");
+    expect(screen.getByRole("textbox", { name: "Publisher" })).toHaveAttribute(
+      "readonly"
+    );
     expect(
       screen.getByRole("checkbox", { name: "Experimental" })
     ).toBeDisabled();
@@ -999,7 +1011,7 @@ describe("Edit Cql Library Component", () => {
     (checkUserCanEdit as jest.Mock).mockImplementation(() => {
       return false;
     });
-    const cqlLibrary: CqlLibrary = {
+    const cqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
       librarySetId: "",
@@ -1015,7 +1027,7 @@ describe("Edit Cql Library Component", () => {
       createdBy: "someone else",
       lastModifiedAt: "",
       lastModifiedBy: "",
-    };
+    } as CqlLibrary;
 
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
@@ -1030,12 +1042,14 @@ describe("Edit Cql Library Component", () => {
       "readonly"
     );
     expect(
-      screen.getByTestId("cql-library-name-text-field-input")
-    ).toHaveAttribute("disabled");
+      screen.getByRole("textbox", { name: "CQL Library Name" })
+    ).toHaveAttribute("readonly");
     expect(
-      screen.getByRole("textbox", { name: "Description required" })
-    ).toHaveAttribute("disabled");
-    expect(screen.getByRole("combobox", { name: "Publisher" })).toBeDisabled();
+      screen.getByRole("textbox", { name: "Description" })
+    ).toHaveAttribute("readonly");
+    expect(screen.getByRole("textbox", { name: "Publisher" })).toHaveAttribute(
+      "readonly"
+    );
 
     expect(
       screen.getByRole("checkbox", { name: "Experimental" })
@@ -1044,7 +1058,10 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should display validation error message for updating library", async () => {
-    const cqlLibrary: CqlLibrary = {
+    (checkUserCanEdit as jest.Mock).mockImplementation(() => {
+      return true;
+    });
+    const cqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
       librarySetId: "",
@@ -1060,7 +1077,7 @@ describe("Edit Cql Library Component", () => {
       createdBy: "john doe",
       lastModifiedAt: "",
       lastModifiedBy: "",
-    };
+    } as CqlLibrary;
 
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
