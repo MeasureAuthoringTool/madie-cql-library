@@ -420,8 +420,8 @@ describe("Create Draft Dialog component", () => {
       ).toBeInTheDocument();
       expect(await screen.findByText("QI-Core v7.0.0")).toBeInTheDocument();
 
-      const modelInput = await screen.getByTestId("cql-library-model-input");
-      expect(modelInput).toBeDisabled();
+      const modelInput = await screen.getByTestId("cql-library-model-select");
+      expect(modelInput).toHaveAttribute("readonly");
 
       expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
     });
@@ -510,8 +510,8 @@ describe("Create Draft Dialog component", () => {
       ).toBeInTheDocument();
       expect(await screen.findByText("QI-Core v6.0.0")).toBeInTheDocument();
 
-      const modelInput = await screen.getByTestId("cql-library-model-input");
-      expect(modelInput).toBeDisabled();
+      const modelInput = await screen.getByTestId("cql-library-model-select");
+      expect(modelInput).toHaveAttribute("readonly");
 
       expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
     });
@@ -536,8 +536,8 @@ describe("Create Draft Dialog component", () => {
       ).toBeInTheDocument();
       expect(await screen.findByText("QI-Core v7.0.0")).toBeInTheDocument();
 
-      const modelInput = await screen.getByTestId("cql-library-model-input");
-      expect(modelInput).toBeDisabled();
+      const modelInput = await screen.getByTestId("cql-library-model-select");
+      expect(modelInput).toHaveAttribute("readonly");
 
       expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
     });
