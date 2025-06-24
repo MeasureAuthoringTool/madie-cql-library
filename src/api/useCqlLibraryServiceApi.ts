@@ -17,19 +17,22 @@ export class CqlLibraryServiceApi {
   ): Promise<any> {
     try {
       limit = limit === "All" ? 1000 : limit; // if limit is "All", set it to a high number to fetch all results
-      const response = await axios.get<any>(`${this.baseUrl}/cql-libraries`, {
-        headers: {
-          Authorization: `Bearer ${this.getAccessToken()}`,
-        },
-        params: {
-          currentUser: filterByCurrentUser,
-          limit,
-          page,
-          searchCriteria: searchCriteria || undefined,
-          sortInfo: sortInfo || undefined,
-        },
-        signal,
-      });
+      const response = await axios.put<any>(
+        `${this.baseUrl}/cql-libraries/searches`,
+        searchCriteria,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+          params: {
+            currentUser: filterByCurrentUser,
+            limit,
+            page,
+            sortInfo: sortInfo || undefined,
+          },
+          signal,
+        }
+      );
       return response.data;
     } catch (err) {
       if (err.message === "canceled") {

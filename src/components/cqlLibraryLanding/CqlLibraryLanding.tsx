@@ -1,28 +1,29 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { TextField, IconButton, InputAdornment } from "@mui/material";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
-import { CqlLibraryListActionCenter as ActionCenter } from "./cqlLibraryListActionCenter/CqlLibraryListActionCenter";
 import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle, useFeatureFlags } from "@madie/madie-util";
-import {
-  MadieSpinner,
-  Button,
-  Tabs,
-  Tab,
-} from "@madie/madie-design-system/dist/react";
-import ClearIcon from "@mui/icons-material/Clear";
-import SearchIcon from "@mui/icons-material/Search";
+import { MadieSpinner, Tabs, Tab } from "@madie/madie-design-system/dist/react";
 import "./CqlLibraryLanding.scss";
-
+import "twin.macro";
+import "styled-components/macro";
 import queryString from "query-string";
 import { useNavigate, useLocation } from "react-router-dom";
+import Search from "../librarySearch/Search";
+import _ from "lodash";
 
 const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
   cqlLibrary: null,
 };
+
+export interface LibrarySearchCriteria {
+  searchField?: string;
+  optionalSearchProperties?: string[]; // can be ["LibraryName", "version"] ..etc
+  model?: string;
+  draft?: boolean;
+}
 
 export const getStorageKey = (tab) =>
   tab === 0 ? "myCqlLibraryPageOptions" : "allCqlLibraryPageOptions";
@@ -48,11 +49,14 @@ function CqlLibraryLanding() {
   const [totalItems, setTotalItems] = useState<number>(0);
   const [visibleItems, setVisibleItems] = useState<number>(0);
   const [offset, setOffset] = useState<number>(0);
-  const [searchCriteria, setSearchCriteria] = useState<String>(null);
+  const [searchCriteria, setSearchCriteria] = useState<LibrarySearchCriteria>({
+    searchField: "",
+    optionalSearchProperties: [],
+  });
 
   const [selectedLibraries, setSelectedLibraries] = useState<CqlLibrary[]>([]);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
-  const [filter, setFilter] = useState("");
+  // const [filter, setFilter] = useState("");
   const abortController = useRef<AbortController | null>(null);
   const [selectedCQLLibrary, setSelectedCqlLibrary] =
     useState<CqlLibrary>(null);
@@ -84,8 +88,22 @@ function CqlLibraryLanding() {
   const fetchTotalCounts = useCallback(async () => {
     try {
       const [myLibs, allLibs] = await Promise.all([
-        cqlLibraryServiceApi.fetchCqlLibraries(true, 1, 0, "", null, null),
-        cqlLibraryServiceApi.fetchCqlLibraries(false, 1, 0, "", null, null),
+        cqlLibraryServiceApi.fetchCqlLibraries(
+          true,
+          1,
+          0,
+          searchCriteria,
+          null,
+          null
+        ),
+        cqlLibraryServiceApi.fetchCqlLibraries(
+          false,
+          1,
+          0,
+          searchCriteria,
+          null,
+          null
+        ),
       ]);
       setMyLibrariesCount(myLibs?.totalElements || 0);
       setAllLibrariesCount(allLibs?.totalElements || 0);
@@ -119,12 +137,21 @@ function CqlLibraryLanding() {
     async (tab, limit, page, searchCriteria, relevantSorting) => {
       setLoading(true);
       abortController.current = new AbortController();
+
+      const optionalParams = searchCriteria?.optionalSearchProperties ?? [];
+      const firstParam = _.trim(optionalParams[0]);
+
+      const modifiedSearchCriteria = {
+        ...searchCriteria,
+        optionalSearchProperties:
+          firstParam && firstParam !== "-" ? [_.camelCase(firstParam)] : [],
+      };
       cqlLibraryServiceApi
         .fetchCqlLibraries(
           tab === 0,
           limit,
           page,
-          searchCriteria,
+          modifiedSearchCriteria,
           relevantSorting,
           abortController.current.signal
         )
@@ -169,7 +196,7 @@ function CqlLibraryLanding() {
 
   useEffect(() => {
     fetchTotalCounts();
-  }, []);
+  }, [fetchTotalCounts]);
   // sort logic
   const [sorting, setSorting] = useState(null);
   let sortID = sorting?.[0]?.id;
@@ -281,33 +308,6 @@ function CqlLibraryLanding() {
     };
   }, []);
 
-  const submitFilter = (e) => {
-    e.preventDefault();
-    if (filter) {
-      // handle null to string edge
-      setSearchCriteria(filter.trim());
-    }
-  };
-
-  const searchInputProps = {
-    startAdornment: (
-      <InputAdornment position="start">
-        <SearchIcon />
-      </InputAdornment>
-    ),
-    endAdornment: (
-      <IconButton
-        aria-label="Clear-Search"
-        onClick={() => {
-          setSearchCriteria("");
-          setFilter(""); // probably could also be a q param,
-        }}
-      >
-        <ClearIcon />
-      </IconButton>
-    ),
-  };
-
   const onListUpdate = async () => {
     const tabStorageKey = getStorageKey(activeTab);
     const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
@@ -355,57 +355,14 @@ function CqlLibraryLanding() {
           </div>
           <span tw="flex-grow" />
         </section>
-        <div>
-          <form onSubmit={submitFilter}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                margin: 20,
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <TextField
-                  sx={{
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      borderColor: "#8C8C8C",
-                      borderRadius: "3px",
-                    },
-                  }}
-                  label="Filter Libraries"
-                  onChange={(newFilter) => {
-                    setFilter(newFilter.target.value);
-                  }}
-                  type="search"
-                  inputProps={{
-                    "data-testid": "library-filter-input",
-                    "aria-required": "false",
-                  }}
-                  InputProps={searchInputProps}
-                  value={filter}
-                />
-                <Button
-                  style={{ marginLeft: 10, marginBottom: 20 }}
-                  type="submit"
-                  data-testid="library-filter-submit"
-                >
-                  Filter
-                </Button>
-              </div>
-              <div className="action-center-holder">
-                <ActionCenter
-                  libraries={selectedLibraries}
-                  setDeleteDraftDialog={setDeleteDraftDialog}
-                  setSelectedCqlLibrary={setSelectedCqlLibrary}
-                  setCreateDraftDialog={setCreateDraftDialog}
-                  setShareDialog={setShareDialog}
-                  createVersion={createVersion}
-                  owners={owners}
-                />
-              </div>
-            </div>
-          </form>
+
+        <div tw="grid grid-cols-4 gap-4 m-4">
+          <Search
+            searchCriteria={searchCriteria}
+            setSearchCriteria={setSearchCriteria}
+          />
+          {/*for Future action center*/}
+          <div tw="col-start-4 justify-self-end p-3" />
         </div>
         <div>
           <div className="table">

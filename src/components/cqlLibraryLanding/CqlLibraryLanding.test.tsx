@@ -1,12 +1,12 @@
 import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
-
 import * as React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
 import { Model } from "@madie/madie-models";
+// @ts-ignore
 import { useFeatureFlags } from "@madie/madie-util";
 import {
   useNavigate,
@@ -174,7 +174,7 @@ describe("Cql Library Page", () => {
       true,
       10,
       0,
-      null,
+      { optionalSearchProperties: [], searchField: "" },
       "",
       abortController.signal
     );
@@ -201,7 +201,7 @@ describe("Cql Library Page", () => {
       true,
       10,
       0,
-      null,
+      { optionalSearchProperties: [], searchField: "" },
       "",
       abortController.signal
     );
@@ -232,7 +232,7 @@ describe("Cql Library Page", () => {
       true,
       10,
       0,
-      null,
+      { optionalSearchProperties: [], searchField: "" },
       "",
       expect.any(AbortSignal)
     );
@@ -249,7 +249,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "librarySet.acls,false",
         expect.any(AbortSignal)
       );
@@ -271,7 +271,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "",
         expect.any(AbortSignal)
       );
@@ -286,7 +286,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "librarySet.acls,false",
         expect.any(AbortSignal)
       );
@@ -298,7 +298,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "librarySet.acls,true",
         expect.any(AbortSignal)
       );
@@ -323,7 +323,7 @@ describe("Cql Library Page", () => {
       true,
       10,
       0,
-      null,
+      { optionalSearchProperties: [], searchField: "" },
       "",
       abortController.signal
     );
@@ -339,7 +339,7 @@ describe("Cql Library Page", () => {
       true,
       10,
       0,
-      "test",
+      { optionalSearchProperties: [], searchField: "test" },
       "",
       abortController.signal
     );
