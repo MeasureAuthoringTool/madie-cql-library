@@ -28,19 +28,25 @@ describe("CqlLibraryServiceApi - fetchCqlLibraries", () => {
       libraries: [{ id: "lib1", name: "Test Library" }],
       total: 1,
     };
-    (axios.get as jest.Mock).mockResolvedValue({ data: mockData });
+    (axios.put as jest.Mock).mockResolvedValue({ data: mockData });
+
+    const criteriaWithSearch = {
+      searchField: "Heart Failure",
+      optionalSearchProperties: ["Status"],
+    };
 
     const result = await service.fetchCqlLibraries(
       true,
       10,
       0,
-      "",
+      criteriaWithSearch,
       "",
       undefined
     );
 
-    expect(axios.get).toHaveBeenCalledWith(
-      "http://localhost/api/cql-libraries",
+    expect(axios.put).toHaveBeenCalledWith(
+      "http://localhost/api/cql-libraries/searches",
+      criteriaWithSearch,
       {
         headers: { Authorization: "Bearer mocked-token" },
         params: {
@@ -58,7 +64,7 @@ describe("CqlLibraryServiceApi - fetchCqlLibraries", () => {
   });
 
   it("should throw an error when axios fails", async () => {
-    (axios.get as jest.Mock).mockRejectedValue(
+    (axios.put as jest.Mock).mockRejectedValue(
       new Error("Something went wrong")
     );
 
@@ -69,7 +75,7 @@ describe("CqlLibraryServiceApi - fetchCqlLibraries", () => {
 
   it("should rethrow if the error is 'canceled'", async () => {
     const error = new Error("canceled");
-    (axios.get as jest.Mock).mockRejectedValue(error);
+    (axios.put as jest.Mock).mockRejectedValue(error);
 
     await expect(
       service.fetchCqlLibraries(true, 10, 0, "", "", undefined)

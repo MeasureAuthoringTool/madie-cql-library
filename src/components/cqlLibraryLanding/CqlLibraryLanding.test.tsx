@@ -1,7 +1,13 @@
 import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 import * as React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
@@ -218,7 +224,6 @@ describe("Cql Library Page", () => {
   test("Should trigger onClick sort", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibrarySearch: true,
-      LibraryListButtons: true,
     }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
@@ -228,14 +233,7 @@ describe("Cql Library Page", () => {
       const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
       expect(cqlLibrary1).toBeInTheDocument();
     });
-    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true,
-      10,
-      0,
-      { optionalSearchProperties: [], searchField: "" },
-      "",
-      expect.any(AbortSignal)
-    );
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledTimes(3);
 
     const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
     expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
@@ -260,7 +258,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "librarySet.acls,true",
         expect.any(AbortSignal)
       );
@@ -309,7 +307,10 @@ describe("Cql Library Page", () => {
     userEvent.keyboard("{Enter}");
   });
 
-  test("When passing search, we navigate to test search", async () => {
+  test("filter by and search libraries based on criteria", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibrarySearch: true,
+    }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -319,30 +320,41 @@ describe("Cql Library Page", () => {
       expect(cqlLibrary1).toBeInTheDocument();
     });
 
-    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true,
-      10,
-      0,
-      { optionalSearchProperties: [], searchField: "" },
-      "",
-      abortController.signal
-    );
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledTimes(3);
 
-    const librarySearch = (await screen.findByTestId(
-      "library-filter-input"
-    )) as HTMLInputElement;
-    expect(librarySearch).toBeInTheDocument();
-    userEvent.type(librarySearch, "test");
-    expect(librarySearch.value).toBe("test");
-    fireEvent.submit(librarySearch);
-    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true,
-      10,
-      0,
-      { optionalSearchProperties: [], searchField: "test" },
-      "",
-      abortController.signal
-    );
+    const filterBy = screen.getByTestId("filter-by");
+    const filterByDropDown = within(filterBy).getByRole("combobox", {
+      hidden: true,
+    }) as HTMLInputElement;
+    userEvent.click(filterByDropDown);
+
+    const optionsList = await screen.findAllByRole("option");
+    expect(optionsList).toHaveLength(4);
+    expect(optionsList[1]).toHaveTextContent("Library");
+    userEvent.click(optionsList[1]);
+
+    const input = screen.getByTestId("library-search-input");
+
+    userEvent.type(input, "Diabetes");
+    expect(input).toHaveValue("Diabetes");
+
+    const searchIcon = await screen.findByTestId("search-icon");
+    expect(searchIcon).toBeVisible();
+    userEvent.click(searchIcon);
+
+    await waitFor(() => {
+      expect(
+        mockCqlLibraryServiceApi.fetchCqlLibraries
+      ).toHaveBeenNthCalledWith(
+        4,
+        true,
+        10,
+        0,
+        { optionalSearchProperties: ["library"], searchField: "Diabetes" },
+        "",
+        abortController.signal
+      );
+    });
   });
 
   test("Checkbox interactions", async () => {

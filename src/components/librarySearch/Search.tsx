@@ -6,11 +6,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useFormik } from "formik";
 import "twin.macro";
 import "styled-components/macro";
-import {
-  Select,
-  TextField,
-  Button,
-} from "@madie/madie-design-system/dist/react";
+import { Select, TextField } from "@madie/madie-design-system/dist/react";
 import { LibrarySearchCriteria } from "../cqlLibraryLanding/CqlLibraryLanding";
 import { useFeatureFlags } from "@madie/madie-util";
 

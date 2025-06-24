@@ -5,13 +5,14 @@ import { CqlLibrary } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle, useFeatureFlags } from "@madie/madie-util";
 import { MadieSpinner, Tabs, Tab } from "@madie/madie-design-system/dist/react";
+import { CqlLibraryListActionCenter as ActionCenter } from "./cqlLibraryListActionCenter/CqlLibraryListActionCenter";
 import "./CqlLibraryLanding.scss";
 import "twin.macro";
 import "styled-components/macro";
 import queryString from "query-string";
 import { useNavigate, useLocation } from "react-router-dom";
 import Search from "../librarySearch/Search";
-import _ from "lodash";
+import * as _ from "lodash";
 
 const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
@@ -85,6 +86,7 @@ function CqlLibraryLanding() {
   // Fetches total count of My Libraries and All Libraries
   const [myLibrariesCount, setMyLibrariesCount] = useState(0);
   const [allLibrariesCount, setAllLibrariesCount] = useState(0);
+
   const fetchTotalCounts = useCallback(async () => {
     try {
       const [myLibs, allLibs] = await Promise.all([
@@ -111,6 +113,10 @@ function CqlLibraryLanding() {
       console.error("Error fetching counts", e);
     }
   }, [cqlLibraryServiceApi]);
+
+  useEffect(() => {
+    fetchTotalCounts();
+  }, []);
 
   const createVersion = async () => {
     await cqlLibraryServiceApi
@@ -179,7 +185,7 @@ function CqlLibraryLanding() {
           return setLoading(false);
         });
     },
-    [cqlLibraryServiceApi]
+    [cqlLibraryServiceApi, navigate]
   );
 
   const setPageProps = (data) => {
@@ -194,9 +200,6 @@ function CqlLibraryLanding() {
     }
   };
 
-  useEffect(() => {
-    fetchTotalCounts();
-  }, [fetchTotalCounts]);
   // sort logic
   const [sorting, setSorting] = useState(null);
   let sortID = sorting?.[0]?.id;
@@ -212,6 +215,7 @@ function CqlLibraryLanding() {
   };
   // sort logic end.
 
+  // useEffect to fetch libraries
   useEffect(() => {
     const values = queryString.parse(search);
     const tabFromUrl =
@@ -256,7 +260,15 @@ function CqlLibraryLanding() {
       searchCriteria,
       sortingString
     );
-  }, [search, retrieveLibraries, activeTab, searchCriteria, sortingString]);
+  }, [
+    search,
+    retrieveLibraries,
+    activeTab,
+    searchCriteria,
+    sortingString,
+    navigate,
+  ]);
+
   // Libraries are fetched again, when a new draft or version is created
   const handleTabChange = (event, nextTab) => {
     abortController.current.abort();
@@ -288,7 +300,7 @@ function CqlLibraryLanding() {
     );
   };
 
-  // Create Dialog utilities
+  // Create new library listener
   const [createLibOpen, setCreateLibOpen] = useState<boolean>(false);
   useEffect(() => {
     const openCreateLibraryDialogListener = () => {
@@ -361,8 +373,17 @@ function CqlLibraryLanding() {
             searchCriteria={searchCriteria}
             setSearchCriteria={setSearchCriteria}
           />
-          {/*for Future action center*/}
-          <div tw="col-start-4 justify-self-end p-3" />
+          <div tw="col-start-4 justify-self-end p-3">
+            <ActionCenter
+              libraries={selectedLibraries}
+              setDeleteDraftDialog={setDeleteDraftDialog}
+              setSelectedCqlLibrary={setSelectedCqlLibrary}
+              setCreateDraftDialog={setCreateDraftDialog}
+              setShareDialog={setShareDialog}
+              createVersion={createVersion}
+              owners={owners}
+            />
+          </div>
         </div>
         <div>
           <div className="table">
