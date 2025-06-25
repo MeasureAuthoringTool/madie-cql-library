@@ -35,6 +35,7 @@ import {
   MadieDeleteDialog,
   Pagination,
   TruncateText,
+  MadieTooltip,
 } from "@madie/madie-design-system/dist/react";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -407,7 +408,11 @@ export default function CqlLibraryList({
       ),
     },
     {
-      header: "Actions",
+      header: () => (
+        <button tabIndex={-1} aria-label="Edit or View Library">
+          Action
+        </button>
+      ),
       accessorKey: "Actions",
       cell: (info) => (
         <Button
@@ -516,7 +521,11 @@ export default function CqlLibraryList({
       ),
     },
     {
-      header: "Actions",
+      header: () => (
+        <button tabIndex={-1} aria-label="Edit or View Library">
+          Action
+        </button>
+      ),
       accessorKey: "Actions",
       cell: (info) => (
         <Button
@@ -558,13 +567,33 @@ export default function CqlLibraryList({
     },
   ];
 
+  const getHeader = () => {
+    if (activeTab === 0) {
+      return (
+        <IndeterminateCheckbox
+          checked={table.getIsAllRowsSelected()}
+          indeterminate={table.getIsSomePageRowsSelected()}
+          onChange={table.getToggleAllPageRowsSelectedHandler()}
+        />
+      );
+    } else {
+      return (
+        <MadieTooltip
+          tooltipText="Select"
+          id={`library-list-select-tooltip`}
+          tabIndex={-1}
+        />
+      );
+    }
+  };
+
   const columns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     const columnDefs = [];
 
     columnDefs.push({
       id: "select",
       accessorKey: "select",
-      header: "",
+      header: () => <div aria-label="Library Selection">{getHeader()}</div>,
       cell: ({ row }) => {
         return (
           <div className="px-1">
@@ -782,7 +811,10 @@ export default function CqlLibraryList({
 
   const isButton = (header) => {
     return (
-      header.column.columnDef.header !== "Actions" &&
+      header.column.columnDef.header !== "Action" &&
+      !header.column.columnDef.header
+        .toString()
+        .includes("Library Selection") &&
       header.column.columnDef.header !== "select" &&
       header.column.columnDef.header !== ""
     );

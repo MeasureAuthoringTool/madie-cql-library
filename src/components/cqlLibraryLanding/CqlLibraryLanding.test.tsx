@@ -356,9 +356,9 @@ describe("Cql Library Page", () => {
     });
 
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
+    expect(checkBoxes.length).toBe(50);
 
-    userEvent.click(checkBoxes[1]);
+    userEvent.click(checkBoxes[2]);
 
     const draftButton = await screen.findByTestId("draft-action-btn");
     expect(draftButton).not.toBeDisabled();
@@ -382,8 +382,8 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).not.toBeDisabled();
@@ -417,8 +417,8 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).not.toBeDisabled();
@@ -469,8 +469,8 @@ describe("Cql Library Page", () => {
     });
 
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).not.toBeDisabled();
@@ -519,8 +519,8 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).not.toBeDisabled();
@@ -564,8 +564,8 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).not.toBeDisabled();
@@ -606,8 +606,8 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).not.toBeDisabled();
@@ -671,8 +671,8 @@ describe("Cql Library Page", () => {
       expect(cqlLibrary1).toBeInTheDocument();
     });
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).not.toBeDisabled();
@@ -745,8 +745,8 @@ describe("Cql Library Page", () => {
       expect(cqlLibrary1).toBeInTheDocument();
     });
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).not.toBeDisabled();
@@ -792,9 +792,9 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
+    expect(checkBoxes.length).toBe(50);
 
-    userEvent.click(checkBoxes[0]);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).toBeDisabled();
@@ -839,8 +839,8 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).toBeDisabled();
@@ -890,8 +890,8 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).toBeDisabled();
@@ -940,8 +940,8 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).toBeDisabled();
@@ -992,8 +992,8 @@ describe("Cql Library Page", () => {
 
     // Ensure the interactions are correct after rendering the library
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(49);
-    userEvent.click(checkBoxes[0]);
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
 
     const versionButton = await screen.findByTestId("version-action-btn");
     expect(versionButton).toBeDisabled();
