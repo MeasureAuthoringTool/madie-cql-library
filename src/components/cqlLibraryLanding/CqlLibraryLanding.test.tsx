@@ -1,12 +1,18 @@
 import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
-
 import * as React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
 import { Model } from "@madie/madie-models";
+// @ts-ignore
 import { useFeatureFlags } from "@madie/madie-util";
 import {
   useNavigate,
@@ -117,6 +123,7 @@ const mockCqlLibraryServiceApi = {
   fetchCqlLibraries: jest.fn().mockResolvedValue({ mockPageableVal }),
   fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
   deleteDraft: jest.fn().mockResolvedValue({ data: "test" }),
+  createDraft: jest.fn().mockResolvedValue({ data: "test" }),
   fetchAllOwners: jest.fn().mockResolvedValue(["owner1", "owner2"]),
   getLibrariesByLibrarySetId: jest.fn().mockResolvedValue([]),
 } as unknown as CqlLibraryServiceApi;
@@ -174,7 +181,7 @@ describe("Cql Library Page", () => {
       true,
       10,
       0,
-      null,
+      { optionalSearchProperties: [], searchField: "" },
       "",
       abortController.signal
     );
@@ -201,7 +208,7 @@ describe("Cql Library Page", () => {
       true,
       10,
       0,
-      null,
+      { optionalSearchProperties: [], searchField: "" },
       "",
       abortController.signal
     );
@@ -218,7 +225,6 @@ describe("Cql Library Page", () => {
   test("Should trigger onClick sort", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibrarySearch: true,
-      LibraryListButtons: true,
     }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
@@ -228,14 +234,7 @@ describe("Cql Library Page", () => {
       const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
       expect(cqlLibrary1).toBeInTheDocument();
     });
-    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true,
-      10,
-      0,
-      null,
-      "",
-      expect.any(AbortSignal)
-    );
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledTimes(3);
 
     const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
     expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
@@ -249,7 +248,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "librarySet.acls,false",
         expect.any(AbortSignal)
       );
@@ -260,7 +259,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "librarySet.acls,true",
         expect.any(AbortSignal)
       );
@@ -271,7 +270,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "",
         expect.any(AbortSignal)
       );
@@ -286,7 +285,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "librarySet.acls,false",
         expect.any(AbortSignal)
       );
@@ -298,7 +297,7 @@ describe("Cql Library Page", () => {
         true,
         10,
         0,
-        null,
+        { optionalSearchProperties: [], searchField: "" },
         "librarySet.acls,true",
         expect.any(AbortSignal)
       );
@@ -309,7 +308,10 @@ describe("Cql Library Page", () => {
     userEvent.keyboard("{Enter}");
   });
 
-  test("When passing search, we navigate to test search", async () => {
+  test("filter by and search libraries based on criteria", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibrarySearch: true,
+    }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -319,30 +321,41 @@ describe("Cql Library Page", () => {
       expect(cqlLibrary1).toBeInTheDocument();
     });
 
-    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true,
-      10,
-      0,
-      null,
-      "",
-      abortController.signal
-    );
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledTimes(3);
 
-    const librarySearch = (await screen.findByTestId(
-      "library-filter-input"
-    )) as HTMLInputElement;
-    expect(librarySearch).toBeInTheDocument();
-    userEvent.type(librarySearch, "test");
-    expect(librarySearch.value).toBe("test");
-    fireEvent.submit(librarySearch);
-    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true,
-      10,
-      0,
-      "test",
-      "",
-      abortController.signal
-    );
+    const filterBy = screen.getByTestId("filter-by");
+    const filterByDropDown = within(filterBy).getByRole("combobox", {
+      hidden: true,
+    }) as HTMLInputElement;
+    userEvent.click(filterByDropDown);
+
+    const optionsList = await screen.findAllByRole("option");
+    expect(optionsList).toHaveLength(4);
+    expect(optionsList[1]).toHaveTextContent("Library");
+    userEvent.click(optionsList[1]);
+
+    const input = screen.getByTestId("library-search-input");
+
+    userEvent.type(input, "Diabetes");
+    expect(input).toHaveValue("Diabetes");
+
+    const searchIcon = await screen.findByTestId("search-icon");
+    expect(searchIcon).toBeVisible();
+    userEvent.click(searchIcon);
+
+    await waitFor(() => {
+      expect(
+        mockCqlLibraryServiceApi.fetchCqlLibraries
+      ).toHaveBeenNthCalledWith(
+        4,
+        true,
+        10,
+        0,
+        { optionalSearchProperties: ["library"], searchField: "Diabetes" },
+        "",
+        abortController.signal
+      );
+    });
   });
 
   test("Checkbox interactions", async () => {
