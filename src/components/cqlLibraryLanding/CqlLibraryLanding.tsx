@@ -162,9 +162,8 @@ function CqlLibraryLanding() {
           abortController.current.signal
         )
         .then((data) => {
-          if (searchCriteria) {
-            const updatedLimit =
-              limit === "All" && data.totalElements < 50 ? 50 : limit;
+          if (limit === "All") {
+            const updatedLimit = data.totalElements > 50 ? limit : 50;
             navigate(`?tab=${tab}&page=1&limit=${updatedLimit}`, {
               replace: true,
             });
