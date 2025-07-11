@@ -163,8 +163,7 @@ function CqlLibraryLanding() {
         )
         .then((data) => {
           if (limit === "All") {
-            const updatedLimit =
-              limit === "All" && data.totalElements > 50 ? limit : 50;
+            const updatedLimit = data.totalElements > 50 ? limit : 50;
             navigate(`?tab=${tab}&page=1&limit=${updatedLimit}`, {
               replace: true,
             });
