@@ -10,7 +10,7 @@ import {
   TextArea,
   Toast,
   AutoComplete,
-} from "@madie/madie-design-system/dist/react";
+} from "@madie/madie-design-system";
 import { Box } from "@mui/system";
 import { MenuItem } from "@mui/material";
 import { useFormik } from "formik";

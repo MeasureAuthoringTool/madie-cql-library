@@ -9,7 +9,7 @@ import {
   MadieDialog,
   Select,
   TextField,
-} from "@madie/madie-design-system/dist/react";
+} from "@madie/madie-design-system";
 import { useFeatureFlags } from "@madie/madie-util";
 
 interface CreateDraftDialogProps {

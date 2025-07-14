@@ -38,7 +38,7 @@ import {
   MadieSpinner,
   AutoComplete,
   MadieDeleteDialog,
-} from "@madie/madie-design-system/dist/react";
+} from "@madie/madie-design-system";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
 import {

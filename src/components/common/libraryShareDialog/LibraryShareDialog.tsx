@@ -13,7 +13,7 @@ import {
   Button,
   TruncateText,
   MadieSpinner,
-} from "@madie/madie-design-system/dist/react";
+} from "@madie/madie-design-system";
 import "./LibraryShareDialog.scss";
 import * as _ from "lodash";
 import {

@@ -1,5 +1,5 @@
 import React from "react";
-import { MadieAlert } from "@madie/madie-design-system/dist/react";
+import { MadieAlert } from "@madie/madie-design-system"
 import "./StatusHandler.scss";
 import * as _ from "lodash";
 import { useFeatureFlags } from "@madie/madie-util";

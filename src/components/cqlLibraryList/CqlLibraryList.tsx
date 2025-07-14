@@ -35,7 +35,7 @@ import {
   MadieDeleteDialog,
   Pagination,
   TruncateText,
-} from "@madie/madie-design-system/dist/react";
+} from "@madie/madie-design-system";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { useNavigate, useLocation } from "react-router-dom";

@@ -11,7 +11,7 @@ import {
   Button,
   Tabs,
   Tab,
-} from "@madie/madie-design-system/dist/react";
+} from "@madie/madie-design-system";
 import ClearIcon from "@mui/icons-material/Clear";
 import SearchIcon from "@mui/icons-material/Search";
 import "./CqlLibraryLanding.scss";

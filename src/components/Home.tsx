@@ -3,7 +3,7 @@ import CqlLibraryRoutes from "./cqlLibraryRoutes/CqlLibraryRoutes";
 import { ApiContextProvider } from "../api/ServiceContext";
 import useGetServiceConfig from "./config/useGetServiceConfig";
 import { ThemeProvider } from "@mui/material/styles";
-import { theme } from "@madie/madie-design-system/dist/react";
+import { theme } from "@madie/madie-design-system";
 
 export default function Home() {
   const errorPage = (

@@ -19,7 +19,7 @@ import { makeStyles } from "@mui/styles";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import tw from "twin.macro";
-import { Button } from "@madie/madie-design-system/dist/react";
+import { Button } from "@madie/madie-design-system";
 
 const useStyles = makeStyles({
   row: {
