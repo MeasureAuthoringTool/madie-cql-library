@@ -33,7 +33,7 @@ const Search = (props: {
   const formik = useFormik({
     initialValues: {
       searchField: searchCriteria?.searchField,
-      filterBy: searchCriteria?.optionalSearchProperties?.[0],
+      filterBy: searchCriteria?.optionalSearchProperties?.[0] || "-",
     },
     enableReinitialize: true,
     onSubmit: async (values) => {

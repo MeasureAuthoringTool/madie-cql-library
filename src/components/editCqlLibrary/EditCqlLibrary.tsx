@@ -301,7 +301,7 @@ const EditCqlLibrary = () => {
         });
         setLoadedCqlLibrary(response?.data);
         setTimeout(() => {
-          navigate(`/cql-libraries/${response.data.id}/edit/details`);
+          navigate(`/cql-libraries/${response?.data?.id}/edit/details`);
         }, 1000);
       })
       .catch((error) => {
