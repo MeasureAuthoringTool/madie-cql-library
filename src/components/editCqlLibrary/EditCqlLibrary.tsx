@@ -55,6 +55,11 @@ import { AxiosResponse } from "axios";
 import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 
+interface LockStatus {
+  lockedBy: string;
+  isLocked: boolean;
+}
+
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
   const navigate = useNavigate();
@@ -206,6 +211,25 @@ const EditCqlLibrary = () => {
   const { resetForm } = formik;
 
   useFormikResetOnEvent(formik);
+
+  const [lockStatus, setLockStatus] = useState<LockStatus | null>(null);
+
+  // Lock the library to the user if available
+  useEffect(() => {
+    let isMounted = true;
+
+    cqlLibraryServiceApi.attemptLock(
+      id,
+      setLockStatus,
+      setActiveSpinner,
+      isMounted
+    );
+
+    return () => {
+      isMounted = false;
+      cqlLibraryServiceApi.unLockLibrary(id);
+    };
+  }, [id]);
 
   useEffect(() => {
     updateRouteHandlerState({
@@ -572,6 +596,35 @@ const EditCqlLibrary = () => {
 
   return (
     <div>
+      {lockStatus?.isLocked && (
+        <div
+          style={{
+            backgroundColor: "#ffe0e0",
+            color: "#a94442",
+            padding: "1rem",
+            borderBottom: "1px solid #f5c6cb",
+            textAlign: "center",
+          }}
+        >
+          <strong>
+            This Library is currently locked by {lockStatus.lockedBy}.
+          </strong>
+          <button
+            onClick={() => navigate(-1)}
+            style={{
+              marginLeft: "1rem",
+              padding: "0.4rem 0.8rem",
+              border: "none",
+              backgroundColor: "#d9534f",
+              color: "white",
+              cursor: "pointer",
+              borderRadius: "4px",
+            }}
+          >
+            Go Back
+          </button>
+        </div>
+      )}
       {activeSpinner ? (
         <div data-testid="loading">
           <div
