@@ -701,7 +701,7 @@ const EditCqlLibrary = () => {
                               required
                               id="cqlLibraryName"
                               data-testid="cql-library-name-text-field"
-                              disabled={!formik.values.draft || !canEdit}
+                              readOnly={!formik.values.draft || !canEdit}
                               inputProps={{
                                 id: "cql-library-name-text-field-input",
                                 "data-testid":
@@ -726,7 +726,7 @@ const EditCqlLibrary = () => {
                           <div className="form-row">
                             <TextArea
                               label="Description"
-                              disabled={!formik.values.draft || !canEdit}
+                              readOnly={!formik.values.draft || !canEdit}
                               required
                               name="cql-library-description"
                               id="cql-library-description"
@@ -753,7 +753,7 @@ const EditCqlLibrary = () => {
                               label="Publisher"
                               placeholder="-"
                               required={true}
-                              disabled={!formik.values.draft || !canEdit}
+                              readOnly={!formik.values.draft || !canEdit}
                               error={
                                 formik.touched.publisher &&
                                 formik.errors.publisher
