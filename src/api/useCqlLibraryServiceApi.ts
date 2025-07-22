@@ -259,31 +259,12 @@ export class CqlLibraryServiceApi {
     }
   }
 
-  async attemptLock(
-    libraryId: string,
-    setLockStatus,
-    setActiveSpinner,
-    isMounted
-  ) {
-    try {
-      const res = await axios.post(`${this.baseUrl}/lock/${libraryId}`, null, {
-        headers: {
-          Authorization: `Bearer ${this.getAccessToken()}`,
-        },
-      });
-
-      if (isMounted) {
-        const { locked, lockedBy } = res.data;
-        setLockStatus({ isLocked: locked, lockedBy });
-      }
-    } catch (err: any) {
-      if (isMounted && err.response?.data) {
-        const { locked, lockedBy } = err.response.data;
-        setLockStatus({ isLocked: locked, lockedBy });
-      }
-    } finally {
-      if (isMounted) setActiveSpinner(false);
-    }
+  async attemptLock(libraryId: string) {
+    return await axios.post(`${this.baseUrl}/lock/${libraryId}`, null, {
+      headers: {
+        Authorization: `Bearer ${this.getAccessToken()}`,
+      },
+    });
   }
 
   async unLockLibrary(libraryId: string) {

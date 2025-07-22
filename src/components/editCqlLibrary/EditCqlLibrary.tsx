@@ -216,20 +216,23 @@ const EditCqlLibrary = () => {
 
   // Lock the library to the user if available
   useEffect(() => {
-    let isMounted = true;
-
-    cqlLibraryServiceApi.attemptLock(
-      id,
-      setLockStatus,
-      setActiveSpinner,
-      isMounted
-    );
-
+    cqlLibraryServiceApi
+      .attemptLock(id)
+      .then((res) => {
+        const { locked, lockedBy } = res.data;
+        setLockStatus({ isLocked: locked, lockedBy });
+      })
+      .catch((err) => {
+        if (err.response?.data) {
+          const { locked, lockedBy } = err.response.data;
+          setLockStatus({ isLocked: locked, lockedBy });
+        }
+      })
+      .finally(() => setActiveSpinner(false));
     return () => {
-      isMounted = false;
       cqlLibraryServiceApi.unLockLibrary(id);
     };
-  }, [id]);
+  }, [cqlLibraryServiceApi, id]);
 
   useEffect(() => {
     updateRouteHandlerState({
