@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
-import { CqlLibrary } from "@madie/madie-models";
+import { CqlLibrary, ViewScope } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle, useFeatureFlags } from "@madie/madie-util";
 import { MadieSpinner, Tabs, Tab } from "@madie/madie-design-system/dist/react";
@@ -28,6 +28,13 @@ export interface LibrarySearchCriteria {
 
 export const getStorageKey = (tab) =>
   tab === 0 ? "myCqlLibraryPageOptions" : "allCqlLibraryPageOptions";
+
+// Maps tab indices to ViewScope enums
+const viewScopeMap: Record<number, ViewScope> = {
+  0: ViewScope.OWNED,
+  1: ViewScope.SHARED,
+  2: ViewScope.ALL,
+};
 
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
@@ -83,15 +90,16 @@ function CqlLibraryLanding() {
   });
   const [shareDialog, setShareDialog] = useState({ open: false, option: "" });
 
-  // Fetches total count of My Libraries and All Libraries
-  const [myLibrariesCount, setMyLibrariesCount] = useState(0);
+  // Fetches total count of Owned Libraries, Shared Libraries, and All Libraries
+  const [ownedLibrariesCount, setOwnedLibrariesCount] = useState(0);
+  const [sharedLibrariesCount, setSharedLibrariesCount] = useState(0);
   const [allLibrariesCount, setAllLibrariesCount] = useState(0);
 
   const fetchTotalCounts = useCallback(async () => {
     try {
-      const [myLibs, allLibs] = await Promise.all([
+      const [ownedLibs, sharedLibs, allLibs] = await Promise.all([
         cqlLibraryServiceApi.fetchCqlLibraries(
-          true,
+          ViewScope.OWNED,
           1,
           0,
           searchCriteria,
@@ -99,7 +107,15 @@ function CqlLibraryLanding() {
           null
         ),
         cqlLibraryServiceApi.fetchCqlLibraries(
-          false,
+          ViewScope.SHARED,
+          1,
+          0,
+          searchCriteria,
+          null,
+          null
+        ),
+        cqlLibraryServiceApi.fetchCqlLibraries(
+          ViewScope.ALL,
           1,
           0,
           searchCriteria,
@@ -107,7 +123,8 @@ function CqlLibraryLanding() {
           null
         ),
       ]);
-      setMyLibrariesCount(myLibs?.totalElements || 0);
+      setOwnedLibrariesCount(ownedLibs?.totalElements || 0);
+      setSharedLibrariesCount(sharedLibs?.totalElements || 0);
       setAllLibrariesCount(allLibs?.totalElements || 0);
     } catch (e) {
       console.error("Error fetching counts", e);
@@ -154,7 +171,7 @@ function CqlLibraryLanding() {
       };
       cqlLibraryServiceApi
         .fetchCqlLibraries(
-          tab === 0,
+          viewScopeMap[tab] ?? ViewScope.ALL,
           limit,
           page,
           modifiedSearchCriteria,
@@ -354,13 +371,18 @@ function CqlLibraryLanding() {
             <Tabs type="B" value={activeTab} onChange={handleTabChange}>
               <Tab
                 type="B"
-                label={`My Libraries(${myLibrariesCount})`}
-                data-testid="my-cql-libraries-tab"
+                label={`Owned Libraries (${ownedLibrariesCount})`}
+                data-testid="owned-libraries-tab"
               />
               <Tab
                 type="B"
-                label={`All Libraries(${allLibrariesCount})`}
-                data-testid="all-cql-libraries-tab"
+                label={`Shared Libraries (${sharedLibrariesCount})`}
+                data-testid="shared-libraries-tab"
+              />
+              <Tab
+                type="B"
+                label={`All Libraries (${allLibrariesCount})`}
+                data-testid="all-libraries-tab"
               />
             </Tabs>
           </div>

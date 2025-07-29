@@ -11,7 +11,7 @@ import {
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
-import { Model } from "@madie/madie-models";
+import { Model, ViewScope } from "@madie/madie-models";
 // @ts-ignore
 import { useFeatureFlags } from "@madie/madie-util";
 import {
@@ -165,7 +165,7 @@ describe("Cql Library Page", () => {
     );
   };
 
-  test("shows my Cql Libraries on page load", async () => {
+  test("shows Owned Libraries on page load", async () => {
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -178,48 +178,102 @@ describe("Cql Library Page", () => {
     const [cqlLibrary1Model] = await screen.findAllByText("QI-Core v4.1.1");
     expect(cqlLibrary1Model).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true,
+      ViewScope.OWNED,
       10,
       0,
       { optionalSearchProperties: [], searchField: "" },
       "",
       abortController.signal
     );
-    const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
-    expect(myCqlLibrariesTab).toBeInTheDocument();
-    expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
-    const allCqlLibrariesTab = screen.getByRole("tab", {
-      name: "All Libraries(10)",
-    });
-    expect(allCqlLibrariesTab).toBeInTheDocument();
-    expect(allCqlLibrariesTab).not.toHaveClass("Mui-selected");
+    const ownedLibrariesTab = screen.getByTestId("owned-libraries-tab");
+    expect(ownedLibrariesTab).toBeInTheDocument();
+    expect(ownedLibrariesTab).toHaveClass("Mui-selected");
+
+    const sharedLibrariesTab = screen.getByTestId("shared-libraries-tab");
+    expect(sharedLibrariesTab).toBeInTheDocument();
+    expect(sharedLibrariesTab).not.toHaveClass("Mui-selected");
+
+    const allLibrariesTab = screen.getByTestId("all-libraries-tab");
+    expect(allLibrariesTab).toBeInTheDocument();
+    expect(allLibrariesTab).not.toHaveClass("Mui-selected");
   });
 
-  test("shows all Cql Libraries on tab click", async () => {
+  test("navigate between Owned Libraries tab, Shared Libraries tab, and All Libraries tab", async () => {
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
+
     renderWithRouter();
+
     await waitFor(() => {
       const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
       expect(cqlLibrary1).toBeInTheDocument();
     });
+
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      true,
+      ViewScope.OWNED,
       10,
       0,
       { optionalSearchProperties: [], searchField: "" },
       "",
       abortController.signal
     );
-    const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
-    expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
-    const allCqlLibrariesTab = screen.getByRole("tab", {
-      name: "All Libraries(10)",
-    });
 
-    userEvent.click(allCqlLibrariesTab);
-    expect(mockNavigate).toHaveBeenCalledWith("?tab=1&page=1&limit=10");
+    const ownedLibrariesTab = screen.getByTestId("owned-libraries-tab");
+    const sharedLibrariesTab = screen.getByTestId("shared-libraries-tab");
+    const allLibrariesTab = screen.getByTestId("all-libraries-tab");
+
+    expect(ownedLibrariesTab).toHaveClass("Mui-selected");
+    expect(sharedLibrariesTab).not.toHaveClass("Mui-selected");
+    expect(allLibrariesTab).not.toHaveClass("Mui-selected");
+
+    // Click Shared tab
+    await userEvent.click(sharedLibrariesTab);
+
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenLastCalledWith(
+      ViewScope.SHARED,
+      10,
+      0,
+      { optionalSearchProperties: [], searchField: "" },
+      "",
+      expect.any(AbortSignal)
+    );
+
+    expect(ownedLibrariesTab).not.toHaveClass("Mui-selected");
+    expect(sharedLibrariesTab).toHaveClass("Mui-selected");
+    expect(allLibrariesTab).not.toHaveClass("Mui-selected");
+
+    // Click All tab
+    await userEvent.click(allLibrariesTab);
+
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenLastCalledWith(
+      ViewScope.ALL,
+      10,
+      0,
+      { optionalSearchProperties: [], searchField: "" },
+      "",
+      expect.any(AbortSignal)
+    );
+
+    expect(ownedLibrariesTab).not.toHaveClass("Mui-selected");
+    expect(sharedLibrariesTab).not.toHaveClass("Mui-selected");
+    expect(allLibrariesTab).toHaveClass("Mui-selected");
+
+    // Click Owned tab again
+    await userEvent.click(ownedLibrariesTab);
+
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenLastCalledWith(
+      ViewScope.OWNED,
+      10,
+      0,
+      { optionalSearchProperties: [], searchField: "" },
+      "",
+      expect.any(AbortSignal)
+    );
+
+    expect(ownedLibrariesTab).toHaveClass("Mui-selected");
+    expect(sharedLibrariesTab).not.toHaveClass("Mui-selected");
+    expect(allLibrariesTab).not.toHaveClass("Mui-selected");
   });
 
   test("Should trigger onClick sort", async () => {
@@ -234,18 +288,20 @@ describe("Cql Library Page", () => {
       const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
       expect(cqlLibrary1).toBeInTheDocument();
     });
-    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledTimes(3);
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledTimes(4);
 
-    const myCqlLibrariesTab = screen.getByTestId("my-cql-libraries-tab");
-    expect(myCqlLibrariesTab).toHaveClass("Mui-selected");
+    const ownedLibrariesTab = screen.getByTestId("owned-libraries-tab");
+    expect(ownedLibrariesTab).toHaveClass("Mui-selected");
 
     const aclHeader = screen.getByTestId("header-librarySet_acls");
     expect(aclHeader).toBeInTheDocument();
 
     userEvent.click(screen.getByTestId("header-librarySet_acls"));
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-        true,
+      expect(
+        mockCqlLibraryServiceApi.fetchCqlLibraries
+      ).toHaveBeenLastCalledWith(
+        ViewScope.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
@@ -255,8 +311,10 @@ describe("Cql Library Page", () => {
     });
     userEvent.click(screen.getByTestId("header-librarySet_acls"));
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-        true,
+      expect(
+        mockCqlLibraryServiceApi.fetchCqlLibraries
+      ).toHaveBeenLastCalledWith(
+        ViewScope.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
@@ -266,8 +324,10 @@ describe("Cql Library Page", () => {
     });
     userEvent.click(screen.getByTestId("header-librarySet_acls"));
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-        true,
+      expect(
+        mockCqlLibraryServiceApi.fetchCqlLibraries
+      ).toHaveBeenLastCalledWith(
+        ViewScope.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
@@ -281,24 +341,28 @@ describe("Cql Library Page", () => {
     // Press Enter
     await userEvent.keyboard("{Enter}");
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-        true,
+      expect(
+        mockCqlLibraryServiceApi.fetchCqlLibraries
+      ).toHaveBeenLastCalledWith(
+        ViewScope.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
-        "librarySet.acls,false",
+        "",
         expect.any(AbortSignal)
       );
     });
     // Press Space
     await userEvent.keyboard(" ");
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-        true,
+      expect(
+        mockCqlLibraryServiceApi.fetchCqlLibraries
+      ).toHaveBeenLastCalledWith(
+        ViewScope.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
-        "librarySet.acls,true",
+        "",
         expect.any(AbortSignal)
       );
     });
@@ -321,7 +385,7 @@ describe("Cql Library Page", () => {
       expect(cqlLibrary1).toBeInTheDocument();
     });
 
-    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledTimes(3);
+    expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledTimes(4);
 
     const filterBy = screen.getByTestId("filter-by");
     const filterByDropDown = within(filterBy).getByRole("combobox", {
@@ -347,8 +411,8 @@ describe("Cql Library Page", () => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
       ).toHaveBeenNthCalledWith(
-        4,
-        true,
+        5,
+        ViewScope.OWNED,
         10,
         0,
         { optionalSearchProperties: ["library"], searchField: "Diabetes" },

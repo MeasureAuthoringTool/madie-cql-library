@@ -2,7 +2,7 @@ import axios from "./axios-instance";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../api/useCqlLibraryServiceApi";
-import { CqlLibrary } from "@madie/madie-models";
+import { ViewScope } from "@madie/madie-models";
 
 jest.mock("./axios-instance");
 jest.mock("../hooks/useOktaTokens", () => () => ({
@@ -36,7 +36,7 @@ describe("CqlLibraryServiceApi - fetchCqlLibraries", () => {
     };
 
     const result = await service.fetchCqlLibraries(
-      true,
+      ViewScope.OWNED,
       10,
       0,
       criteriaWithSearch,
@@ -50,10 +50,9 @@ describe("CqlLibraryServiceApi - fetchCqlLibraries", () => {
       {
         headers: { Authorization: "Bearer mocked-token" },
         params: {
-          currentUser: true,
+          viewScope: ViewScope.OWNED,
           limit: 10,
           page: 0,
-          searchCriteria: undefined,
           sortInfo: undefined,
         },
         signal: undefined,
@@ -69,7 +68,7 @@ describe("CqlLibraryServiceApi - fetchCqlLibraries", () => {
     );
 
     await expect(
-      service.fetchCqlLibraries(true, 10, 0, "", "", undefined)
+      service.fetchCqlLibraries(ViewScope.OWNED, 10, 0, "", "", undefined)
     ).rejects.toThrow("Unable to fetch Cql Libraries");
   });
 
@@ -78,7 +77,7 @@ describe("CqlLibraryServiceApi - fetchCqlLibraries", () => {
     (axios.put as jest.Mock).mockRejectedValue(error);
 
     await expect(
-      service.fetchCqlLibraries(true, 10, 0, "", "", undefined)
+      service.fetchCqlLibraries(ViewScope.OWNED, 10, 0, "", "", undefined)
     ).rejects.toThrow("canceled");
   });
 });
