@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
-import { CqlLibrary, ViewScope } from "@madie/madie-models";
+import { CqlLibrary, OwnershipType } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle, useFeatureFlags } from "@madie/madie-util";
 import { MadieSpinner, Tabs, Tab } from "@madie/madie-design-system/dist/react";
@@ -29,11 +29,11 @@ export interface LibrarySearchCriteria {
 export const getStorageKey = (tab) =>
   tab === 0 ? "myCqlLibraryPageOptions" : "allCqlLibraryPageOptions";
 
-// Maps tab indices to ViewScope enums
-const viewScopeMap: Record<number, ViewScope> = {
-  0: ViewScope.OWNED,
-  1: ViewScope.SHARED,
-  2: ViewScope.ALL,
+// Maps tab indices to OwnershipType enums
+const ownershipTypeMap: Record<number, OwnershipType> = {
+  0: OwnershipType.OWNED,
+  1: OwnershipType.SHARED,
+  2: OwnershipType.ALL,
 };
 
 function CqlLibraryLanding() {
@@ -99,7 +99,7 @@ function CqlLibraryLanding() {
     try {
       const [ownedLibs, sharedLibs, allLibs] = await Promise.all([
         cqlLibraryServiceApi.fetchCqlLibraries(
-          ViewScope.OWNED,
+          OwnershipType.OWNED,
           1,
           0,
           searchCriteria,
@@ -107,7 +107,7 @@ function CqlLibraryLanding() {
           null
         ),
         cqlLibraryServiceApi.fetchCqlLibraries(
-          ViewScope.SHARED,
+          OwnershipType.SHARED,
           1,
           0,
           searchCriteria,
@@ -115,7 +115,7 @@ function CqlLibraryLanding() {
           null
         ),
         cqlLibraryServiceApi.fetchCqlLibraries(
-          ViewScope.ALL,
+          OwnershipType.ALL,
           1,
           0,
           searchCriteria,
@@ -171,7 +171,7 @@ function CqlLibraryLanding() {
       };
       cqlLibraryServiceApi
         .fetchCqlLibraries(
-          viewScopeMap[tab] ?? ViewScope.ALL,
+          ownershipTypeMap[tab] ?? OwnershipType.ALL,
           limit,
           page,
           modifiedSearchCriteria,

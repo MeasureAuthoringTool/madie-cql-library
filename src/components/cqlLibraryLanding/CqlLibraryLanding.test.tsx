@@ -11,7 +11,7 @@ import {
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import userEvent from "@testing-library/user-event";
-import { Model, ViewScope } from "@madie/madie-models";
+import { Model, OwnershipType } from "@madie/madie-models";
 // @ts-ignore
 import { useFeatureFlags } from "@madie/madie-util";
 import {
@@ -178,7 +178,7 @@ describe("Cql Library Page", () => {
     const [cqlLibrary1Model] = await screen.findAllByText("QI-Core v4.1.1");
     expect(cqlLibrary1Model).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      ViewScope.OWNED,
+      OwnershipType.OWNED,
       10,
       0,
       { optionalSearchProperties: [], searchField: "" },
@@ -211,7 +211,7 @@ describe("Cql Library Page", () => {
     });
 
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledWith(
-      ViewScope.OWNED,
+      OwnershipType.OWNED,
       10,
       0,
       { optionalSearchProperties: [], searchField: "" },
@@ -231,7 +231,7 @@ describe("Cql Library Page", () => {
     await userEvent.click(sharedLibrariesTab);
 
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenLastCalledWith(
-      ViewScope.SHARED,
+      OwnershipType.SHARED,
       10,
       0,
       { optionalSearchProperties: [], searchField: "" },
@@ -247,7 +247,7 @@ describe("Cql Library Page", () => {
     await userEvent.click(allLibrariesTab);
 
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenLastCalledWith(
-      ViewScope.ALL,
+      OwnershipType.ALL,
       10,
       0,
       { optionalSearchProperties: [], searchField: "" },
@@ -263,7 +263,7 @@ describe("Cql Library Page", () => {
     await userEvent.click(ownedLibrariesTab);
 
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenLastCalledWith(
-      ViewScope.OWNED,
+      OwnershipType.OWNED,
       10,
       0,
       { optionalSearchProperties: [], searchField: "" },
@@ -301,7 +301,7 @@ describe("Cql Library Page", () => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
       ).toHaveBeenLastCalledWith(
-        ViewScope.OWNED,
+        OwnershipType.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
@@ -314,7 +314,7 @@ describe("Cql Library Page", () => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
       ).toHaveBeenLastCalledWith(
-        ViewScope.OWNED,
+        OwnershipType.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
@@ -327,7 +327,7 @@ describe("Cql Library Page", () => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
       ).toHaveBeenLastCalledWith(
-        ViewScope.OWNED,
+        OwnershipType.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
@@ -344,7 +344,7 @@ describe("Cql Library Page", () => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
       ).toHaveBeenLastCalledWith(
-        ViewScope.OWNED,
+        OwnershipType.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
@@ -358,7 +358,7 @@ describe("Cql Library Page", () => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
       ).toHaveBeenLastCalledWith(
-        ViewScope.OWNED,
+        OwnershipType.OWNED,
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
@@ -412,7 +412,7 @@ describe("Cql Library Page", () => {
         mockCqlLibraryServiceApi.fetchCqlLibraries
       ).toHaveBeenNthCalledWith(
         5,
-        ViewScope.OWNED,
+        OwnershipType.OWNED,
         10,
         0,
         { optionalSearchProperties: ["library"], searchField: "Diabetes" },

@@ -1,13 +1,13 @@
 import axios from "./axios-instance";
 import useServiceConfig from "./useServiceConfig";
 import { ServiceConfig } from "./ServiceContext";
-import { CqlLibrary, ViewScope } from "@madie/madie-models";
+import { CqlLibrary, OwnershipType } from "@madie/madie-models";
 import useOktaTokens from "../hooks/useOktaTokens";
 import { AxiosResponse } from "axios";
 export class CqlLibraryServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}
   async fetchCqlLibraries(
-    viewScope: ViewScope,
+    ownershipType: OwnershipType,
     limit: string | number = 25,
     page: number = 0,
     searchCriteria,
@@ -24,7 +24,7 @@ export class CqlLibraryServiceApi {
             Authorization: `Bearer ${this.getAccessToken()}`,
           },
           params: {
-            viewScope,
+            ownershipType,
             limit,
             page,
             sortInfo: sortInfo || undefined,
