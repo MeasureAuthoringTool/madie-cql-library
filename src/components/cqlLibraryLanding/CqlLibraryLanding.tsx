@@ -13,6 +13,7 @@ import queryString from "query-string";
 import { useNavigate, useLocation } from "react-router-dom";
 import Search from "../librarySearch/Search";
 import * as _ from "lodash";
+import { getTabStorageKey } from "./cqlLibraryLandingUtils";
 
 const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
@@ -25,9 +26,6 @@ export interface LibrarySearchCriteria {
   model?: string;
   draft?: boolean;
 }
-
-export const getStorageKey = (tab) =>
-  tab === 0 ? "myCqlLibraryPageOptions" : "allCqlLibraryPageOptions";
 
 // Maps tab indices to OwnershipType enums
 const ownershipTypeMap: Record<number, OwnershipType> = {
@@ -48,7 +46,7 @@ function CqlLibraryLanding() {
   const values = queryString.parse(search);
   const activeTab = Number(localStorage.getItem("cqlLibraryPageTab")) || 0;
   const cqlLibraryPageOptions = JSON.parse(
-    localStorage.getItem(getStorageKey(activeTab))
+    localStorage.getItem(getTabStorageKey(activeTab))
   ) || { page: 1, limit: 10 };
 
   const curLimit = cqlLibraryPageOptions?.limit;
@@ -242,7 +240,7 @@ function CqlLibraryLanding() {
       localStorage.setItem("cqlLibraryPageTab", tabFromUrl.toString());
     }
 
-    const tabStorageKey = getStorageKey(tabFromUrl);
+    const tabStorageKey = getTabStorageKey(tabFromUrl);
     const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
       page: 1,
       limit: 10,
@@ -289,7 +287,7 @@ function CqlLibraryLanding() {
   const handleTabChange = (event, nextTab) => {
     abortController.current.abort();
     setCqlLibraryList(null);
-    const tabStorageKey = getStorageKey(nextTab);
+    const tabStorageKey = getTabStorageKey(nextTab);
     const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
       page: 1,
       limit: 10,
@@ -337,7 +335,7 @@ function CqlLibraryLanding() {
   }, []);
 
   const onListUpdate = async () => {
-    const tabStorageKey = getStorageKey(activeTab);
+    const tabStorageKey = getTabStorageKey(activeTab);
     const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
       page: 1,
       limit: 10,
