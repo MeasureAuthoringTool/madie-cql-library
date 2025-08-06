@@ -131,6 +131,7 @@ export default function CqlLibraryList({
   sorting,
   handleSort,
   curLimit,
+  searchCriteria,
 }) {
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
@@ -746,9 +747,18 @@ export default function CqlLibraryList({
   const handleRowClick = async (actions) => {
     if (!isRowExpanded || selectedIdForExpansion !== actions?.librarySetId) {
       setSelectedIdForExpansion(actions?.librarySetId);
+      const optionalParams = searchCriteria?.optionalSearchProperties ?? [];
+      const firstParam = _.trim(optionalParams[0]);
+
+      const modifiedSearchCriteria = {
+        ...searchCriteria,
+        optionalSearchProperties:
+          firstParam && firstParam !== "-" ? [_.camelCase(firstParam)] : [],
+      };
       const results = await cqlLibraryServiceApi.getLibrariesByLibrarySetId(
         actions?.librarySetId,
-        true
+        true,
+        modifiedSearchCriteria
       );
       let filteredResults = results.filter(
         (result) => result.id !== actions?.id

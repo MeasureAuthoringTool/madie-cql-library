@@ -42,7 +42,8 @@ export default function DraftAction(props: PropTypes) {
       const promiseResults = await Promise.allSettled([
         cqlLibraryServiceApi.getLibrariesByLibrarySetId(
           libraries[0]?.librarySetId,
-          true
+          true,
+            null
         ),
       ]);
 

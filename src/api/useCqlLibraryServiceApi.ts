@@ -235,11 +235,13 @@ export class CqlLibraryServiceApi {
 
   async getLibrariesByLibrarySetId(
     librarySetId: string,
-    sortByLatestVersion?: boolean
+    sortByLatestVersion?: boolean,
+    librarySearchCriteria?: any
   ): Promise<any> {
     try {
-      const response = await axios.get(
+      const response = await axios.put(
         `${this.baseUrl}/cql-libraries/byLibrarySetId`,
+        librarySearchCriteria,
         {
           headers: {
             Authorization: `Bearer ${this.getAccessToken()}`,
