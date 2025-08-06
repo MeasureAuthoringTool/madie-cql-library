@@ -43,7 +43,7 @@ export default function DraftAction(props: PropTypes) {
         cqlLibraryServiceApi.getLibrariesByLibrarySetId(
           libraries[0]?.librarySetId,
           true,
-            null
+          null
         ),
       ]);
 
