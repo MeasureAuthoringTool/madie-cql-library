@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
-import { CqlLibrary } from "@madie/madie-models";
+import { CqlLibrary, OwnershipType } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle, useFeatureFlags } from "@madie/madie-util";
 import { MadieSpinner, Tabs, Tab } from "@madie/madie-design-system/dist/react";
@@ -13,6 +13,7 @@ import queryString from "query-string";
 import { useNavigate, useLocation } from "react-router-dom";
 import Search from "../librarySearch/Search";
 import * as _ from "lodash";
+import { getTabStorageKey } from "./cqlLibraryLandingUtils";
 
 const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
@@ -26,8 +27,12 @@ export interface LibrarySearchCriteria {
   draft?: boolean;
 }
 
-export const getStorageKey = (tab) =>
-  tab === 0 ? "myCqlLibraryPageOptions" : "allCqlLibraryPageOptions";
+// Maps tab indices to OwnershipType enums
+const ownershipTypeMap: Record<number, OwnershipType> = {
+  0: OwnershipType.OWNED,
+  1: OwnershipType.SHARED,
+  2: OwnershipType.ALL,
+};
 
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
@@ -41,7 +46,7 @@ function CqlLibraryLanding() {
   const values = queryString.parse(search);
   const activeTab = Number(localStorage.getItem("cqlLibraryPageTab")) || 0;
   const cqlLibraryPageOptions = JSON.parse(
-    localStorage.getItem(getStorageKey(activeTab))
+    localStorage.getItem(getTabStorageKey(activeTab))
   ) || { page: 1, limit: 10 };
 
   const curLimit = cqlLibraryPageOptions?.limit;
@@ -83,15 +88,16 @@ function CqlLibraryLanding() {
   });
   const [shareDialog, setShareDialog] = useState({ open: false, option: "" });
 
-  // Fetches total count of My Libraries and All Libraries
-  const [myLibrariesCount, setMyLibrariesCount] = useState(0);
+  // Fetches total count of Owned Libraries, Shared Libraries, and All Libraries
+  const [ownedLibrariesCount, setOwnedLibrariesCount] = useState(0);
+  const [sharedLibrariesCount, setSharedLibrariesCount] = useState(0);
   const [allLibrariesCount, setAllLibrariesCount] = useState(0);
 
   const fetchTotalCounts = useCallback(async () => {
     try {
-      const [myLibs, allLibs] = await Promise.all([
+      const [ownedLibs, sharedLibs, allLibs] = await Promise.all([
         cqlLibraryServiceApi.fetchCqlLibraries(
-          true,
+          OwnershipType.OWNED,
           1,
           0,
           searchCriteria,
@@ -99,7 +105,15 @@ function CqlLibraryLanding() {
           null
         ),
         cqlLibraryServiceApi.fetchCqlLibraries(
-          false,
+          OwnershipType.SHARED,
+          1,
+          0,
+          searchCriteria,
+          null,
+          null
+        ),
+        cqlLibraryServiceApi.fetchCqlLibraries(
+          OwnershipType.ALL,
           1,
           0,
           searchCriteria,
@@ -107,7 +121,8 @@ function CqlLibraryLanding() {
           null
         ),
       ]);
-      setMyLibrariesCount(myLibs?.totalElements || 0);
+      setOwnedLibrariesCount(ownedLibs?.totalElements || 0);
+      setSharedLibrariesCount(sharedLibs?.totalElements || 0);
       setAllLibrariesCount(allLibs?.totalElements || 0);
     } catch (e) {
       console.error("Error fetching counts", e);
@@ -154,7 +169,7 @@ function CqlLibraryLanding() {
       };
       cqlLibraryServiceApi
         .fetchCqlLibraries(
-          tab === 0,
+          ownershipTypeMap[tab] ?? OwnershipType.ALL,
           limit,
           page,
           modifiedSearchCriteria,
@@ -225,7 +240,7 @@ function CqlLibraryLanding() {
       localStorage.setItem("cqlLibraryPageTab", tabFromUrl.toString());
     }
 
-    const tabStorageKey = getStorageKey(tabFromUrl);
+    const tabStorageKey = getTabStorageKey(tabFromUrl);
     const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
       page: 1,
       limit: 10,
@@ -272,7 +287,7 @@ function CqlLibraryLanding() {
   const handleTabChange = (event, nextTab) => {
     abortController.current.abort();
     setCqlLibraryList(null);
-    const tabStorageKey = getStorageKey(nextTab);
+    const tabStorageKey = getTabStorageKey(nextTab);
     const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
       page: 1,
       limit: 10,
@@ -320,7 +335,7 @@ function CqlLibraryLanding() {
   }, []);
 
   const onListUpdate = async () => {
-    const tabStorageKey = getStorageKey(activeTab);
+    const tabStorageKey = getTabStorageKey(activeTab);
     const tabPageOptions = JSON.parse(localStorage.getItem(tabStorageKey)) || {
       page: 1,
       limit: 10,
@@ -354,13 +369,18 @@ function CqlLibraryLanding() {
             <Tabs type="B" value={activeTab} onChange={handleTabChange}>
               <Tab
                 type="B"
-                label={`My Libraries(${myLibrariesCount})`}
-                data-testid="my-cql-libraries-tab"
+                label={`Owned Libraries (${ownedLibrariesCount})`}
+                data-testid="owned-libraries-tab"
               />
               <Tab
                 type="B"
-                label={`All Libraries(${allLibrariesCount})`}
-                data-testid="all-cql-libraries-tab"
+                label={`Shared Libraries (${sharedLibrariesCount})`}
+                data-testid="shared-libraries-tab"
+              />
+              <Tab
+                type="B"
+                label={`All Libraries (${allLibrariesCount})`}
+                data-testid="all-libraries-tab"
               />
             </Tabs>
           </div>
