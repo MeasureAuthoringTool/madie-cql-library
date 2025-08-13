@@ -1,5 +1,6 @@
 import axios from "./axios-instance";
 import { CqlLibraryServiceApi } from "./useCqlLibraryServiceApi";
+import { OwnershipType } from "@madie/madie-models";
 
 jest.mock("./axios-instance");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
@@ -37,7 +38,7 @@ describe("useCqlLibraryServiceApi", () => {
     };
 
     const result = await service.fetchCqlLibraries(
-      true,
+      OwnershipType.OWNED,
       10,
       0,
       criteriaWithSearch,
@@ -51,10 +52,9 @@ describe("useCqlLibraryServiceApi", () => {
       {
         headers: { Authorization: "Bearer mocked-token" },
         params: {
-          currentUser: true,
+          ownershipType: OwnershipType.OWNED,
           limit: 10,
           page: 0,
-          searchCriteria: undefined,
           sortInfo: undefined,
         },
         signal: undefined,
@@ -70,7 +70,7 @@ describe("useCqlLibraryServiceApi", () => {
     );
 
     await expect(
-      service.fetchCqlLibraries(true, 10, 0, "", "", undefined)
+      service.fetchCqlLibraries(OwnershipType.OWNED, 10, 0, "", "", undefined)
     ).rejects.toThrow("Unable to fetch Cql Libraries");
   });
 
@@ -79,7 +79,7 @@ describe("useCqlLibraryServiceApi", () => {
     (axios.put as jest.Mock).mockRejectedValue(error);
 
     await expect(
-      service.fetchCqlLibraries(true, 10, 0, "", "", undefined)
+      service.fetchCqlLibraries(OwnershipType.OWNED, 10, 0, "", "", undefined)
     ).rejects.toThrow("canceled");
   });
 
