@@ -432,6 +432,7 @@ function CqlLibraryLanding() {
                 setOwners={setOwners}
                 sorting={sorting}
                 handleSort={handleSort}
+                searchCriteria={searchCriteria}
               />
             )}
           </div>

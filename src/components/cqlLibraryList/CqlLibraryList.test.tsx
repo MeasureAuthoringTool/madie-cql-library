@@ -4,7 +4,6 @@ import {
   fireEvent,
   render,
   screen,
-  waitFor,
   within,
 } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
@@ -13,11 +12,7 @@ import userEvent from "@testing-library/user-event";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../api/useCqlLibraryServiceApi";
-import {
-  checkUserCanEdit,
-  checkUserCanDelete,
-  useFeatureFlags,
-} from "@madie/madie-util";
+import { checkUserCanEdit, useFeatureFlags } from "@madie/madie-util";
 
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
@@ -67,6 +62,10 @@ const cqlLibrary = [
     hasAssociatedLibraries: false,
   },
 ];
+const mockSearchCriteria = {
+  searchField: "test-field",
+  optionalSearchProperties: ["version"],
+};
 
 const loadCqlLibraries = jest.fn();
 
@@ -121,22 +120,31 @@ describe("CqlLibrary List component", () => {
   it("should display a list of Cql Libraries", () => {
     const { getByText, getByTestId } = render(
       <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
         deleteDraftDialog={jest.fn()}
         setDeleteDraftDialog={jest.fn()}
-        shareDialog={jest.fn()}
-        setShareDialog={jest.fn()}
         selectedCQLLibrary={cqlLibrary[0]}
         setSelectedCqlLibrary={jest.fn()}
         createVersionDialog={jest.fn()}
         setCreateVersionDialog={jest.fn()}
         createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
         setCreateDraftDialog={jest.fn()}
-        snackBar={jest.fn()}
-        setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
     cqlLibrary.forEach((c) => {
@@ -208,6 +216,15 @@ describe("CqlLibrary List component", () => {
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
 
@@ -253,6 +270,15 @@ describe("CqlLibrary List component", () => {
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
 
@@ -302,6 +328,15 @@ describe("CqlLibrary List component", () => {
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
     expect(
@@ -378,6 +413,13 @@ describe("CqlLibrary List component", () => {
         setOwners={jest.fn()}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
 
@@ -411,7 +453,7 @@ describe("CqlLibrary List component", () => {
         id: "622e1f46d1fd3729d861e6cb",
         librarySetId: "libsetid",
         cqlLibraryName: "testing1",
-        model: "QI-Core v4.1.1",
+        model: Model.QICORE,
         createdAt: "",
         createdBy: "testuser@example.com", //#nosec
         lastModifiedAt: "2023-01-01T00:00:00Z",
@@ -421,7 +463,12 @@ describe("CqlLibrary List component", () => {
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
         active: true,
-        librarySet: { acls: [{ userId: "user1" }] },
+        librarySet: {
+          id: "test-id",
+          librarySetId: "test-set-id",
+          owner: "test-owner",
+          acls: [{ userId: "user1", roles: ["SHARED"] }],
+        },
       },
     ];
 
@@ -445,6 +492,13 @@ describe("CqlLibrary List component", () => {
         setOwners={jest.fn()}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
 

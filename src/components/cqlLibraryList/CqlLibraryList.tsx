@@ -131,6 +131,7 @@ export default function CqlLibraryList({
   sorting,
   handleSort,
   curLimit,
+  searchCriteria,
 }) {
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
@@ -746,9 +747,18 @@ export default function CqlLibraryList({
   const handleRowClick = async (actions) => {
     if (!isRowExpanded || selectedIdForExpansion !== actions?.librarySetId) {
       setSelectedIdForExpansion(actions?.librarySetId);
+      const optionalParams = searchCriteria?.optionalSearchProperties ?? [];
+      const firstParam = _.trim(optionalParams[0]);
+
+      const modifiedSearchCriteria = {
+        ...searchCriteria,
+        optionalSearchProperties:
+          firstParam && firstParam !== "-" ? [_.camelCase(firstParam)] : [],
+      };
       const results = await cqlLibraryServiceApi.getLibrariesByLibrarySetId(
         actions?.librarySetId,
-        true
+        true,
+        modifiedSearchCriteria
       );
       let filteredResults = results.filter(
         (result) => result.id !== actions?.id
@@ -1049,6 +1059,16 @@ export default function CqlLibraryList({
                   ))}
                 </thead>
                 <tbody data-testid="table-body" className="table-body">
+                  {table.getRowModel().rows.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={table.getAllColumns().length}
+                        style={{ padding: "40px 0", textAlign: "center" }}
+                      >
+                        <span>No results were found</span>
+                      </td>
+                    </tr>
+                  )}
                   {table.getRowModel().rows.map((row) => (
                     <React.Fragment key={row.id}>
                       <tr
