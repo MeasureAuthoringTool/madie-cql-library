@@ -502,18 +502,23 @@ export default function CqlLibraryList({
         </>
       ),
     },
-    {
-      sortDescFirst: false, // This needs to be added because tanstack implicitly starts desc true bc of many nulls
-      header: "Shared",
-      accessorKey: "librarySet.acls",
-      cell: (info) => (
-        <p>
-          {info.row.original.librarySet?.acls?.length > 0 && (
-            <CheckCircleOutlineIcon sx={{ color: "#4CAF50" }} />
-          )}
-        </p>
-      ),
-    },
+    // Do not display Shared column in Shared Libraries tab
+    ...(activeTab !== 1
+      ? [
+          {
+            sortDescFirst: false, // This needs to be added because tanstack implicitly starts desc true bc of many nulls
+            header: "Shared",
+            accessorKey: "librarySet.acls",
+            cell: (info) => (
+              <p>
+                {info.row.original.librarySet?.acls?.length > 0 && (
+                  <CheckCircleOutlineIcon sx={{ color: "#4CAF50" }} />
+                )}
+              </p>
+            ),
+          },
+        ]
+      : []),
     {
       header: "Updated",
       accessorKey: "lastModifiedAt",
