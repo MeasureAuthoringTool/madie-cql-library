@@ -163,4 +163,64 @@ describe("useCqlLibraryServiceApi", () => {
       }
     );
   });
+
+  it("should lock library successfully", async () => {
+    const response = {
+      locked: false,
+      lockedBy: "test.user",
+      lockedId: "libraryId",
+    };
+    axios.post = jest.fn().mockResolvedValueOnce({ data: response });
+
+    const result = await service.lockLibrary("libraryId");
+    expect(axios.post).toBeCalledTimes(1);
+    expect(result).toBe(response);
+  });
+
+  it("should handle lock library failure", async () => {
+    const response = {
+      status: 400,
+      error: "Bad Request",
+      message: "Error",
+    };
+
+    axios.post = jest.fn().mockRejectedValueOnce({ error: response });
+
+    try {
+      const result = await service.lockLibrary("libraryId");
+      expect(axios.post).toBeCalledTimes(1);
+      expect(result).not.toBe(response);
+    } catch (err) {
+      expect(err).not.toBeNull();
+    }
+  });
+
+  it("should unlock library successfully", async () => {
+    const response = {
+      locked: false,
+    };
+    axios.delete = jest.fn().mockResolvedValueOnce({ data: response });
+
+    const result = await service.unlockLibrary("libraryId");
+    expect(axios.delete).toBeCalledTimes(1);
+    expect(result).toBe(response);
+  });
+
+  it("should handle lock library failure", async () => {
+    const response = {
+      status: 400,
+      error: "Bad Request",
+      message: "Error",
+    };
+
+    axios.delete = jest.fn().mockRejectedValueOnce({ error: response });
+
+    try {
+      const result = await service.unlockLibrary("libraryId");
+      expect(axios.delete).toBeCalledTimes(1);
+      expect(result).not.toBe(response);
+    } catch (err) {
+      expect(err).not.toBeNull();
+    }
+  });
 });
