@@ -173,7 +173,17 @@ describe("useCqlLibraryServiceApi", () => {
     axios.post = jest.fn().mockResolvedValueOnce({ data: response });
 
     const result = await service.lockLibrary("libraryId");
+
     expect(axios.post).toBeCalledTimes(1);
+    expect(axios.post).toHaveBeenCalledWith(
+      `${mockBaseUrl}/libraries/libraryId/lock`,
+      null,
+      {
+        headers: {
+          Authorization: `Bearer ${mockToken}`,
+        },
+      }
+    );
     expect(result).toBe(response);
   });
 
@@ -189,6 +199,15 @@ describe("useCqlLibraryServiceApi", () => {
     try {
       const result = await service.lockLibrary("libraryId");
       expect(axios.post).toBeCalledTimes(1);
+      expect(axios.post).toHaveBeenCalledWith(
+        `${mockBaseUrl}/libraries/libraryId/lock`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${mockToken}`,
+          },
+        }
+      );
       expect(result).not.toBe(response);
     } catch (err) {
       expect(err).not.toBeNull();
@@ -203,6 +222,14 @@ describe("useCqlLibraryServiceApi", () => {
 
     const result = await service.unlockLibrary("libraryId");
     expect(axios.delete).toBeCalledTimes(1);
+    expect(axios.delete).toHaveBeenCalledWith(
+      `${mockBaseUrl}/libraries/libraryId/unlock`,
+      {
+        headers: {
+          Authorization: `Bearer ${mockToken}`,
+        },
+      }
+    );
     expect(result).toBe(response);
   });
 
@@ -218,6 +245,14 @@ describe("useCqlLibraryServiceApi", () => {
     try {
       const result = await service.unlockLibrary("libraryId");
       expect(axios.delete).toBeCalledTimes(1);
+      expect(axios.delete).toHaveBeenCalledWith(
+        `${mockBaseUrl}/libraries/libraryId/unlock`,
+        {
+          headers: {
+            Authorization: `Bearer ${mockToken}`,
+          },
+        }
+      );
       expect(result).not.toBe(response);
     } catch (err) {
       expect(err).not.toBeNull();
