@@ -336,7 +336,6 @@ const EditCqlLibrary = () => {
 
   const featureFlags = useFeatureFlags();
   useEffect(() => {
-    // if (id && _.isNil(loadedCqlLibrary)) {
     if (id) {
       if (_.isNil(loadedCqlLibrary)) {
         cqlLibraryServiceApi
