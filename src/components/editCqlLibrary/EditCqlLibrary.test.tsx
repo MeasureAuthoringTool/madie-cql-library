@@ -1343,7 +1343,11 @@ describe("Edit Cql Library Component", () => {
     mockedAxios.delete.mockResolvedValue({ data: { ...lockInfo } });
 
     renderWithRouter();
-    expect(mockedAxios.post).toHaveBeenCalled();
+    expect(mockedAxios.post).toHaveBeenCalledWith(
+      "/libraries/cql-lib-1234/lock",
+      null,
+      { headers: { Authorization: "Bearer test.jwt" } }
+    );
   });
 
   it("should not lock library if feature flag is not on", async () => {
