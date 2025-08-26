@@ -259,6 +259,39 @@ export class CqlLibraryServiceApi {
       throw err;
     }
   }
+
+  async lockLibrary(libraryId: string): Promise<any> {
+    try {
+      const response = await axios.post<String>(
+        `${this.baseUrl}/libraries/${libraryId}/lock`,
+        null,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
+
+  async unlockLibrary(libraryId: string): Promise<any> {
+    try {
+      const response = await axios.delete<String>(
+        `${this.baseUrl}/libraries/${libraryId}/unlock`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw new Error(error);
+    }
+  }
 }
 
 export default function useCqlLibraryServiceApi() {
