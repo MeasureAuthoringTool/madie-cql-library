@@ -407,6 +407,7 @@ function CqlLibraryLanding() {
               setShareDialog={setShareDialog}
               createVersion={createVersion}
               owners={owners}
+              activeTab={activeTab}
             />
           </div>
         </div>
