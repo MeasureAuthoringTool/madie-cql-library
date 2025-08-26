@@ -27,9 +27,10 @@ const renderMenuItemsForFilter = (options: string[]) => {
 const Search = (props: {
   searchCriteria: LibrarySearchCriteria;
   setSearchCriteria: Dispatch<SetStateAction<LibrarySearchCriteria>>;
+  handlePageChange: (e, v) => void;
 }) => {
   const featureFlags = useFeatureFlags();
-  const { searchCriteria, setSearchCriteria } = { ...props };
+  const { searchCriteria, setSearchCriteria, handlePageChange } = { ...props };
   const formik = useFormik({
     initialValues: {
       searchField: searchCriteria?.searchField,
@@ -41,6 +42,7 @@ const Search = (props: {
         searchField: values?.searchField,
         optionalSearchProperties: [values?.filterBy],
       });
+      handlePageChange(null, 1);
     },
   });
 

@@ -54,6 +54,7 @@ declare module "@madie/madie-util" {
     LibrarySearch: boolean;
     qiCore7: boolean;
     TransferLibrary: boolean;
+    Locking: boolean;
   }
 
   export function useFeatureFlags(): FeatureFlags;

@@ -130,7 +130,9 @@ export default function CqlLibraryList({
   offset,
   sorting,
   handleSort,
+  handlePageChange,
   curLimit,
+  curPage,
   searchCriteria,
 }) {
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
@@ -144,11 +146,7 @@ export default function CqlLibraryList({
   const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
-  const handlePageChange = (e, v) => {
-    const updatedLimit =
-      curLimit !== undefined ? (curLimit === "All" ? 50 : curLimit) : 10;
-    navigate(`?tab=${activeTab}&page=${v}&limit=${updatedLimit}`);
-  };
+
   const handleLimitChange = (e) => {
     navigate(`?tab=${activeTab}&page=1&limit=${e.target.value}`);
   };
@@ -171,7 +169,7 @@ export default function CqlLibraryList({
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   // pull info from some query url
-  const curPage = (values.page && Number(values.page)) || 1;
+  // const curPage = (values.page && Number(values.page)) || 1;
   // can we do stuff
   const canGoNext = (() => {
     return curPage < totalPages;
@@ -502,18 +500,23 @@ export default function CqlLibraryList({
         </>
       ),
     },
-    {
-      sortDescFirst: false, // This needs to be added because tanstack implicitly starts desc true bc of many nulls
-      header: "Shared",
-      accessorKey: "librarySet.acls",
-      cell: (info) => (
-        <p>
-          {info.row.original.librarySet?.acls?.length > 0 && (
-            <CheckCircleOutlineIcon sx={{ color: "#4CAF50" }} />
-          )}
-        </p>
-      ),
-    },
+    // Do not display Shared column in Shared Libraries tab
+    ...(activeTab !== 1
+      ? [
+          {
+            sortDescFirst: false, // This needs to be added because tanstack implicitly starts desc true bc of many nulls
+            header: "Shared",
+            accessorKey: "librarySet.acls",
+            cell: (info) => (
+              <p>
+                {info.row.original.librarySet?.acls?.length > 0 && (
+                  <CheckCircleOutlineIcon sx={{ color: "#4CAF50" }} />
+                )}
+              </p>
+            ),
+          },
+        ]
+      : []),
     {
       header: "Updated",
       accessorKey: "lastModifiedAt",

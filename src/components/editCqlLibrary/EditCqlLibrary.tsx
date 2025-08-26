@@ -15,6 +15,7 @@ import {
   useOrganizationApi,
   routeHandlerStore,
   checkUserCanEdit,
+  useFeatureFlags,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
@@ -333,22 +334,46 @@ const EditCqlLibrary = () => {
     setValuesetSuccess(false);
   };
 
+  const featureFlags = useFeatureFlags();
   useEffect(() => {
-    if (id && _.isNil(loadedCqlLibrary)) {
-      cqlLibraryServiceApi
-        .fetchCqlLibrary(id)
-        .then((cqlLibrary) => {
-          cqlLibraryStore.updateLibrary(cqlLibrary);
-          resetForm({
-            values: { ...cqlLibrary },
+    if (id) {
+      if (_.isNil(loadedCqlLibrary)) {
+        cqlLibraryServiceApi
+          .fetchCqlLibrary(id)
+          .then((cqlLibrary) => {
+            cqlLibraryStore.updateLibrary(cqlLibrary);
+            resetForm({
+              values: { ...cqlLibrary },
+            });
+            handleAnnotations(cqlLibrary.cql);
+            setLoadedCqlLibrary(cqlLibrary);
+          })
+          .catch(() => {
+            setError(true);
+            setErrorMessage(
+              "An error occurred while fetching the CQL Library!"
+            );
           });
-          handleAnnotations(cqlLibrary.cql);
-          setLoadedCqlLibrary(cqlLibrary);
-        })
-        .catch(() => {
-          setError(true);
-          setErrorMessage("An error occurred while fetching the CQL Library!");
-        });
+      }
+
+      const handleUnload = () => {
+        cqlLibraryServiceApi.unlockLibrary(id);
+      };
+      if (featureFlags?.Locking && canEdit) {
+        window.addEventListener("beforeunload", handleUnload);
+        cqlLibraryServiceApi
+          .lockLibrary(id)
+          .then(() => {})
+          .catch((e) => {
+            console.error("Error locking library:", e);
+          });
+      }
+      return () => {
+        if (featureFlags?.Locking && canEdit) {
+          window.removeEventListener("beforeunload", handleUnload);
+          cqlLibraryServiceApi.unlockLibrary(id);
+        }
+      };
     }
   }, [id, resetForm, loadedCqlLibrary, cqlLibraryServiceApi]);
 
