@@ -11,7 +11,7 @@ interface PropTypes {
   activeTab: number;
 }
 
-const isOwnerOfSelectedMeasure = (libraries) => {
+const isOwnerOfSelectedLibrary = (libraries) => {
   return (
     libraries &&
     libraries.every((library) => {
@@ -42,7 +42,7 @@ export default function TransferAction(props: PropTypes) {
       setTooltipMessage(CANNOT_TRANSFER);
       setDisableTransferBtn(true);
     } else if (activeTab === 2) {
-      if (!isOwnerOfSelectedMeasure(libraries)) {
+      if (!isOwnerOfSelectedLibrary(libraries)) {
         setTooltipMessage(MORE_THAN_ONE_NOT_OWNED);
         setDisableTransferBtn(true);
       }
