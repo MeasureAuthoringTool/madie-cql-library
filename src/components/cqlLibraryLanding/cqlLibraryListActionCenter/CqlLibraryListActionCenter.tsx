@@ -21,6 +21,7 @@ interface PropTypes {
   createVersion: () => void;
   owners: string[];
   activeTab: number;
+  setTransferDialog: any;
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
@@ -70,7 +71,10 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
 
   const transferLibrary = useCallback(() => {
     // TODO MAT-8404
-  }, [props.libraries]);
+    if (props.libraries?.length > 0) {
+      props.setTransferDialog({ open: true });
+    }
+  }, [props.libraries, props.setTransferDialog]);
 
   return (
     <div data-testid="action-center">

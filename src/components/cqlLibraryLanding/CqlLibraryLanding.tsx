@@ -87,6 +87,10 @@ function CqlLibraryLanding() {
     severity: "",
   });
   const [shareDialog, setShareDialog] = useState({ open: false, option: "" });
+  const [transferDialog, setTransferDialog] = useState({
+    open: false,
+    libraries: [],
+  });
 
   // Fetches total count of Owned Libraries, Shared Libraries, and All Libraries
   const [ownedLibrariesCount, setOwnedLibrariesCount] = useState(0);
@@ -408,6 +412,7 @@ function CqlLibraryLanding() {
               createVersion={createVersion}
               owners={owners}
               activeTab={activeTab}
+              setTransferDialog={setTransferDialog}
             />
           </div>
         </div>
@@ -433,6 +438,8 @@ function CqlLibraryLanding() {
                 setCreateVersionDialog={setCreateVersionDialog}
                 shareDialog={shareDialog}
                 setShareDialog={setShareDialog}
+                transferDialog={transferDialog}
+                setTransferDialog={setTransferDialog}
                 createDraftDialog={createDraftDialog}
                 setCreateDraftDialog={setCreateDraftDialog}
                 snackBar={snackBar}
