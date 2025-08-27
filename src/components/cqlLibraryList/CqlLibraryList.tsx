@@ -44,6 +44,7 @@ import queryString from "query-string";
 import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 import * as _ from "lodash";
 import { Chip } from "@mui/material";
+import TransferDialog from "../common/transferDialog/TransferDialog";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -119,6 +120,8 @@ export default function CqlLibraryList({
   createDraftDialog,
   shareDialog,
   setShareDialog,
+  transferDialog,
+  setTransferDialog,
   setCreateDraftDialog,
   setOwners,
   setSnackBar,
@@ -184,6 +187,7 @@ export default function CqlLibraryList({
     });
     setCreateDraftDialog({ open: false, cqlLibrary: null });
     setDeleteDraftDialog({ ...INITIAL_DELETE_DRAFT_STATE });
+    setTransferDialog({ open: false, libraries: [] });
   };
 
   const handleSnackBarClose = (
@@ -327,6 +331,10 @@ export default function CqlLibraryList({
           });
         }
       });
+  };
+  const transferLibraries = (newOwner: string, retainShareAccess: boolean) => {
+    setTransferDialog({ open: false, libraries: [] });
+    // TODO MAT-8404
   };
 
   // Popover utilities
@@ -876,6 +884,12 @@ export default function CqlLibraryList({
         open={shareDialog.open}
         option={shareDialog.option}
         onClose={handleShareDialogClose}
+      />
+      <TransferDialog
+        libraries={selectedLibraries}
+        open={transferDialog.open}
+        onClose={handleDialogClose}
+        onSubmit={transferLibraries}
       />
       <Popover
         open={optionsOpen}

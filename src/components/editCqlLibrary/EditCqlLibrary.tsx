@@ -55,6 +55,7 @@ import CreateVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import { AxiosResponse } from "axios";
 import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
+import TransferDialog from "../common/transferDialog/TransferDialog";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -72,6 +73,10 @@ const EditCqlLibrary = () => {
   const [openCreateDraftDialog, setOpenCreateDraftDialog] =
     useState<boolean>(false);
   const [shareDialog, setShareDialog] = useState({ open: false, option: "" });
+  const [transferDialog, setTransferDialog] = useState({
+    open: false,
+    libraries: [],
+  });
 
   // on unmount forget library state.
   useEffect(() => {
@@ -141,6 +146,19 @@ const EditCqlLibrary = () => {
     });
     return () => {
       window.removeEventListener("unshare-library", unshareListener);
+    };
+  }, []);
+
+  useEffect(() => {
+    const transferListener = () => {
+      setTransferDialog({
+        open: true,
+        libraries: [loadedCqlLibrary],
+      });
+    };
+    window.addEventListener("transfer-library", transferListener, false);
+    return () => {
+      window.removeEventListener("transfer-library", transferListener, false);
     };
   }, []);
 
@@ -255,6 +273,7 @@ const EditCqlLibrary = () => {
     setOpenDeleteDraftDialog(false);
     setOpenCreateDraftDialog(false);
     setActiveSpinner(false);
+    setTransferDialog({ open: false, libraries: [] });
   };
 
   const createVersionLibrary = async (isMajor: boolean) => {
@@ -595,6 +614,11 @@ const EditCqlLibrary = () => {
     [shareDialog]
   );
 
+  const transferLibrary = (newOwner: string, retainShareAccess: boolean) => {
+    // to be implemented
+    handleDialogClose();
+  };
+
   return (
     <div>
       {activeSpinner ? (
@@ -909,6 +933,12 @@ const EditCqlLibrary = () => {
             onClose={handleDialogClose}
             onSubmit={createDraftLibrary}
             cqlLibrary={loadedCqlLibrary}
+          />
+          <TransferDialog
+            libraries={[loadedCqlLibrary]}
+            open={transferDialog.open}
+            onClose={handleDialogClose}
+            onSubmit={transferLibrary}
           />
         </form>
       )}
