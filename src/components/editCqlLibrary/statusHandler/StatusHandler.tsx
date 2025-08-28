@@ -105,12 +105,7 @@ const StatusHandler = ({
           outboundAnnotations
         );
       } else {
-        return generateMadieAlertWithContent(
-          "error",
-          errorMessage,
-          null,
-          null
-        );
+        return generateMadieAlertWithContent("error", errorMessage, null, null);
       }
     } else if (outboundAnnotations?.length > 0) {
       return generateMadieAlertWithContent(
