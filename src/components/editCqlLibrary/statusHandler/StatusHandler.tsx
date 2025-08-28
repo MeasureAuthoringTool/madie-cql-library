@@ -2,14 +2,12 @@ import React from "react";
 import { MadieAlert } from "@madie/madie-design-system/dist/react";
 import "./StatusHandler.scss";
 import * as _ from "lodash";
-import { useFeatureFlags } from "@madie/madie-util";
 
 const generateMadieAlertWithContent = (
   type,
   header,
   secondaryMessages,
-  outboundAnnotations,
-  featureFlags
+  outboundAnnotations
 ) => {
   const errorAnnotation = _.filter(outboundAnnotations, { type: "error" });
   const errors = errorAnnotation?.map((el) => (
@@ -23,7 +21,7 @@ const generateMadieAlertWithContent = (
   });
   return (
     <MadieAlert
-      minimizeAlerts={featureFlags?.MinimizeAlerts}
+      minimizeAlerts={true}
       type={type}
       content={
         <div aria-live="polite" role="alert">
@@ -79,23 +77,20 @@ const StatusHandler = ({
   errorMessage,
   outboundAnnotations,
 }) => {
-  const featureFlags = useFeatureFlags();
   if (success.status === "success") {
     if (outboundAnnotations?.length > 0) {
       return generateMadieAlertWithContent(
         success.status,
         success.primaryMessage,
         success.secondaryMessages,
-        outboundAnnotations,
-        featureFlags
+        outboundAnnotations
       );
     } else {
       return generateMadieAlertWithContent(
         success.status,
         success.primaryMessage,
         success.secondaryMessages,
-        null,
-        featureFlags
+        null
       );
     }
   }
@@ -107,16 +102,14 @@ const StatusHandler = ({
           "error",
           errorMessage,
           null,
-          outboundAnnotations,
-          featureFlags
+          outboundAnnotations
         );
       } else {
         return generateMadieAlertWithContent(
           "error",
           errorMessage,
           null,
-          null,
-          featureFlags
+          null
         );
       }
     } else if (outboundAnnotations?.length > 0) {
@@ -124,16 +117,14 @@ const StatusHandler = ({
         "error",
         "Following issues were found within the CQL",
         null,
-        outboundAnnotations,
-        featureFlags
+        outboundAnnotations
       );
     } else {
       return generateMadieAlertWithContent(
         "error",
         "Issues were found within the CQL",
         null,
-        null,
-        featureFlags
+        null
       );
     }
   } else {
@@ -142,8 +133,7 @@ const StatusHandler = ({
         "error",
         "Following issues were found within the CQL",
         null,
-        outboundAnnotations,
-        featureFlags
+        outboundAnnotations
       );
     }
     return <></>;

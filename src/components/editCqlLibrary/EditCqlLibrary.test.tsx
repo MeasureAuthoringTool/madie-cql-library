@@ -22,7 +22,7 @@ jest.mock("@madie/madie-util", () => ({
     return true;
   }),
   useDocumentTitle: jest.fn(),
-  useFeatureFlags: jest.fn(() => ({ MinimizeAlerts: false })),
+  useFeatureFlags: jest.fn(() => ({})),
   cqlLibraryStore: {
     state: null,
     initialState: null,
