@@ -12,7 +12,7 @@ import {
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
-import { checkUserCanEdit } from "@madie/madie-util";
+import { checkUserCanEdit, useFeatureFlags } from "@madie/madie-util";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 
@@ -22,7 +22,7 @@ jest.mock("@madie/madie-util", () => ({
     return true;
   }),
   useDocumentTitle: jest.fn(),
-  useFeatureFlags: jest.fn(() => ({})),
+  useFeatureFlags: jest.fn(() => ({ Locking: false })),
   cqlLibraryStore: {
     state: null,
     initialState: null,
@@ -101,8 +101,14 @@ const organizations = [
 jest.mock("../../api/axios-instance");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
+const lockInfo = {
+  isLocked: false,
+  locedBy: null,
+};
 const mockCqlLibraryServiceApi = {
   createDraft: jest.fn().mockResolvedValue(draftedLibrary),
+  lockLibrary: jest.fn().mockResolvedValue({ data: lockInfo }),
+  unlockLibrary: jest.fn().mockResolvedValue({ data: lockInfo }),
 } as unknown as CqlLibraryServiceApi;
 
 const mockLocation = jest.fn();
@@ -173,11 +179,23 @@ describe("Edit Cql Library Component", () => {
     mockCqlLibraryServiceApi.createDraft = jest
       .fn()
       .mockResolvedValue(draftedLibrary);
+
+    mockCqlLibraryServiceApi.lockLibrary = jest
+      .fn()
+      .mockResolvedValue({ data: lockInfo });
+    mockCqlLibraryServiceApi.unlockLibrary = jest
+      .fn()
+      .mockResolvedValue({ data: lockInfo });
+
     global.ResizeObserver = class {
       observe() {}
       unobserve() {}
       disconnect() {}
     };
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it("should render form and cql library editor", () => {
@@ -1308,6 +1326,59 @@ describe("Edit Cql Library Component", () => {
     const warningMessage = screen.getByTestId("library-warning");
     expect(warningMessage.textContent).toEqual(
       "Concept Constructs are not supported in MADiE. It has been removed."
+    );
+  });
+
+  it("should lock library if feature flag is on and user can edit library", async () => {
+    (checkUserCanEdit as jest.Mock).mockImplementation(() => {
+      return true;
+    });
+    (useFeatureFlags as jest.Mock).mockImplementation(() => {
+      return { Locking: true };
+    });
+
+    mockedAxios.post.mockClear();
+    mockedAxios.post.mockResolvedValue({ data: { ...lockInfo } });
+    mockedAxios.delete.mockClear();
+    mockedAxios.delete.mockResolvedValue({ data: { ...lockInfo } });
+
+    renderWithRouter();
+    expect(mockedAxios.post).toHaveBeenCalledWith(
+      "/libraries/cql-lib-1234/lock",
+      null,
+      { headers: { Authorization: "Bearer test.jwt" } }
+    );
+  });
+
+  it("should not lock library if feature flag is not on", async () => {
+    (checkUserCanEdit as jest.Mock).mockImplementation(() => {
+      return true;
+    });
+    (useFeatureFlags as jest.Mock).mockImplementation(() => {
+      return { Locking: false };
+    });
+
+    renderWithRouter();
+    expect(mockedAxios.post).not.toHaveBeenCalledWith(
+      "/libraries/cql-lib-1234/lock",
+      null,
+      { headers: { Authorization: "Bearer test.jwt" } }
+    );
+  });
+
+  it("should not lock library if user can not edit library", async () => {
+    (checkUserCanEdit as jest.Mock).mockImplementation(() => {
+      return false;
+    });
+    (useFeatureFlags as jest.Mock).mockImplementation(() => {
+      return { Locking: true };
+    });
+
+    renderWithRouter();
+    expect(mockedAxios.post).not.toHaveBeenCalledWith(
+      "/libraries/cql-lib-1234/lock",
+      null,
+      { headers: { Authorization: "Bearer test.jwt" } }
     );
   });
 });

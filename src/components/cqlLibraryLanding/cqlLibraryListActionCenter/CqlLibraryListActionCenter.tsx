@@ -10,6 +10,7 @@ import {
   useFeatureFlags,
   useOktaTokens,
 } from "@madie/madie-util";
+import TransferAction from "./transferAction/TransferAction";
 
 interface PropTypes {
   libraries: CqlLibrary[];
@@ -19,6 +20,8 @@ interface PropTypes {
   setShareDialog: (value: any) => void;
   createVersion: () => void;
   owners: string[];
+  activeTab: number;
+  setTransferDialog: any;
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
@@ -66,6 +69,13 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     [props.setShareDialog]
   );
 
+  const transferLibrary = useCallback(() => {
+    // TODO MAT-8404
+    if (props.libraries?.length > 0) {
+      props.setTransferDialog({ open: true });
+    }
+  }, [props.libraries, props.setTransferDialog]);
+
   return (
     <div data-testid="action-center">
       <DeleteAction
@@ -93,6 +103,13 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         userName={userName}
         owners={owners}
       />
+      {featureFlags?.TransferLibrary && (
+        <TransferAction
+          libraries={props.libraries}
+          onClick={transferLibrary}
+          activeTab={props?.activeTab}
+        />
+      )}
     </div>
   );
 }
