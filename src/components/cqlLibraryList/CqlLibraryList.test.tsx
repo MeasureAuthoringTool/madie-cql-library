@@ -4,7 +4,6 @@ import {
   fireEvent,
   render,
   screen,
-  waitFor,
   within,
 } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
@@ -13,11 +12,7 @@ import userEvent from "@testing-library/user-event";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../api/useCqlLibraryServiceApi";
-import {
-  checkUserCanEdit,
-  checkUserCanDelete,
-  useFeatureFlags,
-} from "@madie/madie-util";
+import { checkUserCanEdit, useFeatureFlags } from "@madie/madie-util";
 
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
@@ -67,6 +62,10 @@ const cqlLibrary = [
     hasAssociatedLibraries: false,
   },
 ];
+const mockSearchCriteria = {
+  searchField: "test-field",
+  optionalSearchProperties: ["version"],
+};
 
 const loadCqlLibraries = jest.fn();
 
@@ -121,22 +120,33 @@ describe("CqlLibrary List component", () => {
   it("should display a list of Cql Libraries", () => {
     const { getByText, getByTestId } = render(
       <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
         cqlLibraryList={cqlLibrary}
         onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
         deleteDraftDialog={jest.fn()}
         setDeleteDraftDialog={jest.fn()}
-        shareDialog={jest.fn()}
-        setShareDialog={jest.fn()}
         selectedCQLLibrary={cqlLibrary[0]}
         setSelectedCqlLibrary={jest.fn()}
         createVersionDialog={jest.fn()}
         setCreateVersionDialog={jest.fn()}
         createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
         setCreateDraftDialog={jest.fn()}
-        snackBar={jest.fn()}
-        setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
     cqlLibrary.forEach((c) => {
@@ -202,12 +212,23 @@ describe("CqlLibrary List component", () => {
         createVersionDialog={jest.fn()}
         shareDialog={jest.fn()}
         setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
         setCreateVersionDialog={jest.fn()}
         createDraftDialog={jest.fn()}
         setCreateDraftDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
 
@@ -248,11 +269,22 @@ describe("CqlLibrary List component", () => {
         setCreateVersionDialog={jest.fn()}
         shareDialog={jest.fn()}
         setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
         createDraftDialog={jest.fn()}
         setCreateDraftDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
 
@@ -297,11 +329,22 @@ describe("CqlLibrary List component", () => {
         setCreateVersionDialog={jest.fn()}
         shareDialog={jest.fn()}
         setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
         createDraftDialog={jest.fn()}
         setCreateDraftDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
     expect(
@@ -373,11 +416,20 @@ describe("CqlLibrary List component", () => {
         setCreateDraftDialog={jest.fn()}
         shareDialog={jest.fn()}
         setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
 
@@ -401,7 +453,7 @@ describe("CqlLibrary List component", () => {
     ).toBeInTheDocument();
   });
 
-  it("should render columnsBehindFlag when LibrarySearch is true", async () => {
+  it("should render columnsBehindFlag when LibrarySearch is true on Owned Libraries tab", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibrarySearch: true,
     }));
@@ -411,7 +463,7 @@ describe("CqlLibrary List component", () => {
         id: "622e1f46d1fd3729d861e6cb",
         librarySetId: "libsetid",
         cqlLibraryName: "testing1",
-        model: "QI-Core v4.1.1",
+        model: Model.QICORE,
         createdAt: "",
         createdBy: "testuser@example.com", //#nosec
         lastModifiedAt: "2023-01-01T00:00:00Z",
@@ -421,7 +473,12 @@ describe("CqlLibrary List component", () => {
         cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
         cqlErrors: false,
         active: true,
-        librarySet: { acls: [{ userId: "user1" }] },
+        librarySet: {
+          id: "test-id",
+          librarySetId: "test-set-id",
+          owner: "test-owner",
+          acls: [{ userId: "user1", roles: ["SHARED"] }],
+        },
       },
     ];
 
@@ -440,11 +497,20 @@ describe("CqlLibrary List component", () => {
         setCreateDraftDialog={jest.fn()}
         shareDialog={jest.fn()}
         setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        totalItems={10}
+        activeTab={0}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
       />
     );
 
@@ -462,8 +528,160 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("Draft")).toBeInTheDocument();
     expect(screen.getByText("QI-Core v4.1.1")).toBeInTheDocument();
     expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
-    //this line fails on my machine because of timezone issues
-    // expect(screen.getByText("1/1/2023")).toBeInTheDocument();
+  });
+
+  it("should render columnsBehindFlag (without Shared column) when LibrarySearch is true on Shared Libraries tab", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibrarySearch: true,
+    }));
+
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "2023-01-01T00:00:00Z",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+        librarySet: {
+          id: "test-id",
+          librarySetId: "test-set-id",
+          owner: "test-owner",
+          acls: [{ userId: "user1", roles: ["SHARED"] }],
+        },
+      },
+    ];
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={jest.fn()}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
+      />
+    );
+
+    // Verify columns (expect Shared column) are rendered from columnsBehindFlag
+    expect(screen.getByText("Library")).toBeInTheDocument();
+    expect(screen.getByText("Version")).toBeInTheDocument();
+    expect(screen.getByText("Status")).toBeInTheDocument();
+    expect(screen.getByText("Model")).toBeInTheDocument();
+    expect(screen.queryByText("Shared")).not.toBeInTheDocument();
+    expect(screen.getByText("Updated")).toBeInTheDocument();
+
+    // Verify data rendered in the table
+    expect(screen.getByText("testing1")).toBeInTheDocument();
+    expect(screen.getByText("0.0.000")).toBeInTheDocument();
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(screen.getByText("QI-Core v4.1.1")).toBeInTheDocument();
+    expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
+  });
+
+  it("should render columnsBehindFlag when LibrarySearch is true on All Libraries tab", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibrarySearch: true,
+    }));
+
+    const cqlLibrary: CqlLibrary[] = [
+      {
+        id: "622e1f46d1fd3729d861e6cb",
+        librarySetId: "libsetid",
+        cqlLibraryName: "testing1",
+        model: Model.QICORE,
+        createdAt: "",
+        createdBy: "testuser@example.com", //#nosec
+        lastModifiedAt: "2023-01-01T00:00:00Z",
+        lastModifiedBy: "",
+        draft: true,
+        version: "0.0.000",
+        cql: "library AdvancedIllnessandFrailtyExclusion_QICore4 version '5.0.00'",
+        cqlErrors: false,
+        active: true,
+        librarySet: {
+          id: "test-id",
+          librarySetId: "test-set-id",
+          owner: "test-owner",
+          acls: [{ userId: "user1", roles: ["SHARED"] }],
+        },
+      },
+    ];
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={jest.fn()}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        totalItems={10}
+        activeTab={2}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        curLimit={10}
+        searchCriteria={mockSearchCriteria}
+      />
+    );
+
+    // Verify columns rendered from columnsBehindFlag
+    expect(screen.getByText("Library")).toBeInTheDocument();
+    expect(screen.getByText("Version")).toBeInTheDocument();
+    expect(screen.getByText("Status")).toBeInTheDocument();
+    expect(screen.getByText("Model")).toBeInTheDocument();
+    expect(screen.getByText("Shared")).toBeInTheDocument();
+    expect(screen.getByText("Updated")).toBeInTheDocument();
+
+    // Verify data rendered in the table
+    expect(screen.getByText("testing1")).toBeInTheDocument();
+    expect(screen.getByText("0.0.000")).toBeInTheDocument();
+    expect(screen.getByText("Draft")).toBeInTheDocument();
+    expect(screen.getByText("QI-Core v4.1.1")).toBeInTheDocument();
+    expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
   });
 });
 

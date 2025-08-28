@@ -87,6 +87,10 @@ function CqlLibraryLanding() {
     severity: "",
   });
   const [shareDialog, setShareDialog] = useState({ open: false, option: "" });
+  const [transferDialog, setTransferDialog] = useState({
+    open: false,
+    libraries: [],
+  });
 
   // Fetches total count of Owned Libraries, Shared Libraries, and All Libraries
   const [ownedLibrariesCount, setOwnedLibrariesCount] = useState(0);
@@ -351,6 +355,11 @@ function CqlLibraryLanding() {
     await fetchTotalCounts();
   };
 
+  const handlePageChange = (e, v) => {
+    const updatedLimit =
+      curLimit !== undefined ? (curLimit === "All" ? 50 : curLimit) : 10;
+    navigate(`?tab=${activeTab}&page=${v}&limit=${updatedLimit}`);
+  };
   return (
     <div id="cql-library-landing" data-testid="cql-library-landing">
       <CreateNewLibraryDialog
@@ -391,6 +400,7 @@ function CqlLibraryLanding() {
           <Search
             searchCriteria={searchCriteria}
             setSearchCriteria={setSearchCriteria}
+            handlePageChange={handlePageChange}
           />
           <div tw="col-start-4 justify-self-end p-3">
             <ActionCenter
@@ -401,6 +411,8 @@ function CqlLibraryLanding() {
               setShareDialog={setShareDialog}
               createVersion={createVersion}
               owners={owners}
+              activeTab={activeTab}
+              setTransferDialog={setTransferDialog}
             />
           </div>
         </div>
@@ -409,6 +421,7 @@ function CqlLibraryLanding() {
             {!loading && (
               <CqlLibraryList
                 curLimit={curLimit}
+                curPage={curPage}
                 cqlLibraryList={cqlLibraryList}
                 offset={offset}
                 activeTab={activeTab}
@@ -425,6 +438,8 @@ function CqlLibraryLanding() {
                 setCreateVersionDialog={setCreateVersionDialog}
                 shareDialog={shareDialog}
                 setShareDialog={setShareDialog}
+                transferDialog={transferDialog}
+                setTransferDialog={setTransferDialog}
                 createDraftDialog={createDraftDialog}
                 setCreateDraftDialog={setCreateDraftDialog}
                 snackBar={snackBar}
@@ -432,6 +447,8 @@ function CqlLibraryLanding() {
                 setOwners={setOwners}
                 sorting={sorting}
                 handleSort={handleSort}
+                handlePageChange={handlePageChange}
+                searchCriteria={searchCriteria}
               />
             )}
           </div>

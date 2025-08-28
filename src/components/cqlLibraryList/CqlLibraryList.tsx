@@ -44,6 +44,7 @@ import queryString from "query-string";
 import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 import * as _ from "lodash";
 import { Chip } from "@mui/material";
+import TransferDialog from "../common/transferDialog/TransferDialog";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -119,6 +120,8 @@ export default function CqlLibraryList({
   createDraftDialog,
   shareDialog,
   setShareDialog,
+  transferDialog,
+  setTransferDialog,
   setCreateDraftDialog,
   setOwners,
   setSnackBar,
@@ -130,7 +133,10 @@ export default function CqlLibraryList({
   offset,
   sorting,
   handleSort,
+  handlePageChange,
   curLimit,
+  curPage,
+  searchCriteria,
 }) {
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
@@ -143,11 +149,7 @@ export default function CqlLibraryList({
   const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
-  const handlePageChange = (e, v) => {
-    const updatedLimit =
-      curLimit !== undefined ? (curLimit === "All" ? 50 : curLimit) : 10;
-    navigate(`?tab=${activeTab}&page=${v}&limit=${updatedLimit}`);
-  };
+
   const handleLimitChange = (e) => {
     navigate(`?tab=${activeTab}&page=1&limit=${e.target.value}`);
   };
@@ -170,7 +172,7 @@ export default function CqlLibraryList({
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   // pull info from some query url
-  const curPage = (values.page && Number(values.page)) || 1;
+  // const curPage = (values.page && Number(values.page)) || 1;
   // can we do stuff
   const canGoNext = (() => {
     return curPage < totalPages;
@@ -185,6 +187,7 @@ export default function CqlLibraryList({
     });
     setCreateDraftDialog({ open: false, cqlLibrary: null });
     setDeleteDraftDialog({ ...INITIAL_DELETE_DRAFT_STATE });
+    setTransferDialog({ open: false, libraries: [] });
   };
 
   const handleSnackBarClose = (
@@ -328,6 +331,10 @@ export default function CqlLibraryList({
           });
         }
       });
+  };
+  const transferLibraries = (newOwner: string, retainShareAccess: boolean) => {
+    setTransferDialog({ open: false, libraries: [] });
+    // TODO MAT-8404
   };
 
   // Popover utilities
@@ -501,18 +508,23 @@ export default function CqlLibraryList({
         </>
       ),
     },
-    {
-      sortDescFirst: false, // This needs to be added because tanstack implicitly starts desc true bc of many nulls
-      header: "Shared",
-      accessorKey: "librarySet.acls",
-      cell: (info) => (
-        <p>
-          {info.row.original.librarySet?.acls?.length > 0 && (
-            <CheckCircleOutlineIcon sx={{ color: "#4CAF50" }} />
-          )}
-        </p>
-      ),
-    },
+    // Do not display Shared column in Shared Libraries tab
+    ...(activeTab !== 1
+      ? [
+          {
+            sortDescFirst: false, // This needs to be added because tanstack implicitly starts desc true bc of many nulls
+            header: "Shared",
+            accessorKey: "librarySet.acls",
+            cell: (info) => (
+              <p>
+                {info.row.original.librarySet?.acls?.length > 0 && (
+                  <CheckCircleOutlineIcon sx={{ color: "#4CAF50" }} />
+                )}
+              </p>
+            ),
+          },
+        ]
+      : []),
     {
       header: "Updated",
       accessorKey: "lastModifiedAt",
@@ -746,9 +758,18 @@ export default function CqlLibraryList({
   const handleRowClick = async (actions) => {
     if (!isRowExpanded || selectedIdForExpansion !== actions?.librarySetId) {
       setSelectedIdForExpansion(actions?.librarySetId);
+      const optionalParams = searchCriteria?.optionalSearchProperties ?? [];
+      const firstParam = _.trim(optionalParams[0]);
+
+      const modifiedSearchCriteria = {
+        ...searchCriteria,
+        optionalSearchProperties:
+          firstParam && firstParam !== "-" ? [_.camelCase(firstParam)] : [],
+      };
       const results = await cqlLibraryServiceApi.getLibrariesByLibrarySetId(
         actions?.librarySetId,
-        true
+        true,
+        modifiedSearchCriteria
       );
       let filteredResults = results.filter(
         (result) => result.id !== actions?.id
@@ -863,6 +884,12 @@ export default function CqlLibraryList({
         open={shareDialog.open}
         option={shareDialog.option}
         onClose={handleShareDialogClose}
+      />
+      <TransferDialog
+        libraries={selectedLibraries}
+        open={transferDialog.open}
+        onClose={handleDialogClose}
+        onSubmit={transferLibraries}
       />
       <Popover
         open={optionsOpen}
@@ -1049,6 +1076,16 @@ export default function CqlLibraryList({
                   ))}
                 </thead>
                 <tbody data-testid="table-body" className="table-body">
+                  {table.getRowModel().rows.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={table.getAllColumns().length}
+                        style={{ padding: "40px 0", textAlign: "center" }}
+                      >
+                        <span>No results were found</span>
+                      </td>
+                    </tr>
+                  )}
                   {table.getRowModel().rows.map((row) => (
                     <React.Fragment key={row.id}>
                       <tr
