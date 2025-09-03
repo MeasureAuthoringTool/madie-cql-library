@@ -21,7 +21,6 @@ const generateMadieAlertWithContent = (
   });
   return (
     <MadieAlert
-      minimizeAlerts={true}
       type={type}
       content={
         <div aria-live="polite" role="alert">
