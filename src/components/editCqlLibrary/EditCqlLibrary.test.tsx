@@ -1344,7 +1344,7 @@ describe("Edit Cql Library Component", () => {
 
     renderWithRouter();
     expect(mockedAxios.post).toHaveBeenCalledWith(
-      "/libraries/cql-lib-1234/lock",
+      "/cql-libraries/cql-lib-1234/lock",
       null,
       { headers: { Authorization: "Bearer test.jwt" } }
     );
@@ -1360,7 +1360,7 @@ describe("Edit Cql Library Component", () => {
 
     renderWithRouter();
     expect(mockedAxios.post).not.toHaveBeenCalledWith(
-      "/libraries/cql-lib-1234/lock",
+      "/cql-libraries/cql-lib-1234/lock",
       null,
       { headers: { Authorization: "Bearer test.jwt" } }
     );
@@ -1376,7 +1376,7 @@ describe("Edit Cql Library Component", () => {
 
     renderWithRouter();
     expect(mockedAxios.post).not.toHaveBeenCalledWith(
-      "/libraries/cql-lib-1234/lock",
+      "/cql-libraries/cql-lib-1234/lock",
       null,
       { headers: { Authorization: "Bearer test.jwt" } }
     );

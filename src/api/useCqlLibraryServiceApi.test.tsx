@@ -176,7 +176,7 @@ describe("useCqlLibraryServiceApi", () => {
 
     expect(axios.post).toBeCalledTimes(1);
     expect(axios.post).toHaveBeenCalledWith(
-      `${mockBaseUrl}/libraries/libraryId/lock`,
+      `${mockBaseUrl}/cql-libraries/libraryId/lock`,
       null,
       {
         headers: {
@@ -200,7 +200,7 @@ describe("useCqlLibraryServiceApi", () => {
       const result = await service.lockLibrary("libraryId");
       expect(axios.post).toBeCalledTimes(1);
       expect(axios.post).toHaveBeenCalledWith(
-        `${mockBaseUrl}/libraries/libraryId/lock`,
+        `${mockBaseUrl}/cql-libraries/libraryId/lock`,
         null,
         {
           headers: {
@@ -223,7 +223,7 @@ describe("useCqlLibraryServiceApi", () => {
     const result = await service.unlockLibrary("libraryId");
     expect(axios.delete).toBeCalledTimes(1);
     expect(axios.delete).toHaveBeenCalledWith(
-      `${mockBaseUrl}/libraries/libraryId/unlock`,
+      `${mockBaseUrl}/cql-libraries/libraryId/unlock`,
       {
         headers: {
           Authorization: `Bearer ${mockToken}`,
@@ -246,7 +246,7 @@ describe("useCqlLibraryServiceApi", () => {
       const result = await service.unlockLibrary("libraryId");
       expect(axios.delete).toBeCalledTimes(1);
       expect(axios.delete).toHaveBeenCalledWith(
-        `${mockBaseUrl}/libraries/libraryId/unlock`,
+        `${mockBaseUrl}/cql-libraries/libraryId/unlock`,
         {
           headers: {
             Authorization: `Bearer ${mockToken}`,
