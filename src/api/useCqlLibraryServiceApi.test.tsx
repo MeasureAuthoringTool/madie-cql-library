@@ -170,12 +170,12 @@ describe("useCqlLibraryServiceApi", () => {
       lockedBy: "test.user",
       lockedId: "libraryId",
     };
-    axios.post = jest.fn().mockResolvedValueOnce({ data: response });
+    axios.put = jest.fn().mockResolvedValueOnce({ data: response });
 
     const result = await service.lockLibrary("libraryId");
 
-    expect(axios.post).toBeCalledTimes(1);
-    expect(axios.post).toHaveBeenCalledWith(
+    expect(axios.put).toBeCalledTimes(1);
+    expect(axios.put).toHaveBeenCalledWith(
       `${mockBaseUrl}/cql-libraries/libraryId/lock`,
       null,
       {
@@ -223,7 +223,7 @@ describe("useCqlLibraryServiceApi", () => {
     const result = await service.unlockLibrary("libraryId");
     expect(axios.delete).toBeCalledTimes(1);
     expect(axios.delete).toHaveBeenCalledWith(
-      `${mockBaseUrl}/cql-libraries/libraryId/unlock`,
+      `${mockBaseUrl}/cql-libraries/libraryId/lock`,
       {
         headers: {
           Authorization: `Bearer ${mockToken}`,
