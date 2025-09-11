@@ -170,13 +170,13 @@ describe("useCqlLibraryServiceApi", () => {
       lockedBy: "test.user",
       lockedId: "libraryId",
     };
-    axios.post = jest.fn().mockResolvedValueOnce({ data: response });
+    axios.put = jest.fn().mockResolvedValueOnce({ data: response });
 
     const result = await service.lockLibrary("libraryId");
 
-    expect(axios.post).toBeCalledTimes(1);
-    expect(axios.post).toHaveBeenCalledWith(
-      `${mockBaseUrl}/libraries/libraryId/lock`,
+    expect(axios.put).toBeCalledTimes(1);
+    expect(axios.put).toHaveBeenCalledWith(
+      `${mockBaseUrl}/cql-libraries/libraryId/lock`,
       null,
       {
         headers: {
@@ -194,13 +194,13 @@ describe("useCqlLibraryServiceApi", () => {
       message: "Error",
     };
 
-    axios.post = jest.fn().mockRejectedValueOnce({ error: response });
+    axios.put = jest.fn().mockRejectedValueOnce({ error: response });
 
     try {
       const result = await service.lockLibrary("libraryId");
-      expect(axios.post).toBeCalledTimes(1);
-      expect(axios.post).toHaveBeenCalledWith(
-        `${mockBaseUrl}/libraries/libraryId/lock`,
+      expect(axios.put).toBeCalledTimes(1);
+      expect(axios.put).toHaveBeenCalledWith(
+        `${mockBaseUrl}/cql-libraries/libraryId/lock`,
         null,
         {
           headers: {
@@ -223,7 +223,7 @@ describe("useCqlLibraryServiceApi", () => {
     const result = await service.unlockLibrary("libraryId");
     expect(axios.delete).toBeCalledTimes(1);
     expect(axios.delete).toHaveBeenCalledWith(
-      `${mockBaseUrl}/libraries/libraryId/unlock`,
+      `${mockBaseUrl}/cql-libraries/libraryId/lock`,
       {
         headers: {
           Authorization: `Bearer ${mockToken}`,
@@ -246,7 +246,7 @@ describe("useCqlLibraryServiceApi", () => {
       const result = await service.unlockLibrary("libraryId");
       expect(axios.delete).toBeCalledTimes(1);
       expect(axios.delete).toHaveBeenCalledWith(
-        `${mockBaseUrl}/libraries/libraryId/unlock`,
+        `${mockBaseUrl}/cql-libraries/libraryId/lock`,
         {
           headers: {
             Authorization: `Bearer ${mockToken}`,

@@ -262,8 +262,8 @@ export class CqlLibraryServiceApi {
 
   async lockLibrary(libraryId: string): Promise<any> {
     try {
-      const response = await axios.post<String>(
-        `${this.baseUrl}/libraries/${libraryId}/lock`,
+      const response = await axios.put<String>(
+        `${this.baseUrl}/cql-libraries/${libraryId}/lock`,
         null,
         {
           headers: {
@@ -280,7 +280,7 @@ export class CqlLibraryServiceApi {
   async unlockLibrary(libraryId: string): Promise<any> {
     try {
       const response = await axios.delete<String>(
-        `${this.baseUrl}/libraries/${libraryId}/unlock`,
+        `${this.baseUrl}/cql-libraries/${libraryId}/lock`,
         {
           headers: {
             Authorization: `Bearer ${this.getAccessToken()}`,
