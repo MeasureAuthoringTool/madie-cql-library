@@ -1337,8 +1337,8 @@ describe("Edit Cql Library Component", () => {
       return { Locking: true };
     });
 
-    mockedAxios.post.mockClear();
-    mockedAxios.post.mockResolvedValue({ data: { ...lockInfo } });
+    mockedAxios.put.mockClear();
+    mockedAxios.put.mockResolvedValue({ data: { ...lockInfo } });
     mockedAxios.delete.mockClear();
     mockedAxios.delete.mockResolvedValue({ data: { ...lockInfo } });
 
@@ -1359,7 +1359,7 @@ describe("Edit Cql Library Component", () => {
     });
 
     renderWithRouter();
-    expect(mockedAxios.post).not.toHaveBeenCalledWith(
+    expect(mockedAxios.put).not.toHaveBeenCalledWith(
       "/cql-libraries/cql-lib-1234/lock",
       null,
       { headers: { Authorization: "Bearer test.jwt" } }
@@ -1375,7 +1375,7 @@ describe("Edit Cql Library Component", () => {
     });
 
     renderWithRouter();
-    expect(mockedAxios.post).not.toHaveBeenCalledWith(
+    expect(mockedAxios.put).not.toHaveBeenCalledWith(
       "/cql-libraries/cql-lib-1234/lock",
       null,
       { headers: { Authorization: "Bearer test.jwt" } }
