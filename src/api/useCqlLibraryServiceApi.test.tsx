@@ -258,4 +258,67 @@ describe("useCqlLibraryServiceApi", () => {
       expect(err).not.toBeNull();
     }
   });
+
+  it("should transfer library successfully", async () => {
+    const response = { success: true };
+    axios.put = jest.fn().mockResolvedValueOnce({ data: response });
+
+    const result = await service.transferLibraries(
+      ["libraryId"],
+      "harpId",
+      true
+    );
+
+    expect(axios.put).toBeCalledTimes(1);
+    expect(axios.put).toHaveBeenCalledWith(
+      `${mockBaseUrl}/cql-libraries/transfer`,
+      ["libraryId"],
+      {
+        headers: {
+          Authorization: `Bearer ${mockToken}`,
+          harpId: `harpId`,
+        },
+        params: {
+          retainShareAccess: true,
+        },
+      }
+    );
+    expect(result).toBe(response);
+  });
+
+  it("should handle transfer library failure", async () => {
+    const response = {
+      status: 400,
+      error: "Bad Request",
+      message: "Error",
+    };
+
+    axios.put = jest.fn().mockRejectedValueOnce({ error: response });
+
+    try {
+      const result = await service.transferLibraries(
+        ["libraryId"],
+        "harpId",
+        true
+      );
+
+      expect(axios.put).toBeCalledTimes(1);
+      expect(axios.put).toHaveBeenCalledWith(
+        `${mockBaseUrl}/cql-libraries/transfer`,
+        ["libraryId"],
+        {
+          headers: {
+            Authorization: `Bearer ${mockToken}`,
+            harpId: `harpId`,
+          },
+          params: {
+            retainShareAccess: true,
+          },
+        }
+      );
+      expect(result).not.toBe(response);
+    } catch (err) {
+      expect(err).not.toBeNull();
+    }
+  });
 });

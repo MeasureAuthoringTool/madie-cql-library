@@ -46,6 +46,11 @@ import * as _ from "lodash";
 import { Chip } from "@mui/material";
 import TransferDialog from "../common/transferDialog/TransferDialog";
 
+export const TRANSFER_LIBRARY_SUCCESS =
+  "The library(s) were successfully transferred. If you chose to retain share access, you will still be able to edit the libraries.";
+export const TRANSFER_LIBRARY_FAILURE =
+  "Unable to transfer the selected library(s) to the harpId. If the error persists, please contact the help desk.";
+
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
   ref
@@ -137,6 +142,14 @@ export default function CqlLibraryList({
   curLimit,
   curPage,
   searchCriteria,
+  // Toast props
+  toastOpen,
+  toastMessage,
+  toastType,
+  setToastOpen,
+  setToastMessage,
+  setToastType,
+  onToastClose,
 }) {
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
@@ -333,8 +346,23 @@ export default function CqlLibraryList({
       });
   };
   const transferLibraries = (newOwner: string, retainShareAccess: boolean) => {
-    setTransferDialog({ open: false, libraries: [] });
-    // TODO MAT-8404
+    const libraryIds = selectedLibraries.map((lib) => lib.id);
+    return cqlLibraryServiceApi
+      .transferLibraries(libraryIds, newOwner, retainShareAccess)
+      .then(async () => {
+        handleDialogClose();
+        setToastOpen(true);
+        setToastType("success");
+        setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+        onListUpdate();
+      })
+      .catch((error) => {
+        console.error("TransferDialog: handleSave: error = ", error);
+        handleDialogClose();
+        setToastOpen(true);
+        setToastType("danger");
+        setToastMessage(TRANSFER_LIBRARY_FAILURE);
+      });
   };
 
   // Popover utilities
