@@ -4,7 +4,7 @@ import StatusHandler, { transformAnnotation } from "./StatusHandler";
 import { useFeatureFlags } from "@madie/madie-util";
 
 jest.mock("@madie/madie-util", () => ({
-  useFeatureFlags: jest.fn(() => ({ minimizeAlerts: false })),
+  useFeatureFlags: jest.fn(() => ({})),
 }));
 
 describe("StatusHandler Component", () => {

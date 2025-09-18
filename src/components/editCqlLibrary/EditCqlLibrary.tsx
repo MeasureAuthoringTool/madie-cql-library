@@ -726,6 +726,7 @@ const EditCqlLibrary = () => {
                                   </p>
                                 }
                                 canClose={false}
+                                minimizeAlerts={false}
                               />
                             </div>
                           )}
@@ -740,6 +741,7 @@ const EditCqlLibrary = () => {
                                   </p>
                                 }
                                 canClose={false}
+                                minimizeAlerts={false}
                               />
                             </div>
                           )}
