@@ -56,6 +56,10 @@ import { AxiosResponse } from "axios";
 import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 import TransferDialog from "../common/transferDialog/TransferDialog";
+import {
+  TRANSFER_LIBRARY_FAILURE,
+  TRANSFER_LIBRARY_SUCCESS,
+} from "../cqlLibraryList/CqlLibraryList";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -615,8 +619,22 @@ const EditCqlLibrary = () => {
   );
 
   const transferLibrary = (newOwner: string, retainShareAccess: boolean) => {
-    // to be implemented
-    handleDialogClose();
+    const libraryIds = loadedCqlLibrary.id;
+    return cqlLibraryServiceApi
+      .transferLibraries([libraryIds], newOwner, retainShareAccess)
+      .then(async () => {
+        handleDialogClose();
+        setToastOpen(true);
+        setToastType("success");
+        setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+      })
+      .catch((error) => {
+        console.error("TransferDialog: handleSave: error = ", error);
+        handleDialogClose();
+        setToastOpen(true);
+        setToastType("danger");
+        setToastMessage(TRANSFER_LIBRARY_FAILURE);
+      });
   };
 
   return (

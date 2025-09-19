@@ -292,6 +292,32 @@ export class CqlLibraryServiceApi {
       throw new Error(error);
     }
   }
+
+  async transferLibraries(
+    libraryIds: Array<string>,
+    harpId: string,
+    retainShareAccess: boolean
+  ): Promise<any> {
+    try {
+      const response = await axios.put(
+        `${this.baseUrl}/cql-libraries/transfer`,
+        libraryIds,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+            harpId: `${harpId}`,
+          },
+          params: {
+            retainShareAccess,
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.error("Failed to transfer libraries", error);
+      throw new Error(error);
+    }
+  }
 }
 
 export default function useCqlLibraryServiceApi() {

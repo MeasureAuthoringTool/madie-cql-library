@@ -4,7 +4,12 @@ import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import { CqlLibrary, OwnershipType } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import { useDocumentTitle, useFeatureFlags } from "@madie/madie-util";
-import { MadieSpinner, Tabs, Tab } from "@madie/madie-design-system/dist/react";
+import {
+  MadieSpinner,
+  Tabs,
+  Tab,
+  Toast,
+} from "@madie/madie-design-system/dist/react";
 import { CqlLibraryListActionCenter as ActionCenter } from "./cqlLibraryListActionCenter/CqlLibraryListActionCenter";
 import "./CqlLibraryLanding.scss";
 import "twin.macro";
@@ -96,6 +101,16 @@ function CqlLibraryLanding() {
   const [ownedLibrariesCount, setOwnedLibrariesCount] = useState(0);
   const [sharedLibrariesCount, setSharedLibrariesCount] = useState(0);
   const [allLibrariesCount, setAllLibrariesCount] = useState(0);
+
+  // Toast state and handlers
+  const [toastOpen, setToastOpen] = useState<boolean>(false);
+  const [toastMessage, setToastMessage] = useState<string>("");
+  const [toastType, setToastType] = useState<string>("danger");
+  const onToastClose = () => {
+    setToastType("danger");
+    setToastMessage("");
+    setToastOpen(false);
+  };
 
   const fetchTotalCounts = useCallback(async () => {
     try {
@@ -449,6 +464,14 @@ function CqlLibraryLanding() {
                 handleSort={handleSort}
                 handlePageChange={handlePageChange}
                 searchCriteria={searchCriteria}
+                // Toast props
+                toastOpen={toastOpen}
+                toastMessage={toastMessage}
+                toastType={toastType}
+                setToastOpen={setToastOpen}
+                setToastMessage={setToastMessage}
+                setToastType={setToastType}
+                onToastClose={onToastClose}
               />
             )}
           </div>
@@ -458,6 +481,20 @@ function CqlLibraryLanding() {
             </div>
           )}
         </div>
+        <Toast
+          toastKey="library-action-toast"
+          aria-live="polite"
+          role="alert"
+          toastType={toastType}
+          testId={`toast-${toastType}`} // Use a consistent testId pattern
+          closeButtonProps={{
+            "data-testid": "close-toast-button",
+          }}
+          open={toastOpen}
+          message={toastMessage}
+          onClose={onToastClose}
+          autoHideDuration={6000}
+        />
       </div>
     </div>
   );
