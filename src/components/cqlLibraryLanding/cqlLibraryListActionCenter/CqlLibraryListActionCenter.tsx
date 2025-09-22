@@ -3,6 +3,7 @@ import DeleteAction from "./deleteAction/DeleteAction";
 import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";
 import ShareAction from "./shareAction/ShareAction";
+import HistoryAction from "./historyAction/HistoryAction";
 import { CqlLibrary } from "@madie/madie-models";
 import {
   checkUserCanDelete,
@@ -95,6 +96,9 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         canEdit={canEdit}
         onClick={createDraft}
       />
+      {featureFlags?.LibraryHistory && (
+        <HistoryAction libraries={libraries} onClick={() => {}} />
+      )}
       <ShareAction
         libraries={libraries}
         canEdit={canEdit}
