@@ -3,10 +3,11 @@ import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { checkUserCanDelete } from "@madie/madie-util";
+import { CqlLibrary } from "@madie/madie-models";
 
 interface PropTypes {
   onClick: () => void;
-  selectedLibraries?: any;
+  selectedLibraries?: CqlLibrary[];
 }
 
 export const NOTHING_SELECTED = "Select library to delete";
