@@ -1,34 +1,34 @@
 import * as React from "react";
 import { render, screen } from "@testing-library/react";
-import DeleteAction, { DEL_LIBRARY, NOTHING_SELECTED } from "./DeleteAction";
-import { CqlLibrary, Model } from "@madie/madie-models";
+import DeleteAction, {
+  DEL_LIBRARY,
+  NOTHING_SELECTED,
+  LOCKED_LIBRARY_PREFIX,
+  PERMISSION_DENIED,
+} from "./DeleteAction";
+import { CqlLibrary } from "@madie/madie-models";
 
-const mockUser = "test user";
+// mock for permission utility
+const mockCheckUserCanDelete = jest.fn();
 jest.mock("@madie/madie-util", () => ({
-  useOktaTokens: () => ({
-    getUserName: () => mockUser,
-  }),
+  checkUserCanDelete: (...args: any[]) => mockCheckUserCanDelete(...args),
 }));
 
-const library = {
-  id: "67180dd54665c8239413ba90",
+const baseLibrary = {
+  id: "lib-1",
   cqlLibraryName: "TestLib",
-  createdAt: "2024-10-22T20:40:53.212Z",
-  model: "QI-Core v4.1.1",
-  version: "0.0.000",
   draft: true,
-} as CqlLibrary;
+  librarySet: { owner: "ownerUser" },
+} as unknown as CqlLibrary;
 
-describe("DeleteAction", () => {
+describe("DeleteAction (CQL Library)", () => {
+  beforeEach(() => {
+    mockCheckUserCanDelete.mockReset();
+  });
+
   it("Should disable action btn if no library selected", () => {
-    render(
-      <DeleteAction
-        libraries={[]}
-        canDelete={true}
-        onClick={() => {}}
-        canEdit={true}
-      />
-    );
+    mockCheckUserCanDelete.mockReturnValue(false); // irrelevant
+    render(<DeleteAction selectedLibraries={[]} onClick={() => {}} />);
     expect(screen.getByTestId("delete-action-btn")).toBeDisabled();
     expect(screen.getByTestId("delete-action-tooltip")).toHaveAttribute(
       "aria-label",
@@ -36,14 +36,38 @@ describe("DeleteAction", () => {
     );
   });
 
-  it("Should enable action btn if user select one library ", () => {
+  it("Should show permission denied when one selected and no permission", () => {
+    mockCheckUserCanDelete.mockReturnValue(false);
     render(
-      <DeleteAction
-        canDelete={true}
-        libraries={[library]}
-        onClick={() => {}}
-        canEdit={true}
-      />
+      <DeleteAction selectedLibraries={[baseLibrary]} onClick={() => {}} />
+    );
+    expect(screen.getByTestId("delete-action-btn")).toBeDisabled();
+    expect(screen.getByTestId("delete-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      PERMISSION_DENIED
+    );
+  });
+
+  it("Should show locked message when one selected, has permission, but locked", () => {
+    const lockedLibrary = {
+      ...baseLibrary,
+      cqlLibraryLock: { lockedBy: "HARP123" },
+    } as CqlLibrary;
+    mockCheckUserCanDelete.mockReturnValue(true);
+    render(
+      <DeleteAction selectedLibraries={[lockedLibrary]} onClick={() => {}} />
+    );
+    expect(screen.getByTestId("delete-action-btn")).toBeDisabled();
+    expect(screen.getByTestId("delete-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      `${LOCKED_LIBRARY_PREFIX}HARP123`
+    );
+  });
+
+  it("Should enable action btn if one library selected, has permission, and not locked", () => {
+    mockCheckUserCanDelete.mockReturnValue(true);
+    render(
+      <DeleteAction selectedLibraries={[baseLibrary]} onClick={() => {}} />
     );
     expect(screen.getByTestId("delete-action-btn")).not.toBeDisabled();
     expect(screen.getByTestId("delete-action-tooltip")).toHaveAttribute(
@@ -51,13 +75,14 @@ describe("DeleteAction", () => {
       DEL_LIBRARY
     );
   });
-  it("Should disable action btn if user cannot edit ", () => {
+
+  it("Should disable btn and show NOTHING_SELECTED if multiple libraries selected", () => {
+    mockCheckUserCanDelete.mockReturnValue(true); // even with permission, multiple selection overrides
+    const anotherLibrary = { ...baseLibrary, id: "lib-2" } as CqlLibrary;
     render(
       <DeleteAction
-        canDelete={false}
-        libraries={[library]}
+        selectedLibraries={[baseLibrary, anotherLibrary]}
         onClick={() => {}}
-        canEdit={false}
       />
     );
     expect(screen.getByTestId("delete-action-btn")).toBeDisabled();
@@ -67,20 +92,19 @@ describe("DeleteAction", () => {
     );
   });
 
-  it("Should disable btn if user selects two libraries", () => {
-    const library2 = library;
+  it("Should show permission denied instead of locked when both conditions present (precedence test)", () => {
+    const lockedLibrary = {
+      ...baseLibrary,
+      cqlLibraryLock: { lockedBy: "HARP999" },
+    } as CqlLibrary;
+    mockCheckUserCanDelete.mockReturnValue(false); // no permission
     render(
-      <DeleteAction
-        canDelete={true}
-        libraries={[library, library2]}
-        onClick={() => {}}
-        canEdit={true}
-      />
+      <DeleteAction selectedLibraries={[lockedLibrary]} onClick={() => {}} />
     );
     expect(screen.getByTestId("delete-action-btn")).toBeDisabled();
     expect(screen.getByTestId("delete-action-tooltip")).toHaveAttribute(
       "aria-label",
-      NOTHING_SELECTED
+      PERMISSION_DENIED
     );
   });
 });

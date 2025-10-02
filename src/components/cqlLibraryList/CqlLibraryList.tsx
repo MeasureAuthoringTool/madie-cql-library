@@ -24,7 +24,6 @@ import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   checkUserCanDelete,
   checkUserCanEdit,
@@ -142,14 +141,9 @@ export default function CqlLibraryList({
   curLimit,
   curPage,
   searchCriteria,
-  // Toast props
-  toastOpen,
-  toastMessage,
-  toastType,
   setToastOpen,
   setToastMessage,
   setToastType,
-  onToastClose,
 }) {
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);

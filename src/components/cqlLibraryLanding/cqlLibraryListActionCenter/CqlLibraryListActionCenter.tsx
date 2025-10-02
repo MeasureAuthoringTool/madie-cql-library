@@ -6,7 +6,6 @@ import ShareAction from "./shareAction/ShareAction";
 import HistoryAction from "./historyAction/HistoryAction";
 import { CqlLibrary } from "@madie/madie-models";
 import {
-  checkUserCanDelete,
   checkUserCanEdit,
   useFeatureFlags,
   useOktaTokens,
@@ -14,7 +13,7 @@ import {
 import TransferAction from "./transferAction/TransferAction";
 
 interface PropTypes {
-  libraries: CqlLibrary[];
+  selectedLibraries: CqlLibrary[];
   setDeleteDraftDialog: (value: any) => void;
   setSelectedCqlLibrary: (value: any) => void;
   setCreateDraftDialog: (value: any) => void;
@@ -27,9 +26,8 @@ interface PropTypes {
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
   const {
-    libraries,
+    selectedLibraries,
     setDeleteDraftDialog,
-    setSelectedCqlLibrary,
     setCreateDraftDialog,
     createVersion,
     owners,
@@ -37,26 +35,23 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
   const featureFlags = useFeatureFlags();
   const { getUserName } = useOktaTokens();
   const userName = getUserName();
-  const canEdit = libraries
+  const canEdit = selectedLibraries
     ? checkUserCanEdit(
-        libraries[0]?.librarySet?.owner,
-        libraries[0]?.librarySet?.acls
+        selectedLibraries[0]?.librarySet?.owner,
+        selectedLibraries[0]?.librarySet?.acls
       )
-    : false;
-  const canDelete = libraries
-    ? checkUserCanDelete(libraries[0]?.librarySet?.owner, libraries[0]?.draft)
     : false;
 
   function deleteLibrary() {
     setDeleteDraftDialog({
       open: true,
-      cqlLibrary: libraries[0],
+      cqlLibrary: selectedLibraries[0],
     });
   }
   function createDraft() {
     setCreateDraftDialog({
       open: true,
-      cqlLibrary: libraries[0],
+      cqlLibrary: selectedLibraries[0],
     });
   }
 
@@ -67,40 +62,38 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         option,
       });
     },
-    [props.setShareDialog]
+    [props]
   );
 
   const transferLibrary = useCallback(() => {
-    if (props.libraries?.length > 0) {
+    if (selectedLibraries?.length > 0) {
       props.setTransferDialog({ open: true });
     }
-  }, [props.libraries, props.setTransferDialog]);
+  }, [selectedLibraries?.length, props]);
 
   return (
     <div data-testid="action-center">
       <DeleteAction
-        libraries={libraries}
-        canEdit={canEdit}
-        canDelete={canDelete}
         onClick={deleteLibrary}
+        selectedLibraries={selectedLibraries}
       />
 
       <VersionAction
-        libraries={libraries}
+        libraries={selectedLibraries}
         canEdit={canEdit}
         onClick={createVersion}
       />
 
       <DraftAction
-        libraries={libraries}
+        libraries={selectedLibraries}
         canEdit={canEdit}
         onClick={createDraft}
       />
       {featureFlags?.LibraryHistory && (
-        <HistoryAction libraries={libraries} onClick={() => {}} />
+        <HistoryAction libraries={selectedLibraries} onClick={() => {}} />
       )}
       <ShareAction
-        libraries={libraries}
+        libraries={selectedLibraries}
         canEdit={canEdit}
         onClick={shareLibrary}
         userName={userName}
@@ -108,7 +101,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
       />
       {featureFlags?.TransferLibrary && (
         <TransferAction
-          libraries={libraries}
+          libraries={selectedLibraries}
           onClick={transferLibrary}
           activeTab={props?.activeTab}
         />

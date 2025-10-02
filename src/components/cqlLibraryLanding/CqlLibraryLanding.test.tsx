@@ -1,17 +1,10 @@
-import "@testing-library/jest-dom";
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 import * as React from "react";
-import {
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
-import userEvent from "@testing-library/user-event";
 import { Model, OwnershipType } from "@madie/madie-models";
+import userEvent from "@testing-library/user-event";
 // @ts-ignore
 import { useFeatureFlags } from "@madie/madie-util";
 import {

@@ -419,7 +419,7 @@ function CqlLibraryLanding() {
           />
           <div tw="col-start-4 justify-self-end p-3">
             <ActionCenter
-              libraries={selectedLibraries}
+              selectedLibraries={selectedLibraries}
               setDeleteDraftDialog={setDeleteDraftDialog}
               setSelectedCqlLibrary={setSelectedCqlLibrary}
               setCreateDraftDialog={setCreateDraftDialog}
@@ -464,14 +464,9 @@ function CqlLibraryLanding() {
                 handleSort={handleSort}
                 handlePageChange={handlePageChange}
                 searchCriteria={searchCriteria}
-                // Toast props
-                toastOpen={toastOpen}
-                toastMessage={toastMessage}
-                toastType={toastType}
                 setToastOpen={setToastOpen}
                 setToastMessage={setToastMessage}
                 setToastType={setToastType}
-                onToastClose={onToastClose}
               />
             )}
           </div>
