@@ -12,6 +12,7 @@ import userEvent from "@testing-library/user-event";
 import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../api/useCqlLibraryServiceApi";
+// @ts-ignore
 import { checkUserCanEdit, useFeatureFlags } from "@madie/madie-util";
 
 jest.mock("@madie/madie-util", () => ({
@@ -145,8 +146,13 @@ describe("CqlLibrary List component", () => {
         offset={0}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
         curLimit={10}
+        curPage={1}
         searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
       />
     );
     cqlLibrary.forEach((c) => {
@@ -227,8 +233,13 @@ describe("CqlLibrary List component", () => {
         offset={0}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
         curLimit={10}
+        curPage={1}
         searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
       />
     );
 
@@ -283,8 +294,13 @@ describe("CqlLibrary List component", () => {
         offset={0}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
         curLimit={10}
+        curPage={1}
         searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
       />
     );
 
@@ -297,6 +313,7 @@ describe("CqlLibrary List component", () => {
       screen.queryByRole("button", { name: "View/Edit" })
     ).not.toBeInTheDocument();
   });
+
   it("buttons featureflag: shows just an edit button when can edit", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(true);
     const cqlLibrary: CqlLibrary[] = [
@@ -343,8 +360,13 @@ describe("CqlLibrary List component", () => {
         offset={0}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
         curLimit={10}
+        curPage={1}
         searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
       />
     );
     expect(
@@ -423,13 +445,18 @@ describe("CqlLibrary List component", () => {
         setOwners={jest.fn()}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
         totalItems={10}
         activeTab={1}
         totalPages={20}
         visibleItems={10}
         offset={0}
         curLimit={10}
+        curPage={1}
         searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
       />
     );
 
@@ -504,13 +531,18 @@ describe("CqlLibrary List component", () => {
         setOwners={jest.fn()}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
         totalItems={10}
         activeTab={0}
         totalPages={20}
         visibleItems={10}
         offset={0}
         curLimit={10}
+        curPage={1}
         searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
       />
     );
 
@@ -581,13 +613,18 @@ describe("CqlLibrary List component", () => {
         setOwners={jest.fn()}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
         totalItems={10}
         activeTab={1}
         totalPages={20}
         visibleItems={10}
         offset={0}
         curLimit={10}
+        curPage={1}
         searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
       />
     );
 
@@ -658,13 +695,18 @@ describe("CqlLibrary List component", () => {
         setOwners={jest.fn()}
         sorting={[{ id: "cqlLibraryName", desc: false }]}
         handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
         totalItems={10}
         activeTab={2}
         totalPages={20}
         visibleItems={10}
         offset={0}
         curLimit={10}
+        curPage={1}
         searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
       />
     );
 
