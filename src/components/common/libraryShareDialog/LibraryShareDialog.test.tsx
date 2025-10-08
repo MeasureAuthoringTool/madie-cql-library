@@ -747,4 +747,135 @@ describe("Create Share Dialog component", () => {
       expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
     });
   });
+
+  it("should render confirmation dialog only", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"UnshareFromMe"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(screen.getByTestId("share-confirmation-dialog")).toBeInTheDocument();
+    expect(screen.queryByTestId("share-dialog")).toBeNull();
+  });
+
+  it("should close confirmation dialog and call onClose when option is 'UnshareFromMe'", async () => {
+    const onCloseMock = jest.fn();
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="UnshareFromMe"
+        onClose={onCloseMock}
+      />
+    );
+
+    expect(screen.getByTestId("share-confirmation-dialog")).toBeInTheDocument();
+    expect(screen.queryByTestId("share-dialog")).toBeNull();
+
+    const cancelButton = screen.getByTestId(
+      "share-confirmation-dialog-cancel-button"
+    );
+    fireEvent.click(cancelButton);
+
+    expect(onCloseMock).toHaveBeenCalled();
+    expect(screen.queryByTestId("share-dialog")).toBeNull();
+  });
+
+  it("should successfully unshare a user from a library", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="UnshareFromMe"
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(
+      await screen.findByTestId("share-confirmation-dialog")
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("share-dialog")).toBeNull();
+
+    const acceptBtn = await screen.findByTestId(
+      "share-confirmation-dialog-accept-button"
+    );
+    expect(acceptBtn).toBeEnabled();
+
+    fireEvent.click(acceptBtn);
+
+    await waitFor(() => {
+      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+    });
+  });
+
+  it("should fail to unshare a user from a library with UnshareFromMe", async () => {
+    const errorMessage =
+      "Unable to unshare the selected library(s) with the users who were unchecked. If the error persists, please contact the help desk.";
+
+    const mockLibraryServiceApiWithError = {
+      ...mockLibraryServiceApi,
+      unshareLibraries: jest.fn().mockRejectedValue(new Error(errorMessage)),
+    };
+    useLibraryServiceMock.mockReturnValue(mockLibraryServiceApiWithError);
+
+    const mockOnSave = jest.fn();
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="UnshareFromMe"
+        onClose={jest.fn()}
+      />
+    );
+
+    const acceptBtn = await screen.findByTestId(
+      "share-confirmation-dialog-accept-button"
+    );
+    expect(acceptBtn).toBeEnabled();
+
+    fireEvent.click(acceptBtn);
+
+    await waitFor(() => {
+      expect(mockLibraryServiceApiWithError.unshareLibraries).toBeCalled();
+    });
+  });
+
+  it("should render warning content with library names and current user", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="UnshareFromMe"
+        onClose={jest.fn()}
+      />
+    );
+
+    const confirmationDialog = await screen.findByTestId(
+      "share-confirmation-dialog"
+    );
+    expect(confirmationDialog).toBeInTheDocument();
+
+    // Check the warning text
+    expect(screen.getByText("You are about to unshare")).toBeInTheDocument();
+
+    // Each library name should appear
+    expect(
+      screen.getByText(mockCqlLibrary1.cqlLibraryName)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(mockCqlLibrary2.cqlLibraryName)
+    ).toBeInTheDocument();
+
+    // The current user should appear in the list
+    const userListItems = screen.getAllByRole("listitem");
+    expect(userListItems.length).toBe(2);
+    expect(userListItems[0]).toHaveTextContent("test-fake-user@email.com");
+    expect(userListItems[1]).toHaveTextContent("test-fake-user@email.com");
+  });
 });

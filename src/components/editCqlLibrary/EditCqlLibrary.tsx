@@ -166,6 +166,24 @@ const EditCqlLibrary = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const unshareFromMeListener = () => {
+      setShareDialog({
+        open: true,
+        option: "UnshareFromMe",
+      });
+    };
+    window.addEventListener("unshare-library-from-me", unshareFromMeListener, {
+      passive: true,
+    });
+    return () => {
+      window.removeEventListener(
+        "unshare-library-from-me",
+        unshareFromMeListener
+      );
+    };
+  }, []);
+
   // StatusHandler utilities
   const [success, setSuccess] = useState({
     status: undefined,

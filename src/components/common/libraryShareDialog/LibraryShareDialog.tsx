@@ -33,6 +33,7 @@ import "styled-components/macro";
 import useCqlLibraryServiceApi from "../../../api/useCqlLibraryServiceApi";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useOktaTokens } from "@madie/madie-util";
 
 interface ShareDialogProps {
   libraries: CqlLibrary[];
@@ -101,6 +102,9 @@ const LibraryShareDialog = ({
   option,
   onClose,
 }: ShareDialogProps) => {
+  const { getUserName } = useOktaTokens();
+  const userName = getUserName();
+
   const libraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
 
   const [loading, setLoading] = useState<boolean>(false);
@@ -122,6 +126,14 @@ const LibraryShareDialog = ({
   const [rowSelection, setRowSelection] = useState({});
   const [initialRowIdsSelected, setInitialRowIdsSelected] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+
+  const showShareDialog = option === "Share With" || option === "Unshare";
+
+  useEffect(() => {
+    if (option === "UnshareFromMe" && open) {
+      setConfirmationDialogOpen(true);
+    }
+  }, [option, open]);
 
   const updateSharedLibrariesRequest = (libraryId, harpId) => {
     setShareLibrariesRequest((map) => {
@@ -278,7 +290,7 @@ const LibraryShareDialog = ({
       } finally {
         setExecuting(false);
       }
-    } else if (option === "Unshare") {
+    } else if (option === "Unshare" || option === "UnshareFromMe") {
       try {
         await libraryServiceApi.unshareLibraries(unshareLibrariesRequest);
 
@@ -298,6 +310,8 @@ const LibraryShareDialog = ({
   };
 
   const onRowSelectionChange = useCallback(async () => {
+    if (option !== "Unshare") return;
+
     if (initialRowIdsSelected.length) {
       const rowIdsSelected = Object.keys(rowSelection);
 
@@ -312,30 +326,37 @@ const LibraryShareDialog = ({
         updateUnsharedLibrariesRequest(libraryId, userId);
       });
     }
-  }, [rowSelection]);
+  }, [rowSelection, option]);
 
   const confirmationDialogWarningContent = () => {
+    let requestToUse = unshareLibrariesRequest;
+    if (option === "UnshareFromMe" && unshareLibrariesRequest.size === 0) {
+      const directUnshareRequest = new Map<string, string[]>();
+      libraries.forEach((library) => {
+        directUnshareRequest.set(library.id, [userName]);
+        setUnshareLibrariesRequest(directUnshareRequest);
+      });
+      requestToUse = directUnshareRequest;
+    }
     return (
       <div>
         <div className="confirmation-dialog-content">
           You are about to unshare
         </div>
-        {Array.from(unshareLibrariesRequest).map(([libraryId, userIds]) => (
-          <>
-            <div className="confirmation-dialog-content">
-              <div className="library-name">
-                {libraryMap.get(libraryId)
-                  ? libraryMap.get(libraryId).cqlLibraryName
-                  : libraryId}
-              </div>
-              <div> with the following users:</div>
-              <ul>
-                {userIds.map((userId) => (
-                  <li>{userId}</li>
-                ))}
-              </ul>
+        {Array.from(requestToUse).map(([libraryId, userIds]) => (
+          <div className="confirmation-dialog-content" key={libraryId}>
+            <div className="library-name">
+              {libraryMap.get(libraryId)
+                ? libraryMap.get(libraryId).cqlLibraryName
+                : libraryId}
             </div>
-          </>
+            <div> with the following users:</div>
+            <ul>
+              {userIds.map((userId) => (
+                <li key={userId}>{userId}</li>
+              ))}
+            </ul>
+          </div>
         ))}
       </div>
     );
@@ -488,6 +509,15 @@ const LibraryShareDialog = ({
     formik.resetForm();
   }, [onClose]);
 
+  const handleConfirmationDialogClose = () => {
+    setConfirmationDialogOpen(false);
+
+    // Also close underlying Share/Unshare dialog
+    if (option === "UnshareFromMe") {
+      onClose();
+    }
+  };
+
   return (
     <>
       <GlobalStyles />
@@ -496,7 +526,7 @@ const LibraryShareDialog = ({
         title={option}
         dialogProps={{
           onClose,
-          open,
+          open: showShareDialog && open,
           onSubmit: formik.handleSubmit,
           maxWidth: "lg",
           "data-testid": "share-dialog",
@@ -643,15 +673,11 @@ const LibraryShareDialog = ({
         title="Are you sure?"
         dialogProps={{
           open: confirmationDialogOpen,
-          onClose: () => {
-            setConfirmationDialogOpen(false);
-          },
+          onClose: handleConfirmationDialogClose,
           "data-testid": "share-confirmation-dialog",
         }}
         cancelButtonProps={{
-          onClick: () => {
-            setConfirmationDialogOpen(false);
-          },
+          onClick: handleConfirmationDialogClose,
           cancelText: "Cancel",
           "data-testid": "share-confirmation-dialog-cancel-button",
         }}

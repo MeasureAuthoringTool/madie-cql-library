@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import DeleteAction from "./deleteAction/DeleteAction";
 import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";
@@ -41,6 +41,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         selectedLibraries[0]?.librarySet?.acls
       )
     : false;
+  const [isSharedWithUser, setIsSharedWithUser] = useState<boolean>(true);
 
   function deleteLibrary() {
     setDeleteDraftDialog({
@@ -56,13 +57,15 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
   }
 
   const shareLibrary = useCallback(
-    (option: string) => {
-      props.setShareDialog({
-        open: true,
-        option,
-      });
+    (actionType: string) => {
+      const shareOption =
+        actionType === "Unshare" && props.activeTab === 1
+          ? "UnshareFromMe"
+          : actionType;
+
+      props.setShareDialog({ open: true, option: shareOption });
     },
-    [props]
+    [props.setShareDialog, props.activeTab]
   );
 
   const transferLibrary = useCallback(() => {
@@ -98,6 +101,8 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         onClick={shareLibrary}
         userName={userName}
         owners={owners}
+        isSharedWithUser={isSharedWithUser}
+        activeTab={props?.activeTab}
       />
       {featureFlags?.TransferLibrary && (
         <TransferAction
