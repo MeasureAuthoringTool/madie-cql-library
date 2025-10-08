@@ -1385,4 +1385,34 @@ describe("Edit Cql Library Component", () => {
       { headers: { Authorization: "Bearer test.jwt" } }
     );
   });
+
+  it("should display an unshare from me confirmation dialog when the event is triggered and close dialog when cancel button is clicked", async () => {
+    renderWithRouter();
+    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+    const input = (await screen.getByTestId(
+      "cql-library-name-text-field-input"
+    )) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.value).toBe("Library1");
+
+    act(() => {
+      window.dispatchEvent(new Event("unshare-library-from-me"));
+    });
+
+    await waitFor(() => {
+      expect(getByTestId("share-confirmation-dialog")).toBeInTheDocument();
+    });
+
+    const cancelButton = getByTestId("share-confirmation-dialog-cancel-button");
+    fireEvent.click(cancelButton);
+
+    await waitFor(() => {
+      expect(
+        queryByTestId("share-confirmation-dialog")
+      ).not.toBeInTheDocument();
+    });
+  });
 });
