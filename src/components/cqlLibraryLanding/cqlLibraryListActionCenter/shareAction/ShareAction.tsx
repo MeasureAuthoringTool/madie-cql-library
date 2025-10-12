@@ -30,8 +30,6 @@ export enum SharedOptions {
   UNSHARE = "Unshare",
 }
 
-const options = [SharedOptions.SHARE_WITH, SharedOptions.UNSHARE];
-
 export default function ShareAction(props: PropTypes) {
   const { libraries, canEdit, userName, isSharedWithUser, activeTab } = props;
   const [disableShareBtn, setDisableShareBtn] = useState(true);
@@ -41,7 +39,10 @@ export default function ShareAction(props: PropTypes) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
-  const options = activeTab === 1 ? ["Unshare"] : ["Share With", "Unshare"];
+  const options =
+    activeTab === 1
+      ? [SharedOptions.UNSHARE]
+      : [SharedOptions.SHARE_WITH, SharedOptions.UNSHARE];
 
   const validateShareActionState = useCallback(() => {
     setDisableShareBtn(true);

@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import ShareAction, {
   NOTHING_SELECTED,
   INVALID_SHARE_LIBRARY,
@@ -9,6 +9,7 @@ import ShareAction, {
   SHARED_TAB_UNSHARE,
   SharedOptions,
 } from "./ShareAction";
+import userEvent from "@testing-library/user-event";
 
 const defaultProps = {
   libraries: [{ id: "1", name: "Lib1" }] as any,
@@ -129,7 +130,7 @@ describe("ShareAction", () => {
       />
     );
     const shareButton = screen.getByTestId("share-action-btn");
-    fireEvent.click(shareButton);
+    userEvent.click(shareButton);
 
     expect(screen.getByTestId("Share With-option")).toBeInTheDocument();
     expect(screen.getByTestId("Unshare-option")).toBeInTheDocument();
@@ -148,7 +149,7 @@ describe("ShareAction", () => {
       />
     );
     const shareButton = screen.getByTestId("share-action-btn");
-    fireEvent.click(shareButton);
+    userEvent.click(shareButton);
 
     expect(screen.getByTestId("Share With-option")).toBeInTheDocument();
     expect(screen.getByTestId("Unshare-option")).toBeInTheDocument();
@@ -174,12 +175,12 @@ describe("ShareAction", () => {
       VALID_SHARE_LIBRARY
     );
 
-    fireEvent.click(shareButton);
+    userEvent.click(shareButton);
 
     const shareWithMenuItem = screen.getByTestId("Share With-option");
     expect(shareWithMenuItem).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("menuitem", { name: "Share With" }));
+    userEvent.click(screen.getByRole("menuitem", { name: "Share With" }));
     expect(onClick).toHaveBeenCalledWith("Share With");
   });
 
@@ -203,12 +204,12 @@ describe("ShareAction", () => {
       VALID_SHARE_LIBRARY
     );
 
-    fireEvent.click(shareButton);
+    userEvent.click(shareButton);
 
     const unshareMenuItem = screen.getByTestId("Unshare-option");
     expect(unshareMenuItem).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("menuitem", { name: "Unshare" }));
+    userEvent.click(screen.getByRole("menuitem", { name: "Unshare" }));
     expect(onClick).toHaveBeenCalledWith("Unshare");
   });
 
@@ -302,7 +303,7 @@ describe("ShareAction", () => {
       />
     );
     const shareButton = screen.getByTestId("share-action-btn");
-    fireEvent.click(shareButton);
+    userEvent.click(shareButton);
 
     expect(screen.queryByTestId("Share With-option")).toBeNull();
     expect(screen.getByTestId("Unshare-option")).toBeInTheDocument();
@@ -330,12 +331,12 @@ describe("ShareAction", () => {
       SHARED_TAB_UNSHARE
     );
 
-    fireEvent.click(shareButton);
+    userEvent.click(shareButton);
 
     const unshareMenuItem = screen.getByTestId("Unshare-option");
     expect(unshareMenuItem).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("menuitem", { name: "Unshare" }));
+    userEvent.click(screen.getByRole("menuitem", { name: "Unshare" }));
     expect(onClick).toHaveBeenCalledWith("Unshare");
   });
 });

@@ -5,6 +5,7 @@ import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../../api/useCqlLibraryServiceApi";
 import { CqlLibrary } from "@madie/madie-models";
+import userEvent from "@testing-library/user-event";
 
 const testUser = "test user";
 
@@ -661,19 +662,19 @@ describe("Create Share Dialog component", () => {
     const expandButton = await screen.findByTestId(
       `expand-button-${mockCqlLibrary2.id}`
     );
-    fireEvent.click(expandButton);
+    userEvent.click(expandButton);
 
     const checkBoxes = await screen.findAllByRole("checkbox");
     expect(checkBoxes.length).toBe(2);
     expect(checkBoxes[0]).toBeChecked();
     expect(checkBoxes[1]).toBeChecked();
 
-    fireEvent.click(checkBoxes[0]);
+    userEvent.click(checkBoxes[0]);
 
     await waitFor(() => expect(checkBoxes[0]).not.toBeChecked());
     expect(saveBtn).toBeEnabled();
 
-    fireEvent.click(saveBtn);
+    userEvent.click(saveBtn);
 
     expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
 
@@ -682,7 +683,7 @@ describe("Create Share Dialog component", () => {
     );
     expect(acceptBtn).toBeEnabled();
 
-    fireEvent.click(acceptBtn);
+    userEvent.click(acceptBtn);
     await waitFor(async () => {
       expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
     });
@@ -721,19 +722,19 @@ describe("Create Share Dialog component", () => {
     const expandButton = await screen.findByTestId(
       `expand-button-${mockCqlLibrary2.id}`
     );
-    fireEvent.click(expandButton);
+    userEvent.click(expandButton);
 
     const checkBoxes = await screen.findAllByRole("checkbox");
     expect(checkBoxes.length).toBe(2);
     expect(checkBoxes[0]).toBeChecked();
     expect(checkBoxes[1]).toBeChecked();
 
-    fireEvent.click(checkBoxes[0]);
+    userEvent.click(checkBoxes[0]);
 
     await waitFor(() => expect(checkBoxes[0]).not.toBeChecked());
     expect(saveBtn).toBeEnabled();
 
-    fireEvent.click(saveBtn);
+    userEvent.click(saveBtn);
 
     expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
 
@@ -742,7 +743,7 @@ describe("Create Share Dialog component", () => {
     );
     expect(acceptBtn).toBeEnabled();
 
-    fireEvent.click(acceptBtn);
+    userEvent.click(acceptBtn);
     await waitFor(async () => {
       expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
     });
@@ -780,7 +781,7 @@ describe("Create Share Dialog component", () => {
     const cancelButton = screen.getByTestId(
       "share-confirmation-dialog-cancel-button"
     );
-    fireEvent.click(cancelButton);
+    userEvent.click(cancelButton);
 
     expect(onCloseMock).toHaveBeenCalled();
     expect(screen.queryByTestId("share-dialog")).toBeNull();
@@ -806,7 +807,7 @@ describe("Create Share Dialog component", () => {
     );
     expect(acceptBtn).toBeEnabled();
 
-    fireEvent.click(acceptBtn);
+    userEvent.click(acceptBtn);
 
     await waitFor(() => {
       expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
@@ -839,7 +840,7 @@ describe("Create Share Dialog component", () => {
     );
     expect(acceptBtn).toBeEnabled();
 
-    fireEvent.click(acceptBtn);
+    userEvent.click(acceptBtn);
 
     await waitFor(() => {
       expect(mockLibraryServiceApiWithError.unshareLibraries).toBeCalled();
