@@ -5,6 +5,7 @@ import useCqlLibraryServiceApi, {
   CqlLibraryServiceApi,
 } from "../../../api/useCqlLibraryServiceApi";
 import { CqlLibrary } from "@madie/madie-models";
+import userEvent from "@testing-library/user-event";
 
 const testUser = "test user";
 
@@ -661,19 +662,19 @@ describe("Create Share Dialog component", () => {
     const expandButton = await screen.findByTestId(
       `expand-button-${mockCqlLibrary2.id}`
     );
-    fireEvent.click(expandButton);
+    userEvent.click(expandButton);
 
     const checkBoxes = await screen.findAllByRole("checkbox");
     expect(checkBoxes.length).toBe(2);
     expect(checkBoxes[0]).toBeChecked();
     expect(checkBoxes[1]).toBeChecked();
 
-    fireEvent.click(checkBoxes[0]);
+    userEvent.click(checkBoxes[0]);
 
     await waitFor(() => expect(checkBoxes[0]).not.toBeChecked());
     expect(saveBtn).toBeEnabled();
 
-    fireEvent.click(saveBtn);
+    userEvent.click(saveBtn);
 
     expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
 
@@ -682,7 +683,7 @@ describe("Create Share Dialog component", () => {
     );
     expect(acceptBtn).toBeEnabled();
 
-    fireEvent.click(acceptBtn);
+    userEvent.click(acceptBtn);
     await waitFor(async () => {
       expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
     });
@@ -721,19 +722,19 @@ describe("Create Share Dialog component", () => {
     const expandButton = await screen.findByTestId(
       `expand-button-${mockCqlLibrary2.id}`
     );
-    fireEvent.click(expandButton);
+    userEvent.click(expandButton);
 
     const checkBoxes = await screen.findAllByRole("checkbox");
     expect(checkBoxes.length).toBe(2);
     expect(checkBoxes[0]).toBeChecked();
     expect(checkBoxes[1]).toBeChecked();
 
-    fireEvent.click(checkBoxes[0]);
+    userEvent.click(checkBoxes[0]);
 
     await waitFor(() => expect(checkBoxes[0]).not.toBeChecked());
     expect(saveBtn).toBeEnabled();
 
-    fireEvent.click(saveBtn);
+    userEvent.click(saveBtn);
 
     expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
 
@@ -742,9 +743,140 @@ describe("Create Share Dialog component", () => {
     );
     expect(acceptBtn).toBeEnabled();
 
-    fireEvent.click(acceptBtn);
+    userEvent.click(acceptBtn);
     await waitFor(async () => {
       expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
     });
+  });
+
+  it("should render confirmation dialog only", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"UnshareFromMe"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(screen.getByTestId("share-confirmation-dialog")).toBeInTheDocument();
+    expect(screen.queryByTestId("share-dialog")).toBeNull();
+  });
+
+  it("should close confirmation dialog and call onClose when option is 'UnshareFromMe'", async () => {
+    const onCloseMock = jest.fn();
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="UnshareFromMe"
+        onClose={onCloseMock}
+      />
+    );
+
+    expect(screen.getByTestId("share-confirmation-dialog")).toBeInTheDocument();
+    expect(screen.queryByTestId("share-dialog")).toBeNull();
+
+    const cancelButton = screen.getByTestId(
+      "share-confirmation-dialog-cancel-button"
+    );
+    userEvent.click(cancelButton);
+
+    expect(onCloseMock).toHaveBeenCalled();
+    expect(screen.queryByTestId("share-dialog")).toBeNull();
+  });
+
+  it("should successfully unshare a user from a library", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="UnshareFromMe"
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(
+      await screen.findByTestId("share-confirmation-dialog")
+    ).toBeInTheDocument();
+    expect(screen.queryByTestId("share-dialog")).toBeNull();
+
+    const acceptBtn = await screen.findByTestId(
+      "share-confirmation-dialog-accept-button"
+    );
+    expect(acceptBtn).toBeEnabled();
+
+    userEvent.click(acceptBtn);
+
+    await waitFor(() => {
+      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+    });
+  });
+
+  it("should fail to unshare a user from a library with UnshareFromMe", async () => {
+    const errorMessage =
+      "Unable to unshare the selected library(s) with the users who were unchecked. If the error persists, please contact the help desk.";
+
+    const mockLibraryServiceApiWithError = {
+      ...mockLibraryServiceApi,
+      unshareLibraries: jest.fn().mockRejectedValue(new Error(errorMessage)),
+    };
+    useLibraryServiceMock.mockReturnValue(mockLibraryServiceApiWithError);
+
+    const mockOnSave = jest.fn();
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="UnshareFromMe"
+        onClose={jest.fn()}
+      />
+    );
+
+    const acceptBtn = await screen.findByTestId(
+      "share-confirmation-dialog-accept-button"
+    );
+    expect(acceptBtn).toBeEnabled();
+
+    userEvent.click(acceptBtn);
+
+    await waitFor(() => {
+      expect(mockLibraryServiceApiWithError.unshareLibraries).toBeCalled();
+    });
+  });
+
+  it("should render warning content with library names and current user", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="UnshareFromMe"
+        onClose={jest.fn()}
+      />
+    );
+
+    const confirmationDialog = await screen.findByTestId(
+      "share-confirmation-dialog"
+    );
+    expect(confirmationDialog).toBeInTheDocument();
+
+    // Check the warning text
+    expect(screen.getByText("You are about to unshare")).toBeInTheDocument();
+
+    // Each library name should appear
+    expect(
+      screen.getByText(mockCqlLibrary1.cqlLibraryName)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(mockCqlLibrary2.cqlLibraryName)
+    ).toBeInTheDocument();
+
+    // The current user should appear in the list
+    const userListItems = screen.getAllByRole("listitem");
+    expect(userListItems.length).toBe(2);
+    expect(userListItems[0]).toHaveTextContent("test-fake-user@email.com");
+    expect(userListItems[1]).toHaveTextContent("test-fake-user@email.com");
   });
 });

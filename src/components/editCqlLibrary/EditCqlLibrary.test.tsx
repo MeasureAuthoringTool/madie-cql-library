@@ -21,6 +21,10 @@ jest.mock("@madie/madie-util", () => ({
   checkUserCanEdit: jest.fn(() => {
     return true;
   }),
+  useOktaTokens: jest.fn(() => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => "test user",
+  })),
   useDocumentTitle: jest.fn(),
   useFeatureFlags: jest.fn(() => ({ Locking: false })),
   cqlLibraryStore: {

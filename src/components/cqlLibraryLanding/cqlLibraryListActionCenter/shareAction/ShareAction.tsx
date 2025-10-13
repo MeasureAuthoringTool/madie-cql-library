@@ -10,6 +10,8 @@ interface PropTypes {
   canEdit: boolean;
   userName: string;
   owners: string[];
+  isSharedWithUser: boolean;
+  activeTab: number;
 }
 
 export const NOTHING_SELECTED = "Select a library to share/unshare";
@@ -17,34 +19,56 @@ export const INVALID_SHARE_LIBRARY =
   "You cannot share/unshare a library you do not own";
 export const VALID_SHARE_LIBRARY = "Share/Unshare";
 
+// Tooltips that show on Shared Measures tabs
+export const SHARED_TAB_NOTHING_SELECTED = "Select a library to unshare";
+export const SHARED_TAB_INVALID_UNSHARE_LIBRARY =
+  "You cannot unshare a library that you do not have shared access to";
+export const SHARED_TAB_UNSHARE = "Unshare";
+
 export enum SharedOptions {
   SHARE_WITH = "Share With",
   UNSHARE = "Unshare",
 }
 
-const options = [SharedOptions.SHARE_WITH, SharedOptions.UNSHARE];
-
 export default function ShareAction(props: PropTypes) {
-  const { libraries, canEdit, userName } = props;
+  const { libraries, canEdit, userName, isSharedWithUser, activeTab } = props;
   const [disableShareBtn, setDisableShareBtn] = useState(true);
-  const [tooltipMessage, setTooltipMessage] = useState(NOTHING_SELECTED);
+  const [tooltipMessage, setTooltipMessage] = useState(
+    activeTab === 1 ? SHARED_TAB_NOTHING_SELECTED : NOTHING_SELECTED
+  );
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  const options =
+    activeTab === 1
+      ? [SharedOptions.UNSHARE]
+      : [SharedOptions.SHARE_WITH, SharedOptions.UNSHARE];
+
   const validateShareActionState = useCallback(() => {
     setDisableShareBtn(true);
-    if (libraries?.length === 0 || props.owners?.length === 0) {
-      setTooltipMessage(NOTHING_SELECTED);
-    } else if (
-      props.owners?.length > 1 ||
-      (props.owners?.length == 1 && props.owners[0] != userName)
-    ) {
-      setTooltipMessage(INVALID_SHARE_LIBRARY);
-    } else {
-      setTooltipMessage(VALID_SHARE_LIBRARY);
-      setDisableShareBtn(false);
+    if (activeTab === 1) {
+      if (libraries?.length === 0) {
+        setTooltipMessage(SHARED_TAB_NOTHING_SELECTED);
+      } else if (isSharedWithUser) {
+        setDisableShareBtn(false);
+        setTooltipMessage(SHARED_TAB_UNSHARE);
+      } else {
+        setTooltipMessage(SHARED_TAB_INVALID_UNSHARE_LIBRARY);
+      }
+    } else if (activeTab === 0 || activeTab === 2) {
+      if (libraries?.length === 0) {
+        setTooltipMessage(NOTHING_SELECTED);
+      } else if (
+        props.owners?.length > 1 ||
+        (props.owners?.length == 1 && props.owners[0] === userName)
+      ) {
+        setDisableShareBtn(false);
+        setTooltipMessage(VALID_SHARE_LIBRARY);
+      } else {
+        setTooltipMessage(INVALID_SHARE_LIBRARY);
+      }
     }
-  }, [libraries, canEdit, props.owners]);
+  }, [libraries, canEdit, props.owners, isSharedWithUser, activeTab]);
 
   useEffect(() => {
     validateShareActionState();

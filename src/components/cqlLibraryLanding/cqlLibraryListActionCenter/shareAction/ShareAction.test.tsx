@@ -1,109 +1,170 @@
-import * as React from "react";
-import { fireEvent, render, screen } from "@testing-library/react";
-import { Measure, MeasureSet, Model } from "@madie/madie-models";
+import React from "react";
+import { render, screen } from "@testing-library/react";
 import ShareAction, {
-  INVALID_SHARE_MEASURE,
   NOTHING_SELECTED,
-  VALID_SHARE_MEASURE,
+  INVALID_SHARE_LIBRARY,
+  VALID_SHARE_LIBRARY,
+  SHARED_TAB_NOTHING_SELECTED,
+  SHARED_TAB_INVALID_UNSHARE_LIBRARY,
+  SHARED_TAB_UNSHARE,
+  SharedOptions,
 } from "./ShareAction";
+import userEvent from "@testing-library/user-event";
+
+const defaultProps = {
+  libraries: [{ id: "1", name: "Lib1" }] as any,
+  onClick: jest.fn(),
+  canEdit: true,
+  userName: "testuser",
+  owners: ["testuser"],
+  isSharedWithUser: true,
+  activeTab: 0,
+};
 
 const mockUser = "test user";
-jest.mock("@madie/madie-util", () => ({
-  useOktaTokens: () => ({
-    getUserName: () => mockUser,
-  }),
-}));
 
-const mockMeasureSet = {
-  cmsId: "124",
-  measureSetId: "1-2-3-4",
+const mockLibrarySet = {
+  librarySetId: "1-2-3-4",
   owner: mockUser,
-} as unknown as MeasureSet;
+} as unknown as LibrarySet;
 
-const qdmMeasure = {
-  model: Model.QDM_5_6,
-  measureSet: mockMeasureSet,
-  measureSetId: "1-2-3-4",
-} as Measure;
+const mockLibrary = {
+  librarySet: { ...mockLibrarySet },
+  librarySetId: "1-2-3-4",
+} as unknown as CqlLibrary;
 
-const qiCoreMeasure = {
-  model: Model.QICORE,
-  measureSet: { ...mockMeasureSet, cmsId: null },
-  measureSetId: "1-2-3-4",
-  measureMetaData: { draft: true },
-} as unknown as Measure;
+const onClick = jest.fn();
 
 describe("ShareAction", () => {
-  it("Should disable share action btn if no measure selected", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("Should disable share action btn if no library is selected", () => {
     render(
       <ShareAction
-        measures={[]}
+        libraries={[]}
         onClick={() => {}}
         canEdit={true}
+        isSharedWithUser={false}
+        activeTab={0}
+        userName={""}
         owners={[]}
       />
     );
+    expect(screen.getByTestId("share-action-btn")).toBeDisabled();
     expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
       "aria-label",
       NOTHING_SELECTED
     );
-    expect(screen.getByTestId("share-action-btn")).toBeDisabled();
   });
 
-  it("Should disable share action btn if user selects one measure but canEdit is false", () => {
+  it("Should disable share action btn if user selects one library but isOwner is false", () => {
     render(
       <ShareAction
-        measures={[qiCoreMeasure]}
+        libraries={[mockLibrary]}
         onClick={() => {}}
         canEdit={false}
-        owners={["bad user1"]}
+        isSharedWithUser={false}
+        activeTab={0}
+        userName={""}
+        owners={[]}
       />
     );
     expect(screen.getByTestId("share-action-btn")).toBeDisabled();
     expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
       "aria-label",
-      INVALID_SHARE_MEASURE
+      INVALID_SHARE_LIBRARY
     );
   });
 
-  it("Should enable share action btn if user selects one measure and canEdit is true", () => {
+  it("Should enable share action btn if user selects one library and isOwner is true", () => {
     render(
       <ShareAction
-        measures={[qiCoreMeasure]}
+        libraries={[mockLibrary]}
         onClick={() => {}}
         canEdit={true}
+        isSharedWithUser={false}
+        activeTab={0}
+        userName={"test user"}
+        owners={["test user"]}
       />
     );
     expect(screen.getByTestId("share-action-btn")).not.toBeDisabled();
     expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
       "aria-label",
-      VALID_SHARE_MEASURE
+      VALID_SHARE_LIBRARY
     );
   });
 
-  it("Should enable share action btn if user selects two measures and canEdit is true", () => {
-    const measure2 = { ...qiCoreMeasure, model: Model.QDM_5_6 };
+  it("Should enable share action btn if user selects two Libraries and isOwner is true", () => {
+    const mockLibrary2 = { ...mockLibrary, id: "2" };
     render(
       <ShareAction
-        measures={[qdmMeasure, measure2]}
+        libraries={[mockLibrary, mockLibrary2]}
         onClick={() => {}}
         canEdit={true}
+        isSharedWithUser={false}
+        activeTab={0}
+        userName={"test user"}
+        owners={["test user"]}
       />
     );
     expect(screen.getByTestId("share-action-btn")).not.toBeDisabled();
     expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
       "aria-label",
-      VALID_SHARE_MEASURE
+      VALID_SHARE_LIBRARY
     );
   });
 
-  it("Should display menu items when the share action btn is clicked and call associated onClick method when menu item is clicked", () => {
-    const onClick = jest.fn();
+  it("Should render both 'Share With' and 'Unshare' options on Owned Libraries tab", () => {
     render(
       <ShareAction
-        measures={[qiCoreMeasure]}
+        libraries={[mockLibrary]}
+        onClick={() => {}}
+        canEdit={true}
+        isSharedWithUser={false}
+        activeTab={0}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+    const shareButton = screen.getByTestId("share-action-btn");
+    userEvent.click(shareButton);
+
+    expect(screen.getByTestId("Share With-option")).toBeInTheDocument();
+    expect(screen.getByTestId("Unshare-option")).toBeInTheDocument();
+  });
+
+  it("Should render both 'Share With' and 'Unshare' options on All Libraries tab", () => {
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
+        onClick={() => {}}
+        canEdit={true}
+        isSharedWithUser={false}
+        activeTab={2}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+    const shareButton = screen.getByTestId("share-action-btn");
+    userEvent.click(shareButton);
+
+    expect(screen.getByTestId("Share With-option")).toBeInTheDocument();
+    expect(screen.getByTestId("Unshare-option")).toBeInTheDocument();
+  });
+
+  it("Should display menu items when the share action btn is clicked and call associated onClick method when 'Share With' menu item is clicked", () => {
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
         onClick={onClick}
         canEdit={true}
+        isSharedWithUser={false}
+        activeTab={0}
+        userName={"test user"}
+        owners={["test user"]}
       />
     );
     const shareButton = screen.getByTestId("share-action-btn");
@@ -111,22 +172,171 @@ describe("ShareAction", () => {
     expect(shareButton).not.toBeDisabled();
     expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
       "aria-label",
-      VALID_SHARE_MEASURE
+      VALID_SHARE_LIBRARY
     );
 
-    fireEvent.click(shareButton);
+    userEvent.click(shareButton);
 
     const shareWithMenuItem = screen.getByTestId("Share With-option");
-    const unsharehMenuItem = screen.getByTestId("Unshare-option");
-
     expect(shareWithMenuItem).toBeInTheDocument();
-    expect(unsharehMenuItem).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("menuitem", { name: "Share With" }));
+    userEvent.click(screen.getByRole("menuitem", { name: "Share With" }));
     expect(onClick).toHaveBeenCalledWith("Share With");
+  });
 
-    fireEvent.click(shareButton);
-    fireEvent.click(screen.getByRole("menuitem", { name: "Unshare" }));
+  it("Should display menu items when the share action btn is clicked and call associated onClick method when 'Unshare' menu item is clicked", () => {
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
+        onClick={onClick}
+        canEdit={true}
+        isSharedWithUser={false}
+        activeTab={0}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+    const shareButton = screen.getByTestId("share-action-btn");
+
+    expect(shareButton).not.toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      VALID_SHARE_LIBRARY
+    );
+
+    userEvent.click(shareButton);
+
+    const unshareMenuItem = screen.getByTestId("Unshare-option");
+    expect(unshareMenuItem).toBeInTheDocument();
+
+    userEvent.click(screen.getByRole("menuitem", { name: "Unshare" }));
+    expect(onClick).toHaveBeenCalledWith("Unshare");
+  });
+
+  it("All Libraries tab: Should disable share action btn if no library selected", () => {
+    render(
+      <ShareAction
+        libraries={[]}
+        onClick={onClick}
+        canEdit={true}
+        isSharedWithUser={false}
+        activeTab={2}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+    expect(screen.getByTestId("share-action-btn")).toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      NOTHING_SELECTED
+    );
+  });
+
+  it("Should disable share action btn if no library is selected in shared libraries", () => {
+    render(
+      <ShareAction
+        libraries={[]}
+        onClick={onClick}
+        canEdit={true}
+        isSharedWithUser={false}
+        activeTab={1}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+    expect(screen.getByTestId("share-action-btn")).toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      SHARED_TAB_NOTHING_SELECTED
+    );
+  });
+
+  it("Should enable share action btn if user selects one library from shared libraries", () => {
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
+        onClick={onClick}
+        canEdit={false}
+        isSharedWithUser={true}
+        activeTab={1}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+    expect(screen.getByTestId("share-action-btn")).not.toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      SHARED_TAB_UNSHARE
+    );
+  });
+
+  it("Should enable share action btn if user selects more than one library from shared libraries", () => {
+    const mockLibrary2 = { ...mockLibrary, id: "2" };
+    render(
+      <ShareAction
+        libraries={[mockLibrary, mockLibrary2]}
+        onClick={onClick}
+        canEdit={false}
+        isSharedWithUser={true}
+        activeTab={1}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+    expect(screen.getByTestId("share-action-btn")).not.toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      SHARED_TAB_UNSHARE
+    );
+  });
+
+  it("Should render only 'Unshare' option on Shared Libraries tab", () => {
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
+        onClick={() => {}}
+        canEdit={true}
+        isSharedWithUser={true}
+        activeTab={1}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+    const shareButton = screen.getByTestId("share-action-btn");
+    userEvent.click(shareButton);
+
+    expect(screen.queryByTestId("Share With-option")).toBeNull();
+    expect(screen.getByTestId("Unshare-option")).toBeInTheDocument();
+  });
+
+  it("Should display menu items when the share action btn is clicked and call associated onClick method when 'Unshare' menu item is clicked", () => {
+    const onClick = jest.fn();
+
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
+        onClick={onClick}
+        canEdit={true}
+        isSharedWithUser={true}
+        activeTab={1}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+    const shareButton = screen.getByTestId("share-action-btn");
+
+    expect(shareButton).not.toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      SHARED_TAB_UNSHARE
+    );
+
+    userEvent.click(shareButton);
+
+    const unshareMenuItem = screen.getByTestId("Unshare-option");
+    expect(unshareMenuItem).toBeInTheDocument();
+
+    userEvent.click(screen.getByRole("menuitem", { name: "Unshare" }));
     expect(onClick).toHaveBeenCalledWith("Unshare");
   });
 });
