@@ -44,6 +44,9 @@ import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 import * as _ from "lodash";
 import { Chip } from "@mui/material";
 import TransferDialog from "../common/transferDialog/TransferDialog";
+import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
 export const TRANSFER_LIBRARY_SUCCESS =
   "The library(s) were successfully transferred. If you chose to retain share access, you will still be able to edit the libraries.";
@@ -561,6 +564,7 @@ export default function CqlLibraryList({
         </button>
       ),
       accessorKey: "Actions",
+      enableSorting: false,
       cell: (info) => (
         <Button
           variant="outline-secondary"
@@ -627,6 +631,7 @@ export default function CqlLibraryList({
     columnDefs.push({
       id: "select",
       accessorKey: "select",
+      enableSorting: false,
       header: () => <div aria-label="Library Selection">{getHeader()}</div>,
       cell: ({ row }) => {
         return (
@@ -1091,6 +1096,19 @@ export default function CqlLibraryList({
                               desc: " 🔽",
                             }[header.column.getIsSorted() as string] ||
                               null)} */}
+                            {header.isPlaceholder ? null : header.column.getCanSort() ? (
+                              <span>
+                                {header.column.getCanSort() ? (
+                                  header.column.getIsSorted() === "asc" ? (
+                                    <KeyboardArrowUpIcon />
+                                  ) : header.column.getIsSorted() === "desc" ? (
+                                    <KeyboardArrowDownIcon />
+                                  ) : (
+                                    <UnfoldMoreIcon />
+                                  )
+                                ) : undefined}
+                              </span>
+                            ) : null}
                           </th>
                         );
                       })}
