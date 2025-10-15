@@ -1106,6 +1106,7 @@ export default function CqlLibraryList({
                               header.column.columnDef.header,
                               header.getContext()
                             )}
+
                             <span className="arrowDisplay">
                               {header.column.getCanSort() ? (
                                 header.column.getIsSorted() === "asc" ? (
