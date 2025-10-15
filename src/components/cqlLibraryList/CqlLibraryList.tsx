@@ -1147,12 +1147,7 @@ export default function CqlLibraryList({
                   )}
                   {table.getRowModel().rows.map((row) => (
                     <React.Fragment key={row.id}>
-                      <tr
-                        key={row.id}
-                        data-testid="row-item"
-                        className="ll-tr"
-                        // style={{ borderTop: "solid 1px #8c8c8c" }}
-                      >
+                      <tr key={row.id} data-testid="row-item" className="ll-tr">
                         {row.getVisibleCells().map((cell) => (
                           <td
                             key={cell.id}
