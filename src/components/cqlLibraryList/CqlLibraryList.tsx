@@ -44,6 +44,10 @@ import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 import * as _ from "lodash";
 import { Chip } from "@mui/material";
 import TransferDialog from "../common/transferDialog/TransferDialog";
+import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
+import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import "./CqlLibraryList.scss";
 
 export const TRANSFER_LIBRARY_SUCCESS =
   "The library(s) were successfully transferred. If you chose to retain share access, you will still be able to edit the libraries.";
@@ -145,6 +149,7 @@ export default function CqlLibraryList({
   setToastMessage,
   setToastType,
 }) {
+  const [hoveredHeader, setHoveredHeader] = useState<string>("");
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
   const [selectedExpandedLibrariesIds, setSelectedExpandedLibrariesIds] =
@@ -561,6 +566,7 @@ export default function CqlLibraryList({
         </button>
       ),
       accessorKey: "Actions",
+      enableSorting: false,
       cell: (info) => (
         <Button
           variant="outline-secondary"
@@ -627,6 +633,7 @@ export default function CqlLibraryList({
     columnDefs.push({
       id: "select",
       accessorKey: "select",
+      enableSorting: false,
       header: () => <div aria-label="Library Selection">{getHeader()}</div>,
       cell: ({ row }) => {
         return (
@@ -1044,6 +1051,8 @@ export default function CqlLibraryList({
             <div>
               <table
                 tw="min-w-full"
+                className="ll-table"
+                id="libraryListTable"
                 style={{
                   borderTop: "solid 1px #8c8c8c",
                   borderBottom: "solid 1px #8c8c8c",
@@ -1054,6 +1063,7 @@ export default function CqlLibraryList({
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map((header) => {
                         const button = isButton(header);
+                        const isHovered = hoveredHeader?.includes(header.id);
                         return (
                           <th
                             key={header.id}
@@ -1079,18 +1089,44 @@ export default function CqlLibraryList({
                                 : undefined
                             }
                             style={button ? { cursor: "pointer" } : null}
+                            onMouseEnter={() => setHoveredHeader(header.id)}
+                            onMouseLeave={() => setHoveredHeader(null)}
+                            title={
+                              header.column.getCanSort()
+                                ? header.column.getNextSortingOrder() === "asc"
+                                  ? "Sort ascending"
+                                  : header.column.getNextSortingOrder() ===
+                                    "desc"
+                                  ? "Sort descending"
+                                  : "Clear sort"
+                                : undefined
+                            }
                           >
                             {flexRender(
                               header.column.columnDef.header,
                               header.getContext()
                             )}
-                            {/* boilder plate logic for later to show the order */}
-                            {/* {header.column.columnDef.header !== "Actions" &&
-                            ({
-                              asc: " 🔼",
-                              desc: " 🔽",
-                            }[header.column.getIsSorted() as string] ||
-                              null)} */}
+                            <span className="arrowDisplay">
+                              {header.column.getCanSort() ? (
+                                header.column.getIsSorted() === "asc" ? (
+                                  <KeyboardArrowUpIcon />
+                                ) : header.column.getIsSorted() === "desc" ? (
+                                  <KeyboardArrowDownIcon />
+                                ) : isHovered ? (
+                                  <UnfoldMoreIcon />
+                                ) : (
+                                  // Always render a transparent icon to reserve space
+                                  <span style={{ visibility: "hidden" }}>
+                                    <UnfoldMoreIcon />
+                                  </span>
+                                )
+                              ) : (
+                                // Non-sortable columns: reserve space
+                                <span style={{ visibility: "hidden" }}>
+                                  <UnfoldMoreIcon />
+                                </span>
+                              )}
+                            </span>
                           </th>
                         );
                       })}
@@ -1113,7 +1149,8 @@ export default function CqlLibraryList({
                       <tr
                         key={row.id}
                         data-testid="row-item"
-                        style={{ borderTop: "solid 1px #8c8c8c" }}
+                        className="ll-tr"
+                        // style={{ borderTop: "solid 1px #8c8c8c" }}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <td
