@@ -4,6 +4,7 @@ import { ServiceConfig } from "./ServiceContext";
 import { CqlLibrary, OwnershipType } from "@madie/madie-models";
 import useOktaTokens from "../hooks/useOktaTokens";
 import { AxiosResponse } from "axios";
+import { AuditRow } from "../components/cqlLibraryLanding/CqlLibraryHistoryDialog";
 export class CqlLibraryServiceApi {
   constructor(private baseUrl: string, private getAccessToken: () => string) {}
   async fetchCqlLibraries(
@@ -257,6 +258,23 @@ export class CqlLibraryServiceApi {
     } catch (err) {
       console.error("Failed to get libraries by library set id ", err);
       throw err;
+    }
+  }
+
+  async getLibraryHistory(selectedLibrary: CqlLibrary): Promise<AuditRow[]> {
+    const { id } = selectedLibrary;
+    try {
+      const response = await axios.get<AuditRow[]>(
+        `${this.baseUrl}/cql-libraries/${id}/history`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to fetch library history");
     }
   }
 

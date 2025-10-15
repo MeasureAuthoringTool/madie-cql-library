@@ -60,6 +60,7 @@ import {
   TRANSFER_LIBRARY_FAILURE,
   TRANSFER_LIBRARY_SUCCESS,
 } from "../cqlLibraryList/CqlLibraryList";
+import CqlLibraryHistoryDialog from "../cqlLibraryLanding/CqlLibraryHistoryDialog";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -183,6 +184,30 @@ const EditCqlLibrary = () => {
       );
     };
   }, []);
+
+  const [libraryHistoryDialogOpen, setLibraryHistoryDialogOpen] =
+    useState(false);
+  const [libraryHistoryLogs, setLibraryHistoryLogs] = useState([]);
+
+  const openLibraryHistoryDialog = () => {
+    cqlLibraryServiceApi.getLibraryHistory(loadedCqlLibrary).then((data) => {
+      setLibraryHistoryLogs(data);
+      setLibraryHistoryDialogOpen(true);
+    });
+  };
+  const closeLibraryHistoryDialog = () => {
+    setLibraryHistoryLogs([]);
+    setLibraryHistoryDialogOpen(false);
+  };
+
+  useEffect(() => {
+    window.addEventListener("history-library", openLibraryHistoryDialog, {
+      passive: true,
+    });
+    return () => {
+      window.removeEventListener("history-library", openLibraryHistoryDialog);
+    };
+  }, [loadedCqlLibrary]);
 
   // StatusHandler utilities
   const [success, setSuccess] = useState({
@@ -979,6 +1004,14 @@ const EditCqlLibrary = () => {
             onSubmit={transferLibrary}
           />
         </form>
+      )}
+      {libraryHistoryDialogOpen && (
+        <CqlLibraryHistoryDialog
+          selectedCqlLibrary={loadedCqlLibrary}
+          libraryHistoryLogs={libraryHistoryLogs}
+          open={libraryHistoryDialogOpen}
+          onClose={closeLibraryHistoryDialog}
+        />
       )}
     </div>
   );

@@ -19,6 +19,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Search from "../librarySearch/Search";
 import * as _ from "lodash";
 import { getTabStorageKey } from "./cqlLibraryLandingUtils";
+import CqlLibraryHistoryDialog from "./CqlLibraryHistoryDialog";
 
 const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
@@ -67,7 +68,23 @@ function CqlLibraryLanding() {
 
   const [selectedLibraries, setSelectedLibraries] = useState<CqlLibrary[]>([]);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
-  // const [filter, setFilter] = useState("");
+  const [libraryHistoryDialogOpen, setLibraryHistoryDialogOpen] =
+    useState(false);
+  const [libraryHistoryLogs, setLibraryHistoryLogs] = useState([]);
+
+  const openLibraryHistoryDialog = () => {
+    if (selectedLibraries.length === 1) {
+      const selectedLibrary = selectedLibraries[0];
+      cqlLibraryServiceApi.getLibraryHistory(selectedLibrary).then((data) => {
+        setLibraryHistoryLogs(data);
+        setLibraryHistoryDialogOpen(true);
+      });
+    }
+  };
+  const closeLibraryHistoryDialog = () => {
+    setLibraryHistoryLogs([]);
+    setLibraryHistoryDialogOpen(false);
+  };
   const abortController = useRef<AbortController | null>(null);
   const [selectedCQLLibrary, setSelectedCqlLibrary] =
     useState<CqlLibrary>(null);
@@ -419,6 +436,7 @@ function CqlLibraryLanding() {
           />
           <div tw="col-start-4 justify-self-end p-3">
             <ActionCenter
+              openLibraryHistoryDialog={openLibraryHistoryDialog}
               selectedLibraries={selectedLibraries}
               setDeleteDraftDialog={setDeleteDraftDialog}
               setSelectedCqlLibrary={setSelectedCqlLibrary}
@@ -476,6 +494,14 @@ function CqlLibraryLanding() {
             </div>
           )}
         </div>
+        {libraryHistoryDialogOpen && (
+          <CqlLibraryHistoryDialog
+            selectedCqlLibrary={selectedLibraries[0]}
+            libraryHistoryLogs={libraryHistoryLogs}
+            open={libraryHistoryDialogOpen}
+            onClose={closeLibraryHistoryDialog}
+          />
+        )}
         <Toast
           toastKey="library-action-toast"
           aria-live="polite"
