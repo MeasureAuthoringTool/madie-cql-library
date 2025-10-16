@@ -32,7 +32,7 @@ describe("Transfer Libraries Dialog component", () => {
     );
 
     expect(getByTestId("transfer-dialog")).toBeInTheDocument();
-    expect(screen.getByText("Transfer Library(s)")).toBeInTheDocument();
+    expect(screen.getByText("Transfer Library Ownership")).toBeInTheDocument();
     expect(getByTestId("transfer-cancel-button")).toBeInTheDocument();
     expect(getByTestId("transfer-save-button")).toBeInTheDocument();
   });
