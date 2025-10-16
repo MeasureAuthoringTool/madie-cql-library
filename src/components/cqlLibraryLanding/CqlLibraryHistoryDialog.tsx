@@ -127,6 +127,7 @@ const CqlLibrayHistoryDialog = (props) => {
 
   return (
     <MadieDialog
+      form
       title="Library History"
       dialogProps={{
         onClose,
@@ -134,6 +135,13 @@ const CqlLibrayHistoryDialog = (props) => {
         maxWidth: "lg",
         "data-testid": "share-dialog",
       }}
+      cancelButtonProps={{
+        variant: "outline",
+        cancelText: "Close",
+        "data-testid": "measure-history-close-button",
+      }}
+      continueButtonProps={null}
+      maxWidth={"lg"}
     >
       <div id="cql-library-history-dialog">
         <div className="header-info">
