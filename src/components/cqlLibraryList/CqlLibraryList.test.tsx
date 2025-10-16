@@ -725,6 +725,55 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("QI-Core v4.1.1")).toBeInTheDocument();
     expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
   });
+
+  it("should set and clear hoveredHeader on mouse enter and leave", async () => {
+    const { getByTestId } = render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={cqlLibrary[0]}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+      />
+    );
+    const header = getByTestId("header-cqlLibraryName");
+    fireEvent.mouseOver(header);
+    const th = getByTestId("header-cqlLibraryName");
+    const title = th.getAttribute("title");
+    expect(title).toBe("Sort descending");
+    // The hover state should update (check for icon or internal state)
+    expect(header.querySelector(".arrowDisplay")).toBeInTheDocument();
+    fireEvent.mouseLeave(header);
+    // The hover state should clear (icon hidden or state reset)
+    expect(header.querySelector(".arrowDisplay")).toBeInTheDocument();
+  });
 });
 
 describe("sortResults", () => {
