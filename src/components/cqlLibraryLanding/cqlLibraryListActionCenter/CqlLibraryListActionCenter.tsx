@@ -22,6 +22,7 @@ interface PropTypes {
   owners: string[];
   activeTab: number;
   setTransferDialog: (value: any) => void;
+  openLibraryHistoryDialog: () => void;
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
@@ -31,6 +32,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     setCreateDraftDialog,
     createVersion,
     owners,
+    openLibraryHistoryDialog,
   } = props;
   const featureFlags = useFeatureFlags();
   const { getUserName } = useOktaTokens();
@@ -93,7 +95,10 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         onClick={createDraft}
       />
       {featureFlags?.LibraryHistory && (
-        <HistoryAction libraries={selectedLibraries} onClick={() => {}} />
+        <HistoryAction
+          libraries={selectedLibraries}
+          onClick={openLibraryHistoryDialog}
+        />
       )}
       <ShareAction
         libraries={selectedLibraries}

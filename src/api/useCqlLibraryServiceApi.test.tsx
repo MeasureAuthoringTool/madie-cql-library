@@ -321,4 +321,51 @@ describe("useCqlLibraryServiceApi", () => {
       expect(err).not.toBeNull();
     }
   });
+
+  it("should fetch library history successfully", async () => {
+    const mockLibrary = { id: "123" };
+    const mockData = [
+      {
+        actionType: "CREATE",
+        additionalActionMessage: "Initial creation",
+        performedAt: "2025-10-01T12:00:00Z",
+        performedBy: "user123",
+      },
+    ];
+
+    axios.get = jest.fn().mockResolvedValueOnce({ data: mockData });
+
+    const result = await service.getLibraryHistory(mockLibrary);
+
+    expect(axios.get).toHaveBeenCalledWith(
+      `${mockBaseUrl}/cql-libraries/123/history`,
+      {
+        headers: {
+          Authorization: `Bearer ${mockToken}`,
+        },
+      }
+    );
+    expect(result).toEqual(mockData);
+  });
+
+  it("should throw error when fetching library history fails", async () => {
+    const mockLibrary = { id: "123" };
+    const errorMessage = "Network Error";
+
+    axios.get = jest.fn().mockRejectedValueOnce({ message: errorMessage });
+
+    await expect(service.getLibraryHistory(mockLibrary)).rejects.toThrow(
+      errorMessage
+    );
+  });
+
+  it("should throw default error message if error has no message", async () => {
+    const mockLibrary = { id: "123" };
+
+    axios.get = jest.fn().mockRejectedValueOnce({});
+
+    await expect(service.getLibraryHistory(mockLibrary)).rejects.toThrow(
+      "Failed to fetch library history"
+    );
+  });
 });
