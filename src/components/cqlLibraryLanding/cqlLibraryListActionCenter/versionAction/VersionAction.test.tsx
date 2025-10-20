@@ -5,6 +5,13 @@ import VersionAction, {
   NOTHING_SELECTED,
 } from "./VersionAction";
 import { CqlLibrary, Model } from "@madie/madie-models";
+import { useFeatureFlags } from "@madie/madie-util";
+
+jest.mock("@madie/madie-util", () => ({
+  useFeatureFlags: jest.fn().mockReturnValue({
+    Locking: false,
+  }),
+}));
 
 const libraryVersion = {
   id: "67180dd54665c8239413ba90",
@@ -90,6 +97,48 @@ describe("VersionAction", () => {
     expect(screen.getByTestId("version-action-tooltip")).toHaveAttribute(
       "aria-label",
       NOTHING_SELECTED
+    );
+  });
+
+  it("Should disable action btn if feature flag is on and library is locked ", () => {
+    (useFeatureFlags as jest.Mock).mockReturnValueOnce({
+      Locking: true,
+    });
+    const lockedLibrary = {
+      ...libraryDraft,
+      cqlLibraryLock: {
+        lockedBy: "anotherUser",
+      },
+    } as CqlLibrary;
+    render(
+      <VersionAction
+        libraries={[lockedLibrary]}
+        onClick={() => {}}
+        canEdit={true}
+      />
+    );
+    expect(screen.getByTestId("version-action-btn")).toBeDisabled();
+    expect(screen.getByTestId("version-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      "Unable to version library. Locked while being edited by anotherUser."
+    );
+  });
+
+  it("Should enable action btn if feature flag is on and library is not locked ", () => {
+    (useFeatureFlags as jest.Mock).mockReturnValueOnce({
+      Locking: true,
+    });
+    render(
+      <VersionAction
+        libraries={[libraryDraft]}
+        onClick={() => {}}
+        canEdit={true}
+      />
+    );
+    expect(screen.getByTestId("version-action-btn")).toBeEnabled();
+    expect(screen.getByTestId("version-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      VERSION_LIBRARY
     );
   });
 });
