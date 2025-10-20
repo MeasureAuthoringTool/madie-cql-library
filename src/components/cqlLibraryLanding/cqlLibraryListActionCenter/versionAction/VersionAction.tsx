@@ -3,7 +3,7 @@ import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary } from "@madie/madie-models";
 import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
-
+import { useFeatureFlags } from "@madie/madie-util";
 import { grey, blue } from "@mui/material/colors";
 
 interface PropTypes {
@@ -14,19 +14,36 @@ interface PropTypes {
 
 export const NOTHING_SELECTED = "Select library to version";
 export const VERSION_LIBRARY = "Version library";
+const UNABLE_TO_VERSION =
+  "Unable to version library. Locked while being edited by <harpID>.";
 
 export default function VersionAction(props: PropTypes) {
   const { libraries, canEdit, onClick } = props;
   const [disableVersionBtn, setDisableVersionBtn] = useState(true);
   const [tooltipMessage, setTooltipMessage] = useState(NOTHING_SELECTED);
+  const featureFlags = useFeatureFlags();
 
   const validateVersionActionState = useCallback(() => {
     // set button state to disabled by default
     setDisableVersionBtn(true);
     setTooltipMessage(NOTHING_SELECTED);
     if (libraries?.length === 1 && libraries[0]?.draft && canEdit) {
-      setDisableVersionBtn(false);
-      setTooltipMessage(VERSION_LIBRARY);
+      if (featureFlags.Locking) {
+        if (libraries[0]?.cqlLibraryLock?.lockedBy) {
+          setTooltipMessage(
+            UNABLE_TO_VERSION.replace(
+              "<harpID>",
+              libraries[0]?.cqlLibraryLock?.lockedBy
+            )
+          );
+        } else {
+          setDisableVersionBtn(false);
+          setTooltipMessage(VERSION_LIBRARY);
+        }
+      } else {
+        setDisableVersionBtn(false);
+        setTooltipMessage(VERSION_LIBRARY);
+      }
     }
   }, [libraries, canEdit]);
 

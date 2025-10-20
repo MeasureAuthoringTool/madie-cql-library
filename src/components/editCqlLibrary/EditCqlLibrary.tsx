@@ -215,7 +215,7 @@ const EditCqlLibrary = () => {
   );
 
   const onToastClose = () => {
-    setToastType(null);
+    setToastType("danger");
     setToastMessage("");
     setToastOpen(false);
   };
@@ -303,7 +303,6 @@ const EditCqlLibrary = () => {
     await cqlLibraryServiceApi
       .createVersion(loadedCqlLibrary.id, isMajor)
       .then((response: AxiosResponse<CqlLibrary>) => {
-        handleDialogClose();
         setSuccess({
           status: "success",
           primaryMessage: "New version of CQL Library is Successfully created.",
@@ -318,12 +317,17 @@ const EditCqlLibrary = () => {
       .catch((error) => {
         if (error?.response?.data) {
           const errorData = error?.response?.data;
-          const errorMessage = `${errorData?.status}: ${errorData?.error} ${errorData?.message}`;
+          const errorMessage =
+            errorData?.status === 423
+              ? errorData.message
+              : `${errorData?.status}: ${errorData?.error} ${errorData?.message}`;
           setErrorMessage(errorMessage);
+          handleToast("danger", errorMessage, true);
         } else {
           setErrorMessage(error.toString());
         }
       });
+    handleDialogClose();
   };
 
   const createDraftLibrary = async (cqlLibrary: CqlLibrary, model: string) => {
@@ -925,12 +929,17 @@ const EditCqlLibrary = () => {
           </div>
           <Toast
             toastKey="library-cql-editor-toast"
+            aria-live="polite"
+            role="alert"
             toastType={toastType}
             testId={
               toastType === "danger"
                 ? "edit-library-cql-generic-error-text"
                 : "edit-library-cql-success-text"
             }
+            closeButtonProps={{
+              "data-testid": "close-toast-button",
+            }}
             open={toastOpen}
             message={toastMessage}
             onClose={onToastClose}

@@ -1,5 +1,11 @@
 import * as React from "react";
-import { fireEvent, render, waitFor, screen } from "@testing-library/react";
+import {
+  fireEvent,
+  render,
+  waitFor,
+  screen,
+  within,
+} from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
@@ -59,7 +65,7 @@ const cqlLibrary = {
   librarySetId: "",
   model: Model.QICORE,
   cqlErrors: false,
-  cql: "",
+  cql: "test cql",
   version: "testVersion",
   draft: true,
   createdAt: "",
@@ -113,6 +119,10 @@ const mockCqlLibraryServiceApi = {
   createDraft: jest.fn().mockResolvedValue(draftedLibrary),
   lockLibrary: jest.fn().mockResolvedValue({ data: lockInfo }),
   unlockLibrary: jest.fn().mockResolvedValue({ data: lockInfo }),
+  createVersion: jest
+    .fn()
+    .mockResolvedValue({ data: { ...cqlLibrary, version: "newVersion" } }),
+  deleteDraft: jest.fn().mockResolvedValue({ data: draftedLibrary }),
 } as unknown as CqlLibraryServiceApi;
 
 const mockLocation = jest.fn();
@@ -136,7 +146,7 @@ const serviceConfig: ServiceConfig = {
   terminologyService: {
     baseUrl: "",
   },
-};
+} as unknown as ServiceConfig;
 
 const cqlToElmExternalErrors: ElmTranslationExternalError[] = [
   {
@@ -670,7 +680,7 @@ describe("Edit Cql Library Component", () => {
     fireEvent.blur(libraryNameInput);
     expect(libraryNameInput.value).toBe("UpdatedName1");
     const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
-    expect(input).toHaveValue("");
+    expect(input).toHaveValue("test cql");
 
     fireEvent.change(screen.getByTestId("cql-library-editor"), {
       target: {
@@ -727,7 +737,7 @@ describe("Edit Cql Library Component", () => {
     fireEvent.blur(libraryNameInput);
     expect(libraryNameInput.value).toBe("UpdatedName1");
     const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
-    expect(input).toHaveValue("");
+    expect(input).toHaveValue("test cql");
 
     fireEvent.change(screen.getByTestId("cql-library-editor"), {
       target: {
@@ -787,7 +797,7 @@ describe("Edit Cql Library Component", () => {
     fireEvent.blur(libraryNameInput);
     expect(libraryNameInput.value).toBe("UpdatedName1");
     const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
-    expect(input).toHaveValue("");
+    expect(input).toHaveValue("test cql");
 
     fireEvent.change(screen.getByTestId("cql-library-editor"), {
       target: {
@@ -1303,7 +1313,7 @@ describe("Edit Cql Library Component", () => {
     ).toBeInTheDocument();
 
     const input = screen.getByTestId("cql-library-editor") as HTMLInputElement;
-    expect(input).toHaveValue("");
+    expect(input).toHaveValue("test cql");
 
     fireEvent.change(screen.getByTestId("cql-library-editor"), {
       target: {
@@ -1384,5 +1394,302 @@ describe("Edit Cql Library Component", () => {
       null,
       { headers: { Authorization: "Bearer test.jwt" } }
     );
+  });
+
+  it("should call createVersion and show success message when versioning", async () => {
+    renderWithRouter();
+
+    // Trigger the version dialog
+    act(() => {
+      window.dispatchEvent(new Event("version-library"));
+    });
+
+    const majorRadio = await screen.findByLabelText("Major");
+    fireEvent.click(majorRadio);
+
+    const continueButton = screen.getByTestId("create-version-continue-button");
+    fireEvent.click(continueButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("generic-success-text-header").textContent
+      ).toBe("New version of CQL Library is Successfully created.");
+    });
+  });
+
+  it("should call createVersion and show error message when versioning fails with 423", async () => {
+    mockedAxios.put.mockClear().mockRejectedValueOnce({
+      response: {
+        data: {
+          status: 423,
+          message:
+            "Unable to version measure. Locked while being edited by anotherUser.",
+        },
+      },
+    });
+
+    renderWithRouter();
+
+    act(() => {
+      window.dispatchEvent(new Event("version-library"));
+    });
+
+    const majorRadio = await screen.findByLabelText("Major");
+    fireEvent.click(majorRadio);
+
+    const continueButton = screen.getByTestId("create-version-continue-button");
+    fireEvent.click(continueButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("edit-library-cql-generic-error-text").textContent
+      ).toBe(
+        "Unable to version measure. Locked while being edited by anotherUser."
+      );
+    });
+    // Close the error message
+    const closeBtn = screen.getByTestId("ClearIcon");
+    fireEvent.click(closeBtn);
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("generic-success-text-header")
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it("should call createVersion and show error message when versioning fails with error other than 423", async () => {
+    mockedAxios.put.mockClear().mockRejectedValueOnce({
+      response: {
+        data: {
+          status: 400,
+          error: "Bad Request",
+          message:
+            "Problem creating version for CQL Library due to some error.",
+        },
+      },
+    });
+
+    renderWithRouter();
+
+    act(() => {
+      window.dispatchEvent(new Event("version-library"));
+    });
+
+    const majorRadio = await screen.findByLabelText("Major");
+    fireEvent.click(majorRadio);
+
+    const continueButton = screen.getByTestId("create-version-continue-button");
+    fireEvent.click(continueButton);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("edit-library-cql-generic-error-text").textContent
+      ).toBe(
+        "400: Bad Request Problem creating version for CQL Library due to some error."
+      );
+    });
+  });
+
+  it("should call createVersion and show error message when versioning fails with just error no response.data", async () => {
+    mockedAxios.put.mockClear().mockRejectedValueOnce({
+      error: "error",
+    });
+
+    renderWithRouter();
+
+    act(() => {
+      window.dispatchEvent(new Event("version-library"));
+    });
+
+    const majorRadio = await screen.findByLabelText("Major");
+    fireEvent.click(majorRadio);
+
+    const continueButton = screen.getByTestId("create-version-continue-button");
+    fireEvent.click(continueButton);
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("handle delete library", async () => {
+    renderWithRouter();
+
+    act(() => {
+      window.dispatchEvent(new Event("delete-library"));
+    });
+    expect(
+      await screen.findByText("Delete draft of Library1?")
+    ).toBeInTheDocument();
+    const continueButton = await screen.findByTestId(
+      "delete-dialog-continue-button"
+    );
+    userEvent.click(continueButton);
+    await waitFor(() => {
+      const successMessage = screen.getByTestId("generic-success-text-header");
+      expect(successMessage.textContent).toEqual(
+        "The Draft CQL Library has been deleted."
+      );
+    });
+  });
+
+  it("handle delete library failure of 400", async () => {
+    mockedAxios.delete.mockClear().mockRejectedValueOnce({
+      response: {
+        data: {
+          status: 400,
+          error: "Bad Request",
+          message: "Problem deleting CQL Library due to some error.",
+        },
+      },
+    });
+
+    renderWithRouter();
+
+    act(() => {
+      window.dispatchEvent(new Event("delete-library"));
+    });
+    expect(
+      await screen.findByText("Delete draft of Library1?")
+    ).toBeInTheDocument();
+    const continueButton = await screen.findByTestId(
+      "delete-dialog-continue-button"
+    );
+    userEvent.click(continueButton);
+    await waitFor(() => {
+      expect(mockedAxios.delete).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("delete library failure with no response.data", async () => {
+    mockedAxios.delete.mockClear().mockRejectedValueOnce({
+      error: "error",
+    });
+
+    renderWithRouter();
+
+    act(() => {
+      window.dispatchEvent(new Event("delete-library"));
+    });
+    expect(
+      await screen.findByText("Delete draft of Library1?")
+    ).toBeInTheDocument();
+    const continueButton = await screen.findByTestId(
+      "delete-dialog-continue-button"
+    );
+    userEvent.click(continueButton);
+    await waitFor(() => {
+      expect(mockedAxios.delete).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("handle create draft error 400", async () => {
+    mockedAxios.post.mockClear().mockRejectedValueOnce({
+      response: {
+        data: {
+          status: 400,
+          error: "Bad Request",
+          message: "Problem creating draft for CQL Library due to some error.",
+        },
+      },
+    });
+
+    renderWithRouter();
+
+    act(() => {
+      window.dispatchEvent(new Event("draft-library"));
+    });
+    expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+
+    const modelSelect = await screen.getByTestId("cql-library-model-select");
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(2);
+    userEvent.click(options[0]);
+
+    const continueButton = await screen.findByTestId(
+      "create-draft-continue-button"
+    );
+
+    userEvent.click(continueButton);
+
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("handle create draft error 403", async () => {
+    mockedAxios.post.mockClear().mockRejectedValueOnce({
+      response: {
+        data: {
+          status: 403,
+          error: "Forbidden",
+          message:
+            "User is unauthorized to create a draft for this CQL Library.",
+        },
+      },
+    });
+
+    renderWithRouter();
+
+    act(() => {
+      window.dispatchEvent(new Event("draft-library"));
+    });
+    expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+
+    const modelSelect = await screen.getByTestId("cql-library-model-select");
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(2);
+    userEvent.click(options[0]);
+
+    const continueButton = await screen.findByTestId(
+      "create-draft-continue-button"
+    );
+
+    userEvent.click(continueButton);
+
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("handle create draft other error", async () => {
+    mockedAxios.post.mockClear().mockRejectedValueOnce({
+      response: {
+        data: {
+          status: 500,
+          error: "Internal Server Error",
+          message:
+            "An unexpected error occurred while creating a draft for this CQL Library.",
+        },
+      },
+    });
+
+    renderWithRouter();
+
+    act(() => {
+      window.dispatchEvent(new Event("draft-library"));
+    });
+    expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+
+    const modelSelect = await screen.getByTestId("cql-library-model-select");
+    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(2);
+    userEvent.click(options[0]);
+
+    const continueButton = await screen.findByTestId(
+      "create-draft-continue-button"
+    );
+
+    userEvent.click(continueButton);
+
+    await waitFor(() => {
+      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    });
   });
 });
