@@ -1,5 +1,6 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import CqlLibrayHistoryDialog, { AuditRow } from "./CqlLibraryHistoryDialog";
 
 jest.mock("@madie/madie-design-system/dist/react", () => ({
@@ -123,7 +124,7 @@ describe("CqlLibrayHistoryDialog", () => {
     expect(screen.getAllByText("-").length).toBeGreaterThanOrEqual(2);
   });
 
-  it("renders pagination and handles page change", () => {
+  it("renders pagination and handles page change", async () => {
     const logs = Array.from({ length: 15 }, (_, i) => ({
       actionType: "ACTION",
       additionalActionMessage: `msg${i}`,
@@ -134,18 +135,14 @@ describe("CqlLibrayHistoryDialog", () => {
     expect(
       screen.getByTestId("trasfer-library-pagination")
     ).toBeInTheDocument();
-    // Should show first 10 rows
     expect(screen.getAllByTestId(/test-case-row-/).length).toBe(10);
-    // Go to next page
-    fireEvent.click(screen.getByTestId("pagination-next"));
-    // Should show remaining 5 rows
+    await userEvent.click(screen.getByTestId("pagination-next"));
     expect(screen.getAllByTestId(/test-case-row-/).length).toBe(5);
-    // Go back to previous page
-    fireEvent.click(screen.getByTestId("pagination-prev"));
+    await userEvent.click(screen.getByTestId("pagination-prev"));
     expect(screen.getAllByTestId(/test-case-row-/).length).toBe(10);
   });
 
-  it("handles limit change", () => {
+  it("handles limit change", async () => {
     const logs = Array.from({ length: 12 }, (_, i) => ({
       actionType: "ACTION",
       additionalActionMessage: `msg${i}`,
@@ -153,15 +150,10 @@ describe("CqlLibrayHistoryDialog", () => {
       performedBy: `user${i}`,
     }));
     render(<CqlLibrayHistoryDialog {...baseProps} libraryHistoryLogs={logs} />);
-    // Change limit to 5
-    fireEvent.change(screen.getByTestId("pagination-limit"), {
-      target: { value: "5" },
-    });
+
+    await userEvent.selectOptions(screen.getByTestId("pagination-limit"), "5");
     expect(screen.getAllByTestId(/test-case-row-/).length).toBe(5);
-    // Change limit to 25 (should show all)
-    fireEvent.change(screen.getByTestId("pagination-limit"), {
-      target: { value: "25" },
-    });
+    await userEvent.selectOptions(screen.getByTestId("pagination-limit"), "25");
     expect(screen.getAllByTestId(/test-case-row-/).length).toBe(12);
   });
 });
