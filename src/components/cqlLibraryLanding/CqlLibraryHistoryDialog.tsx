@@ -11,6 +11,7 @@ import tw from "twin.macro";
 import "styled-components/macro";
 import "./CqlLibraryHistoryDialog.scss";
 import moment from "moment";
+import Chip from "@mui/material/Chip";
 
 export type AuditRow = {
   actionType: string;
@@ -105,7 +106,7 @@ const CqlLibrayHistoryDialog = (props) => {
         accessorKey: "additionalActionMessage",
         cell: (info) => {
           const value = info.getValue();
-          return value ? value : "-";
+          return value && value != "[]" ? value : "-";
         },
       },
     ];
@@ -147,6 +148,17 @@ const CqlLibrayHistoryDialog = (props) => {
         <div className="header-info">
           <span>{selectedCqlLibrary.cqlLibraryName} </span>
           <span>{`(Version ${selectedCqlLibrary.version})`}</span>
+          {selectedCqlLibrary.draft && (
+            <Chip
+              data-testid="library-history-draft-chip"
+              label="Draft"
+              sx={{
+                backgroundColor: "#e1f3f8",
+                height: "24px",
+                ml: 1,
+              }}
+            />
+          )}
         </div>
 
         <table
