@@ -48,6 +48,7 @@ import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import "./CqlLibraryList.scss";
+import { INITIAL_STATUS_HANDLER } from "../editCqlLibrary/statusHandler/StatusHandler";
 
 export const TRANSFER_LIBRARY_SUCCESS =
   "The library(s) were successfully transferred. If you chose to retain share access, you will still be able to edit the libraries.";
@@ -148,6 +149,7 @@ export default function CqlLibraryList({
   setToastOpen,
   setToastMessage,
   setToastType,
+  setStatusHandler,
 }) {
   const [hoveredHeader, setHoveredHeader] = useState<string>("");
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
@@ -218,6 +220,7 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
+        setStatusHandler(INITIAL_STATUS_HANDLER);
         table.resetRowSelection();
         setSnackBar({
           message: "New version of CQL Library is Successfully created",
@@ -256,6 +259,7 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
+        setStatusHandler(INITIAL_STATUS_HANDLER);
         table.resetRowSelection();
         setSnackBar({
           message: "New Draft of CQL Library is Successfully created",
@@ -312,6 +316,7 @@ export default function CqlLibraryList({
         );
 
         await onListUpdate();
+        setStatusHandler(INITIAL_STATUS_HANDLER);
         table.resetRowSelection();
         setSnackBar({
           message: "The Draft CQL Library has been deleted.",
@@ -348,19 +353,41 @@ export default function CqlLibraryList({
     const libraryIds = selectedLibraries.map((lib) => lib.id);
     return cqlLibraryServiceApi
       .transferLibraries(libraryIds, newOwner, retainShareAccess)
-      .then(async () => {
-        handleDialogClose();
-        setToastOpen(true);
-        setToastType("success");
-        setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+      .then((response) => {
+        if (response.status === 200) {
+          setToastOpen(true);
+          setToastType("success");
+          setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+          setStatusHandler(INITIAL_STATUS_HANDLER);
+        } else if (response.status === 206) {
+          const failedLibraryIds: string[] = response.data;
+
+          const failedLibraryNames = selectedLibraries
+            .filter((lib) => failedLibraryIds.includes(lib.id))
+            .map((lib) => lib.cqlLibraryName);
+
+          const secondaryMessages = failedLibraryNames.map((name) => `${name}`);
+
+          setStatusHandler({
+            ...INITIAL_STATUS_HANDLER,
+            warning: {
+              status: true,
+              primaryMessage: `${failedLibraryNames?.length} library(s) could not be transferred. Please try again, or contact help desk if the issue persists.`,
+              secondaryMessages,
+            },
+          });
+        }
+
         onListUpdate();
       })
       .catch((error) => {
         console.error("TransferDialog: handleSave: error = ", error);
-        handleDialogClose();
         setToastOpen(true);
         setToastType("danger");
         setToastMessage(TRANSFER_LIBRARY_FAILURE);
+      })
+      .finally(() => {
+        handleDialogClose();
       });
   };
 
@@ -852,6 +879,7 @@ export default function CqlLibraryList({
         });
         if (message.includes("successfully")) {
           await onListUpdate();
+          setStatusHandler(INITIAL_STATUS_HANDLER);
           table.resetRowSelection();
         }
       }

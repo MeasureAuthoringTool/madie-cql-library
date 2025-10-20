@@ -3,6 +3,14 @@ import { MadieAlert } from "@madie/madie-design-system/dist/react";
 import "./StatusHandler.scss";
 import * as _ from "lodash";
 
+export const INITIAL_STATUS_HANDLER = {
+  success: { status: undefined, primaryMessage: "", secondaryMessages: [] },
+  warning: { status: false, primaryMessage: "", secondaryMessages: [] },
+  error: false,
+  errorMessage: "",
+  outboundAnnotations: [],
+};
+
 const generateMadieAlertWithContent = (
   type,
   header,
@@ -71,10 +79,11 @@ export const transformAnnotation = (annotation) => {
 };
 
 const StatusHandler = ({
-  success,
-  error,
-  errorMessage,
-  outboundAnnotations,
+  success = INITIAL_STATUS_HANDLER.success,
+  warning = INITIAL_STATUS_HANDLER.warning,
+  error = INITIAL_STATUS_HANDLER.error,
+  errorMessage = INITIAL_STATUS_HANDLER.errorMessage,
+  outboundAnnotations = INITIAL_STATUS_HANDLER.outboundAnnotations,
 }) => {
   if (success.status === "success") {
     if (outboundAnnotations?.length > 0) {
@@ -92,6 +101,15 @@ const StatusHandler = ({
         null
       );
     }
+  }
+
+  if (warning.status && warning.primaryMessage) {
+    return generateMadieAlertWithContent(
+      "warning",
+      warning.primaryMessage,
+      warning.secondaryMessages,
+      outboundAnnotations?.length > 0 ? outboundAnnotations : null
+    );
   }
 
   if (error) {

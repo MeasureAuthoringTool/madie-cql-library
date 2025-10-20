@@ -217,6 +217,11 @@ const EditCqlLibrary = () => {
   });
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>(null);
+  const [warning, setWarning] = useState({
+    status: false,
+    primaryMessage: "",
+    secondaryMessages: [],
+  });
   const [outboundAnnotations, setOutboundAnnotations] = useState([]);
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
@@ -248,6 +253,21 @@ const EditCqlLibrary = () => {
     setToastType(type);
     setToastMessage(message);
     setToastOpen(open);
+  };
+
+  const resetStatusStates = () => {
+    setSuccess({
+      status: undefined,
+      primaryMessage: undefined,
+      secondaryMessages: undefined,
+    });
+    setError(false);
+    setErrorMessage(null);
+    setWarning({
+      status: false,
+      primaryMessage: "",
+      secondaryMessages: [],
+    });
   };
 
   const formik = useFormik({
@@ -290,6 +310,7 @@ const EditCqlLibrary = () => {
   };
 
   const deleteDraftLibrary = async (id: string) => {
+    resetStatusStates();
     setActiveSpinner(true);
     cqlLibraryServiceApi
       .deleteDraft(id)
@@ -324,6 +345,7 @@ const EditCqlLibrary = () => {
   };
 
   const createVersionLibrary = async (isMajor: boolean) => {
+    resetStatusStates();
     setActiveSpinner(true);
     await cqlLibraryServiceApi
       .createVersion(loadedCqlLibrary.id, isMajor)
@@ -356,6 +378,7 @@ const EditCqlLibrary = () => {
   };
 
   const createDraftLibrary = async (cqlLibrary: CqlLibrary, model: string) => {
+    resetStatusStates();
     setActiveSpinner(true);
     await cqlLibraryServiceApi
       .createDraft(cqlLibrary.id, cqlLibrary.cqlLibraryName, model)
@@ -393,13 +416,7 @@ const EditCqlLibrary = () => {
 
   const onChange = (value) => {
     formik.setFieldValue("cql", value);
-    setSuccess({
-      status: undefined,
-      primaryMessage: undefined,
-      secondaryMessages: undefined,
-    });
-    setError(false);
-    setErrorMessage(undefined);
+    resetStatusStates();
     setValuesetMsg(undefined);
     setValuesetSuccess(false);
   };
@@ -464,6 +481,7 @@ const EditCqlLibrary = () => {
   }, []);
 
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
+    resetStatusStates();
     setActiveSpinner(true);
     const using = loadedCqlLibrary?.model.split(" v");
     const updatedContent = await synchingEditorCqlContent(
@@ -649,6 +667,7 @@ const EditCqlLibrary = () => {
 
   const handleShareDialogClose = useCallback(
     (type, message) => {
+      resetStatusStates();
       setShareDialog({
         open: false,
         option: "",
@@ -666,21 +685,36 @@ const EditCqlLibrary = () => {
   );
 
   const transferLibrary = (newOwner: string, retainShareAccess: boolean) => {
+    resetStatusStates();
+
     const libraryIds = loadedCqlLibrary.id;
     return cqlLibraryServiceApi
       .transferLibraries([libraryIds], newOwner, retainShareAccess)
-      .then(async () => {
-        handleDialogClose();
-        setToastOpen(true);
-        setToastType("success");
-        setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+      .then((response) => {
+        if (response.status === 200) {
+          setToastOpen(true);
+          setToastType("success");
+          setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+
+          setTimeout(() => {
+            navigate("/cql-libraries");
+          }, 2000);
+        } else if (response.status === 206) {
+          setWarning({
+            status: true,
+            primaryMessage: `1 library could not be transferred. Please try again, or contact help desk if the issue persists.`,
+            secondaryMessages: [loadedCqlLibrary.cqlLibraryName],
+          });
+        }
       })
       .catch((error) => {
         console.error("TransferDialog: handleSave: error = ", error);
-        handleDialogClose();
         setToastOpen(true);
         setToastType("danger");
         setToastMessage(TRANSFER_LIBRARY_FAILURE);
+      })
+      .finally(() => {
+        handleDialogClose();
       });
   };
 
@@ -709,6 +743,7 @@ const EditCqlLibrary = () => {
             error={error}
             errorMessage={errorMessage}
             success={success}
+            warning={warning}
             outboundAnnotations={outboundAnnotations}
           />
           <div

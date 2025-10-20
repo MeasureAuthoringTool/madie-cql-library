@@ -20,6 +20,9 @@ import Search from "../librarySearch/Search";
 import * as _ from "lodash";
 import { getTabStorageKey } from "./cqlLibraryLandingUtils";
 import CqlLibraryHistoryDialog from "./CqlLibraryHistoryDialog";
+import StatusHandler, {
+  INITIAL_STATUS_HANDLER,
+} from "../editCqlLibrary/statusHandler/StatusHandler";
 
 const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
@@ -71,6 +74,7 @@ function CqlLibraryLanding() {
   const [libraryHistoryDialogOpen, setLibraryHistoryDialogOpen] =
     useState(false);
   const [libraryHistoryLogs, setLibraryHistoryLogs] = useState([]);
+  const [statusHandler, setStatusHandler] = useState(INITIAL_STATUS_HANDLER);
 
   const openLibraryHistoryDialog = () => {
     if (selectedLibraries.length === 1) {
@@ -394,6 +398,10 @@ function CqlLibraryLanding() {
   };
   return (
     <div id="cql-library-landing" data-testid="cql-library-landing">
+      <div className="status-handler-container">
+        <StatusHandler {...statusHandler} />
+      </div>
+
       <CreateNewLibraryDialog
         open={createLibOpen}
         onSuccess={onListUpdate}
@@ -485,6 +493,7 @@ function CqlLibraryLanding() {
                 setToastOpen={setToastOpen}
                 setToastMessage={setToastMessage}
                 setToastType={setToastType}
+                setStatusHandler={setStatusHandler}
               />
             )}
           </div>

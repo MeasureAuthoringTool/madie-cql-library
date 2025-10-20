@@ -261,7 +261,13 @@ describe("useCqlLibraryServiceApi", () => {
 
   it("should transfer library successfully", async () => {
     const response = { success: true };
-    axios.put = jest.fn().mockResolvedValueOnce({ data: response });
+    axios.put = jest.fn().mockResolvedValueOnce({
+      data: response,
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {},
+    });
 
     const result = await service.transferLibraries(
       ["libraryId"],
@@ -283,7 +289,9 @@ describe("useCqlLibraryServiceApi", () => {
         },
       }
     );
-    expect(result).toBe(response);
+
+    expect(result.data).toBe(response);
+    expect(result.status).toBe(200);
   });
 
   it("should handle transfer library failure", async () => {
