@@ -27,7 +27,7 @@
     "@babel/preset-react": "^7.14.5",
     "@babel/preset-typescript": "^7.14.5",
     "@babel/runtime": "^7.14.6",
-    "@madie/madie-design-system": "^1.2.76",
+    "@madie/madie-design-system": "^1.2.80",
     "@madie/madie-models": "^1.4.45",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
@@ -66,7 +66,7 @@
     "webpack-config-single-spa-react": "^4.0.1",
     "webpack-config-single-spa-react-ts": "^4.0.1",
     "webpack-config-single-spa-ts": "^4.1.0",
-    "webpack-dev-server": "^4.0.0-rc.0",
+    "webpack-dev-server": "^5.2.2",
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
@@ -82,6 +82,7 @@
     "babel-plugin-dynamic-import-node": "^2.3.3",
     "classnames": "^2.3.1",
     "formik": "^2.2.9",
+    "moment": "^2.30.1",
     "query-string": "^7.1.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

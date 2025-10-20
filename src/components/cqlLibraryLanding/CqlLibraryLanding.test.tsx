@@ -1,6 +1,6 @@
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 import * as React from "react";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { Model, OwnershipType } from "@madie/madie-models";
@@ -111,6 +111,18 @@ const mockPageableVal = {
   numberOfElements: 50,
   pageable: { offset: 0 },
 };
+const makeMockhistory = (number: number) => {
+  const mockHistory = [];
+  for (let i = 0; i < number; i++) {
+    mockHistory.push({
+      actionType: `action type ${i}`,
+      additionalActionMessage: `message ${i}`,
+      performedAt: `performed at ${i}`,
+      performedBy: `performed by ${i}`,
+    });
+  }
+  return mockHistory;
+};
 
 const mockCqlLibraryServiceApi = {
   fetchCqlLibraries: jest.fn().mockResolvedValue({ mockPageableVal }),
@@ -118,6 +130,7 @@ const mockCqlLibraryServiceApi = {
   deleteDraft: jest.fn().mockResolvedValue({ data: "test" }),
   createDraft: jest.fn().mockResolvedValue({ data: "test" }),
   fetchAllOwners: jest.fn().mockResolvedValue(["owner1", "owner2"]),
+  getLibraryHistory: jest.fn().mockResolvedValue(makeMockhistory(50)),
   getLibrariesByLibrarySetId: jest.fn().mockResolvedValue([]),
 } as unknown as CqlLibraryServiceApi;
 
@@ -130,6 +143,14 @@ jest.mock("../../api/useCqlLibraryServiceApi", () =>
 );
 jest.setTimeout(10000);
 describe("Cql Library Page", () => {
+  const checkDataRows = async (number: number) => {
+    const tableBody = screen.getByTestId("library-history-table-body");
+    expect(tableBody).toBeInTheDocument();
+    const visibleRows = await within(tableBody).findAllByRole("row");
+    await waitFor(() => {
+      expect(visibleRows).toHaveLength(number);
+    });
+  };
   let mockNavigate: jest.Mock;
   beforeEach(() => {
     mockNavigate = jest.fn();
@@ -288,6 +309,7 @@ describe("Cql Library Page", () => {
 
     const aclHeader = screen.getByTestId("header-librarySet_acls");
     expect(aclHeader).toBeInTheDocument();
+    expect(aclHeader.title).toBe("Sort ascending");
 
     userEvent.click(screen.getByTestId("header-librarySet_acls"));
     await waitFor(() => {
@@ -302,7 +324,9 @@ describe("Cql Library Page", () => {
         expect.any(AbortSignal)
       );
     });
-    userEvent.click(screen.getByTestId("header-librarySet_acls"));
+    const aclHeader2 = screen.getByTestId("header-librarySet_acls");
+    expect(aclHeader2.title).toBe("Sort descending");
+    userEvent.click(aclHeader2);
     await waitFor(() => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
@@ -315,7 +339,9 @@ describe("Cql Library Page", () => {
         expect.any(AbortSignal)
       );
     });
-    userEvent.click(screen.getByTestId("header-librarySet_acls"));
+    const aclHeader3 = screen.getByTestId("header-librarySet_acls");
+    expect(aclHeader3.title).toBe("Clear sort");
+    userEvent.click(aclHeader3);
     await waitFor(() => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
@@ -618,6 +644,69 @@ describe("Cql Library Page", () => {
     });
   });
 
+  test("Version should work when everything is okay", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
+      LibraryHistory: true,
+    }));
+    // Set up mock specifically for this test
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+      .fn()
+      .mockResolvedValue(mockPageableVal);
+    mockCqlLibraryServiceApi.createVersion = jest
+      .fn()
+      .mockResolvedValueOnce(mockPageableVal.content[0]);
+    renderWithRouter();
+    await waitFor(() => {
+      const cqlLibrary1 = screen.getByText("TestCqlLibrary1");
+      expect(cqlLibrary1).toBeInTheDocument();
+    });
+
+    // Ensure the interactions are correct after rendering the library
+    const checkBoxes = await screen.findAllByRole("checkbox");
+    expect(checkBoxes.length).toBe(50);
+    userEvent.click(checkBoxes[1]);
+
+    const historyButton = await screen.findByTestId(
+      "library-history-action-btn"
+    );
+    expect(historyButton).not.toBeDisabled();
+
+    userEvent.click(historyButton);
+    await waitFor(() => {
+      expect(mockCqlLibraryServiceApi.getLibraryHistory).toBeCalled();
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("Library History")).toBeInTheDocument();
+    });
+    await checkDataRows(10);
+    const pageButton = await screen.findByLabelText("Go to page 2");
+    act(() => {
+      userEvent.click(pageButton);
+    });
+    await waitFor(() => {
+      const resource6 = screen.getByText("action type 11");
+      expect(resource6).toBeInTheDocument();
+    });
+    // change limit
+    const [combobox] = await screen.findAllByText("10");
+    userEvent.click(combobox);
+    const pageLimit25 = screen.getByRole("option", {
+      name: /25/i,
+    });
+    userEvent.click(pageLimit25);
+    await waitFor(() => {
+      const resource6 = screen.getByText("action type 11");
+      expect(resource6).toBeInTheDocument();
+    });
+    const closeButton = screen.getByTestId("close-button");
+    act(() => {
+      userEvent.click(closeButton);
+    });
+    await waitFor(() =>
+      expect(screen.queryByTestId("close-button")).not.toBeInTheDocument()
+    );
+  });
   test("Version should work when everything is okay", async () => {
     // Set up mock specifically for this test
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest

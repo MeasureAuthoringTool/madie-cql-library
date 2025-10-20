@@ -115,6 +115,18 @@ const lockInfo = {
   isLocked: false,
   locedBy: null,
 };
+const makeMockhistory = (number: number) => {
+  const mockHistory = [];
+  for (let i = 0; i < number; i++) {
+    mockHistory.push({
+      actionType: `action type ${i}`,
+      additionalActionMessage: `message ${i}`,
+      performedAt: `performed at ${i}`,
+      performedBy: `performed by ${i}`,
+    });
+  }
+  return mockHistory;
+};
 const mockCqlLibraryServiceApi = {
   createDraft: jest.fn().mockResolvedValue(draftedLibrary),
   lockLibrary: jest.fn().mockResolvedValue({ data: lockInfo }),
@@ -123,6 +135,7 @@ const mockCqlLibraryServiceApi = {
     .fn()
     .mockResolvedValue({ data: { ...cqlLibrary, version: "newVersion" } }),
   deleteDraft: jest.fn().mockResolvedValue({ data: draftedLibrary }),
+  getLibraryHistory: jest.fn().mockResolvedValue(makeMockhistory(50)),
 } as unknown as CqlLibraryServiceApi;
 
 const mockLocation = jest.fn();
@@ -200,6 +213,9 @@ describe("Edit Cql Library Component", () => {
     mockCqlLibraryServiceApi.unlockLibrary = jest
       .fn()
       .mockResolvedValue({ data: lockInfo });
+    mockCqlLibraryServiceApi.getLibraryHistory = jest
+      .fn()
+      .mockResolvedValue(makeMockhistory(50));
 
     global.ResizeObserver = class {
       observe() {}
@@ -1275,6 +1291,60 @@ describe("Edit Cql Library Component", () => {
         "New Draft of CQL Library is Successfully created"
       );
     });
+  });
+  it("should render library history.", async () => {
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValueOnce({ data: { ...cqlLibrary } });
+    mockedAxios.get.mockResolvedValueOnce({ data: makeMockhistory(50) });
+    renderWithRouter();
+    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-name-text-field-input")
+      ).not.toHaveAttribute("disabled");
+    });
+
+    act(() => {
+      window.dispatchEvent(new Event("history-library"));
+    });
+    expect(await screen.findByText("Library History")).toBeInTheDocument();
+    const closeButton = screen.getByTestId("close-button");
+    act(() => {
+      userEvent.click(closeButton);
+    });
+    await waitFor(() =>
+      expect(screen.queryByTestId("close-button")).not.toBeInTheDocument()
+    );
+  });
+  it("should render library history with smaller items than page.", async () => {
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValueOnce({ data: { ...cqlLibrary } });
+    mockedAxios.get.mockResolvedValueOnce({ data: makeMockhistory(3) });
+    renderWithRouter();
+    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("cql-library-name-text-field-input")
+      ).not.toHaveAttribute("disabled");
+    });
+
+    act(() => {
+      window.dispatchEvent(new Event("history-library"));
+    });
+    expect(await screen.findByText("Library History")).toBeInTheDocument();
+    const closeButton = screen.getByTestId("close-button");
+    act(() => {
+      userEvent.click(closeButton);
+    });
+    await waitFor(() =>
+      expect(screen.queryByTestId("close-button")).not.toBeInTheDocument()
+    );
   });
 
   it("should remove concept successfully", async () => {

@@ -219,7 +219,7 @@ const TransferDialog = ({
     <>
       <MadieDialog
         form
-        title="Transfer Library(s)"
+        title="Transfer Library Ownership"
         dialogProps={{
           onClose,
           open,
@@ -242,9 +242,9 @@ const TransferDialog = ({
       >
         <div className="transfer-dialog-info-text">
           <div>
-            You are about to Transfer the following library(s). All versions and
-            drafts will be transferred, so only the most recent library name
-            appears here.
+            You are about to Transfer ownership of the following library(s). All
+            versions and drafts will be transferred. So only the most recent
+            library name appears here.
           </div>
           <div className="warning-message">
             <ErrorOutlineIcon color="error" fontSize="small" />
