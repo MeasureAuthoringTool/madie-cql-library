@@ -309,6 +309,7 @@ describe("Cql Library Page", () => {
 
     const aclHeader = screen.getByTestId("header-librarySet_acls");
     expect(aclHeader).toBeInTheDocument();
+    expect(aclHeader.title).toBe("Sort ascending");
 
     userEvent.click(screen.getByTestId("header-librarySet_acls"));
     await waitFor(() => {
@@ -323,7 +324,9 @@ describe("Cql Library Page", () => {
         expect.any(AbortSignal)
       );
     });
-    userEvent.click(screen.getByTestId("header-librarySet_acls"));
+    const aclHeader2 = screen.getByTestId("header-librarySet_acls");
+    expect(aclHeader2.title).toBe("Sort descending");
+    userEvent.click(aclHeader2);
     await waitFor(() => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
@@ -336,7 +339,9 @@ describe("Cql Library Page", () => {
         expect.any(AbortSignal)
       );
     });
-    userEvent.click(screen.getByTestId("header-librarySet_acls"));
+    const aclHeader3 = screen.getByTestId("header-librarySet_acls");
+    expect(aclHeader3.title).toBe("Clear sort");
+    userEvent.click(aclHeader3);
     await waitFor(() => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
