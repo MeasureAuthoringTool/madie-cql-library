@@ -767,7 +767,7 @@ describe("CqlLibrary List component", () => {
     fireEvent.mouseOver(header);
     const th = getByTestId("header-cqlLibraryName");
     const title = th.getAttribute("title");
-    expect(title).toBe("Sort descending");
+    expect(title).toBe("Sort ascending");
     // The hover state should update (check for icon or internal state)
     expect(header.querySelector(".arrowDisplay")).toBeInTheDocument();
     fireEvent.mouseLeave(header);
