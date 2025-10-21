@@ -1084,6 +1084,15 @@ export default function CqlLibraryList({
                                 : undefined
                             }
                             style={button ? { cursor: "pointer" } : null}
+                            title={
+                              header.column.getCanSort()
+                                ? header.column.getIsSorted() === "asc"
+                                  ? "Sort ascending"
+                                  : header.column.getIsSorted() === "desc"
+                                  ? "Sort descending"
+                                  : undefined
+                                : undefined
+                            }
                           >
                             {flexRender(
                               header.column.columnDef.header,
