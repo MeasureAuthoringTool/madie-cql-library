@@ -367,7 +367,7 @@ export default function CqlLibraryList({
           setStatusHandler({
             warning: {
               status: true,
-              primaryMessage: `${failedLibraryNames?.length} library(s) could not be transferred. Please try again, or contact help desk if the issue persists.`,
+              primaryMessage: `${failedLibraryNames?.length} library could not be transferred. Please try again, or contact help desk if the issue persists.`,
               secondaryMessages: failedLibraryNames,
             },
           });
