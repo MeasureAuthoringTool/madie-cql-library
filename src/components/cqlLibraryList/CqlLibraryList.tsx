@@ -1093,11 +1093,12 @@ export default function CqlLibraryList({
                             onMouseLeave={() => setHoveredHeader(null)}
                             title={
                               header.column.getCanSort()
-                                ? header.column.getIsSorted() === "asc"
+                                ? header.column.getNextSortingOrder() === "asc"
                                   ? "Sort ascending"
-                                  : header.column.getIsSorted() === "desc"
+                                  : header.column.getNextSortingOrder() ===
+                                    "desc"
                                   ? "Sort descending"
-                                  : undefined
+                                  : "Clear sort"
                                 : undefined
                             }
                           >
