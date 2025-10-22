@@ -366,14 +366,12 @@ export default function CqlLibraryList({
             .filter((lib) => failedLibraryIds.includes(lib.id))
             .map((lib) => lib.cqlLibraryName);
 
-          const secondaryMessages = failedLibraryNames.map((name) => `${name}`);
-
           setStatusHandler({
             ...INITIAL_STATUS_HANDLER,
             warning: {
               status: true,
               primaryMessage: `${failedLibraryNames?.length} library(s) could not be transferred. Please try again, or contact help desk if the issue persists.`,
-              secondaryMessages,
+              secondaryMessages: failedLibraryNames,
             },
           });
         }
