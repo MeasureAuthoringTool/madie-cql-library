@@ -255,21 +255,6 @@ const EditCqlLibrary = () => {
     setToastOpen(open);
   };
 
-  const resetStatusStates = () => {
-    setSuccess({
-      status: undefined,
-      primaryMessage: undefined,
-      secondaryMessages: undefined,
-    });
-    setError(false);
-    setErrorMessage(null);
-    setWarning({
-      status: false,
-      primaryMessage: "",
-      secondaryMessages: [],
-    });
-  };
-
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: loadedCqlLibrary?.cqlLibraryName,
@@ -310,7 +295,6 @@ const EditCqlLibrary = () => {
   };
 
   const deleteDraftLibrary = async (id: string) => {
-    resetStatusStates();
     setActiveSpinner(true);
     cqlLibraryServiceApi
       .deleteDraft(id)
@@ -345,7 +329,6 @@ const EditCqlLibrary = () => {
   };
 
   const createVersionLibrary = async (isMajor: boolean) => {
-    resetStatusStates();
     setActiveSpinner(true);
     await cqlLibraryServiceApi
       .createVersion(loadedCqlLibrary.id, isMajor)
@@ -378,7 +361,6 @@ const EditCqlLibrary = () => {
   };
 
   const createDraftLibrary = async (cqlLibrary: CqlLibrary, model: string) => {
-    resetStatusStates();
     setActiveSpinner(true);
     await cqlLibraryServiceApi
       .createDraft(cqlLibrary.id, cqlLibrary.cqlLibraryName, model)
@@ -416,7 +398,13 @@ const EditCqlLibrary = () => {
 
   const onChange = (value) => {
     formik.setFieldValue("cql", value);
-    resetStatusStates();
+    setSuccess({
+      status: undefined,
+      primaryMessage: undefined,
+      secondaryMessages: undefined,
+    });
+    setError(false);
+    setErrorMessage(undefined);
     setValuesetMsg(undefined);
     setValuesetSuccess(false);
   };
@@ -481,7 +469,6 @@ const EditCqlLibrary = () => {
   }, []);
 
   async function updateCqlLibrary(cqlLibrary: CqlLibrary) {
-    resetStatusStates();
     setActiveSpinner(true);
     const using = loadedCqlLibrary?.model.split(" v");
     const updatedContent = await synchingEditorCqlContent(
@@ -667,7 +654,6 @@ const EditCqlLibrary = () => {
 
   const handleShareDialogClose = useCallback(
     (type, message) => {
-      resetStatusStates();
       setShareDialog({
         open: false,
         option: "",
@@ -685,7 +671,11 @@ const EditCqlLibrary = () => {
   );
 
   const transferLibrary = (newOwner: string, retainShareAccess: boolean) => {
-    resetStatusStates();
+    setWarning({
+      status: false,
+      primaryMessage: "",
+      secondaryMessages: [],
+    });
 
     const libraryIds = loadedCqlLibrary.id;
     return cqlLibraryServiceApi
