@@ -220,7 +220,6 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
-        setStatusHandler(INITIAL_STATUS_HANDLER);
         table.resetRowSelection();
         setSnackBar({
           message: "New version of CQL Library is Successfully created",
@@ -259,7 +258,6 @@ export default function CqlLibraryList({
       .then(async () => {
         handleDialogClose();
         await onListUpdate();
-        setStatusHandler(INITIAL_STATUS_HANDLER);
         table.resetRowSelection();
         setSnackBar({
           message: "New Draft of CQL Library is Successfully created",
@@ -316,7 +314,6 @@ export default function CqlLibraryList({
         );
 
         await onListUpdate();
-        setStatusHandler(INITIAL_STATUS_HANDLER);
         table.resetRowSelection();
         setSnackBar({
           message: "The Draft CQL Library has been deleted.",
@@ -350,6 +347,8 @@ export default function CqlLibraryList({
       });
   };
   const transferLibraries = (newOwner: string, retainShareAccess: boolean) => {
+    setStatusHandler(INITIAL_STATUS_HANDLER);
+
     const libraryIds = selectedLibraries.map((lib) => lib.id);
     return cqlLibraryServiceApi
       .transferLibraries(libraryIds, newOwner, retainShareAccess)
@@ -358,7 +357,6 @@ export default function CqlLibraryList({
           setToastOpen(true);
           setToastType("success");
           setToastMessage(TRANSFER_LIBRARY_SUCCESS);
-          setStatusHandler(INITIAL_STATUS_HANDLER);
         } else if (response.status === 206) {
           const failedLibraryIds: string[] = response.data;
 
@@ -367,7 +365,6 @@ export default function CqlLibraryList({
             .map((lib) => lib.cqlLibraryName);
 
           setStatusHandler({
-            ...INITIAL_STATUS_HANDLER,
             warning: {
               status: true,
               primaryMessage: `${failedLibraryNames?.length} library(s) could not be transferred. Please try again, or contact help desk if the issue persists.`,
@@ -877,7 +874,6 @@ export default function CqlLibraryList({
         });
         if (message.includes("successfully")) {
           await onListUpdate();
-          setStatusHandler(INITIAL_STATUS_HANDLER);
           table.resetRowSelection();
         }
       }
