@@ -292,4 +292,28 @@ describe("StatusHandler Component", () => {
       transformAnnotation(annotationsObject[1])
     );
   });
+
+  it("Should display a warning message with secondary messages with no outbound annotations", () => {
+    const warning = {
+      status: true,
+      primaryMessage: "This is a warning",
+      secondaryMessages: ["Warning detail"],
+    };
+
+    render(
+      <StatusHandler
+        warning={warning}
+        error={false}
+        success={{ status: undefined, primaryMessage: "" }}
+        outboundAnnotations={[]}
+      />
+    );
+
+    expect(screen.getByTestId("generic-warning-text-header")).toHaveTextContent(
+      warning.primaryMessage
+    );
+
+    const libraryWarning = screen.getByTestId("library-warning");
+    expect(libraryWarning).toHaveTextContent("Warning detail");
+  });
 });
