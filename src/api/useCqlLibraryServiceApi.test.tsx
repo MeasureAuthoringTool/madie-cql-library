@@ -290,10 +290,10 @@ describe("useCqlLibraryServiceApi", () => {
     expect(result.data).toEqual([]);
   });
 
-  it("should handle partial transfer (206 Partial Content) response", async () => {
+  it("should handle partial transfer (207 Multi-Status) response", async () => {
     const partialResponse = {
       data: ["library1"],
-      status: 206,
+      status: 207,
     };
 
     axios.put = jest.fn().mockResolvedValueOnce(partialResponse);
@@ -318,7 +318,7 @@ describe("useCqlLibraryServiceApi", () => {
       }
     );
 
-    expect(result.status).toBe(206);
+    expect(result.status).toBe(207);
     expect(result.data).toEqual(["library1"]);
   });
 

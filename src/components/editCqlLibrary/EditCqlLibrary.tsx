@@ -689,10 +689,10 @@ const EditCqlLibrary = () => {
           setTimeout(() => {
             navigate("/cql-libraries");
           }, 2000);
-        } else if (response.status === 206) {
+        } else if (response.status === 207) {
           setWarning({
             status: true,
-            primaryMessage: `1 library could not be transferred. Please try again, or contact help desk if the issue persists.`,
+            primaryMessage: `1 Libraries could not be transferred. Please try again, or contact help desk if the issue persists.`,
             secondaryMessages: [loadedCqlLibrary.cqlLibraryName],
           });
         }

@@ -357,7 +357,7 @@ export default function CqlLibraryList({
           setToastOpen(true);
           setToastType("success");
           setToastMessage(TRANSFER_LIBRARY_SUCCESS);
-        } else if (response.status === 206) {
+        } else if (response.status === 207) {
           const failedLibraryIds: string[] = response.data;
 
           const failedLibraryNames = selectedLibraries
@@ -367,7 +367,7 @@ export default function CqlLibraryList({
           setStatusHandler({
             warning: {
               status: true,
-              primaryMessage: `${failedLibraryNames?.length} library could not be transferred. Please try again, or contact help desk if the issue persists.`,
+              primaryMessage: `${failedLibraryNames?.length} Libraries could not be transferred. Please try again, or contact help desk if the issue persists.`,
               secondaryMessages: failedLibraryNames,
             },
           });

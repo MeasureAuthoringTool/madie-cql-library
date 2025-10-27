@@ -1828,9 +1828,9 @@ describe("Edit Cql Library Component", () => {
     });
   });
 
-  it("should show warning message when transfer returns 206 with failed libraries", async () => {
+  it("should show warning message when transfer returns 207 with failed libraries", async () => {
     mockedAxios.put.mockResolvedValueOnce({
-      status: 206,
+      status: 207,
       data: ["cql-lib-1234"],
     });
 
@@ -1875,7 +1875,7 @@ describe("Edit Cql Library Component", () => {
     );
     expect(warningHeader).toBeInTheDocument();
     expect(warningHeader).toHaveTextContent(
-      "1 library could not be transferred. Please try again, or contact help desk if the issue persists."
+      "1 Libraries could not be transferred. Please try again, or contact help desk if the issue persists."
     );
 
     const failedLibrary = screen.getByTestId("library-warning");
