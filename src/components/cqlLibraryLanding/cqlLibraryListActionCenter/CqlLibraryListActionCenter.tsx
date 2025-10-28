@@ -82,7 +82,15 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         onClick={deleteLibrary}
         selectedLibraries={selectedLibraries}
       />
-
+      <ShareAction
+        libraries={selectedLibraries}
+        canEdit={canEdit}
+        onClick={shareLibrary}
+        userName={userName}
+        owners={owners}
+        isSharedWithUser={isSharedWithUser}
+        activeTab={props?.activeTab}
+      />
       <VersionAction
         libraries={selectedLibraries}
         canEdit={canEdit}
@@ -100,15 +108,6 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
           onClick={openLibraryHistoryDialog}
         />
       )}
-      <ShareAction
-        libraries={selectedLibraries}
-        canEdit={canEdit}
-        onClick={shareLibrary}
-        userName={userName}
-        owners={owners}
-        isSharedWithUser={isSharedWithUser}
-        activeTab={props?.activeTab}
-      />
       {featureFlags?.TransferLibrary && (
         <TransferAction
           libraries={selectedLibraries}
