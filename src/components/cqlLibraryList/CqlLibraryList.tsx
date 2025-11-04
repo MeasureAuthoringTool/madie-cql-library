@@ -42,11 +42,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import queryString from "query-string";
 import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 import * as _ from "lodash";
-import { Chip } from "@mui/material";
+import { Chip, Tooltip } from "@mui/material";
 import TransferDialog from "../common/transferDialog/TransferDialog";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import "./CqlLibraryList.scss";
 
 export const TRANSFER_LIBRARY_SUCCESS =
@@ -567,43 +568,76 @@ export default function CqlLibraryList({
       ),
       accessorKey: "Actions",
       enableSorting: false,
-      cell: (info) => (
-        <Button
-          variant="outline-secondary"
-          style={{ borderColor: "#c8c8c8" }}
-          onClick={() =>
-            navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
-          }
-          data-testid={
-            checkUserCanEdit(
-              info.row.original.librarySet?.owner,
-              info.row.original.librarySet?.acls
-            ) && info.row.original.draft
-              ? `edit-cql-library-button-${info.row.original.id}`
-              : `view-cql-library-button-${info.row.original.id}`
-          }
-          aria-label={`${
-            checkUserCanEdit(
-              info.row.original.librarySet?.owner,
-              info.row.original.librarySet?.acls
-            ) && info.row.original.draft
-              ? `Edit`
-              : `View`
-          } Library ${info.row.original.cqlLibraryName} ${
-            info.row.original.version
-          }${info.row.original.draft ? " Draft" : ""}`}
-          aria-live="polite"
-          tabIndex={0}
-          role="button"
-        >
-          {checkUserCanEdit(
-            info.row.original.librarySet?.owner,
-            info.row.original.librarySet?.acls
-          ) && info.row.original.draft
-            ? "Edit"
-            : "View"}
-        </Button>
-      ),
+      cell: (info) => {
+        const canEdit = checkUserCanEdit(
+          info.row.original.librarySet?.owner,
+          info.row.original.librarySet?.acls
+        );
+        const isLockedByOther =
+          featureFlags?.Locking &&
+          canEdit &&
+          !!info.row.original.cqlLibraryLock;
+
+        const buttonText = isLockedByOther ? "View" : canEdit ? "Edit" : "View";
+
+        const buttonElement = (
+          <Button
+            variant="outline-secondary"
+            style={{ borderColor: "#c8c8c8" }}
+            onClick={() =>
+              navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
+            }
+            data-testid={`cql-library-action-${info.row.original.id}`}
+            aria-label={`${buttonText} Library ${
+              info.row.original.cqlLibraryName
+            } ${info.row.original.version}${
+              info.row.original.draft ? " Draft" : ""
+            }${
+              isLockedByOther
+                ? ` (Locked by ${info.row.original.cqlLibraryLock.lockedBy})`
+                : ""
+            }`}
+            aria-live="polite"
+            tabIndex={0}
+            role="button"
+          >
+            {isLockedByOther && (
+              <LockOutlinedIcon
+                sx={{ fontSize: 16, marginRight: 0.5 }}
+                data-testid={`library-lock-icon-${info.row.original.id}`}
+              />
+            )}
+            {buttonText}
+          </Button>
+        );
+
+        if (isLockedByOther) {
+          return (
+            <Tooltip
+              title={
+                <>
+                  Locked while being edited by
+                  <br />
+                  {info.row.original.cqlLibraryLock.lockedBy}
+                </>
+              }
+              arrow
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    maxWidth: "none",
+                    whiteSpace: "nowrap",
+                  },
+                },
+              }}
+            >
+              <span>{buttonElement}</span>
+            </Tooltip>
+          );
+        }
+
+        return buttonElement;
+      },
     },
   ];
 
