@@ -21,6 +21,10 @@ import {
 import { checkUserCanEdit, useFeatureFlags } from "@madie/madie-util";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
+import {
+  TRANSFER_LIBRARY_FAILURE,
+  TRANSFER_LIBRARY_SUCCESS,
+} from "../cqlLibraryList/CqlLibraryList";
 
 const { getByTestId, queryByTestId, queryByText } = screen;
 jest.mock("@madie/madie-util", () => ({
@@ -136,6 +140,10 @@ const mockCqlLibraryServiceApi = {
     .mockResolvedValue({ data: { ...cqlLibrary, version: "newVersion" } }),
   deleteDraft: jest.fn().mockResolvedValue({ data: draftedLibrary }),
   getLibraryHistory: jest.fn().mockResolvedValue(makeMockhistory(50)),
+  transferLibraries: jest.fn().mockResolvedValue({
+    status: 200,
+    data: [],
+  }),
 } as unknown as CqlLibraryServiceApi;
 
 const mockLocation = jest.fn();
@@ -1760,6 +1768,169 @@ describe("Edit Cql Library Component", () => {
 
     await waitFor(() => {
       expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("should open transfer dialog and show success message when transferring library", async () => {
+    mockedAxios.put.mockClear();
+    mockedAxios.put.mockResolvedValueOnce({
+      status: 200,
+      data: [],
+    });
+
+    renderWithRouter();
+
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event("transfer-library"));
+    });
+
+    const transferDialog = await screen.findByTestId("transfer-dialog");
+    expect(transferDialog).toBeInTheDocument();
+
+    const transferSaveButton = screen.getByTestId("transfer-save-button");
+    expect(transferSaveButton).toBeDisabled();
+
+    const newHarpIdInput = screen.getByTestId("harp-id-input");
+    fireEvent.change(newHarpIdInput, { target: { value: "newUser" } });
+
+    expect(transferSaveButton).toBeEnabled();
+
+    fireEvent.click(transferSaveButton);
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+    });
+
+    expect(mockedAxios.put).toHaveBeenCalledWith(
+      expect.stringContaining("/cql-libraries/transfer"),
+      ["cql-lib-1234"],
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          Authorization: "Bearer test.jwt",
+          harpId: "newUser",
+        }),
+        params: expect.objectContaining({
+          retainShareAccess: false,
+        }),
+      })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(TRANSFER_LIBRARY_SUCCESS)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("transfer-dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  it("should show warning message when transfer returns 207 with failed libraries", async () => {
+    mockedAxios.put.mockResolvedValueOnce({
+      status: 207,
+      data: ["cql-lib-1234"],
+    });
+
+    renderWithRouter();
+
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event("transfer-library"));
+    });
+
+    const transferDialog = await screen.findByTestId("transfer-dialog");
+    expect(transferDialog).toBeInTheDocument();
+
+    const harpInput = screen.getByTestId("harp-id-input");
+    fireEvent.change(harpInput, { target: { value: "newUser" } });
+
+    const transferButton = screen.getByTestId("transfer-save-button");
+    fireEvent.click(transferButton);
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+      expect(mockedAxios.put).toHaveBeenCalledWith(
+        expect.stringContaining("/cql-libraries/transfer"),
+        ["cql-lib-1234"],
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: "Bearer test.jwt",
+            harpId: "newUser",
+          }),
+          params: expect.objectContaining({
+            retainShareAccess: false,
+          }),
+        })
+      );
+    });
+
+    const warningHeader = await screen.findByTestId(
+      "generic-warning-text-header"
+    );
+    expect(warningHeader).toBeInTheDocument();
+    expect(warningHeader).toHaveTextContent(
+      "1 Libraries could not be transferred. Please try again, or contact help desk if the issue persists."
+    );
+
+    const failedLibrary = screen.getByTestId("library-warning");
+    expect(failedLibrary).toHaveTextContent("Library1");
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("transfer-dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  it("should show error toast when transfer fails", async () => {
+    mockedAxios.put.mockRejectedValueOnce(new Error("Network Error"));
+
+    renderWithRouter();
+
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event("transfer-library"));
+    });
+
+    const transferDialog = await screen.findByTestId("transfer-dialog");
+    expect(transferDialog).toBeInTheDocument();
+
+    const harpInput = screen.getByTestId("harp-id-input");
+    fireEvent.change(harpInput, { target: { value: "newUser" } });
+
+    const transferButton = screen.getByTestId("transfer-save-button");
+    fireEvent.click(transferButton);
+
+    await waitFor(() => {
+      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+      expect(mockedAxios.put).toHaveBeenCalledWith(
+        expect.stringContaining("/cql-libraries/transfer"),
+        ["cql-lib-1234"],
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            Authorization: "Bearer test.jwt",
+            harpId: "newUser",
+          }),
+          params: expect.objectContaining({
+            retainShareAccess: false,
+          }),
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(TRANSFER_LIBRARY_FAILURE)).toBeInTheDocument();
+    });
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("transfer-dialog")).not.toBeInTheDocument();
     });
   });
 });

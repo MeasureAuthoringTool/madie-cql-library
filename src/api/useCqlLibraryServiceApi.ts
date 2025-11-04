@@ -330,7 +330,7 @@ export class CqlLibraryServiceApi {
           },
         }
       );
-      return response.data;
+      return response;
     } catch (error) {
       console.error("Failed to transfer libraries", error);
       throw new Error(error);

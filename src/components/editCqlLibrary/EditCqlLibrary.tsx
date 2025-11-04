@@ -217,6 +217,11 @@ const EditCqlLibrary = () => {
   });
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>(null);
+  const [warning, setWarning] = useState({
+    status: false,
+    primaryMessage: "",
+    secondaryMessages: [],
+  });
   const [outboundAnnotations, setOutboundAnnotations] = useState([]);
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
@@ -666,21 +671,40 @@ const EditCqlLibrary = () => {
   );
 
   const transferLibrary = (newOwner: string, retainShareAccess: boolean) => {
+    setWarning({
+      status: false,
+      primaryMessage: "",
+      secondaryMessages: [],
+    });
+
     const libraryIds = loadedCqlLibrary.id;
     return cqlLibraryServiceApi
       .transferLibraries([libraryIds], newOwner, retainShareAccess)
-      .then(async () => {
-        handleDialogClose();
-        setToastOpen(true);
-        setToastType("success");
-        setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+      .then((response) => {
+        if (response.status === 200) {
+          setToastOpen(true);
+          setToastType("success");
+          setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+
+          setTimeout(() => {
+            navigate("/cql-libraries");
+          }, 2000);
+        } else if (response.status === 207) {
+          setWarning({
+            status: true,
+            primaryMessage: `1 Libraries could not be transferred. Please try again, or contact help desk if the issue persists.`,
+            secondaryMessages: [loadedCqlLibrary.cqlLibraryName],
+          });
+        }
       })
       .catch((error) => {
         console.error("TransferDialog: handleSave: error = ", error);
-        handleDialogClose();
         setToastOpen(true);
         setToastType("danger");
         setToastMessage(TRANSFER_LIBRARY_FAILURE);
+      })
+      .finally(() => {
+        handleDialogClose();
       });
   };
 
@@ -709,6 +733,7 @@ const EditCqlLibrary = () => {
             error={error}
             errorMessage={errorMessage}
             success={success}
+            warning={warning}
             outboundAnnotations={outboundAnnotations}
           />
           <div

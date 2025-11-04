@@ -48,6 +48,7 @@ import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import "./CqlLibraryList.scss";
+import { INITIAL_STATUS_HANDLER } from "../editCqlLibrary/statusHandler/StatusHandler";
 
 export const TRANSFER_LIBRARY_SUCCESS =
   "The library(s) were successfully transferred. If you chose to retain share access, you will still be able to edit the libraries.";
@@ -148,6 +149,7 @@ export default function CqlLibraryList({
   setToastOpen,
   setToastMessage,
   setToastType,
+  setStatusHandler,
 }) {
   const [hoveredHeader, setHoveredHeader] = useState<string>("");
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
@@ -345,22 +347,42 @@ export default function CqlLibraryList({
       });
   };
   const transferLibraries = (newOwner: string, retainShareAccess: boolean) => {
+    setStatusHandler(INITIAL_STATUS_HANDLER);
+
     const libraryIds = selectedLibraries.map((lib) => lib.id);
     return cqlLibraryServiceApi
       .transferLibraries(libraryIds, newOwner, retainShareAccess)
-      .then(async () => {
-        handleDialogClose();
-        setToastOpen(true);
-        setToastType("success");
-        setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+      .then((response) => {
+        if (response.status === 200) {
+          setToastOpen(true);
+          setToastType("success");
+          setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+        } else if (response.status === 207) {
+          const failedLibraryIds: string[] = response.data;
+
+          const failedLibraryNames = selectedLibraries
+            .filter((lib) => failedLibraryIds.includes(lib.id))
+            .map((lib) => lib.cqlLibraryName);
+
+          setStatusHandler({
+            warning: {
+              status: true,
+              primaryMessage: `${failedLibraryNames?.length} Libraries could not be transferred. Please try again, or contact help desk if the issue persists.`,
+              secondaryMessages: failedLibraryNames,
+            },
+          });
+        }
+
         onListUpdate();
       })
       .catch((error) => {
         console.error("TransferDialog: handleSave: error = ", error);
-        handleDialogClose();
         setToastOpen(true);
         setToastType("danger");
         setToastMessage(TRANSFER_LIBRARY_FAILURE);
+      })
+      .finally(() => {
+        handleDialogClose();
       });
   };
 
