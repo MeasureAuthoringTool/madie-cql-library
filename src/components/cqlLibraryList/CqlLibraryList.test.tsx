@@ -62,7 +62,7 @@ const cqlLibrary = [
     active: true,
     hasAssociatedLibraries: false,
   },
-];
+] as unknown as CqlLibrary[];
 const mockSearchCriteria = {
   searchField: "test-field",
   optionalSearchProperties: ["version"],
@@ -461,9 +461,7 @@ describe("CqlLibrary List component", () => {
     );
 
     expect(
-      await screen.findByTestId(
-        "view-cql-library-button-622e1f46d1fd3729d861e6cb"
-      )
+      await screen.findByTestId("cql-library-action-622e1f46d1fd3729d861e6cb")
     ).toBeInTheDocument();
 
     expect(
@@ -806,5 +804,265 @@ describe("sortResults", () => {
   it("returns data unmodified if sortBy is null", () => {
     const result = sortResults(data, null);
     expect(result).toEqual(data);
+  });
+});
+
+describe("Library lock functionality", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    (useFeatureFlags as jest.Mock).mockImplementation(() => ({
+      Locking: true,
+      LibrarySearch: true,
+    }));
+  });
+
+  it("should display lock icon and 'View' text when library is locked by another user", async () => {
+    const lockedLibrary = {
+      ...cqlLibrary[0],
+      cqlLibraryLock: {
+        lockedBy: "AnotherUser",
+        lockedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 900000).toISOString(),
+        libraryId: cqlLibrary[0].id,
+      },
+    };
+
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={[lockedLibrary]}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+      />
+    );
+
+    const actionButton = await screen.findByTestId(
+      `cql-library-action-${lockedLibrary.id}`
+    );
+
+    expect(actionButton).toBeInTheDocument();
+    expect(actionButton).toHaveTextContent("View");
+    expect(
+      within(actionButton).getByTestId(
+        "library-lock-icon-622e1f46d1fd3729d861e6cb"
+      )
+    ).toBeInTheDocument();
+    expect(actionButton).toHaveAttribute(
+      "aria-label",
+      expect.stringContaining("Locked by AnotherUser")
+    );
+  });
+
+  it("should display 'Edit' when user has edit permission and library is not locked", async () => {
+    const unlockedLibrary = {
+      ...cqlLibrary[0],
+      libraryMetaData: { draft: true },
+      librarySet: {
+        owner: "testUser",
+        acls: [],
+      },
+    };
+
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={[unlockedLibrary]}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+      />
+    );
+
+    const actionButton = await screen.findByTestId(
+      `cql-library-action-${unlockedLibrary.id}`
+    );
+
+    expect(actionButton).toHaveTextContent("Edit");
+    expect(
+      within(actionButton).queryByTestId(
+        "library-lock-icon-622e1f46d1fd3729d861e6cb"
+      )
+    ).not.toBeInTheDocument();
+  });
+
+  it("should not display lock icon when Locking feature flag is disabled", async () => {
+    (useFeatureFlags as jest.Mock).mockImplementation(() => ({
+      Locking: false,
+    }));
+
+    const lockedLibrary = {
+      ...cqlLibrary[0],
+      cqlLibraryLock: {
+        lockedBy: "AnotherUser",
+        lockedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 900000).toISOString(),
+        libraryId: cqlLibrary[0].id,
+      },
+      libraryMetaData: { draft: true },
+      librarySet: {
+        owner: "testUser",
+        acls: [],
+      },
+    };
+
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={[lockedLibrary]}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+      />
+    );
+
+    const actionButton = await screen.findByTestId(
+      `edit-cql-library-button-${lockedLibrary.id}`
+    );
+
+    expect(actionButton).toHaveTextContent("Edit");
+    expect(
+      within(actionButton).queryByTestId(
+        "library-lock-icon-622e1f46d1fd3729d861e6cb"
+      )
+    ).not.toBeInTheDocument();
+  });
+
+  it("should display 'View' without lock icon when user doesn't have edit permission", async () => {
+    (checkUserCanEdit as jest.Mock).mockReturnValue(false);
+
+    const library = {
+      ...cqlLibrary[0],
+      libraryMetaData: { draft: false },
+    };
+
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={[library]}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        sorting={[{ id: "cqlLibraryName", desc: false }]}
+        handleSort={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+      />
+    );
+
+    const actionButton = await screen.findByTestId(
+      `cql-library-action-${library.id}`
+    );
+
+    expect(actionButton).toHaveTextContent("View");
+    expect(
+      within(actionButton).queryByTestId(
+        "library-lock-icon-622e1f46d1fd3729d861e6cb"
+      )
+    ).not.toBeInTheDocument();
   });
 });
