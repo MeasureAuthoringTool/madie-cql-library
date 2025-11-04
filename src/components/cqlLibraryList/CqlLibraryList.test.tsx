@@ -934,7 +934,9 @@ describe("Library lock functionality", () => {
 
     expect(actionButton).toHaveTextContent("Edit");
     expect(
-      within(actionButton).queryByTestId("LockOutlinedIcon")
+      within(actionButton).queryByTestId(
+        "library-lock-icon-622e1f46d1fd3729d861e6cb"
+      )
     ).not.toBeInTheDocument();
   });
 
@@ -1001,7 +1003,9 @@ describe("Library lock functionality", () => {
 
     expect(actionButton).toHaveTextContent("Edit");
     expect(
-      within(actionButton).queryByTestId("LockOutlinedIcon")
+      within(actionButton).queryByTestId(
+        "library-lock-icon-622e1f46d1fd3729d861e6cb"
+      )
     ).not.toBeInTheDocument();
   });
 
@@ -1056,7 +1060,9 @@ describe("Library lock functionality", () => {
 
     expect(actionButton).toHaveTextContent("View");
     expect(
-      within(actionButton).queryByTestId("LockOutlinedIcon")
+      within(actionButton).queryByTestId(
+        "library-lock-icon-622e1f46d1fd3729d861e6cb"
+      )
     ).not.toBeInTheDocument();
   });
 });
