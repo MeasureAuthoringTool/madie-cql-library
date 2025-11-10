@@ -1933,4 +1933,44 @@ describe("Edit Cql Library Component", () => {
       expect(screen.queryByTestId("transfer-dialog")).not.toBeInTheDocument();
     });
   });
+
+  it("should render all fields in read-only mode if the CQL Library is locked by another user", async () => {
+    (checkUserCanEdit as jest.Mock).mockImplementation(() => {
+      return true;
+    });
+    const cqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      model: Model.QICORE,
+      draft: true,
+      cqlErrors: false,
+      description: "Testing stuff.",
+      cql: "library testCql version '1.0.000'",
+      cqlLibraryLock: {
+        lockedBy: "anotherUser",
+      },
+    } as unknown as CqlLibrary;
+
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    renderWithRouter();
+
+    expect(screen.getByTestId("cql-library-editor")).toHaveAttribute(
+      "readonly"
+    );
+    expect(
+      screen.getByRole("textbox", { name: "CQL Library Name" })
+    ).toHaveAttribute("readonly");
+    expect(
+      screen.getByRole("textbox", { name: "Description" })
+    ).toHaveAttribute("readonly");
+    expect(screen.getByRole("textbox", { name: "Publisher" })).toHaveAttribute(
+      "readonly"
+    );
+
+    expect(
+      screen.getByRole("checkbox", { name: "Experimental" })
+    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+  });
 });

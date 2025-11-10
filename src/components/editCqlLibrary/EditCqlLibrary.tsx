@@ -239,10 +239,11 @@ const EditCqlLibrary = () => {
   const [toastType, setToastType] = useState<string>("danger");
   const [discardDialogOpen, setDiscardDialogOpen] = useState<boolean>(false);
   const { updateRouteHandlerState } = routeHandlerStore;
-  const canEdit = checkUserCanEdit(
-    loadedCqlLibrary?.librarySet?.owner,
-    loadedCqlLibrary?.librarySet?.acls
-  );
+  const canEdit =
+    checkUserCanEdit(
+      loadedCqlLibrary?.librarySet?.owner,
+      loadedCqlLibrary?.librarySet?.acls
+    ) && !loadedCqlLibrary?.cqlLibraryLock;
 
   const onToastClose = () => {
     setToastType("danger");
@@ -820,7 +821,10 @@ const EditCqlLibrary = () => {
                               />
                             </div>
                           )}
-                          {!canEdit && (
+                          {!checkUserCanEdit(
+                            loadedCqlLibrary?.librarySet?.owner,
+                            loadedCqlLibrary?.librarySet?.acls
+                          ) && (
                             <div className="form-row">
                               <MadieAlert
                                 type="info"
