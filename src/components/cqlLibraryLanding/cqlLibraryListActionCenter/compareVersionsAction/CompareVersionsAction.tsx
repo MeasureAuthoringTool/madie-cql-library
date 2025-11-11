@@ -11,8 +11,6 @@ interface PropTypes {
 
 export const NOTHING_SELECTED =
   "Select 2 instances within the same library set to compare library versions";
-export const DIFFERENT_LIBRARIES =
-  "Select 2 instances within the same library set to compare library versions";
 export const VALID_COMPARE = "Compare Library Versions";
 
 interface CompareVersionsIconProps {
@@ -59,7 +57,7 @@ export default function CompareVersionsAction(props: PropTypes) {
       setTooltipMessage(VALID_COMPARE);
       setDisableCompareBtn(false);
     } else {
-      setTooltipMessage(DIFFERENT_LIBRARIES);
+      setTooltipMessage(NOTHING_SELECTED);
     }
   }, [libraries]);
 
