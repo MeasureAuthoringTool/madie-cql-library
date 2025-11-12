@@ -4,6 +4,7 @@ import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";
 import ShareAction from "./shareAction/ShareAction";
 import HistoryAction from "./historyAction/HistoryAction";
+import CompareVersionsAction from "./compareVersionsAction/CompareVersionsAction";
 import { CqlLibrary } from "@madie/madie-models";
 import {
   checkUserCanEdit,
@@ -23,6 +24,7 @@ interface PropTypes {
   activeTab: number;
   setTransferDialog: (value: any) => void;
   openLibraryHistoryDialog: () => void;
+  openCompareVersionsDialog?: () => void;
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
@@ -76,6 +78,12 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     }
   }, [selectedLibraries?.length, props]);
 
+  const compareVersions = useCallback(() => {
+    if (props.openCompareVersionsDialog) {
+      props.openCompareVersionsDialog();
+    }
+  }, [props]);
+
   return (
     <div data-testid="action-center">
       <DeleteAction
@@ -113,6 +121,12 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
           libraries={selectedLibraries}
           onClick={transferLibrary}
           activeTab={props?.activeTab}
+        />
+      )}
+      {featureFlags?.CompareLibraryVersions && (
+        <CompareVersionsAction
+          libraries={selectedLibraries}
+          onClick={compareVersions}
         />
       )}
     </div>
