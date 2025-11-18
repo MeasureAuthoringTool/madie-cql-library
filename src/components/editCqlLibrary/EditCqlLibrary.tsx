@@ -239,11 +239,12 @@ const EditCqlLibrary = () => {
   const [toastType, setToastType] = useState<string>("danger");
   const [discardDialogOpen, setDiscardDialogOpen] = useState<boolean>(false);
   const { updateRouteHandlerState } = routeHandlerStore;
+  const featureFlags = useFeatureFlags();
   const canEdit =
     checkUserCanEdit(
       loadedCqlLibrary?.librarySet?.owner,
       loadedCqlLibrary?.librarySet?.acls
-    ) && !loadedCqlLibrary?.cqlLibraryLock;
+    ) && !(featureFlags?.Locking && loadedCqlLibrary?.cqlLibraryLock);
 
   const onToastClose = () => {
     setToastType("danger");
@@ -410,7 +411,6 @@ const EditCqlLibrary = () => {
     setValuesetSuccess(false);
   };
 
-  const featureFlags = useFeatureFlags();
   useEffect(() => {
     if (id) {
       if (_.isNil(loadedCqlLibrary)) {
