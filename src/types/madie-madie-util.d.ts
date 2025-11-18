@@ -56,6 +56,7 @@ declare module "@madie/madie-util" {
     TransferLibrary: boolean;
     Locking: boolean;
     LibraryHistory: boolean;
+    CompareLibraryVersions: boolean;
   }
 
   export function useFeatureFlags(): FeatureFlags;
