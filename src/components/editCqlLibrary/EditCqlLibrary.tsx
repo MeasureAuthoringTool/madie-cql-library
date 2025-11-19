@@ -61,6 +61,7 @@ import {
   TRANSFER_LIBRARY_SUCCESS,
 } from "../cqlLibraryList/CqlLibraryList";
 import CqlLibraryHistoryDialog from "../cqlLibraryLanding/CqlLibraryHistoryDialog";
+import LibraryLockedPopup from "./libraryLockedPopup/LibraryLockedPopup";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -245,6 +246,13 @@ const EditCqlLibrary = () => {
       loadedCqlLibrary?.librarySet?.owner,
       loadedCqlLibrary?.librarySet?.acls
     ) && !(featureFlags?.Locking && loadedCqlLibrary?.cqlLibraryLock);
+  const libraryLockedBy =
+    featureFlags?.Locking && loadedCqlLibrary?.cqlLibraryLock
+      ? loadedCqlLibrary?.cqlLibraryLock?.lockedBy
+      : undefined;
+  const [lockedLibraryPopupOpen, setLockedLibraryPopupOpen] = useState(
+    !canEdit
+  );
 
   const onToastClose = () => {
     setToastType("danger");
@@ -1051,6 +1059,17 @@ const EditCqlLibrary = () => {
           onClose={closeLibraryHistoryDialog}
         />
       )}
+      {checkUserCanEdit(
+        loadedCqlLibrary?.librarySet?.owner,
+        loadedCqlLibrary?.librarySet?.acls
+      ) &&
+        libraryLockedBy && (
+          <LibraryLockedPopup
+            libraryLockedBy={libraryLockedBy}
+            lockedLibraryPopupOpen={lockedLibraryPopupOpen}
+            setLockedLibraryPopupOpen={setLockedLibraryPopupOpen}
+          />
+        )}
     </div>
   );
 };
