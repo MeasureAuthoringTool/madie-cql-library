@@ -50,6 +50,7 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import "./CqlLibraryList.scss";
 import { INITIAL_STATUS_HANDLER } from "../editCqlLibrary/statusHandler/StatusHandler";
+import CompareVersionsDialog from "../common/compareVersionsDialog/CompareVersionsDialog";
 
 export const TRANSFER_LIBRARY_SUCCESS =
   "The library(s) were successfully transferred. If you chose to retain share access, you will still be able to edit the libraries.";
@@ -132,6 +133,8 @@ export default function CqlLibraryList({
   setShareDialog,
   transferDialog,
   setTransferDialog,
+  compareVersionsDialog,
+  setCompareVersionsDialog,
   setCreateDraftDialog,
   setOwners,
   setSnackBar,
@@ -203,6 +206,7 @@ export default function CqlLibraryList({
     setCreateDraftDialog({ open: false, cqlLibrary: null });
     setDeleteDraftDialog({ ...INITIAL_DELETE_DRAFT_STATE });
     setTransferDialog({ open: false, libraries: [] });
+    setCompareVersionsDialog(false);
   };
 
   const handleSnackBarClose = (
@@ -975,6 +979,11 @@ export default function CqlLibraryList({
         open={transferDialog.open}
         onClose={handleDialogClose}
         onSubmit={transferLibraries}
+      />
+      <CompareVersionsDialog
+        libraries={selectedLibraries}
+        open={compareVersionsDialog}
+        onClose={handleDialogClose}
       />
       <Popover
         open={optionsOpen}

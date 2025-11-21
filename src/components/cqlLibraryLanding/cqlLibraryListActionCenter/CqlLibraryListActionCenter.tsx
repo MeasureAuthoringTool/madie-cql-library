@@ -24,7 +24,7 @@ interface PropTypes {
   activeTab: number;
   setTransferDialog: (value: any) => void;
   openLibraryHistoryDialog: () => void;
-  openCompareVersionsDialog?: () => void;
+  setCompareVersionsDialog: any;
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
@@ -79,10 +79,10 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
   }, [selectedLibraries?.length, props]);
 
   const compareVersions = useCallback(() => {
-    if (props.openCompareVersionsDialog) {
-      props.openCompareVersionsDialog();
+    if (selectedLibraries?.length === 2) {
+      props.setCompareVersionsDialog(true);
     }
-  }, [props]);
+  }, [selectedLibraries?.length, props.setCompareVersionsDialog]);
 
   return (
     <div data-testid="action-center">
