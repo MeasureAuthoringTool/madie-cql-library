@@ -697,7 +697,7 @@ const EditCqlLibrary = () => {
 
           setTimeout(() => {
             navigate("/cql-libraries");
-          }, 2000);
+          }, 1000);
         } else if (response.status === 207) {
           setWarning({
             status: true,
