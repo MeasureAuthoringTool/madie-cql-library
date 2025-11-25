@@ -1973,4 +1973,83 @@ describe("Edit Cql Library Component", () => {
     ).toBeDisabled();
     expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
   });
+
+  it("Should display error when cql library is locked while updating", async () => {
+    (checkUserCanEdit as jest.Mock).mockImplementation(() => {
+      return true;
+    });
+    (useFeatureFlags as jest.Mock).mockImplementation(() => ({
+      Locking: true,
+    }));
+    const cqlLibrary = {
+      id: "cql-lib-1234",
+      cqlLibraryName: "Library1",
+      librarySetId: "",
+      model: Model.QICORE,
+      draft: true,
+      version: null,
+      cqlErrors: false,
+      publisher: "Org1",
+      description: "testing",
+      experimental: true,
+      cql: "library UpdateName version '1.0.000'",
+      createdAt: "",
+      createdBy: "john doe",
+      lastModifiedAt: "",
+      lastModifiedBy: "",
+    } as unknown as CqlLibrary;
+
+    mockedAxios.get.mockClear();
+    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockedAxios.put.mockClear();
+    (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
+      return "library UpdateName version '1.0.000'";
+    });
+    isUsingEmpty.mockClear().mockImplementation(() => false);
+    mockedAxios.put.mockResolvedValueOnce({ data: lockInfo });
+    mockedAxios.put.mockResolvedValueOnce({ data: { ...cqlLibrary } });
+    mockedAxios.put.mockRejectedValueOnce({
+      response: {
+        data: {
+          message:
+            "Unable to update Cql Library. Cql Library is locked by: anotherUser",
+        },
+        status: 423,
+      },
+    });
+    renderWithRouter();
+    expect(mockedAxios.get).toHaveBeenCalled();
+
+    expect(
+      await screen.findByRole("button", {
+        name: "Save",
+      })
+    ).toBeInTheDocument();
+
+    const publisher = screen.getByRole("combobox", {
+      name: "Publisher",
+    }) as HTMLInputElement;
+    expect(publisher.value).toBe("Org1");
+    fireEvent.keyDown(publisher, { key: "ArrowDown" });
+    const anotherOrg = await screen.getByRole("option", { selected: false });
+    userEvent.click(anotherOrg);
+    expect(publisher.value).toBe("Org2");
+
+    const updateButton = screen.getByRole("button", {
+      name: "Save",
+    });
+    expect(updateButton).not.toBeDisabled();
+    userEvent.click(updateButton);
+    await waitFor(() => {
+      const errorMessage = screen.getByTestId("generic-error-text-header");
+      expect(errorMessage.textContent).toEqual(
+        "Unable to update Cql Library. Cql Library is locked by: anotherUser"
+      );
+      screen.debug(undefined, 700000);
+    });
+    expect(mockedAxios.put.mock.lastCall[0]).toEqual(
+      "/cql-libraries/cql-lib-1234"
+    );
+    expect(mockedAxios.put.mock.lastCall[1]).toBeTruthy();
+  });
 });
