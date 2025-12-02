@@ -8,14 +8,12 @@ interface LibraryComparisonPanelProps {
   side: "old" | "new";
 }
 
-const formatDate = (isoDate: string) => {
-  const date = new Date(isoDate);
-  return date.toLocaleDateString("en-US", {
+export const formatDate = (date: string) =>
+  new Date(date).toLocaleDateString("en-US", {
     month: "2-digit",
     day: "2-digit",
     year: "numeric",
   });
-};
 
 const LibraryComparisonPanel = ({
   library,

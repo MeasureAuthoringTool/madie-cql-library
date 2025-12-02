@@ -4,6 +4,7 @@ import CompareVersionsDialog, {
   getNewestLibraryInstance,
 } from "./CompareVersionsDialog";
 import { CqlLibrary } from "@madie/madie-models";
+import { formatDate } from "./LibraryComparisonPanel";
 
 const mockOnClose = jest.fn();
 
@@ -23,13 +24,6 @@ const mockLibraries: CqlLibrary[] = [
     lastModifiedAt: "2023-05-01T00:00:00Z",
   } as any,
 ];
-
-const formatDate = (isoDate: string) =>
-  new Date(isoDate).toLocaleDateString("en-US", {
-    month: "2-digit",
-    day: "2-digit",
-    year: "numeric",
-  });
 
 describe("CompareVersionsDialog Component (Libraries)", () => {
   beforeEach(() => {
