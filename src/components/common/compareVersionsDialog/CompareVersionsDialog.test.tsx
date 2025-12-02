@@ -36,7 +36,7 @@ describe("CompareVersionsDialog Component (Libraries)", () => {
     jest.clearAllMocks();
   });
 
-  it("renders compare version dialog when open and displays correct difference", () => {
+  it("renders compare version dialog when open", () => {
     render(
       <CompareVersionsDialog
         libraries={mockLibraries}
