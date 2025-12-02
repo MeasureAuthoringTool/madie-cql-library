@@ -3,6 +3,7 @@ import { Box, Divider, Typography } from "@mui/material";
 import { MadieDialog, Tab, Tabs } from "@madie/madie-design-system/dist/react";
 import { CqlLibrary } from "@madie/madie-models";
 import "./CompareVersionsDialog.scss";
+import LibraryComparisonPanel from "./LibraryComparisonPanel";
 
 interface CompareVersionsDialogProps {
   libraries: CqlLibrary[] | null | undefined;
@@ -45,6 +46,8 @@ const CompareVersionsDialog = ({
   if (!libraries || libraries.length !== 2) return null;
 
   const newestLibrary = getNewestLibraryInstance(libraries);
+  const oldLibrary =
+    newestLibrary === libraries[0] ? libraries[1] : libraries[0];
 
   return (
     <MadieDialog
@@ -90,8 +93,12 @@ const CompareVersionsDialog = ({
       <Divider className="divider" />
 
       {activeTab === "cql" && (
-        <div className="horizontal-padding" data-testid="tab-content-cql">
-          <Typography>CQL content goes here</Typography>
+        <div
+          className="comparison-panels-container"
+          data-testid="tab-content-cql"
+        >
+          <LibraryComparisonPanel library={oldLibrary} side="old" />
+          <LibraryComparisonPanel library={newestLibrary} side="new" />
         </div>
       )}
     </MadieDialog>
