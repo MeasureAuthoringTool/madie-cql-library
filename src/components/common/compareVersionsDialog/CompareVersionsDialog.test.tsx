@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import CompareVersionsDialog, {
   getNewestLibraryInstance,
@@ -13,21 +13,30 @@ const mockLibraries: CqlLibrary[] = [
     cqlLibraryName: "Older Library",
     version: "1.0.001",
     draft: false,
+    lastModifiedAt: "2023-04-01T00:00:00Z",
   } as any,
   {
     id: "2",
     cqlLibraryName: "Newer Library (Draft)",
     version: "1.1.001",
     draft: true,
+    lastModifiedAt: "2023-05-01T00:00:00Z",
   } as any,
 ];
+
+const formatDate = (isoDate: string) =>
+  new Date(isoDate).toLocaleDateString("en-US", {
+    month: "2-digit",
+    day: "2-digit",
+    year: "numeric",
+  });
 
 describe("CompareVersionsDialog Component (Libraries)", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("renders when open", () => {
+  it("renders compare version dialog when open and displays correct difference", () => {
     render(
       <CompareVersionsDialog
         libraries={mockLibraries}
@@ -103,20 +112,6 @@ describe("CompareVersionsDialog Component (Libraries)", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("displays newest library correctly", () => {
-    render(
-      <CompareVersionsDialog
-        libraries={mockLibraries}
-        open={true}
-        onClose={mockOnClose}
-      />
-    );
-
-    expect(screen.getByTestId("library-name")).toHaveTextContent(
-      "Newer Library (Draft)"
-    );
-  });
-
   it("renders CQL tab", () => {
     render(
       <CompareVersionsDialog
@@ -143,19 +138,62 @@ describe("CompareVersionsDialog Component (Libraries)", () => {
 
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
+
+  it("renders library details diffs for both libraries", () => {
+    render(
+      <CompareVersionsDialog
+        libraries={mockLibraries}
+        open={true}
+        onClose={mockOnClose}
+      />
+    );
+
+    expect(screen.getByTestId("version-section-old")).toHaveTextContent(
+      "Version 1.0.001"
+    );
+    expect(screen.getByTestId("version-section-new")).toHaveTextContent(
+      "Version 1.1.001"
+    );
+
+    expect(screen.getByTestId("library-name-section-old")).toHaveTextContent(
+      "Library Name: Older Library"
+    );
+    expect(screen.getByTestId("library-name-section-new")).toHaveTextContent(
+      "Library Name: Newer Library (Draft)"
+    );
+
+    const oldLastUpdated = `Last updated on ${formatDate(
+      mockLibraries[0].lastModifiedAt!
+    )}`;
+    const newLastUpdated = `Last updated on ${formatDate(
+      mockLibraries[1].lastModifiedAt!
+    )}`;
+
+    expect(screen.getByTestId("last-updated-old")).toHaveTextContent(
+      oldLastUpdated
+    );
+    expect(screen.getByTestId("last-updated-new")).toHaveTextContent(
+      newLastUpdated
+    );
+
+    expect(screen.queryByTestId("draft-chip-old")).not.toBeInTheDocument();
+    expect(screen.getByTestId("draft-chip-new")).toBeInTheDocument();
+  });
 });
 
 describe("getNewestLibraryInstance", () => {
   const baseLibrary = (
     id: string,
     draft: boolean,
-    version?: string
+    version?: string,
+    lastModifiedAt: string = "2023-05-01T00:00:00Z"
   ): CqlLibrary =>
     ({
       id,
       cqlLibraryName: `Library ${id}`,
       version: version ?? "1.0.001",
       draft,
+      lastModifiedAt,
     } as any);
 
   it("returns libraryA if only libraryA is draft", () => {
