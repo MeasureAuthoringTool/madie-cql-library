@@ -44,6 +44,7 @@
       background: #f3f3f3;
       padding: 16px 24px;
       outline: 1px solid #8c8c8c;
+
       .library-name-text {
         color: #242424;
         font-weight: 500;
@@ -56,10 +57,12 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+
         .version-chip-row {
           display: flex;
           align-items: center;
           gap: 8px;
+
           .version-text {
             color: #242424;
             font-weight: 500;
