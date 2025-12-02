@@ -3,7 +3,7 @@ import tw from "twin.macro";
 import "styled-components/macro";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useFormik } from "formik";
-import { CqlLibrary } from "@madie/madie-models";
+import { CqlLibrary, CqlLibraryLock } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
 import queryString from "query-string";
 import { Allotment } from "allotment";
@@ -597,6 +597,17 @@ const EditCqlLibrary = () => {
               );
             }
           }
+          if (featureFlags.Locking && error.response?.status === 423) {
+            const splitted = error.response?.data?.message?.trim().split(" ");
+            const lockedBy = splitted[splitted.length - 1];
+            setLoadedCqlLibrary({
+              ...loadedCqlLibrary,
+              cqlLibraryLock: { lockedBy } as unknown as CqlLibraryLock,
+            });
+            resetForm({
+              values: { ...loadedCqlLibrary },
+            });
+          }
           setErrorMessage(msg);
         } else {
           setErrorMessage("An error occurred while updating the CQL library");
@@ -963,7 +974,7 @@ const EditCqlLibrary = () => {
             <Button
               variant="outline"
               tw="mx-2"
-              disabled={!formik.dirty}
+              disabled={!formik.dirty || !canEdit}
               data-testid="cql-library-cancel-button"
               onClick={(e) => {
                 e.preventDefault();
@@ -983,7 +994,8 @@ const EditCqlLibrary = () => {
                 (!!id &&
                   (_.isNil(loadedCqlLibrary) ||
                     _.isNil(loadedCqlLibrary.id))) ||
-                !formik.values.draft
+                !formik.values.draft ||
+                !canEdit
               }
             >
               Save
