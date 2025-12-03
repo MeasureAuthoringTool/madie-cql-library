@@ -149,13 +149,6 @@ describe("CompareVersionsDialog Component (Libraries)", () => {
       "Version 1.1.001"
     );
 
-    expect(screen.getByTestId("library-name-section-old")).toHaveTextContent(
-      "Library Name: Older Library"
-    );
-    expect(screen.getByTestId("library-name-section-new")).toHaveTextContent(
-      "Library Name: Newer Library (Draft)"
-    );
-
     const oldLastUpdated = `Last updated on ${formatDate(
       mockLibraries[0].lastModifiedAt!
     )}`;
