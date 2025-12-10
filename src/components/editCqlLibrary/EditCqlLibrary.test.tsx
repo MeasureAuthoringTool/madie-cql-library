@@ -18,7 +18,11 @@ import {
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
-import { checkUserCanEdit, useFeatureFlags } from "@madie/madie-util";
+import {
+  checkUserCanEdit,
+  useFeatureFlags,
+  UserServiceApi,
+} from "@madie/madie-util";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 import {
@@ -27,6 +31,9 @@ import {
 } from "../cqlLibraryList/CqlLibraryList";
 
 const { getByTestId, queryByTestId, queryByText } = screen;
+const mockUserServiceApi = {
+  getOwnerDetails: jest.fn().mockResolvedValue({}),
+} as unknown as UserServiceApi;
 jest.mock("@madie/madie-util", () => ({
   checkUserCanEdit: jest.fn(() => {
     return true;
@@ -61,6 +68,7 @@ jest.mock("@madie/madie-util", () => ({
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
+  useUserServiceApi: jest.fn(() => mockUserServiceApi),
 }));
 
 const cqlLibrary = {

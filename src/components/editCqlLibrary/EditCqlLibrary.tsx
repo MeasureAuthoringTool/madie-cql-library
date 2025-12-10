@@ -16,6 +16,7 @@ import {
   routeHandlerStore,
   checkUserCanEdit,
   useFeatureFlags,
+  useUserServiceApi,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
@@ -39,6 +40,7 @@ import {
   MadieSpinner,
   AutoComplete,
   MadieDeleteDialog,
+  ReadOnlyTextField,
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
@@ -68,6 +70,7 @@ const EditCqlLibrary = () => {
   const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
+  const userServiceApi = useUserServiceApi();
   const activeTab: string = (values.tab && values.tab.toString()) || "details";
   // @ts-ignore
   const { id } = useParams();
@@ -83,6 +86,7 @@ const EditCqlLibrary = () => {
     open: false,
     libraries: [],
   });
+  const [libraryOwner, setLibraryOwner] = useState("-");
 
   // on unmount forget library state.
   useEffect(() => {
@@ -185,6 +189,20 @@ const EditCqlLibrary = () => {
       );
     };
   }, []);
+
+  useEffect(() => {
+    if (loadedCqlLibrary?.librarySet?.owner) {
+      userServiceApi
+        .getOwnerDetails(loadedCqlLibrary?.librarySet?.owner)
+        .then((response) => {
+          const ownerName = `${response?.firstName} ${response?.lastName}`;
+          setLibraryOwner(ownerName);
+        })
+        .catch(() => {
+          setLibraryOwner("-");
+        });
+    }
+  }, [loadedCqlLibrary?.librarySet?.owner]);
 
   const [libraryHistoryDialogOpen, setLibraryHistoryDialogOpen] =
     useState(false);
@@ -931,6 +949,23 @@ const EditCqlLibrary = () => {
                               onChange={formik.setFieldValue}
                             />
                           </div>
+
+                          {featureFlags?.DisplayOwner && (
+                            <div className="form-row">
+                              <ReadOnlyTextField
+                                value={libraryOwner}
+                                label={"Measure Owner"}
+                                tabIndex={0}
+                                placeholder="Measure Owner"
+                                id="measure-owner-label"
+                                data-testid="measure-owner-text-field"
+                                inputProps={{
+                                  "data-testid": "measure-owner-input",
+                                }}
+                                size="small"
+                              />
+                            </div>
+                          )}
 
                           <div className="form-row">
                             <FormControlLabel
