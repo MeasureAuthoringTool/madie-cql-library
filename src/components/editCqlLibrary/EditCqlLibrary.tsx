@@ -70,7 +70,6 @@ const EditCqlLibrary = () => {
   const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
-  const userServiceApi = useUserServiceApi();
   const activeTab: string = (values.tab && values.tab.toString()) || "details";
   // @ts-ignore
   const { id } = useParams();
@@ -245,6 +244,7 @@ const EditCqlLibrary = () => {
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const organizationApi = useRef(useOrganizationApi()).current;
+  const userServiceApi = useRef(useUserServiceApi()).current;
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
