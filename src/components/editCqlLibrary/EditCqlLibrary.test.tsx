@@ -18,7 +18,11 @@ import {
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
-import { checkUserCanEdit, useFeatureFlags } from "@madie/madie-util";
+import {
+  checkUserCanEdit,
+  useFeatureFlags,
+  UserServiceApi,
+} from "@madie/madie-util";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 import {
@@ -27,6 +31,9 @@ import {
 } from "../cqlLibraryList/CqlLibraryList";
 
 const { getByTestId, queryByTestId, queryByText } = screen;
+const mockUserServiceApi = {
+  getOwnerDetails: jest.fn().mockResolvedValue({}),
+} as unknown as UserServiceApi;
 jest.mock("@madie/madie-util", () => ({
   checkUserCanEdit: jest.fn(() => {
     return true;
@@ -36,7 +43,7 @@ jest.mock("@madie/madie-util", () => ({
     getUserName: () => "test user",
   })),
   useDocumentTitle: jest.fn(),
-  useFeatureFlags: jest.fn(() => ({ Locking: false })),
+  useFeatureFlags: jest.fn(() => ({ Locking: false, DisplayOwner: true })),
   cqlLibraryStore: {
     state: null,
     initialState: null,
@@ -61,6 +68,7 @@ jest.mock("@madie/madie-util", () => ({
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
+  useUserServiceApi: jest.fn(() => mockUserServiceApi),
 }));
 
 const cqlLibrary = {
@@ -1067,6 +1075,8 @@ describe("Edit Cql Library Component", () => {
     (checkUserCanEdit as jest.Mock).mockImplementation(() => {
       return false;
     });
+    mockUserServiceApi.getOwnerDetails.mockRejectedValueOnce(new Error("fail"));
+
     const cqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
@@ -1106,6 +1116,12 @@ describe("Edit Cql Library Component", () => {
     expect(screen.getByRole("textbox", { name: "Publisher" })).toHaveAttribute(
       "readonly"
     );
+    expect(
+      screen.getByRole("textbox", { name: "Library Owner" })
+    ).toHaveAttribute("readonly");
+    expect(
+      (screen.getByTestId("library-owner-text-field") as HTMLInputElement).value
+    ).toBe("-");
 
     expect(
       screen.getByRole("checkbox", { name: "Experimental" })

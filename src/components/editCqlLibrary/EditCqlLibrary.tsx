@@ -16,6 +16,7 @@ import {
   routeHandlerStore,
   checkUserCanEdit,
   useFeatureFlags,
+  useUserServiceApi,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
@@ -39,6 +40,7 @@ import {
   MadieSpinner,
   AutoComplete,
   MadieDeleteDialog,
+  ReadOnlyTextField,
 } from "@madie/madie-design-system/dist/react";
 import NavTabs from "./NavTabs";
 import "./EditCQLLibrary.scss";
@@ -83,6 +85,7 @@ const EditCqlLibrary = () => {
     open: false,
     libraries: [],
   });
+  const [libraryOwner, setLibraryOwner] = useState("-");
 
   // on unmount forget library state.
   useEffect(() => {
@@ -186,6 +189,20 @@ const EditCqlLibrary = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (loadedCqlLibrary?.librarySet?.owner) {
+      userServiceApi
+        .getOwnerDetails(loadedCqlLibrary?.librarySet?.owner)
+        .then((response) => {
+          const ownerName = `${response?.firstName} ${response?.lastName}`;
+          setLibraryOwner(ownerName);
+        })
+        .catch(() => {
+          setLibraryOwner("-");
+        });
+    }
+  }, [loadedCqlLibrary?.librarySet?.owner]);
+
   const [libraryHistoryDialogOpen, setLibraryHistoryDialogOpen] =
     useState(false);
   const [libraryHistoryLogs, setLibraryHistoryLogs] = useState([]);
@@ -227,6 +244,7 @@ const EditCqlLibrary = () => {
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const organizationApi = useRef(useOrganizationApi()).current;
+  const userServiceApi = useRef(useUserServiceApi()).current;
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
@@ -931,6 +949,23 @@ const EditCqlLibrary = () => {
                               onChange={formik.setFieldValue}
                             />
                           </div>
+
+                          {featureFlags?.DisplayOwner && (
+                            <div className="form-row">
+                              <ReadOnlyTextField
+                                value={libraryOwner}
+                                label={"Library Owner"}
+                                tabIndex={0}
+                                placeholder="Library Owner"
+                                id="library-owner-label"
+                                data-testid="library-owner-text-field"
+                                inputProps={{
+                                  "data-testid": "library-owner-input",
+                                }}
+                                size="small"
+                              />
+                            </div>
+                          )}
 
                           <div className="form-row">
                             <FormControlLabel
