@@ -43,7 +43,7 @@ jest.mock("@madie/madie-util", () => ({
     getUserName: () => "test user",
   })),
   useDocumentTitle: jest.fn(),
-  useFeatureFlags: jest.fn(() => ({ Locking: false })),
+  useFeatureFlags: jest.fn(() => ({ Locking: false, DisplayOwner: true })),
   cqlLibraryStore: {
     state: null,
     initialState: null,
@@ -1075,6 +1075,8 @@ describe("Edit Cql Library Component", () => {
     (checkUserCanEdit as jest.Mock).mockImplementation(() => {
       return false;
     });
+    mockUserServiceApi.getOwnerDetails.mockRejectedValueOnce(new Error("fail"));
+
     const cqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",
@@ -1114,6 +1116,12 @@ describe("Edit Cql Library Component", () => {
     expect(screen.getByRole("textbox", { name: "Publisher" })).toHaveAttribute(
       "readonly"
     );
+    expect(
+      screen.getByRole("textbox", { name: "Library Owner" })
+    ).toHaveAttribute("readonly");
+    expect(
+      (screen.getByTestId("library-owner-text-field") as HTMLInputElement).value
+    ).toBe("-");
 
     expect(
       screen.getByRole("checkbox", { name: "Experimental" })

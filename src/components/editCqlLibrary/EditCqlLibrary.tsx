@@ -954,13 +954,13 @@ const EditCqlLibrary = () => {
                             <div className="form-row">
                               <ReadOnlyTextField
                                 value={libraryOwner}
-                                label={"Measure Owner"}
+                                label={"Library Owner"}
                                 tabIndex={0}
-                                placeholder="Measure Owner"
-                                id="measure-owner-label"
-                                data-testid="measure-owner-text-field"
+                                placeholder="Library Owner"
+                                id="library-owner-label"
+                                data-testid="library-owner-text-field"
                                 inputProps={{
-                                  "data-testid": "measure-owner-input",
+                                  "data-testid": "library-owner-input",
                                 }}
                                 size="small"
                               />
