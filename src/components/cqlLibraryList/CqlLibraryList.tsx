@@ -28,7 +28,6 @@ import {
   checkUserCanDelete,
   checkUserCanEdit,
   useFeatureFlags,
-  useUserServiceApi,
 } from "@madie/madie-util";
 import {
   Button,
@@ -156,7 +155,6 @@ export default function CqlLibraryList({
   setToastType,
   setStatusHandler,
 }) {
-  const userServiceApi = useRef(useUserServiceApi()).current;
   const [hoveredHeader, setHoveredHeader] = useState<string>("");
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
@@ -165,7 +163,7 @@ export default function CqlLibraryList({
   const [expandedSectionData, setExpandedSectionData] = useState<CqlLibrary[]>(
     []
   );
-  const [ownerDetailsMap, setOwnerDetailsMap] = useState({});
+
   const featureFlags = useFeatureFlags();
   const navigate = useNavigate();
   const { search } = useLocation();
@@ -190,19 +188,6 @@ export default function CqlLibraryList({
       }
     }
   }, [values, navigate, activeTab]);
-
-  useEffect(() => {
-    if (cqlLibraryList?.length > 0) {
-      const harpIds = Array.from(
-        new Set(
-          cqlLibraryList.map((item) => item.librarySet?.owner).filter(Boolean)
-        )
-      );
-      userServiceApi.getBulkUserDetails(harpIds).then((userDetailsMap) => {
-        setOwnerDetailsMap(userDetailsMap);
-      });
-    }
-  }, [cqlLibraryList]);
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   // pull info from some query url
@@ -608,14 +593,9 @@ export default function CqlLibraryList({
             sortDescFirst: false,
             header: "Owner",
             cell: (info) => {
-              const ownerId = info.row.original.librarySet?.owner;
-              const owner = ownerDetailsMap[ownerId];
-              if (owner && (owner.firstName || owner.lastName)) {
-                return (
-                  <span>
-                    {`${owner.firstName ?? ""} ${owner.lastName ?? ""}`.trim()}
-                  </span>
-                );
+              const owner = info.row.original.owner;
+              if (!_.isEmpty(owner) && owner.trim() !== "") {
+                return <span>{`${owner}`.trim()}</span>;
               }
               return <span>-</span>;
             },
@@ -804,7 +784,6 @@ export default function CqlLibraryList({
     featureFlags?.LibrarySearch,
     selectedIdForExpansion,
     isRowExpanded,
-    ownerDetailsMap,
   ]);
 
   const expandedColumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
