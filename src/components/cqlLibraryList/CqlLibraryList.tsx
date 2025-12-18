@@ -587,7 +587,7 @@ export default function CqlLibraryList({
         <p>{new Date(info.row.original.lastModifiedAt).toLocaleDateString()}</p>
       ),
     },
-    ...(featureFlags?.DisplayOwner
+    ...(featureFlags?.DisplayOwner && activeTab !== 0
       ? [
           {
             sortDescFirst: false,
