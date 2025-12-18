@@ -163,6 +163,7 @@ export default function CqlLibraryList({
   const [expandedSectionData, setExpandedSectionData] = useState<CqlLibrary[]>(
     []
   );
+
   const featureFlags = useFeatureFlags();
   const navigate = useNavigate();
   const { search } = useLocation();
@@ -586,6 +587,21 @@ export default function CqlLibraryList({
         <p>{new Date(info.row.original.lastModifiedAt).toLocaleDateString()}</p>
       ),
     },
+    ...(featureFlags?.DisplayOwner
+      ? [
+          {
+            sortDescFirst: false,
+            header: "Owner",
+            cell: (info) => {
+              const owner = info.row.original.owner;
+              if (!_.isEmpty(owner) && owner.trim() !== "") {
+                return <span>{`${owner}`.trim()}</span>;
+              }
+              return <span>-</span>;
+            },
+          },
+        ]
+      : []),
     {
       header: () => (
         <button tabIndex={-1} aria-label="Edit or View Library">
