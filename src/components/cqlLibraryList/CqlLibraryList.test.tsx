@@ -551,7 +551,7 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("Status")).toBeInTheDocument();
     expect(screen.getByText("Model")).toBeInTheDocument();
     expect(screen.getByText("Shared")).toBeInTheDocument();
-    expect(screen.getByText("Owner")).toBeInTheDocument();
+    expect(screen.queryByText("Owner")).not.toBeInTheDocument();
     expect(screen.getByText("Updated")).toBeInTheDocument();
 
     // Verify data rendered in the table
@@ -565,6 +565,7 @@ describe("CqlLibrary List component", () => {
   it("should render columnsBehindFlag (without Shared column) when LibrarySearch is true on Shared Libraries tab", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibrarySearch: true,
+      DisplayOwner: true,
     }));
 
     const cqlLibrary: CqlLibrary[] = [
@@ -634,6 +635,7 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("Status")).toBeInTheDocument();
     expect(screen.getByText("Model")).toBeInTheDocument();
     expect(screen.queryByText("Shared")).not.toBeInTheDocument();
+    expect(screen.getByText("Owner")).toBeInTheDocument();
     expect(screen.getByText("Updated")).toBeInTheDocument();
 
     // Verify data rendered in the table
@@ -647,6 +649,7 @@ describe("CqlLibrary List component", () => {
   it("should render columnsBehindFlag when LibrarySearch is true on All Libraries tab", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
       LibrarySearch: true,
+      DisplayOwner: true,
     }));
 
     const cqlLibrary: CqlLibrary[] = [
@@ -716,6 +719,7 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("Status")).toBeInTheDocument();
     expect(screen.getByText("Model")).toBeInTheDocument();
     expect(screen.getByText("Shared")).toBeInTheDocument();
+    expect(screen.getByText("Owner")).toBeInTheDocument();
     expect(screen.getByText("Updated")).toBeInTheDocument();
 
     // Verify data rendered in the table
