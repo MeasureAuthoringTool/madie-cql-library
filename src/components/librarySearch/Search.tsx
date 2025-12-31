@@ -8,7 +8,6 @@ import "twin.macro";
 import "styled-components/macro";
 import { Select, TextField } from "@madie/madie-design-system/dist/react";
 import { LibrarySearchCriteria } from "../cqlLibraryLanding/CqlLibraryLanding";
-import { useFeatureFlags } from "@madie/madie-util";
 
 const renderMenuItemsForFilter = (options: string[]) => {
   return [
@@ -29,7 +28,6 @@ const Search = (props: {
   setSearchCriteria: Dispatch<SetStateAction<LibrarySearchCriteria>>;
   handlePageChange: (e, v) => void;
 }) => {
-  const featureFlags = useFeatureFlags();
   const { searchCriteria, setSearchCriteria, handlePageChange } = { ...props };
   const formik = useFormik({
     initialValues: {
@@ -51,26 +49,19 @@ const Search = (props: {
       onSubmit={formik.handleSubmit}
       tw="col-span-3 grid grid-cols-3 gap-4 items-end"
     >
-      {featureFlags?.LibrarySearch && (
-        <Select
-          defaultValue=""
-          placeHolder={{ name: "Filter By", value: "" }}
-          label="Filter By"
-          name="filterBy"
-          id={`filter-by`}
-          data-testid={`filter-by`}
-          inputProps={{
-            "data-testid": `filter-by-input`,
-          }}
-          {...formik.getFieldProps("filterBy")}
-          options={renderMenuItemsForFilter([
-            "-",
-            "Library",
-            "Version",
-            "Model",
-          ])}
-        />
-      )}
+      <Select
+        defaultValue=""
+        placeHolder={{ name: "Filter By", value: "" }}
+        label="Filter By"
+        name="filterBy"
+        id={`filter-by`}
+        data-testid={`filter-by`}
+        inputProps={{
+          "data-testid": `filter-by-input`,
+        }}
+        {...formik.getFieldProps("filterBy")}
+        options={renderMenuItemsForFilter(["-", "Library", "Version", "Model"])}
+      />
       <TextField
         id="library-search-field"
         name="searchField"

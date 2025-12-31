@@ -264,10 +264,8 @@ function CqlLibraryLanding() {
   }
   const sortingString = sortID ? `${sortID},${sorting[0]?.desc}` : "";
   const handleSort = (sort) => {
-    if (featureFlags?.LibrarySearch) {
-      setSorting(sort);
-      navigate(`?tab=${activeTab}&page=1&limit=${values?.limit || 10}`);
-    }
+    setSorting(sort);
+    navigate(`?tab=${activeTab}&page=1&limit=${values?.limit || 10}`);
   };
   // sort logic end.
 

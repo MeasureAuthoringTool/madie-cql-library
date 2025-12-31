@@ -291,9 +291,6 @@ describe("Cql Library Page", () => {
   });
 
   test("Should trigger onClick sort", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibrarySearch: true,
-    }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -392,9 +389,6 @@ describe("Cql Library Page", () => {
   });
 
   test("filter by and search libraries based on criteria", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibrarySearch: true,
-    }));
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()
       .mockResolvedValue(mockPageableVal);
@@ -645,9 +639,6 @@ describe("Cql Library Page", () => {
   });
 
   test("Version should work when everything is okay", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibraryHistory: true,
-    }));
     // Set up mock specifically for this test
     mockCqlLibraryServiceApi.fetchCqlLibraries = jest
       .fn()

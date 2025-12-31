@@ -110,19 +110,15 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         canEdit={canEdit}
         onClick={createDraft}
       />
-      {featureFlags?.LibraryHistory && (
-        <HistoryAction
-          libraries={selectedLibraries}
-          onClick={openLibraryHistoryDialog}
-        />
-      )}
-      {featureFlags?.TransferLibrary && (
-        <TransferAction
-          libraries={selectedLibraries}
-          onClick={transferLibrary}
-          activeTab={props?.activeTab}
-        />
-      )}
+      <HistoryAction
+        libraries={selectedLibraries}
+        onClick={openLibraryHistoryDialog}
+      />
+      <TransferAction
+        libraries={selectedLibraries}
+        onClick={transferLibrary}
+        activeTab={props?.activeTab}
+      />
       {featureFlags?.CompareLibraryVersions && (
         <CompareVersionsAction
           libraries={selectedLibraries}
