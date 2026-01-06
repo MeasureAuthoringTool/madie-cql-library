@@ -57,11 +57,8 @@ declare module "@madie/madie-util" {
 
   interface FeatureFlags {
     MinimizeAlerts: boolean;
-    LibrarySearch: boolean;
     qiCore7: boolean;
-    TransferLibrary: boolean;
     Locking: boolean;
-    LibraryHistory: boolean;
     CompareLibraryVersions: boolean;
     DisplayOwner: boolean;
   }

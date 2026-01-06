@@ -162,10 +162,11 @@ describe("CqlLibrary List component", () => {
       ).toBeInTheDocument();
     });
 
-    const cqlLibraryButton = getByTestId(
-      `edit-cql-library-button-${cqlLibrary[0].id}`
-    );
-    userEvent.click(cqlLibraryButton);
+    const actionButton = getByTestId(`cql-library-action-${cqlLibrary[0].id}`);
+
+    expect(actionButton).toHaveTextContent("Edit");
+
+    userEvent.click(actionButton);
 
     expect(mockPush).toHaveBeenNthCalledWith(
       1,
@@ -248,7 +249,7 @@ describe("CqlLibrary List component", () => {
     fireEvent.click(checkBoxes[1]);
   });
 
-  it("buttons featureflag: shows just a view button when cannot edit", async () => {
+  it("Shows a View button when user cannot edit", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(false);
     const cqlLibrary: CqlLibrary[] = [
       {
@@ -304,17 +305,13 @@ describe("CqlLibrary List component", () => {
       />
     );
 
-    expect(
-      await screen.findByTestId(
-        "view-cql-library-button-622e1f46d1fd3729d861e6cb"
-      )
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "View/Edit" })
-    ).not.toBeInTheDocument();
+    const actionButton = await screen.findByTestId(
+      `cql-library-action-${cqlLibrary[0].id}`
+    );
+    expect(actionButton).toHaveTextContent("View");
   });
 
-  it("buttons featureflag: shows just an edit button when can edit", async () => {
+  it("Shows an Edit button when use edit", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(true);
     const cqlLibrary: CqlLibrary[] = [
       {
@@ -369,21 +366,15 @@ describe("CqlLibrary List component", () => {
         setToastType={jest.fn()}
       />
     );
-    expect(
-      await screen.findByTestId(
-        "edit-cql-library-button-622e1f46d1fd3729d861e6cb"
-      )
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "View/Edit" })
-    ).not.toBeInTheDocument();
+
+    const actionButton = await screen.findByTestId(
+      `cql-library-action-${cqlLibrary[0].id}`
+    );
+    expect(actionButton).toHaveTextContent("Edit");
   });
 
   it("Expansion should be possible when there is child libraries", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(true);
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibrarySearch: true,
-    }));
     const cqlLibrary = [
       {
         id: "622e1f46d1fd3729d861e6cb",
@@ -478,9 +469,8 @@ describe("CqlLibrary List component", () => {
     ).toBeInTheDocument();
   });
 
-  it("should render columnsBehindFlag when LibrarySearch is true on Owned Libraries tab", async () => {
+  it("should render columnsToBeAdded on Owned Libraries tab", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibrarySearch: true,
       DisplayOwner: true,
     }));
 
@@ -562,9 +552,8 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
   });
 
-  it("should render columnsBehindFlag (without Shared column) when LibrarySearch is true on Shared Libraries tab", async () => {
+  it("should render columnsToBeAdded (without Shared column) on Shared Libraries tab", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibrarySearch: true,
       DisplayOwner: true,
     }));
 
@@ -646,9 +635,8 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
   });
 
-  it("should render columnsBehindFlag when LibrarySearch is true on All Libraries tab", async () => {
+  it("should render columnsToBeAdded on All Libraries tab", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      LibrarySearch: true,
       DisplayOwner: true,
     }));
 
@@ -818,7 +806,6 @@ describe("Library lock functionality", () => {
     jest.clearAllMocks();
     (useFeatureFlags as jest.Mock).mockImplementation(() => ({
       Locking: true,
-      LibrarySearch: true,
     }));
   });
 
@@ -1004,7 +991,7 @@ describe("Library lock functionality", () => {
     );
 
     const actionButton = await screen.findByTestId(
-      `edit-cql-library-button-${lockedLibrary.id}`
+      `cql-library-action-${lockedLibrary.id}`
     );
 
     expect(actionButton).toHaveTextContent("Edit");

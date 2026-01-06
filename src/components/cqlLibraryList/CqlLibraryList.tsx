@@ -428,95 +428,6 @@ export default function CqlLibraryList({
 
   const columnsToBeAdded = [
     {
-      header: "Name",
-      accessorKey: "cqlLibraryName",
-      cell: (info) => (
-        <>
-          <TruncateText
-            text={info.row.original.cqlLibraryName}
-            maxLength={60}
-            dataTestId={`cqlLibrary-button-${info.row.original.id}`}
-          />
-        </>
-      ),
-    },
-    {
-      header: "Model",
-      accessorKey: "model",
-      cell: (info) => (
-        <>
-          <TruncateText
-            text={info.row.original.model}
-            maxLength={60}
-            dataTestId={`cqlLibrary-button-${info.row.original.id}-model`}
-          />
-        </>
-      ),
-    },
-    {
-      header: "Version",
-      accessorKey: "version",
-      cell: (info) => (
-        <>
-          <TruncateText
-            text={info.row.original.version}
-            maxLength={60}
-            dataTestId={`cqlLibrary-button-${info.row.original.id}-version`}
-          />
-          {`${info.row.original.draft}` === "true" && (
-            <Chip tw="ml-6" className="chip-draft" label="Draft" />
-          )}
-        </>
-      ),
-    },
-    {
-      header: () => (
-        <button tabIndex={-1} aria-label="Edit or View Library">
-          Action
-        </button>
-      ),
-      accessorKey: "Actions",
-      cell: (info) => (
-        <Button
-          variant="outline-secondary"
-          style={{ borderColor: "#c8c8c8" }}
-          onClick={() =>
-            navigate(`/cql-libraries/${info.row.original.id}/edit/details`)
-          }
-          data-testid={
-            checkUserCanEdit(
-              info.row.original.librarySet?.owner,
-              info.row.original.librarySet?.acls
-            ) && info.row.original.draft
-              ? `edit-cql-library-button-${info.row.original.id}`
-              : `view-cql-library-button-${info.row.original.id}`
-          }
-          aria-live="polite"
-          aria-label={`${
-            checkUserCanEdit(
-              info.row.original.librarySet?.owner,
-              info.row.original.librarySet?.acls
-            ) && info.row.original.draft
-              ? `Edit`
-              : `View`
-          } Library ${info.row.original.cqlLibraryName} ${
-            info.row.original.version
-          }${info.row.original.draft ? " Draft" : ""}`}
-          tabIndex={0}
-          role="button"
-        >
-          {checkUserCanEdit(
-            info.row.original.librarySet?.owner,
-            info.row.original.librarySet?.acls
-          ) && info.row.original.draft
-            ? "Edit"
-            : "View"}
-        </Button>
-      ),
-    },
-  ];
-  const columnsBehindFlag = [
-    {
       header: "Library",
       accessorKey: "cqlLibraryName",
       cell: (info) => (
@@ -730,61 +641,52 @@ export default function CqlLibraryList({
       },
     });
 
-    columnDefs.push(
-      ...(featureFlags?.LibrarySearch ? columnsBehindFlag : columnsToBeAdded)
-    );
+    columnDefs.push(...columnsToBeAdded);
 
-    if (featureFlags?.LibrarySearch) {
-      columnDefs.push({
-        header: "",
-        cell: (info) => {
-          if (info.row.original?.hasAssociatedLibraries) {
-            const handleKeyDown = (e) => {
-              if (e.key === "Enter" || e.key === " ") {
+    columnDefs.push({
+      header: "",
+      cell: (info) => {
+        if (info.row.original?.hasAssociatedLibraries) {
+          const handleKeyDown = (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              setSelectedExpandedLibrariesIds([]);
+              handleRowClick(info.row.original);
+            }
+          };
+          return (
+            <span
+              role="button"
+              tabIndex={0}
+              onClick={() => {
                 setSelectedExpandedLibrariesIds([]);
                 handleRowClick(info.row.original);
-              }
-            };
-            return (
-              <span
-                role="button"
-                tabIndex={0}
-                onClick={() => {
-                  setSelectedExpandedLibrariesIds([]);
-                  handleRowClick(info.row.original);
-                }}
-                onKeyDown={handleKeyDown}
-                style={{
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                {isRowExpanded &&
-                selectedIdForExpansion === info.row.original.librarySetId ? (
-                  <CollapseIcon />
-                ) : (
-                  <ExpandIcon />
-                )}
-              </span>
-            );
-          } else {
-            return <></>;
-          }
-        },
-        accessorKey: "expandArrow",
-        enableSorting: false,
-      });
-    }
+              }}
+              onKeyDown={handleKeyDown}
+              style={{
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {isRowExpanded &&
+              selectedIdForExpansion === info.row.original.librarySetId ? (
+                <CollapseIcon />
+              ) : (
+                <ExpandIcon />
+              )}
+            </span>
+          );
+        } else {
+          return <></>;
+        }
+      },
+      accessorKey: "expandArrow",
+      enableSorting: false,
+    });
 
     return columnDefs;
-  }, [
-    navigate,
-    featureFlags?.LibrarySearch,
-    selectedIdForExpansion,
-    isRowExpanded,
-  ]);
+  }, [navigate, selectedIdForExpansion, isRowExpanded]);
 
   const expandedColumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     return [
@@ -816,7 +718,7 @@ export default function CqlLibraryList({
           );
         },
       },
-      ...(featureFlags?.LibrarySearch ? columnsBehindFlag : columnsToBeAdded),
+      ...columnsToBeAdded,
       {
         header: "",
         cell: (info) => <></>,
@@ -1241,8 +1143,7 @@ export default function CqlLibraryList({
                           </td>
                         ))}
                       </tr>
-                      {featureFlags?.LibrarySearch &&
-                        selectedIdForExpansion === row.original.librarySetId &&
+                      {selectedIdForExpansion === row.original.librarySetId &&
                         expandedSectionData?.map((subRow) => (
                           <tr
                             key={subRow.id}
