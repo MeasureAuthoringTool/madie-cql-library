@@ -6,7 +6,8 @@
     "declarationMap": true,
     "jsx": "react-jsx",
     "sourceMap": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "files": ["src/madie-madie-cql-library.tsx"],
   "include": ["src/**/*"],
