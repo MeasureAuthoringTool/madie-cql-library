@@ -4,6 +4,7 @@ import { MadieDialog, Tab, Tabs } from "@madie/madie-design-system/dist/react";
 import { CqlLibrary } from "@madie/madie-models";
 import "./CompareVersionsDialog.scss";
 import LibraryComparisonPanel from "./LibraryComparisonPanel";
+import CqlDiffViewer from "./CqlDiffViewer";
 
 interface CompareVersionsDialogProps {
   libraries: CqlLibrary[] | null | undefined;
@@ -45,9 +46,8 @@ const CompareVersionsDialog = ({
 
   if (!libraries || libraries.length !== 2) return null;
 
-  const newestLibrary = getNewestLibraryInstance(libraries);
-  const oldLibrary =
-    newestLibrary === libraries[0] ? libraries[1] : libraries[0];
+  const newLibrary = getNewestLibraryInstance(libraries);
+  const oldLibrary = newLibrary === libraries[0] ? libraries[1] : libraries[0];
 
   return (
     <MadieDialog
@@ -56,7 +56,7 @@ const CompareVersionsDialog = ({
       dialogProps={{
         onClose,
         open,
-        maxWidth: "lg",
+        maxWidth: "xxl",
         "data-testid": "compare-versions-dialog",
       }}
       cancelButtonProps={{
@@ -70,7 +70,7 @@ const CompareVersionsDialog = ({
       <Box className="library-info-container">
         <Typography variant="h6">
           <span className="library-name" data-testid="library-name">
-            {newestLibrary.cqlLibraryName}
+            {newLibrary.cqlLibraryName}
           </span>
         </Typography>
       </Box>
@@ -93,13 +93,17 @@ const CompareVersionsDialog = ({
       <Divider className="divider" />
 
       {activeTab === "cql" && (
-        <div
-          className="comparison-panels-container"
-          data-testid="tab-content-cql"
-        >
-          <LibraryComparisonPanel library={oldLibrary} side="old" />
-          <LibraryComparisonPanel library={newestLibrary} side="new" />
-        </div>
+        <>
+          <div
+            className="cql-comparison-panels-container"
+            data-testid="tab-content-cql"
+          >
+            <LibraryComparisonPanel library={oldLibrary} side="old" />
+            <LibraryComparisonPanel library={newLibrary} side="new" />
+          </div>
+
+          <CqlDiffViewer oldLibrary={oldLibrary} newLibrary={newLibrary} />
+        </>
       )}
     </MadieDialog>
   );

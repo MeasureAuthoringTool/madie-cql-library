@@ -47,10 +47,6 @@ const LibraryComparisonPanel = ({
           </Typography>
         </div>
       </div>
-
-      <div className="cql-container" data-testid={`cql-container-${side}`}>
-        <Typography>CQL coming soon</Typography>
-      </div>
     </div>
   );
 };

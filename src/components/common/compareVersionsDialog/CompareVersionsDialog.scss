@@ -21,7 +21,7 @@
   border-color: #8c8c8c;
 }
 
-.comparison-panels-container {
+.cql-comparison-panels-container {
   display: flex;
 
   .MuiTypography-root {
@@ -37,14 +37,11 @@
       border-right: 1px solid #8c8c8c;
     }
 
-    .cql-container {
-      padding: 16px 24px;
-    }
-
     .info-section {
       background: #f3f3f3;
       padding: 16px 24px;
-      outline: 1px solid #8c8c8c;
+      border-top: 1px solid #8c8c8c;
+      border-bottom: 1px solid #8c8c8c;
 
       /* Version row */
       .library-version-row {
