@@ -70,7 +70,6 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "@emotion/css": "^11.10.0",
     "@mui/icons-material": "^6.1.0",
     "@mui/material": "^6.1.0",
     "@mui/styles": "^6.1.0",
