@@ -6,6 +6,14 @@ import CompareVersionsDialog, {
 import { CqlLibrary } from "@madie/madie-models";
 import { formatDate } from "./LibraryComparisonPanel";
 
+const mockLibraryServiceApi = {
+  getCqlDiff: jest.fn(),
+};
+
+jest.mock("../../../api/useCqlLibraryServiceApi", () =>
+  jest.fn(() => mockLibraryServiceApi)
+);
+
 const mockOnClose = jest.fn();
 
 const mockLibraries: CqlLibrary[] = [

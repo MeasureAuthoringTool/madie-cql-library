@@ -144,6 +144,23 @@ export class CqlLibraryServiceApi {
     }
   }
 
+  async getCqlDiff(oldLibraryId: string, newLibraryId: string): Promise<any> {
+    try {
+      const response = await axios.get(
+        `${this.baseUrl}/cql-libraries/${oldLibraryId}/compare/${newLibraryId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${this.getAccessToken()}`,
+          },
+        }
+      );
+      return response.data;
+    } catch (err) {
+      console.error("Failed to get CQL diff", err);
+      throw err;
+    }
+  }
+
   async shareLibraries(libraries: Map<string, string[]>): Promise<any> {
     try {
       const response = await axios.put(
