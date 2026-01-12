@@ -6,7 +6,7 @@ interface LibraryNameDiffProps {
   newLibraryName: string;
 }
 
-//Returns true if a space should be added between two diff tokens to prevent words from merging together.
+// Returns true if a space should be added between two diff tokens to prevent words from merging together.
 const needsSpaceBetween = (
   prev: ChangeObject<string>,
   curr: ChangeObject<string>
