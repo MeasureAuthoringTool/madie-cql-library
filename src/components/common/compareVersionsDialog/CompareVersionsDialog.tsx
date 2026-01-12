@@ -5,6 +5,7 @@ import { CqlLibrary } from "@madie/madie-models";
 import "./CompareVersionsDialog.scss";
 import LibraryComparisonPanel from "./LibraryComparisonPanel";
 import CqlDiffViewer from "./CqlDiffViewer";
+import LibraryNameDiff from "./LibraryNameDiff";
 
 interface CompareVersionsDialogProps {
   libraries: CqlLibrary[] | null | undefined;
@@ -70,7 +71,10 @@ const CompareVersionsDialog = ({
       <Box className="library-info-container">
         <Typography variant="h6">
           <span className="library-name" data-testid="library-name">
-            {newLibrary.cqlLibraryName}
+            <LibraryNameDiff
+              oldLibraryName={oldLibrary.cqlLibraryName}
+              newLibraryName={newLibrary.cqlLibraryName}
+            />
           </span>
         </Typography>
       </Box>
