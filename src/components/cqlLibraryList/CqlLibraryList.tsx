@@ -686,7 +686,13 @@ export default function CqlLibraryList({
     });
 
     return columnDefs;
-  }, [navigate, selectedIdForExpansion, isRowExpanded]);
+  }, [
+    navigate,
+    selectedIdForExpansion,
+    isRowExpanded,
+    featureFlags?.DisplayOwner,
+    activeTab,
+  ]);
 
   const expandedColumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     return [
