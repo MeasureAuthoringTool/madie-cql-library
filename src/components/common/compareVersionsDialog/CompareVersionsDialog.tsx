@@ -106,7 +106,9 @@ const CompareVersionsDialog = ({
             <LibraryComparisonPanel library={newLibrary} side="new" />
           </div>
 
-          <CqlDiffViewer oldLibrary={oldLibrary} newLibrary={newLibrary} />
+          <div className="cql-diff-viewer">
+            <CqlDiffViewer oldLibrary={oldLibrary} newLibrary={newLibrary} />
+          </div>
         </>
       )}
     </MadieDialog>
