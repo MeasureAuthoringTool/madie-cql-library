@@ -124,7 +124,6 @@ const CreatVersionDialog = ({
       <form
         data-testid="cql-library-version-form"
         onSubmit={formik.handleSubmit}
-        style={{ overflow: "scroll" }}
       >
         <div className={classes.dialogTitle}>
           <DialogTitle className={classes.title}>Create Version</DialogTitle>
