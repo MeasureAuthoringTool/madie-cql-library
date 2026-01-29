@@ -60,7 +60,8 @@ export default function ShareAction(props: PropTypes) {
         setTooltipMessage(NOTHING_SELECTED);
       } else if (
         props.owners?.length > 1 ||
-        (props.owners?.length == 1 && props.owners[0] === userName)
+        (props.owners?.length == 1 &&
+          props.owners[0] === userName.toLowerCase())
       ) {
         setDisableShareBtn(false);
         setTooltipMessage(VALID_SHARE_LIBRARY);

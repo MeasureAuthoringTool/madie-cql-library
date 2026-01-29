@@ -177,7 +177,9 @@ const LibraryShareDialog = ({
     const updateSharedLibraries = sharedLibraries.map((library) => {
       if (
         library.subRows.length &&
-        library.subRows.some((subRow) => subRow.userId === harpId)
+        library.subRows.some(
+          (subRow) => subRow.userId.toLowerCase() === harpId.toLowerCase()
+        )
       ) {
         return { ...library };
       } else {
