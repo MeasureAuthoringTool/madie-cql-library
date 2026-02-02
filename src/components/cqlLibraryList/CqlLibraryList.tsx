@@ -1038,15 +1038,7 @@ export default function CqlLibraryList({
         <div tw="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div tw="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div>
-              <table
-                tw="min-w-full"
-                className="ll-table"
-                id="libraryListTable"
-                style={{
-                  borderTop: "solid 1px #8c8c8c",
-                  borderBottom: "solid 1px #8c8c8c",
-                }}
-              >
+              <table tw="min-w-full" className="ll-table" id="libraryListTable">
                 <thead tw="bg-slate">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
