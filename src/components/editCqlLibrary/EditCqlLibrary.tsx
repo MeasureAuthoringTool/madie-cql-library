@@ -189,13 +189,23 @@ const EditCqlLibrary = () => {
     };
   }, []);
 
+  const getMeasureOwnerName = (response) => {
+    const names = [response?.firstName, response?.lastName]
+      .map((name) => name?.trim())
+      .filter(Boolean);
+    return names.length
+      ? names.join(" ")
+      : !_.isEmpty(response?.harpId)
+      ? response.harpId
+      : "-";
+  };
+
   useEffect(() => {
     if (loadedCqlLibrary?.librarySet?.owner) {
       userServiceApi
         .getOwnerDetails(loadedCqlLibrary?.librarySet?.owner)
         .then((response) => {
-          const ownerName = `${response?.firstName} ${response?.lastName}`;
-          setLibraryOwner(ownerName);
+          setLibraryOwner(getMeasureOwnerName(response));
         })
         .catch(() => {
           setLibraryOwner("-");
