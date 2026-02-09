@@ -189,7 +189,7 @@ const EditCqlLibrary = () => {
     };
   }, []);
 
-  const getMeasureOwnerName = (response) => {
+  const getLibraryOwnerName = (response) => {
     const names = [response?.firstName, response?.lastName]
       .map((name) => name?.trim())
       .filter(Boolean);
@@ -205,7 +205,7 @@ const EditCqlLibrary = () => {
       userServiceApi
         .getOwnerDetails(loadedCqlLibrary?.librarySet?.owner)
         .then((response) => {
-          setLibraryOwner(getMeasureOwnerName(response));
+          setLibraryOwner(getLibraryOwnerName(response));
         })
         .catch(() => {
           setLibraryOwner("-");
