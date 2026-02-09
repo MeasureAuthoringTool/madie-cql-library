@@ -491,13 +491,6 @@ export default function CqlLibraryList({
           },
         ]
       : []),
-    {
-      header: "Updated",
-      accessorKey: "lastModifiedAt",
-      cell: (info) => (
-        <p>{new Date(info.row.original.lastModifiedAt).toLocaleDateString()}</p>
-      ),
-    },
     ...(featureFlags?.DisplayOwner && activeTab !== 0
       ? [
           {
@@ -513,6 +506,13 @@ export default function CqlLibraryList({
           },
         ]
       : []),
+    {
+      header: "Updated",
+      accessorKey: "lastModifiedAt",
+      cell: (info) => (
+        <p>{new Date(info.row.original.lastModifiedAt).toLocaleDateString()}</p>
+      ),
+    },
     {
       header: () => (
         <button tabIndex={-1} aria-label="Edit or View Library">
