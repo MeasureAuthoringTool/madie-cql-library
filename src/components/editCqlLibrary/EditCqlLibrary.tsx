@@ -208,8 +208,10 @@ const EditCqlLibrary = () => {
           setLibraryOwner(getLibraryOwnerName(response));
         })
         .catch(() => {
-          setLibraryOwner("-");
+          setLibraryOwner(loadedCqlLibrary?.librarySet?.owner);
         });
+    } else {
+      setLibraryOwner("-");
     }
   }, [loadedCqlLibrary?.librarySet?.owner]);
 
