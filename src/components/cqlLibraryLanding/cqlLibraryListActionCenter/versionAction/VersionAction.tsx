@@ -28,18 +28,13 @@ export default function VersionAction(props: PropTypes) {
     setDisableVersionBtn(true);
     setTooltipMessage(NOTHING_SELECTED);
     if (libraries?.length === 1 && libraries[0]?.draft && canEdit) {
-      if (featureFlags.Locking) {
-        if (libraries[0]?.cqlLibraryLock?.lockedBy) {
-          setTooltipMessage(
-            UNABLE_TO_VERSION.replace(
-              "<harpID>",
-              libraries[0]?.cqlLibraryLock?.lockedBy
-            )
-          );
-        } else {
-          setDisableVersionBtn(false);
-          setTooltipMessage(VERSION_LIBRARY);
-        }
+      if (libraries[0]?.cqlLibraryLock?.lockedBy) {
+        setTooltipMessage(
+          UNABLE_TO_VERSION.replace(
+            "<harpID>",
+            libraries[0]?.cqlLibraryLock?.lockedBy
+          )
+        );
       } else {
         setDisableVersionBtn(false);
         setTooltipMessage(VERSION_LIBRARY);

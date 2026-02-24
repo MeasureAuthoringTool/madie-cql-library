@@ -119,12 +119,10 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         onClick={transferLibrary}
         activeTab={props?.activeTab}
       />
-      {featureFlags?.CompareLibraryVersions && (
-        <CompareVersionsAction
-          libraries={selectedLibraries}
-          onClick={compareVersions}
-        />
-      )}
+      <CompareVersionsAction
+        libraries={selectedLibraries}
+        onClick={compareVersions}
+      />
     </div>
   );
 }

@@ -58,9 +58,6 @@ declare module "@madie/madie-util" {
   interface FeatureFlags {
     MinimizeAlerts: boolean;
     qiCore7: boolean;
-    Locking: boolean;
-    CompareLibraryVersions: boolean;
-    DisplayOwner: boolean;
   }
 
   export function useFeatureFlags(): FeatureFlags;
