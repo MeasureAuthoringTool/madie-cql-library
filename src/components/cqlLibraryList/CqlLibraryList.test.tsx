@@ -470,10 +470,6 @@ describe("CqlLibrary List component", () => {
   });
 
   it("should render columnsToBeAdded on Owned Libraries tab", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      DisplayOwner: true,
-    }));
-
     const cqlLibrary: CqlLibrary[] = [
       {
         id: "622e1f46d1fd3729d861e6cb",
@@ -553,10 +549,6 @@ describe("CqlLibrary List component", () => {
   });
 
   it("should render columnsToBeAdded (without Shared column) on Shared Libraries tab", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      DisplayOwner: true,
-    }));
-
     const cqlLibrary: CqlLibrary[] = [
       {
         id: "622e1f46d1fd3729d861e6cb",
@@ -636,10 +628,6 @@ describe("CqlLibrary List component", () => {
   });
 
   it("should render columnsToBeAdded on All Libraries tab", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => ({
-      DisplayOwner: true,
-    }));
-
     const cqlLibrary: CqlLibrary[] = [
       {
         id: "622e1f46d1fd3729d861e6cb",
@@ -804,9 +792,7 @@ describe("sortResults", () => {
 describe("Library lock functionality", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (useFeatureFlags as jest.Mock).mockImplementation(() => ({
-      Locking: true,
-    }));
+    (useFeatureFlags as jest.Mock).mockImplementation(() => ({}));
   });
 
   it("should display lock icon and 'View' text when library is locked by another user", async () => {
@@ -923,75 +909,6 @@ describe("Library lock functionality", () => {
 
     const actionButton = await screen.findByTestId(
       `cql-library-action-${unlockedLibrary.id}`
-    );
-
-    expect(actionButton).toHaveTextContent("Edit");
-    expect(
-      within(actionButton).queryByTestId(
-        "library-lock-icon-622e1f46d1fd3729d861e6cb"
-      )
-    ).not.toBeInTheDocument();
-  });
-
-  it("should not display lock icon when Locking feature flag is disabled", async () => {
-    (useFeatureFlags as jest.Mock).mockImplementation(() => ({
-      Locking: false,
-    }));
-
-    const lockedLibrary = {
-      ...cqlLibrary[0],
-      cqlLibraryLock: {
-        lockedBy: "AnotherUser",
-        lockedAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 900000).toISOString(),
-        libraryId: cqlLibrary[0].id,
-      },
-      libraryMetaData: { draft: true },
-      librarySet: {
-        owner: "testUser",
-        acls: [],
-      },
-    };
-
-    render(
-      <CqlLibraryList
-        setSelectedLibraries={jest.fn()}
-        cqlLibraryList={[lockedLibrary]}
-        onListUpdate={loadCqlLibraries}
-        deleteDraftDialog={jest.fn()}
-        setDeleteDraftDialog={jest.fn()}
-        selectedCQLLibrary={jest.fn()}
-        setSelectedCqlLibrary={jest.fn()}
-        createVersionDialog={jest.fn()}
-        setCreateVersionDialog={jest.fn()}
-        shareDialog={jest.fn()}
-        setShareDialog={jest.fn()}
-        transferDialog={jest.fn()}
-        setTransferDialog={jest.fn()}
-        createDraftDialog={jest.fn()}
-        setCreateDraftDialog={jest.fn()}
-        snackBar={jest.fn()}
-        setSnackBar={jest.fn()}
-        setOwners={jest.fn()}
-        totalItems={10}
-        activeTab={1}
-        totalPages={20}
-        visibleItems={10}
-        offset={0}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
-        handlePageChange={jest.fn()}
-        curLimit={10}
-        curPage={1}
-        searchCriteria={mockSearchCriteria}
-        setToastOpen={jest.fn()}
-        setToastMessage={jest.fn()}
-        setToastType={jest.fn()}
-      />
-    );
-
-    const actionButton = await screen.findByTestId(
-      `cql-library-action-${lockedLibrary.id}`
     );
 
     expect(actionButton).toHaveTextContent("Edit");
