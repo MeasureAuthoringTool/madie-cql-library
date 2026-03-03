@@ -39,12 +39,12 @@ export default function TransferAction(props: PropTypes) {
   const userRoles: UserRoles = useUserRoles();
 
   const validateTransferActionState = useCallback(() => {
-    if (featureFlags?.AdminTransferLibrary && userRoles?.isAdmin) {
-      setDisableTransferBtn(false);
-      setTooltipMessage(TRANSFER);
-    } else if (libraries?.length === 0) {
+    if (libraries?.length === 0) {
       setDisableTransferBtn(true);
       setTooltipMessage(NOTHING_SELECTED);
+    } else if (featureFlags?.AdminTransferLibrary && userRoles?.isAdmin) {
+      setDisableTransferBtn(false);
+      setTooltipMessage(TRANSFER);
     } else if (activeTab === 1) {
       setDisableTransferBtn(true);
       setTooltipMessage(CANNOT_TRANSFER);

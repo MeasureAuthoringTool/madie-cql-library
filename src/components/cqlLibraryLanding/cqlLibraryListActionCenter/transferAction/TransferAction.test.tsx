@@ -125,7 +125,13 @@ describe("TransferAction Component", () => {
     mockUseFeatureFlags.mockReturnValue({ AdminTransferLibrary: true });
     mockUseUserRoles.mockReturnValue({ isAdmin: true, roles: ["MADiE-admin"] });
 
-    render(<TransferAction libraries={[]} onClick={() => {}} activeTab={1} />);
+    render(
+      <TransferAction
+        libraries={[mockLibrary]}
+        onClick={() => {}}
+        activeTab={1}
+      />
+    );
     const button = screen.getByTestId("transfer-action-btn");
     const tooltip = screen.getByTestId("transfer-action-tooltip");
 
