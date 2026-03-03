@@ -3,7 +3,12 @@ import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary } from "@madie/madie-models";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
-import { checkUserCanEdit } from "@madie/madie-util";
+import {
+  checkUserCanEdit,
+  useFeatureFlags,
+  UserRoles,
+  useUserRoles,
+} from "@madie/madie-util";
 
 interface PropTypes {
   libraries: CqlLibrary[];
@@ -30,24 +35,32 @@ export default function TransferAction(props: PropTypes) {
   const { libraries, activeTab } = props;
   const [disableTransferBtn, setDisableTransferBtn] = useState(true);
   const [tooltipMessage, setTooltipMessage] = useState(NOTHING_SELECTED);
+  const featureFlags = useFeatureFlags();
+  const userRoles: UserRoles = useUserRoles();
 
   const validateTransferActionState = useCallback(() => {
-    setDisableTransferBtn(false);
-    setTooltipMessage(TRANSFER);
     if (libraries?.length === 0) {
       setDisableTransferBtn(true);
       setTooltipMessage(NOTHING_SELECTED);
-    }
-    if (activeTab === 1) {
-      setTooltipMessage(CANNOT_TRANSFER);
+    } else if (featureFlags?.AdminTransferLibrary && userRoles?.isAdmin) {
+      setDisableTransferBtn(false);
+      setTooltipMessage(TRANSFER);
+    } else if (activeTab === 1) {
       setDisableTransferBtn(true);
-    } else if (activeTab === 2) {
-      if (!isOwnerOfSelectedLibrary(libraries)) {
-        setTooltipMessage(MORE_THAN_ONE_NOT_OWNED);
-        setDisableTransferBtn(true);
-      }
+      setTooltipMessage(CANNOT_TRANSFER);
+    } else if (activeTab === 2 && !isOwnerOfSelectedLibrary(libraries)) {
+      setDisableTransferBtn(true);
+      setTooltipMessage(MORE_THAN_ONE_NOT_OWNED);
+    } else {
+      setDisableTransferBtn(false);
+      setTooltipMessage(TRANSFER);
     }
-  }, [libraries, activeTab]);
+  }, [
+    libraries,
+    activeTab,
+    featureFlags?.AdminTransferLibrary,
+    userRoles?.isAdmin,
+  ]);
 
   useEffect(() => {
     validateTransferActionState();
