@@ -36,7 +36,8 @@ export default function TransferAction(props: PropTypes) {
   const [disableTransferBtn, setDisableTransferBtn] = useState(true);
   const [tooltipMessage, setTooltipMessage] = useState(NOTHING_SELECTED);
   const featureFlags = useFeatureFlags();
-  const userRoles: UserRoles = useUserRoles();
+  let userRoles: UserRoles = useUserRoles();
+  userRoles.isAdmin = true; // Temporary override until admin role is implemented in Okta
 
   const validateTransferActionState = useCallback(() => {
     if (libraries?.length === 0) {
