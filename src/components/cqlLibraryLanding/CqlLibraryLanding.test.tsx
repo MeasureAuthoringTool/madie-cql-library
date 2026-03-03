@@ -36,8 +36,8 @@ jest.mock("@madie/madie-util", () => ({
     qdm: false,
   }),
   useUserRoles: jest.fn().mockReturnValue({
-    isAdmin: true,
-    roles: ["MADiE-admin"],
+    isAdmin: false,
+    roles: ["MADiE-user"],
   }),
 }));
 const organizations = [
