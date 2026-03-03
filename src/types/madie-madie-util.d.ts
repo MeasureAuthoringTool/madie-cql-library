@@ -58,9 +58,16 @@ declare module "@madie/madie-util" {
   interface FeatureFlags {
     MinimizeAlerts: boolean;
     qiCore7: boolean;
+    AdminTransferLibrary: boolean;
+  }
+
+  export interface UserRoles {
+    roles: string[];
+    isAdmin: boolean;
   }
 
   export function useFeatureFlags(): FeatureFlags;
+  export function useUserRoles(): UserRoles;
 
   export function getServiceConfig(): Promise<ServiceConfig>;
 
