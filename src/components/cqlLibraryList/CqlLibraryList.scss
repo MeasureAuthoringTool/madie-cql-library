@@ -1,7 +1,7 @@
 @use "sass:color";
 
 #libraryListTable {
-  overflow: scroll;
+  overflow: visible;
 
   thead tr {
     border-bottom: solid 1px #8c8c8c;

@@ -1,5 +1,6 @@
 #cql-library-landing {
   position: relative;
+  overflow: visible;
 
   .status-handler-container {
     margin: 10px 32px 0;
@@ -7,6 +8,21 @@
     .minimized-alert {
       margin-top: -60px;
       margin-right: 20px;
+    }
+  }
+  // sticky utils
+  .calc-vh {
+    max-height: 75vh;
+    position: relative;
+    overflow: auto;
+  }
+  .sticky-table {
+    > tr > th {
+      z-index: 20;
+      position: sticky;
+      top: 0;
+      background: rgb(237 237 237 / 1);
+      border-bottom: solid 1px #000;
     }
   }
 }
@@ -17,7 +33,6 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   margin: 0 32px 32px 32px;
   border-radius: 6px;
-  overflow: hidden;
 
   &.no-margin-top {
     margin-top: 0;
@@ -25,7 +40,7 @@
 
   > div {
     > .table {
-      overflow: hidden;
+      overflow: visible;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
       .col-header {

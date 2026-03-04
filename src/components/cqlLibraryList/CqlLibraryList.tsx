@@ -1025,12 +1025,12 @@ export default function CqlLibraryList({
           </div>
         )}
       </Popover>
-      <div tw="flex flex-col">
-        <div tw="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div tw="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+      <div tw="flex flex-col" className="calc-vh">
+        <div tw="sm:-mx-6 lg:-mx-8">
+          <div tw="align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div>
               <table tw="min-w-full" className="ll-table" id="libraryListTable">
-                <thead tw="bg-slate">
+                <thead tw="bg-slate" className="sticky-table">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map((header) => {
@@ -1165,31 +1165,30 @@ export default function CqlLibraryList({
                   ))}
                 </tbody>
               </table>
-              <div className="pagination-container">
-                <Pagination
-                  totalItems={totalItems}
-                  visibleItems={visibleItems}
-                  limitOptions={[
-                    10,
-                    25,
-                    50,
-                    ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
-                  ]}
-                  offset={offset}
-                  handlePageChange={handlePageChange}
-                  handleLimitChange={handleLimitChange}
-                  page={curPage}
-                  limit={curLimit}
-                  count={totalPages}
-                  shape="rounded"
-                  hideNextButton={!canGoNext}
-                  hidePrevButton={!canGoPrev}
-                />
-              </div>
+              <div className="pagination-container"></div>
             </div>
           </div>
         </div>
       </div>
+      <Pagination
+        totalItems={totalItems}
+        visibleItems={visibleItems}
+        limitOptions={[
+          10,
+          25,
+          50,
+          ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
+        ]}
+        offset={offset}
+        handlePageChange={handlePageChange}
+        handleLimitChange={handleLimitChange}
+        page={curPage}
+        limit={curLimit}
+        count={totalPages}
+        shape="rounded"
+        hideNextButton={!canGoNext}
+        hidePrevButton={!canGoPrev}
+      />
     </div>
   );
 }
