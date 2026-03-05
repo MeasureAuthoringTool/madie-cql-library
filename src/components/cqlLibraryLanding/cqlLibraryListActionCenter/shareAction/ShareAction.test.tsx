@@ -10,6 +10,7 @@ import ShareAction, {
   SharedOptions,
 } from "./ShareAction";
 import userEvent from "@testing-library/user-event";
+import { useIsAdminShareLibraryEnabled } from "@madie/madie-util";
 
 const defaultProps = {
   libraries: [{ id: "1", name: "Lib1" }] as any,
@@ -34,6 +35,10 @@ const mockLibrary = {
 } as unknown as CqlLibrary;
 
 const onClick = jest.fn();
+
+jest.mock("@madie/madie-util", () => ({
+  useIsAdminShareLibraryEnabled: jest.fn(),
+}));
 
 describe("ShareAction", () => {
   afterEach(() => {
@@ -338,5 +343,69 @@ describe("ShareAction", () => {
 
     userEvent.click(screen.getByRole("menuitem", { name: "Unshare" }));
     expect(onClick).toHaveBeenCalledWith("Unshare");
+  });
+
+  it("should display SHARED_TAB_INVALID_UNSHARE_LIBRARY error message for unshared libraries", () => {
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
+        onClick={onClick}
+        canEdit={true}
+        isSharedWithUser={false}
+        activeTab={1}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+
+    // should disable unshare button and display SHARED_TAB_INVALID_UNSHARE_LIBRARY tooltip
+    const shareActionTooltip = screen.getByTestId("share-action-tooltip");
+    expect(shareActionTooltip).toHaveAttribute(
+      "aria-label",
+      SHARED_TAB_INVALID_UNSHARE_LIBRARY
+    );
+  });
+
+  it("should disable share action btn if activeTab is invalid", () => {
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
+        onClick={onClick}
+        canEdit={true}
+        isSharedWithUser={false}
+        activeTab={3}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+
+    const shareActionBtn = screen.getByTestId("share-action-btn");
+    expect(shareActionBtn).toBeDisabled();
+  });
+});
+
+describe("Admin user with AdminShareLibrary feature flag enabled", () => {
+  beforeEach(() => {
+    (useIsAdminShareLibraryEnabled as jest.Mock).mockReturnValue(true);
+  });
+
+  it("Should enable share action btn for shared libraries even if user is not shared with and display appropriate tooltip", () => {
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
+        onClick={onClick}
+        canEdit={false}
+        isSharedWithUser={false}
+        activeTab={1}
+        userName={"test user"}
+        owners={["test user"]}
+      />
+    );
+
+    const shareActionTooltip = screen.getByTestId("share-action-tooltip");
+    expect(shareActionTooltip).toHaveAttribute(
+      "aria-label",
+      SHARED_TAB_UNSHARE
+    );
   });
 });

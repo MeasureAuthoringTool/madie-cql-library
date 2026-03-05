@@ -59,6 +59,7 @@ declare module "@madie/madie-util" {
     MinimizeAlerts: boolean;
     qiCore7: boolean;
     AdminTransferLibrary: boolean;
+    AdminShareLibrary: boolean;
   }
 
   export interface UserRoles {
@@ -113,4 +114,6 @@ declare module "@madie/madie-util" {
   export const bootstrap: LifeCycleFn<void>;
   export const mount: LifeCycleFn<void>;
   export const unmount: LifeCycleFn<void>;
+
+  export function useIsAdminShareLibraryEnabled(): boolean;
 }

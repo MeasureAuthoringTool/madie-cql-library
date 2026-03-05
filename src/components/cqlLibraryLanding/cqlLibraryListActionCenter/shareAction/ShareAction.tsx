@@ -3,6 +3,7 @@ import { IconButton, Menu, MenuItem } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary } from "@madie/madie-models";
 import ShareIcon from "../../../common/ShareIcon";
+import { useIsAdminShareLibraryEnabled } from "@madie/madie-util";
 
 interface PropTypes {
   libraries: CqlLibrary[];
@@ -44,12 +45,14 @@ export default function ShareAction(props: PropTypes) {
       ? [SharedOptions.UNSHARE]
       : [SharedOptions.SHARE_WITH, SharedOptions.UNSHARE];
 
+  const isAdminShareLibraryEnabled = useIsAdminShareLibraryEnabled?.() ?? false;
+
   const validateShareActionState = useCallback(() => {
     setDisableShareBtn(true);
     if (activeTab === 1) {
       if (libraries?.length === 0) {
         setTooltipMessage(SHARED_TAB_NOTHING_SELECTED);
-      } else if (isSharedWithUser) {
+      } else if (isSharedWithUser || isAdminShareLibraryEnabled) {
         setDisableShareBtn(false);
         setTooltipMessage(SHARED_TAB_UNSHARE);
       } else {
@@ -61,7 +64,8 @@ export default function ShareAction(props: PropTypes) {
       } else if (
         props.owners?.length > 1 ||
         (props.owners?.length == 1 &&
-          props.owners[0] === userName.toLowerCase())
+          props.owners[0] === userName.toLowerCase()) ||
+        isAdminShareLibraryEnabled
       ) {
         setDisableShareBtn(false);
         setTooltipMessage(VALID_SHARE_LIBRARY);
@@ -69,7 +73,14 @@ export default function ShareAction(props: PropTypes) {
         setTooltipMessage(INVALID_SHARE_LIBRARY);
       }
     }
-  }, [libraries, canEdit, props.owners, isSharedWithUser, activeTab]);
+  }, [
+    libraries,
+    canEdit,
+    props.owners,
+    isSharedWithUser,
+    activeTab,
+    isAdminShareLibraryEnabled,
+  ]);
 
   useEffect(() => {
     validateShareActionState();
