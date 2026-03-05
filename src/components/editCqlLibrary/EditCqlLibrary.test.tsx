@@ -18,10 +18,7 @@ import {
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
-import {
-  checkUserCanEdit,
-  UserServiceApi,
-} from "@madie/madie-util";
+import { checkUserCanEdit, UserServiceApi } from "@madie/madie-util";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 import {
