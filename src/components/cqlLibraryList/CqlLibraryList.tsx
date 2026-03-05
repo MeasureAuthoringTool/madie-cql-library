@@ -1072,7 +1072,6 @@ export default function CqlLibraryList({
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map((header) => {
-                        console.log("header is", header);
                         const button = isButton(header);
                         const isHovered = hoveredHeader?.includes(header.id);
                         return (
