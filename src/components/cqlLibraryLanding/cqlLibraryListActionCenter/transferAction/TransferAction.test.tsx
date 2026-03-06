@@ -8,7 +8,7 @@ import TransferAction, {
   TRANSFER,
 } from "./TransferAction";
 // @ts-ignore
-import { checkUserCanEdit } from "@madie/madie-util";
+import { checkUserCanEdit, useIsRoleOrFeatureEnabled } from "@madie/madie-util";
 import { CqlLibrary, LibrarySet } from "@madie/madie-models";
 
 const mockUser = "test user";
@@ -33,19 +33,14 @@ jest.mock("@madie/madie-util", () => ({
   checkUserCanEdit: jest.fn(() => {
     return true;
   }),
-  useFeatureFlags: (...args) => mockUseFeatureFlags(...args),
-  useUserRoles: (...args) => mockUseUserRoles(...args),
+  useIsRoleOrFeatureEnabled: jest.fn(),
 }));
 
 describe("TransferAction Component", () => {
   const mockOnClick = jest.fn();
 
   beforeEach(() => {
-    mockUseFeatureFlags.mockReturnValue({});
-    mockUseUserRoles.mockReturnValue({
-      isAdmin: true,
-      roles: ["MADiE-admin"],
-    });
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
     (checkUserCanEdit as jest.Mock).mockImplementation(() => true);
   });
 
@@ -122,8 +117,7 @@ describe("TransferAction Component", () => {
   });
 
   it("enables the button and shows 'Transfer' tooltip when AdminTransferLibrary feature flag is enabled and user is admin", () => {
-    mockUseFeatureFlags.mockReturnValue({ AdminTransferLibrary: true });
-    mockUseUserRoles.mockReturnValue({ isAdmin: true, roles: ["MADiE-admin"] });
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(true);
 
     render(
       <TransferAction
@@ -140,8 +134,7 @@ describe("TransferAction Component", () => {
   });
 
   it("does not grant admin override when feature flag is disabled even if user is admin", () => {
-    mockUseFeatureFlags.mockReturnValue({ AdminTransferLibrary: false });
-    mockUseUserRoles.mockReturnValue({ isAdmin: true, roles: ["MADiE-admin"] });
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
 
     render(<TransferAction libraries={[]} onClick={() => {}} activeTab={0} />);
     const button = screen.getByTestId("transfer-action-btn");

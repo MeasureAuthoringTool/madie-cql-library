@@ -7,10 +7,9 @@ import ShareAction, {
   SHARED_TAB_NOTHING_SELECTED,
   SHARED_TAB_INVALID_UNSHARE_LIBRARY,
   SHARED_TAB_UNSHARE,
-  SharedOptions,
 } from "./ShareAction";
 import userEvent from "@testing-library/user-event";
-import { useIsAdminShareLibraryEnabled } from "@madie/madie-util";
+import { useIsRoleOrFeatureEnabled } from "@madie/madie-util";
 
 const defaultProps = {
   libraries: [{ id: "1", name: "Lib1" }] as any,
@@ -37,7 +36,7 @@ const mockLibrary = {
 const onClick = jest.fn();
 
 jest.mock("@madie/madie-util", () => ({
-  useIsAdminShareLibraryEnabled: jest.fn(),
+  useIsRoleOrFeatureEnabled: jest.fn(),
 }));
 
 describe("ShareAction", () => {
@@ -386,7 +385,7 @@ describe("ShareAction", () => {
 
 describe("Admin user with AdminShareLibrary feature flag enabled", () => {
   beforeEach(() => {
-    (useIsAdminShareLibraryEnabled as jest.Mock).mockReturnValue(true);
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(true);
   });
 
   it("Should enable share action btn for shared libraries even if user is not shared with and display appropriate tooltip", () => {

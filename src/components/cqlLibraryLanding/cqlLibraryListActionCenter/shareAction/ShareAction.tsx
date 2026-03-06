@@ -3,7 +3,7 @@ import { IconButton, Menu, MenuItem } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary } from "@madie/madie-models";
 import ShareIcon from "../../../common/ShareIcon";
-import { useIsAdminShareLibraryEnabled } from "@madie/madie-util";
+import { useIsRoleOrFeatureEnabled } from "@madie/madie-util";
 
 interface PropTypes {
   libraries: CqlLibrary[];
@@ -45,7 +45,8 @@ export default function ShareAction(props: PropTypes) {
       ? [SharedOptions.UNSHARE]
       : [SharedOptions.SHARE_WITH, SharedOptions.UNSHARE];
 
-  const isAdminShareLibraryEnabled = useIsAdminShareLibraryEnabled?.() ?? false;
+  const isAdminShareLibraryEnabled =
+    useIsRoleOrFeatureEnabled("AdminShareLibrary");
 
   const validateShareActionState = useCallback(() => {
     setDisableShareBtn(true);

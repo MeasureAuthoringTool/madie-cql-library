@@ -6,7 +6,7 @@ import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { Model, OwnershipType } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 // @ts-ignore
-import { useFeatureFlags } from "@madie/madie-util";
+import { useFeatureFlags, useIsRoleOrFeatureEnabled } from "@madie/madie-util";
 import {
   useNavigate,
   createMemoryRouter,
@@ -35,10 +35,7 @@ jest.mock("@madie/madie-util", () => ({
   useFeatureFlags: jest.fn().mockReturnValue({
     qdm: false,
   }),
-  useUserRoles: jest.fn().mockReturnValue({
-    isAdmin: false,
-    roles: ["MADiE-user"],
-  }),
+  useIsRoleOrFeatureEnabled: jest.fn(),
 }));
 const organizations = [
   {
