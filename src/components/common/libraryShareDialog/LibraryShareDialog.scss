@@ -35,3 +35,27 @@
     margin-left: 20px;
   }
 }
+
+.export-button {
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  background: transparent;
+  box-shadow: none;
+  text-transform: none;
+  outline: none;
+  margin-top: 12px;
+}
+
+.share-unshare-dialog-info-text {
+  color: #515151;
+  font-weight: 400;
+  font-family: Rubik, sans-serif;
+  margin-left: 32px;
+  margin-right: 32px;
+  padding-bottom: 17px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
