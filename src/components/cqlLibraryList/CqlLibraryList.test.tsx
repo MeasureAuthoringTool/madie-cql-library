@@ -27,6 +27,7 @@ jest.mock("@madie/madie-util", () => ({
     return true;
   }),
   useFeatureFlags: jest.fn().mockReturnValue({}),
+  useUserRoles: jest.fn(() => ({})),
 }));
 
 const cqlLibrary = [
