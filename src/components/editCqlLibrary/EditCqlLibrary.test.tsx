@@ -18,11 +18,7 @@ import {
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
-import {
-  checkUserCanEdit,
-  useFeatureFlags,
-  UserServiceApi,
-} from "@madie/madie-util";
+import { checkUserCanEdit, UserServiceApi } from "@madie/madie-util";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 import {
@@ -44,6 +40,7 @@ jest.mock("@madie/madie-util", () => ({
   })),
   useDocumentTitle: jest.fn(),
   useFeatureFlags: jest.fn(() => ({})),
+  useUserRoles: jest.fn(() => ({})),
   cqlLibraryStore: {
     state: null,
     initialState: null,

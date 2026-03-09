@@ -4,12 +4,50 @@ import { within } from "@testing-library/dom";
 import { CqlLibrary } from "@madie/madie-models";
 import TransferDialog from "./TransferDialog";
 import userEvent from "@testing-library/user-event";
+// @ts-ignore
+import { useUserRoles } from "@madie/madie-util";
+
+const mockUseUserRoles = useUserRoles as jest.Mock;
+
+const librariesFixture: Partial<CqlLibrary>[] = [
+  {
+    cqlLibraryName: "Library 1",
+    model: "Model A" as any,
+    librarySet: { id: "1", librarySetId: "ls1", owner: "owner1" },
+  },
+  {
+    cqlLibraryName: "Library 2",
+    model: "Model B" as any,
+    librarySet: { id: "2", librarySetId: "ls2", owner: "owner2" },
+  },
+  {
+    cqlLibraryName: "Library 3",
+    model: "Model C" as any,
+    librarySet: { id: "3", librarySetId: "ls3", owner: "owner1" },
+  },
+  {
+    cqlLibraryName: "Library 4",
+    model: "Model D" as any,
+    librarySet: { id: "4", librarySetId: "ls4", owner: "owner1" },
+  },
+  {
+    cqlLibraryName: "Library 5",
+    model: "Model E" as any,
+    librarySet: { id: "5", librarySetId: "ls5", owner: "owner1" },
+  },
+  {
+    cqlLibraryName: "Library 6",
+    model: "Model F" as any,
+    librarySet: { id: "6", librarySetId: "ls6", owner: "owner3" },
+  },
+];
 
 describe("Transfer Libraries Dialog component", () => {
   const { getByTestId } = screen;
 
   beforeEach(() => {
     jest.resetModules();
+    mockUseUserRoles.mockReturnValue({ roles: [], isAdmin: false });
   });
 
   const checkDataRows = async (number: number) => {
@@ -21,161 +59,334 @@ describe("Transfer Libraries Dialog component", () => {
     });
   };
 
-  it("renders the dialog with the correct title and buttons", () => {
-    render(
-      <TransferDialog
-        libraries={[]}
-        open={true}
-        onClose={jest.fn()}
-        onSubmit={jest.fn()}
-      />
-    );
+  describe("Regular user (non-admin)", () => {
+    it("renders the dialog correctly with all expected static elements", () => {
+      const libraries = [
+        {
+          cqlLibraryName: "Library 1",
+          model: "Model A",
+          librarySet: { id: "1", librarySetId: "ls1", owner: "testOwner" },
+        },
+        {
+          cqlLibraryName: "Library 2",
+          model: "Model B",
+          librarySet: { id: "2", librarySetId: "ls2", owner: "testOwner" },
+        },
+      ];
+      render(
+        <TransferDialog
+          libraries={libraries as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
 
-    expect(getByTestId("transfer-dialog")).toBeInTheDocument();
-    expect(screen.getByText("Transfer Library Ownership")).toBeInTheDocument();
-    expect(getByTestId("transfer-cancel-button")).toBeInTheDocument();
-    expect(getByTestId("transfer-save-button")).toBeInTheDocument();
-  });
+      // dialog, title, and action buttons are present
+      expect(getByTestId("transfer-dialog")).toBeInTheDocument();
+      expect(
+        screen.getByText("Transfer Library Ownership")
+      ).toBeInTheDocument();
+      expect(getByTestId("transfer-cancel-button")).toBeInTheDocument();
+      expect(getByTestId("transfer-save-button")).toBeInTheDocument();
 
-  it("disables the transfer button when the form is untouched", () => {
-    render(
-      <TransferDialog
-        libraries={[]}
-        open={true}
-        onClose={jest.fn()}
-        onSubmit={jest.fn()}
-      />
-    );
+      // info text with library count
+      expect(
+        screen.getByText(/You are about to Transfer ownership of the/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /selected library\(s\) below\. All versions and drafts will be transferred, but only the most recent library name appears in the list below\./i
+        )
+      ).toBeInTheDocument();
 
-    expect(getByTestId("transfer-save-button")).toBeDisabled();
-  });
+      // "This action cannot be undone." warning is shown for regular user
+      expect(
+        screen.getByText("This action cannot be undone.")
+      ).toBeInTheDocument();
 
-  it("enables the transfer button when the form is dirty", () => {
-    render(
-      <TransferDialog
-        libraries={[]}
-        open={true}
-        onClose={jest.fn()}
-        onSubmit={jest.fn()}
-      />
-    );
+      // Owner section header and Current Library Owner ReadOnlyTextField are shown
+      expect(screen.getByText("Owner")).toBeInTheDocument();
+      expect(screen.getByText("Current Library Owner")).toBeInTheDocument();
 
-    fireEvent.change(getByTestId("harp-id-input"), {
-      target: { value: "newOwner" },
+      // table does NOT have a "Current Library Owner" column
+      const table = getByTestId("transfer-library-tbl");
+      expect(
+        within(table).queryByText("Current Library Owner")
+      ).not.toBeInTheDocument();
+
+      // New Library Owner input and retain share access checkbox are present
+      expect(getByTestId("harp-id-input")).toBeInTheDocument();
+      expect(getByTestId("retainShareAccess")).toBeInTheDocument();
+
+      // Transfer button is disabled initially (form untouched)
+      expect(getByTestId("transfer-save-button")).toBeDisabled();
     });
 
-    expect(getByTestId("transfer-save-button")).not.toBeDisabled();
-  });
+    it("enables the transfer button when the form is dirty", () => {
+      render(
+        <TransferDialog
+          libraries={[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
 
-  it("displays validation error when new library owner is not provided", async () => {
-    render(
-      <TransferDialog
-        libraries={[]}
-        open={true}
-        onClose={jest.fn()}
-        onSubmit={jest.fn()}
-      />
-    );
+      fireEvent.change(getByTestId("harp-id-input"), {
+        target: { value: "newOwner" },
+      });
 
-    fireEvent.blur(getByTestId("harp-id-input"));
-
-    expect(
-      await screen.findByText("New Library Owner is required.")
-    ).toBeInTheDocument();
-  });
-
-  it("calls onSubmit with correct values when the form is submitted", async () => {
-    const mockOnSubmit = jest.fn();
-    const libraries = [{ cqlLibraryName: "Library 1", model: "Model A" }];
-
-    render(
-      <TransferDialog
-        libraries={libraries as CqlLibrary[]}
-        open={true}
-        onClose={jest.fn()}
-        onSubmit={mockOnSubmit}
-      />
-    );
-
-    await checkDataRows(1);
-
-    fireEvent.change(getByTestId("harp-id-input"), {
-      target: { value: "newOwner" },
+      expect(getByTestId("transfer-save-button")).not.toBeDisabled();
     });
-    fireEvent.click(getByTestId("retainShareAccess"));
-    fireEvent.click(getByTestId("transfer-save-button"));
 
-    await waitFor(() => {
-      expect(mockOnSubmit).toHaveBeenCalledWith("newOwner", true);
+    it("displays validation error when new library owner is not provided", async () => {
+      render(
+        <TransferDialog
+          libraries={[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
+
+      fireEvent.blur(getByTestId("harp-id-input"));
+
+      expect(
+        await screen.findByText("New Library Owner is required.")
+      ).toBeInTheDocument();
+    });
+
+    it("calls onSubmit with correct values when the form is submitted", async () => {
+      const mockOnSubmit = jest.fn();
+      const libraries = [{ cqlLibraryName: "Library 1", model: "Model A" }];
+
+      render(
+        <TransferDialog
+          libraries={libraries as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      await checkDataRows(1);
+
+      fireEvent.change(getByTestId("harp-id-input"), {
+        target: { value: "newOwner" },
+      });
+      fireEvent.click(getByTestId("retainShareAccess"));
+      fireEvent.click(getByTestId("transfer-save-button"));
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledWith("newOwner", true);
+      });
+    });
+
+    it("should handle limit change", async () => {
+      render(
+        <TransferDialog
+          libraries={librariesFixture as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
+
+      expect(getByTestId("transfer-library-tbl")).toBeInTheDocument();
+      expect(getByTestId("library-name-Library 1-content")).toHaveTextContent(
+        "Library 1"
+      );
+      expect(getByTestId("library-name-Library 2-content")).toHaveTextContent(
+        "Library 2"
+      );
+      expect(getByTestId("transfer-dialog")).toBeInTheDocument();
+
+      // change limit
+      const [combobox] = await screen.findAllByText("5");
+      userEvent.click(combobox);
+      const pageLimit10 = screen.getByRole("option", {
+        name: /10/i,
+      });
+      userEvent.click(pageLimit10);
+      await checkDataRows(6);
+    });
+
+    it("should handle page change", async () => {
+      render(
+        <TransferDialog
+          libraries={librariesFixture as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
+
+      expect(getByTestId("transfer-library-tbl")).toBeInTheDocument();
+      expect(getByTestId("transfer-dialog")).toBeInTheDocument();
+
+      await checkDataRows(5);
+
+      const page2 = await screen.findByLabelText("Go to page 2");
+      userEvent.click(page2);
+      // confirm there are 1 item on page
+      const tableBody = getByTestId("transfer-library-tbl-body");
+      await waitFor(() => {
+        expect(tableBody?.querySelectorAll("tbody tr")).toHaveLength(1);
+      });
     });
   });
 
-  it("should handle limit change", async () => {
-    const libraries = [
-      { cqlLibraryName: "Library 1", model: "Model A" },
-      { cqlLibraryName: "Library 2", model: "Model B" },
-      { cqlLibraryName: "Library 3", model: "Model C" },
-      { cqlLibraryName: "Library 4", model: "Model D" },
-      { cqlLibraryName: "Library 5", model: "Model E" },
-      { cqlLibraryName: "Library 6", model: "Model F" },
-    ];
-    render(
-      <TransferDialog
-        libraries={libraries as CqlLibrary[]}
-        open={true}
-        onClose={jest.fn()}
-        onSubmit={jest.fn()}
-      />
-    );
-
-    expect(getByTestId("transfer-library-tbl")).toBeInTheDocument();
-    expect(getByTestId("library-name-Library 1-content")).toHaveTextContent(
-      "Library 1"
-    );
-    expect(getByTestId("library-name-Library 2-content")).toHaveTextContent(
-      "Library 2"
-    );
-    expect(getByTestId("transfer-dialog")).toBeInTheDocument();
-
-    // change limit
-    const [combobox] = await screen.findAllByText("5");
-    userEvent.click(combobox);
-    const pageLimit10 = screen.getByRole("option", {
-      name: /10/i,
+  describe("Admin user", () => {
+    beforeEach(() => {
+      mockUseUserRoles.mockReturnValue({
+        roles: ["MADiE-Admin"],
+        isAdmin: true,
+      });
     });
-    userEvent.click(pageLimit10);
-    await checkDataRows(6);
-  });
 
-  it("should handle page change", async () => {
-    const libraries = [
-      { cqlLibraryName: "Library 1", model: "Model A" },
-      { cqlLibraryName: "Library 2", model: "Model B" },
-      { cqlLibraryName: "Library 3", model: "Model C" },
-      { cqlLibraryName: "Library 4", model: "Model D" },
-      { cqlLibraryName: "Library 5", model: "Model E" },
-      { cqlLibraryName: "Library 6", model: "Model F" },
-    ];
-    render(
-      <TransferDialog
-        libraries={libraries as CqlLibrary[]}
-        open={true}
-        onClose={jest.fn()}
-        onSubmit={jest.fn()}
-      />
-    );
+    it("renders the dialog correctly with all expected static elements for admin", () => {
+      const libraries = [
+        {
+          cqlLibraryName: "Library 1",
+          model: "Model A",
+          librarySet: { id: "1", librarySetId: "ls1", owner: "ownerA" },
+        },
+        {
+          cqlLibraryName: "Library 2",
+          model: "Model B",
+          librarySet: { id: "2", librarySetId: "ls2", owner: "ownerB" },
+        },
+      ];
+      render(
+        <TransferDialog
+          libraries={libraries as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
 
-    expect(getByTestId("transfer-library-tbl")).toBeInTheDocument();
-    expect(getByTestId("transfer-dialog")).toBeInTheDocument();
+      // dialog, title, and action buttons are present
+      expect(getByTestId("transfer-dialog")).toBeInTheDocument();
+      expect(
+        screen.getByText("Transfer Library Ownership")
+      ).toBeInTheDocument();
+      expect(getByTestId("transfer-cancel-button")).toBeInTheDocument();
+      expect(getByTestId("transfer-save-button")).toBeInTheDocument();
 
-    await checkDataRows(5);
+      // info text with library count
+      expect(
+        screen.getByText(/You are about to Transfer ownership of the/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /selected library\(s\) below\. All versions and drafts will be transferred, but only the most recent library name appears in the list below\./i
+        )
+      ).toBeInTheDocument();
 
-    const page2 = await screen.findByLabelText("Go to page 2");
-    userEvent.click(page2);
-    // confirm there are 1 item on page
-    const tableBody = getByTestId("transfer-library-tbl-body");
-    await waitFor(() => {
-      expect(tableBody?.querySelectorAll("tbody tr")).toHaveLength(1);
+      // "This action cannot be undone." warning is NOT shown for admin
+      expect(
+        screen.queryByText("This action cannot be undone.")
+      ).not.toBeInTheDocument();
+
+      // Owner section header and Current Library Owner ReadOnlyTextField are NOT shown
+      expect(screen.queryByText("Owner")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("current-owner")).not.toBeInTheDocument();
+
+      // table HAS a "Current Library Owner" column with per-library owner data
+      const table = getByTestId("transfer-library-tbl");
+      expect(
+        within(table).getByText("Current Library Owner")
+      ).toBeInTheDocument();
+      expect(within(table).getByText("ownerA")).toBeInTheDocument();
+      expect(within(table).getByText("ownerB")).toBeInTheDocument();
+
+      // New Library Owner input and retain share access checkbox are present
+      expect(getByTestId("harp-id-input")).toBeInTheDocument();
+      expect(getByTestId("retainShareAccess")).toBeInTheDocument();
+
+      // Transfer button is disabled initially (form untouched)
+      expect(getByTestId("transfer-save-button")).toBeDisabled();
+    });
+
+    it("enables the transfer button when harp id is entered for admin", () => {
+      render(
+        <TransferDialog
+          libraries={[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
+
+      fireEvent.change(getByTestId("harp-id-input"), {
+        target: { value: "newAdminOwner" },
+      });
+
+      expect(getByTestId("transfer-save-button")).not.toBeDisabled();
+    });
+
+    it("calls onSubmit with correct values when admin submits the form", async () => {
+      const mockOnSubmit = jest.fn();
+      const libraries = [
+        {
+          cqlLibraryName: "Library 1",
+          model: "Model A",
+          librarySet: { id: "1", librarySetId: "ls1", owner: "owner1" },
+        },
+      ];
+
+      render(
+        <TransferDialog
+          libraries={libraries as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      await checkDataRows(1);
+
+      fireEvent.change(getByTestId("harp-id-input"), {
+        target: { value: "newAdminOwner" },
+      });
+      fireEvent.click(getByTestId("transfer-save-button"));
+
+      await waitFor(() => {
+        expect(mockOnSubmit).toHaveBeenCalledWith("newAdminOwner", false);
+      });
+    });
+
+    it("should handle pagination for admin with owner column present", async () => {
+      render(
+        <TransferDialog
+          libraries={librariesFixture as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
+
+      expect(getByTestId("transfer-library-tbl")).toBeInTheDocument();
+
+      // The owner column should be present in admin view
+      const table = getByTestId("transfer-library-tbl");
+      expect(
+        within(table).getByText("Current Library Owner")
+      ).toBeInTheDocument();
+
+      // first page should show 5 rows
+      await checkDataRows(5);
+
+      // Go to page 2
+      const page2 = await screen.findByLabelText("Go to page 2");
+      userEvent.click(page2);
+
+      const tableBody = getByTestId("transfer-library-tbl-body");
+      await waitFor(() => {
+        expect(tableBody?.querySelectorAll("tbody tr")).toHaveLength(1);
+      });
     });
   });
 });

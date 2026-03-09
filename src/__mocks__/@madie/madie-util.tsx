@@ -64,3 +64,22 @@ export function useOnClickOutside(ref, handler) {
     };
   }, [ref, handler]);
 }
+
+// Mock UserRoles interface type
+export interface UserRoles {
+  roles?: string[];
+  isAdmin?: boolean;
+}
+
+// Mock useUserRoles hook
+export const useUserRoles = jest.fn().mockReturnValue({
+  roles: [],
+  isAdmin: false,
+});
+
+// Mock userRolesStore
+export const userRolesStore = {
+  getState: () => ({ roles: [], isAdmin: false }),
+  updateUserRoles: () => {},
+  subscribe: () => ({ unsubscribe: () => {} }),
+};
