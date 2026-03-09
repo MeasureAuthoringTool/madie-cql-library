@@ -58,12 +58,15 @@ declare module "@madie/madie-util" {
   interface FeatureFlags {
     MinimizeAlerts: boolean;
     qiCore7: boolean;
-    Locking: boolean;
-    CompareLibraryVersions: boolean;
-    DisplayOwner: boolean;
+  }
+
+  export interface UserRoles {
+    roles: string[];
+    isAdmin: boolean;
   }
 
   export function useFeatureFlags(): FeatureFlags;
+  export function useUserRoles(): UserRoles;
 
   export function getServiceConfig(): Promise<ServiceConfig>;
 
@@ -109,4 +112,6 @@ declare module "@madie/madie-util" {
   export const bootstrap: LifeCycleFn<void>;
   export const mount: LifeCycleFn<void>;
   export const unmount: LifeCycleFn<void>;
+
+  export function useIsRoleOrFeatureEnabled(feature: string): boolean;
 }

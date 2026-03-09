@@ -275,11 +275,10 @@ const EditCqlLibrary = () => {
     checkUserCanEdit(
       loadedCqlLibrary?.librarySet?.owner,
       loadedCqlLibrary?.librarySet?.acls
-    ) && !(featureFlags?.Locking && loadedCqlLibrary?.cqlLibraryLock);
-  const libraryLockedBy =
-    featureFlags?.Locking && loadedCqlLibrary?.cqlLibraryLock
-      ? loadedCqlLibrary?.cqlLibraryLock?.lockedBy
-      : undefined;
+    ) && !loadedCqlLibrary?.cqlLibraryLock;
+  const libraryLockedBy = loadedCqlLibrary?.cqlLibraryLock
+    ? loadedCqlLibrary?.cqlLibraryLock?.lockedBy
+    : undefined;
   const [lockedLibraryPopupOpen, setLockedLibraryPopupOpen] = useState(
     !canEdit
   );
@@ -473,7 +472,7 @@ const EditCqlLibrary = () => {
       const handleUnload = () => {
         cqlLibraryServiceApi.unlockLibrary(id);
       };
-      if (featureFlags?.Locking && canEdit) {
+      if (canEdit) {
         window.addEventListener("beforeunload", handleUnload);
         cqlLibraryServiceApi
           .lockLibrary(id)
@@ -483,7 +482,7 @@ const EditCqlLibrary = () => {
           });
       }
       return () => {
-        if (featureFlags?.Locking && canEdit) {
+        if (canEdit) {
           window.removeEventListener("beforeunload", handleUnload);
           cqlLibraryServiceApi.unlockLibrary(id);
         }
@@ -627,7 +626,7 @@ const EditCqlLibrary = () => {
               );
             }
           }
-          if (featureFlags.Locking && error.response?.status === 423) {
+          if (error.response?.status === 423) {
             const splitted = error.response?.data?.message?.trim().split(" ");
             const lockedBy = splitted[splitted.length - 1];
             setLoadedCqlLibrary({
@@ -962,22 +961,20 @@ const EditCqlLibrary = () => {
                             />
                           </div>
 
-                          {featureFlags?.DisplayOwner && (
-                            <div className="form-row">
-                              <ReadOnlyTextField
-                                value={libraryOwner}
-                                label={"Library Owner"}
-                                tabIndex={0}
-                                placeholder="Library Owner"
-                                id="library-owner-label"
-                                data-testid="library-owner-text-field"
-                                inputProps={{
-                                  "data-testid": "library-owner-input",
-                                }}
-                                size="small"
-                              />
-                            </div>
-                          )}
+                          <div className="form-row">
+                            <ReadOnlyTextField
+                              value={libraryOwner}
+                              label={"Library Owner"}
+                              tabIndex={0}
+                              placeholder="Library Owner"
+                              id="library-owner-label"
+                              data-testid="library-owner-text-field"
+                              inputProps={{
+                                "data-testid": "library-owner-input",
+                              }}
+                              size="small"
+                            />
+                          </div>
 
                           <div className="form-row">
                             <FormControlLabel

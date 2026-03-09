@@ -8,9 +8,7 @@ import { CqlLibrary, Model } from "@madie/madie-models";
 import { useFeatureFlags } from "@madie/madie-util";
 
 jest.mock("@madie/madie-util", () => ({
-  useFeatureFlags: jest.fn().mockReturnValue({
-    Locking: false,
-  }),
+  useFeatureFlags: jest.fn().mockReturnValue({}),
 }));
 
 const libraryVersion = {
@@ -101,9 +99,6 @@ describe("VersionAction", () => {
   });
 
   it("Should disable action btn if feature flag is on and library is locked ", () => {
-    (useFeatureFlags as jest.Mock).mockReturnValueOnce({
-      Locking: true,
-    });
     const lockedLibrary = {
       ...libraryDraft,
       cqlLibraryLock: {
@@ -125,9 +120,6 @@ describe("VersionAction", () => {
   });
 
   it("Should enable action btn if feature flag is on and library is not locked ", () => {
-    (useFeatureFlags as jest.Mock).mockReturnValueOnce({
-      Locking: true,
-    });
     render(
       <VersionAction
         libraries={[libraryDraft]}

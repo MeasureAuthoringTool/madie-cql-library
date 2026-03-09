@@ -491,7 +491,7 @@ export default function CqlLibraryList({
           },
         ]
       : []),
-    ...(featureFlags?.DisplayOwner && activeTab !== 0
+    ...(activeTab !== 0
       ? [
           {
             sortDescFirst: false,
@@ -526,10 +526,7 @@ export default function CqlLibraryList({
           info.row.original.librarySet?.owner,
           info.row.original.librarySet?.acls
         );
-        const isLockedByOther =
-          featureFlags?.Locking &&
-          canEdit &&
-          !!info.row.original.cqlLibraryLock;
+        const isLockedByOther = canEdit && !!info.row.original.cqlLibraryLock;
 
         const buttonText = isLockedByOther ? "View" : canEdit ? "Edit" : "View";
 
@@ -686,13 +683,7 @@ export default function CqlLibraryList({
     });
 
     return columnDefs;
-  }, [
-    navigate,
-    selectedIdForExpansion,
-    isRowExpanded,
-    featureFlags?.DisplayOwner,
-    activeTab,
-  ]);
+  }, [navigate, selectedIdForExpansion, isRowExpanded, activeTab]);
 
   const expandedColumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     return [

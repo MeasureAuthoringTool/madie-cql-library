@@ -18,11 +18,7 @@ import {
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
-import {
-  checkUserCanEdit,
-  useFeatureFlags,
-  UserServiceApi,
-} from "@madie/madie-util";
+import { checkUserCanEdit, UserServiceApi } from "@madie/madie-util";
 import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 import {
@@ -43,7 +39,8 @@ jest.mock("@madie/madie-util", () => ({
     getUserName: () => "test user",
   })),
   useDocumentTitle: jest.fn(),
-  useFeatureFlags: jest.fn(() => ({ Locking: false, DisplayOwner: true })),
+  useFeatureFlags: jest.fn(() => ({})),
+  useUserRoles: jest.fn(() => ({})),
   cqlLibraryStore: {
     state: null,
     initialState: null,
@@ -219,6 +216,7 @@ describe("Edit Cql Library Component", () => {
   beforeEach(() => {
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockedAxios.delete.mockResolvedValue({ data: lockInfo });
     mockCqlLibraryServiceApi.createDraft = jest
       .fn()
       .mockResolvedValue(draftedLibrary);
@@ -878,7 +876,7 @@ describe("Edit Cql Library Component", () => {
       data: {
         ...cqlLibrary,
         cqlLibraryName: "UpdateName",
-        cql: synchingEditorCqlContent,
+        cql: "library UpdateName version '1.0.000'",
       },
     });
     renderWithRouter();
@@ -932,12 +930,13 @@ describe("Edit Cql Library Component", () => {
     userEvent.click(updateButton);
     await waitFor(() => {
       expect(updateButton).not.toBeInTheDocument();
-      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
     });
-    expect(mockedAxios.put.mock.lastCall[0]).toEqual(
-      "/cql-libraries/cql-lib-1234"
+    expect(mockedAxios.put).toHaveBeenNthCalledWith(
+      3,
+      "/cql-libraries/cql-lib-1234",
+      expect.anything(),
+      expect.anything()
     );
-    expect(mockedAxios.put.mock.lastCall[1]).toBeTruthy();
   }, 10000);
 
   it("should render existing CQL in the editor", async () => {
@@ -1153,19 +1152,22 @@ describe("Edit Cql Library Component", () => {
 
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    mockedAxios.put.mockClear();
+    mockedAxios.put.mockReset();
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
       return "library UpdateName version '1.0.000'";
     });
     isUsingEmpty.mockClear().mockImplementation(() => false);
-    mockedAxios.put.mockRejectedValueOnce({
-      response: {
-        data: {
-          message: "error",
-          validationErrors: { cqlLibraryName: "validationError" },
+    mockedAxios.put
+      .mockResolvedValueOnce({ data: lockInfo })
+      .mockResolvedValueOnce({ data: lockInfo })
+      .mockRejectedValueOnce({
+        response: {
+          data: {
+            message: "error",
+            validationErrors: { cqlLibraryName: "validationError" },
+          },
         },
-      },
-    });
+      });
     renderWithRouter();
     expect(mockedAxios.get).toHaveBeenCalled();
 
@@ -1194,7 +1196,7 @@ describe("Edit Cql Library Component", () => {
       expect(errorMessage.textContent).toEqual(
         "error cqlLibraryName : validationError"
       );
-      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+      expect(mockedAxios.put).toHaveBeenCalledTimes(3);
     });
     expect(mockedAxios.put.mock.lastCall[0]).toEqual(
       "/cql-libraries/cql-lib-1234"
@@ -1223,14 +1225,17 @@ describe("Edit Cql Library Component", () => {
 
     mockedAxios.get.mockClear();
     mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    mockedAxios.put.mockClear();
+    mockedAxios.put.mockReset();
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
       return "library UpdateName version '1.0.000'";
     });
     isUsingEmpty.mockClear().mockImplementation(() => false);
-    mockedAxios.put.mockRejectedValueOnce({
-      error: "error",
-    });
+    mockedAxios.put
+      .mockResolvedValueOnce({ data: lockInfo })
+      .mockResolvedValueOnce({ data: lockInfo })
+      .mockRejectedValueOnce({
+        error: "error",
+      });
     renderWithRouter();
     expect(mockedAxios.get).toHaveBeenCalled();
 
@@ -1259,7 +1264,7 @@ describe("Edit Cql Library Component", () => {
       expect(errorMessage.textContent).toEqual(
         "An error occurred while updating the CQL library"
       );
-      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+      expect(mockedAxios.put).toHaveBeenCalledTimes(3);
     });
     expect(mockedAxios.put.mock.lastCall[0]).toEqual(
       "/cql-libraries/cql-lib-1234"
@@ -1441,9 +1446,6 @@ describe("Edit Cql Library Component", () => {
     (checkUserCanEdit as jest.Mock).mockImplementation(() => {
       return true;
     });
-    (useFeatureFlags as jest.Mock).mockImplementation(() => {
-      return { Locking: true };
-    });
 
     mockedAxios.put.mockClear();
     mockedAxios.put.mockResolvedValue({ data: { ...lockInfo } });
@@ -1458,28 +1460,9 @@ describe("Edit Cql Library Component", () => {
     );
   });
 
-  it("should not lock library if feature flag is not on", async () => {
-    (checkUserCanEdit as jest.Mock).mockImplementation(() => {
-      return true;
-    });
-    (useFeatureFlags as jest.Mock).mockImplementation(() => {
-      return { Locking: false };
-    });
-
-    renderWithRouter();
-    expect(mockedAxios.put).not.toHaveBeenCalledWith(
-      "/cql-libraries/cql-lib-1234/lock",
-      null,
-      { headers: { Authorization: "Bearer test.jwt" } }
-    );
-  });
-
   it("should not lock library if user can not edit library", async () => {
     (checkUserCanEdit as jest.Mock).mockImplementation(() => {
       return false;
-    });
-    (useFeatureFlags as jest.Mock).mockImplementation(() => {
-      return { Locking: true };
     });
 
     renderWithRouter();
@@ -1994,9 +1977,7 @@ describe("Edit Cql Library Component", () => {
     (checkUserCanEdit as jest.Mock).mockImplementation(() => {
       return true;
     });
-    (useFeatureFlags as jest.Mock).mockImplementation(() => ({
-      Locking: true,
-    }));
+
     const cqlLibrary = {
       id: "cql-lib-1234",
       cqlLibraryName: "Library1",

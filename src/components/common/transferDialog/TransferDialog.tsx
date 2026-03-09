@@ -22,16 +22,26 @@ import { Checkbox, Divider } from "@mui/material";
 import "./TransferDialog.scss";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import * as Yup from "yup";
+import { UserRoles, useUserRoles } from "@madie/madie-util";
 
 // Define the data type for rows
 interface RowData {
   libraryName: string;
   model: string;
+  owner?: string;
 }
 const TH = tw.th`p-3 text-left text-sm`;
 const TD = tw.td`p-3 text-left text-sm break-keep`;
 
-const TransferredLibraries = ({ libraries }: { libraries: CqlLibrary[] }) => {
+interface TransferredLibrariesProps {
+  libraries: CqlLibrary[];
+  isAdmin: boolean;
+}
+
+const TransferredLibraries = ({
+  libraries,
+  isAdmin,
+}: TransferredLibrariesProps) => {
   const [visibleLibraries, setVisibleLibraries] = useState<CqlLibrary[]>([]);
   // pagination utilities
   const [totalPages, setTotalPages] = useState<number>(0);
@@ -92,6 +102,7 @@ const TransferredLibraries = ({ libraries }: { libraries: CqlLibrary[] }) => {
       visibleLibraries.map((library) => ({
         libraryName: library.cqlLibraryName,
         model: library.model,
+        owner: library.librarySet?.owner,
       })),
     [visibleLibraries]
   );
@@ -115,8 +126,17 @@ const TransferredLibraries = ({ libraries }: { libraries: CqlLibrary[] }) => {
         header: "Model",
         cell: (info) => info.getValue(),
       },
+      ...(isAdmin
+        ? [
+            {
+              accessorKey: "owner" as const,
+              header: "Current Library Owner",
+              cell: (info) => info.getValue(),
+            },
+          ]
+        : []),
     ],
-    []
+    [isAdmin]
   );
 
   // Create the table instance
@@ -199,6 +219,7 @@ const TransferDialog = ({
   onClose,
   onSubmit,
 }: TransferDialogProps) => {
+  const userRoles: UserRoles = useUserRoles();
   const formik = useFormik({
     initialValues: {
       currentUser: libraries?.[0]?.librarySet?.owner,
@@ -233,7 +254,7 @@ const TransferDialog = ({
           "data-testid": "transfer-cancel-button",
         }}
         continueButtonProps={{
-          variant: "danger-primary",
+          variant: userRoles.isAdmin ? "cyan" : "danger-primary",
           type: "submit",
           continueText: "Transfer",
           "data-testid": "transfer-save-button",
@@ -242,32 +263,44 @@ const TransferDialog = ({
       >
         <div className="transfer-dialog-info-text">
           <div>
-            You are about to Transfer ownership of the following library(s). All
-            versions and drafts will be transferred. So only the most recent
-            library name appears here.
+            You are about to Transfer ownership of the {libraries?.length || 0}{" "}
+            selected library(s) below. All versions and drafts will be
+            transferred, but only the most recent library name appears in the
+            list below.
           </div>
-          <div className="warning-message">
-            <ErrorOutlineIcon color="error" fontSize="small" />
-            This action cannot be undone.
-          </div>
+          {!userRoles.isAdmin && (
+            <div className="warning-message">
+              <ErrorOutlineIcon color="error" fontSize="small" />
+              This action cannot be undone.
+            </div>
+          )}
         </div>
         <div data-testid="transferred-libraries-list">
-          <TransferredLibraries libraries={libraries} />
+          <TransferredLibraries
+            libraries={libraries}
+            isAdmin={userRoles.isAdmin}
+          />
         </div>
-        <div className="owner">Owner</div>
-        <Divider sx={{ borderColor: "#8c8c8c", paddingBottom: "16px" }} />
+        {!userRoles.isAdmin && (
+          <>
+            <div className="owner">Owner</div>
+            <Divider sx={{ borderColor: "#8c8c8c", paddingBottom: "16px" }} />
+          </>
+        )}
 
         <div id="transfer-library">
-          <div className="current-owner">
-            <ReadOnlyTextField
-              label="Current Library Owner"
-              inputProps={{
-                "data-testid": "current-owner",
-              }}
-              size="large"
-              {...formik.getFieldProps("currentUser")}
-            />
-          </div>
+          {!userRoles.isAdmin && (
+            <div className="current-owner">
+              <ReadOnlyTextField
+                label="Current Library Owner"
+                inputProps={{
+                  "data-testid": "current-owner",
+                }}
+                size="large"
+                {...formik.getFieldProps("currentUser")}
+              />
+            </div>
+          )}
           <div>
             <TextField
               label="New Library Owner"
