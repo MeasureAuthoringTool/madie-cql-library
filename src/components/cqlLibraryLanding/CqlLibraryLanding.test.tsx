@@ -36,6 +36,7 @@ jest.mock("@madie/madie-util", () => ({
     qdm: false,
   }),
   useIsRoleOrFeatureEnabled: jest.fn(),
+  useUserRoles: jest.fn(() => ({})),
 }));
 const organizations = [
   {
