@@ -7,7 +7,7 @@ import useCqlLibraryServiceApi, {
 import { CqlLibrary } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 import { useIsRoleOrFeatureEnabled } from "@madie/madie-util";
-
+//@ts-ignore
 const testUser = "test-fake-user@email.com";
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
