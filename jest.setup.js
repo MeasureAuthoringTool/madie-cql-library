@@ -1,3 +1,16 @@
+// Polyfill for crypto.getRandomValues for environments like jsdom
+if (typeof global.crypto === 'undefined') {
+  global.crypto = {};
+}
+if (typeof global.crypto.getRandomValues === 'undefined') {
+  global.crypto.getRandomValues = function(buffer) {
+    for (let i = 0; i < buffer.length; i++) {
+      buffer[i] = Math.floor(Math.random() * 256);
+    }
+    return buffer;
+  };
+}
+
 import util from "@madie/madie-util";
 // Mock SystemJS
 global.System = {

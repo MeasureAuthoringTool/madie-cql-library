@@ -45,7 +45,7 @@ const ownershipTypeMap: Record<number, OwnershipType> = {
 
 function CqlLibraryLanding() {
   useDocumentTitle("MADiE Libraries");
-  const featureFlags = useFeatureFlags();
+
   let navigate = useNavigate();
   const { search } = useLocation();
 
