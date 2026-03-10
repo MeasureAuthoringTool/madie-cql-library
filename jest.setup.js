@@ -1,22 +1,11 @@
-// Global localStorage mock for CI/jsdom environments
-Object.defineProperty(global, "localStorage", {
-  value: {
-    getItem: jest.fn(() => null),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
-  },
-  writable: true,
-});
-Object.defineProperty(window, "localStorage", {
-  value: {
-    getItem: jest.fn(() => null),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
-  },
-  writable: true,
-});
+// Mock localStorage for CI/jsdom environments (opaque origins)
+global.localStorage = {
+  getItem: jest.fn(() => null),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+window.localStorage = global.localStorage;
 
 // Polyfill for crypto.getRandomValues for environments like jsdom
 if (typeof global.crypto === "undefined") {
@@ -46,30 +35,6 @@ afterAll(() => {
   console.error.mockRestore();
   console.warn.mockRestore();
 });
-
-// Mock localStorage for jsdom/CI environments
-if (
-  typeof window !== "undefined" &&
-  typeof window.localStorage === "undefined"
-) {
-  window.localStorage = {
-    getItem: jest.fn(() => null),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
-  };
-}
-if (
-  typeof global !== "undefined" &&
-  typeof global.localStorage === "undefined"
-) {
-  global.localStorage = {
-    getItem: jest.fn(() => null),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
-  };
-}
 
 function mockImport(importName) {
   if (importName === "@madie/madie-util") {
