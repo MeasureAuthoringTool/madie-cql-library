@@ -412,7 +412,7 @@ function CqlLibraryLanding() {
       <div className="cql-library-table">
         <section
           tw="flex flex-row"
-          style={{ borderBottom: "1px solid #8c8c8c" }}
+          style={{ borderBottom: "solid 1px #8c8c8c" }}
         >
           <div>
             <Tabs type="B" value={activeTab} onChange={handleTabChange}>
@@ -436,7 +436,7 @@ function CqlLibraryLanding() {
           <span tw="flex-grow" />
         </section>
 
-        <div tw="grid grid-cols-4 gap-4 m-4">
+        <div tw="grid grid-cols-4 gap-4" style={{ padding: 16 }}>
           <Search
             searchCriteria={searchCriteria}
             setSearchCriteria={setSearchCriteria}
