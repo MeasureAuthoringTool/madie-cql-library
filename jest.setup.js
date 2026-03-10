@@ -27,6 +27,30 @@ afterAll(() => {
   console.warn.mockRestore();
 });
 
+// Mock localStorage for jsdom/CI environments
+if (
+  typeof window !== "undefined" &&
+  typeof window.localStorage === "undefined"
+) {
+  window.localStorage = {
+    getItem: jest.fn(() => null),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn(),
+  };
+}
+if (
+  typeof global !== "undefined" &&
+  typeof global.localStorage === "undefined"
+) {
+  global.localStorage = {
+    getItem: jest.fn(() => null),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn(),
+  };
+}
+
 function mockImport(importName) {
   if (importName === "@madie/madie-util") {
     return Promise.resolve(util);
