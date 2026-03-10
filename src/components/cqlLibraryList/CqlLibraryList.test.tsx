@@ -246,7 +246,7 @@ describe("CqlLibrary List component", () => {
     );
 
     const checkBoxes = await screen.findAllByRole("checkbox");
-    expect(checkBoxes.length).toBe(2);
+    expect(checkBoxes.length).toBe(3);
     fireEvent.click(checkBoxes[1]);
   });
 
