@@ -1,3 +1,23 @@
+// Global localStorage mock for CI/jsdom environments
+Object.defineProperty(global, "localStorage", {
+  value: {
+    getItem: jest.fn(() => null),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn(),
+  },
+  writable: true,
+});
+Object.defineProperty(window, "localStorage", {
+  value: {
+    getItem: jest.fn(() => null),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn(),
+  },
+  writable: true,
+});
+
 // Polyfill for crypto.getRandomValues for environments like jsdom
 if (typeof global.crypto === "undefined") {
   global.crypto = {};
