@@ -1165,7 +1165,6 @@ export default function CqlLibraryList({
                   ))}
                 </tbody>
               </table>
-              <div className="pagination-container"></div>
             </div>
           </div>
         </div>
