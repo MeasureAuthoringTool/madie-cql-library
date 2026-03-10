@@ -13,6 +13,7 @@ import {
   Button,
   TruncateText,
   MadieSpinner,
+  DSLink,
 } from "@madie/madie-design-system/dist/react";
 import "./LibraryShareDialog.scss";
 import * as _ from "lodash";
@@ -129,7 +130,6 @@ const LibraryShareDialog = ({
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
 
   const showShareDialog = option === "Share With" || option === "Unshare";
-
   const isAdminShareLibraryEnabled =
     useIsRoleOrFeatureEnabled("AdminShareLibrary");
 
@@ -525,28 +525,19 @@ const LibraryShareDialog = ({
   };
 
   const handleExportUserList = () => {
-    // Implement export user list functionality
+    // to be implemented - will trigger export of user list for admin in Share With and Unshare dialogs
   };
-
-  const getAdminUserExportButton = () => {
+  const getAdminUserExportLink = () => {
     if (isAdminShareLibraryEnabled) {
       return (
-        <div style={{ marginTop: "12px" }}>
-          <Button
-            className="export-button"
-            data-testid="export-user-list-button"
-            onClick={handleExportUserList}
-            variant="secondary"
-            area-describedby="export-user-list-button"
-          >
-            <SaveAltIcon
-              style={{ color: "#0073c8", fontSize: "22px", marginRight: "8px" }}
-            />
-            <span style={{ color: "#0073c8", whiteSpace: "nowrap" }}>
-              Export User List (.CSV)
-            </span>
-          </Button>
-        </div>
+        <Button
+          className="export-link"
+          data-testid="export-user-list-link"
+          onClick={handleExportUserList}
+        >
+          <SaveAltIcon sx={{ marginRight: "8px" }} />
+          <span className="export-link-text">Export User List (.CSV)</span>
+        </Button>
       );
     }
   };
@@ -617,14 +608,14 @@ const LibraryShareDialog = ({
               When sharing a Library, all versions and drafts are shared, so
               only the most recent library name appears here.
             </div>
-            {option !== "Unshare" && getAdminUserExportButton()}
+            {option !== "Unshare" && getAdminUserExportLink()}
           </div>
           {option === "Unshare" && (
             <div className="share-unshare-dialog-info-text">
               <div>
                 Deselect the users with whom you want to unshare the library(s).
               </div>
-              {getAdminUserExportButton()}
+              {getAdminUserExportLink()}
             </div>
           )}
           <div className="cql-library-table">

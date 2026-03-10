@@ -31,18 +31,6 @@ jest.mock("@madie/madie-util", () => ({
   useIsRoleOrFeatureEnabled: jest.fn(),
 }));
 
-beforeAll(() => {
-  Object.defineProperty(window, "localStorage", {
-    value: {
-      getItem: jest.fn(() => null),
-      setItem: jest.fn(),
-      removeItem: jest.fn(),
-      clear: jest.fn(),
-    },
-    writable: true,
-  });
-});
-
 const cqlLibrary = [
   {
     id: "622e1f46d1fd3729d861e6cb",

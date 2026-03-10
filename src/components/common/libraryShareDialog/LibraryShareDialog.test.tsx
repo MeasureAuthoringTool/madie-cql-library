@@ -7,6 +7,7 @@ import useCqlLibraryServiceApi, {
 import { CqlLibrary } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 import { useIsRoleOrFeatureEnabled } from "@madie/madie-util";
+
 //@ts-ignore
 const testUser = "test-fake-user@email.com";
 jest.mock("@madie/madie-util", () => ({
@@ -906,6 +907,6 @@ describe("Admin user with AdminShareLibrary feature flag enabled", () => {
       />
     );
 
-    expect(screen.getByTestId("export-user-list-button")).toBeInTheDocument();
+    expect(screen.getByTestId("export-user-list-link")).toBeInTheDocument();
   });
 });
