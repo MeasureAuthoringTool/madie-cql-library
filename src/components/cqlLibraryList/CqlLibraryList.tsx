@@ -577,6 +577,11 @@ export default function CqlLibraryList({
                   sx: {
                     maxWidth: "none",
                     whiteSpace: "nowrap",
+                    zIndex: 99,
+                    backgroundColor: "#333",
+                    "& .MuiTooltip-arrow": {
+                      color: "#333",
+                    },
                   },
                 },
               }}
