@@ -54,7 +54,22 @@ export default function DeleteAction(props: PropTypes) {
   const disabled = !canDelete;
 
   return (
-    <Tooltip data-testid="delete-action-tooltip" title={tooltipMessage} arrow>
+    <Tooltip
+      data-testid="delete-action-tooltip"
+      title={tooltipMessage}
+      arrow
+      slotProps={{
+        tooltip: {
+          sx: {
+            zIndex: 99,
+            backgroundColor: "#333",
+            "& .MuiTooltip-arrow": {
+              color: "#333",
+            },
+          },
+        },
+      }}
+    >
       <span>
         <IconButton
           onClick={() => props.onClick()}
