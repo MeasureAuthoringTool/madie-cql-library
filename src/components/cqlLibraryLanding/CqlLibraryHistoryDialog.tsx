@@ -12,13 +12,8 @@ import "styled-components/macro";
 import "./CqlLibraryHistoryDialog.scss";
 import moment from "moment";
 import Chip from "@mui/material/Chip";
+import { AuditRow } from "@madie/madie-util";
 
-export type AuditRow = {
-  actionType: string;
-  additionalActionMessage: string;
-  performedAt: string;
-  performedBy: string;
-};
 const CqlLibrayHistoryDialog = (props) => {
   const { selectedCqlLibrary, open, onClose, libraryHistoryLogs } = props;
   type MadieLocalStatePage = {

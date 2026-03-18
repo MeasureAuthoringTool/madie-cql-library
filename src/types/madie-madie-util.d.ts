@@ -7,7 +7,9 @@ declare module "@madie/madie-util" {
     Organization,
     Acl,
     UserDetails,
+    OwnershipType,
   } from "@madie/madie-models";
+  import { AxiosResponse } from "axios";
   export interface OktaConfig {
     baseUrl: string;
     issuer: string;
@@ -115,8 +117,16 @@ declare module "@madie/madie-util" {
 
   export function useIsRoleOrFeatureEnabled(feature: string): boolean;
 
+  export type AuditRow = {
+    actionType: string;
+    additionalActionMessage: string;
+    performedAt: string;
+    performedBy: string;
+  };
+
   export class CqlLibraryServiceApi {
     constructor(baseUrl: string, getAccessToken: () => string);
+    unlockLibraries(): Promise<String>;
   }
   export function useCqlLibraryServiceApi(): CqlLibraryServiceApi;
 }
