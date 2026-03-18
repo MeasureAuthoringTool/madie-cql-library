@@ -114,4 +114,9 @@ declare module "@madie/madie-util" {
   export const unmount: LifeCycleFn<void>;
 
   export function useIsRoleOrFeatureEnabled(feature: string): boolean;
+
+  export class CqlLibraryServiceApi {
+    constructor(baseUrl: string, getAccessToken: () => string);
+  }
+  export function useCqlLibraryServiceApi(): CqlLibraryServiceApi;
 }
