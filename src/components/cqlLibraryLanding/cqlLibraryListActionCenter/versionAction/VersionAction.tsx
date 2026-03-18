@@ -47,7 +47,22 @@ export default function VersionAction(props: PropTypes) {
   }, [libraries, validateVersionActionState]);
 
   return (
-    <Tooltip data-testid="version-action-tooltip" title={tooltipMessage} arrow>
+    <Tooltip
+      data-testid="version-action-tooltip"
+      title={tooltipMessage}
+      arrow
+      slotProps={{
+        tooltip: {
+          sx: {
+            zIndex: 99,
+            backgroundColor: "#333",
+            "& .MuiTooltip-arrow": {
+              color: "#333",
+            },
+          },
+        },
+      }}
+    >
       <span>
         <IconButton
           onClick={onClick}

@@ -108,6 +108,17 @@ export default function ShareAction(props: PropTypes) {
       title={tooltipMessage}
       onMouseOver={validateShareActionState}
       arrow
+      slotProps={{
+        tooltip: {
+          sx: {
+            zIndex: 99,
+            backgroundColor: "#333",
+            "& .MuiTooltip-arrow": {
+              color: "#333",
+            },
+          },
+        },
+      }}
     >
       <span>
         <IconButton

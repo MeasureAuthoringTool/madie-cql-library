@@ -34,7 +34,7 @@ import {
   MadieDeleteDialog,
   Pagination,
   TruncateText,
-  MadieTooltip,
+  MadieTooltipIcon,
 } from "@madie/madie-design-system/dist/react";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
@@ -577,6 +577,11 @@ export default function CqlLibraryList({
                   sx: {
                     maxWidth: "none",
                     whiteSpace: "nowrap",
+                    zIndex: 99,
+                    backgroundColor: "#333",
+                    "& .MuiTooltip-arrow": {
+                      color: "#333",
+                    },
                   },
                 },
               }}
@@ -592,21 +597,59 @@ export default function CqlLibraryList({
   ];
 
   const getHeader = () => {
-    if (activeTab === 0) {
+    if (activeTab === 0 || activeTab === 1) {
       return (
-        <IndeterminateCheckbox
-          checked={table.getIsAllRowsSelected()}
-          indeterminate={table.getIsSomePageRowsSelected()}
-          onChange={table.getToggleAllPageRowsSelectedHandler()}
-        />
+        <Tooltip
+          title="Select"
+          id={`library-list-select-tooltip`}
+          placement="bottom"
+          arrow
+          slotProps={{
+            // base style
+            tooltip: {
+              sx: {
+                zIndex: 99,
+                backgroundColor: "#333",
+                // pseudo element class target
+                "& .MuiTooltip-arrow": {
+                  color: "#333",
+                },
+              },
+            },
+          }}
+        >
+          <div style={{ width: 16 }}>
+            <IndeterminateCheckbox
+              checked={table.getIsAllRowsSelected()}
+              indeterminate={table.getIsSomePageRowsSelected()}
+              onChange={table.getToggleAllPageRowsSelectedHandler()}
+            />
+          </div>
+        </Tooltip>
       );
     } else {
       return (
-        <MadieTooltip
-          tooltipText="Select"
+        <Tooltip
+          title="Select"
           id={`library-list-select-tooltip`}
-          tabIndex={-1}
-        />
+          placement="bottom"
+          arrow
+          slotProps={{
+            tooltip: {
+              sx: {
+                zIndex: 99,
+                backgroundColor: "#333",
+                "& .MuiTooltip-arrow": {
+                  color: "#333",
+                },
+              },
+            },
+          }}
+        >
+          <div style={{ width: 14 }}>
+            <MadieTooltipIcon />
+          </div>
+        </Tooltip>
       );
     }
   };
@@ -1025,12 +1068,12 @@ export default function CqlLibraryList({
           </div>
         )}
       </Popover>
-      <div tw="flex flex-col">
-        <div tw="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div tw="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+      <div tw="flex flex-col" className="calc-vh">
+        <div tw="sm:-mx-6 lg:-mx-8">
+          <div tw="align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <div>
               <table tw="min-w-full" className="ll-table" id="libraryListTable">
-                <thead tw="bg-slate">
+                <thead tw="bg-slate" className="sticky-table">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map((header) => {
@@ -1079,27 +1122,29 @@ export default function CqlLibraryList({
                               header.getContext()
                             )}
 
-                            <span className="arrowDisplay">
-                              {header.column.getCanSort() ? (
-                                header.column.getIsSorted() === "asc" ? (
-                                  <KeyboardArrowUpIcon />
-                                ) : header.column.getIsSorted() === "desc" ? (
-                                  <KeyboardArrowDownIcon />
-                                ) : isHovered ? (
-                                  <UnfoldMoreIcon />
+                            {header.id !== "select" && (
+                              <span className="arrowDisplay">
+                                {header.column.getCanSort() ? (
+                                  header.column.getIsSorted() === "asc" ? (
+                                    <KeyboardArrowUpIcon />
+                                  ) : header.column.getIsSorted() === "desc" ? (
+                                    <KeyboardArrowDownIcon />
+                                  ) : isHovered ? (
+                                    <UnfoldMoreIcon />
+                                  ) : (
+                                    // Always render a transparent icon to reserve space
+                                    <span style={{ visibility: "hidden" }}>
+                                      <UnfoldMoreIcon />
+                                    </span>
+                                  )
                                 ) : (
-                                  // Always render a transparent icon to reserve space
+                                  // Non-sortable columns: reserve space
                                   <span style={{ visibility: "hidden" }}>
                                     <UnfoldMoreIcon />
                                   </span>
-                                )
-                              ) : (
-                                // Non-sortable columns: reserve space
-                                <span style={{ visibility: "hidden" }}>
-                                  <UnfoldMoreIcon />
-                                </span>
-                              )}
-                            </span>
+                                )}
+                              </span>
+                            )}
                           </th>
                         );
                       })}
@@ -1165,31 +1210,29 @@ export default function CqlLibraryList({
                   ))}
                 </tbody>
               </table>
-              <div className="pagination-container">
-                <Pagination
-                  totalItems={totalItems}
-                  visibleItems={visibleItems}
-                  limitOptions={[
-                    10,
-                    25,
-                    50,
-                    ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
-                  ]}
-                  offset={offset}
-                  handlePageChange={handlePageChange}
-                  handleLimitChange={handleLimitChange}
-                  page={curPage}
-                  limit={curLimit}
-                  count={totalPages}
-                  shape="rounded"
-                  hideNextButton={!canGoNext}
-                  hidePrevButton={!canGoPrev}
-                />
-              </div>
             </div>
           </div>
         </div>
       </div>
+      <Pagination
+        totalItems={totalItems}
+        visibleItems={visibleItems}
+        limitOptions={[
+          10,
+          25,
+          50,
+          ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
+        ]}
+        offset={offset}
+        handlePageChange={handlePageChange}
+        handleLimitChange={handleLimitChange}
+        page={curPage}
+        limit={curLimit}
+        count={totalPages}
+        shape="rounded"
+        hideNextButton={!canGoNext}
+        hidePrevButton={!canGoPrev}
+      />
     </div>
   );
 }
