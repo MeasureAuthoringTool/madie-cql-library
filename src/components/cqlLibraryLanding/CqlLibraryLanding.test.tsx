@@ -1,12 +1,15 @@
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 import * as React from "react";
 import { act, render, screen, waitFor, within } from "@testing-library/react";
-import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { Model, OwnershipType } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 // @ts-ignore
-import { useFeatureFlags, useIsRoleOrFeatureEnabled } from "@madie/madie-util";
+import {
+  useFeatureFlags,
+  useIsRoleOrFeatureEnabled,
+  CqlLibraryServiceApi,
+} from "@madie/madie-util";
 import {
   useNavigate,
   createMemoryRouter,
@@ -17,27 +20,6 @@ import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 
 const abortController = new AbortController();
 
-jest.mock("@madie/madie-util", () => ({
-  useDocumentTitle: jest.fn(),
-  useOktaTokens: () => ({
-    getAccessToken: () => "test.jwt",
-    getUserName: () => "test user",
-  }),
-  checkUserCanEdit: jest.fn(() => {
-    return true;
-  }),
-  checkUserCanDelete: jest.fn(() => {
-    return true;
-  }),
-  useOrganizationApi: jest.fn(() => ({
-    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
-  })),
-  useFeatureFlags: jest.fn().mockReturnValue({
-    qdm: false,
-  }),
-  useIsRoleOrFeatureEnabled: jest.fn(),
-  useUserRoles: jest.fn(() => ({})),
-}));
 const organizations = [
   {
     id: "1234",
@@ -66,9 +48,6 @@ const serviceConfig: ServiceConfig = {
   },
 };
 
-jest.mock("../../hooks/useOktaTokens", () => () => ({
-  getAccessToken: () => "test.jwt",
-}));
 const cqlLibrary = [
   {
     id: "622e1f46d1fd3729d861e6cb",
@@ -140,9 +119,29 @@ jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: jest.fn(),
 }));
-jest.mock("../../api/useCqlLibraryServiceApi", () =>
-  jest.fn(() => mockCqlLibraryServiceApi)
-);
+
+jest.mock("@madie/madie-util", () => ({
+  useDocumentTitle: jest.fn(),
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => "test user",
+  }),
+  checkUserCanEdit: jest.fn(() => {
+    return true;
+  }),
+  checkUserCanDelete: jest.fn(() => {
+    return true;
+  }),
+  useOrganizationApi: jest.fn(() => ({
+    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
+  })),
+  useFeatureFlags: jest.fn().mockReturnValue({
+    qdm: false,
+  }),
+  useIsRoleOrFeatureEnabled: jest.fn(),
+  useUserRoles: jest.fn(() => ({})),
+  useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
+}));
 jest.setTimeout(10000);
 describe("Cql Library Page", () => {
   const checkDataRows = async (number: number) => {

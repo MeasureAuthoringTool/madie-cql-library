@@ -8,7 +8,6 @@ import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaVali
 import queryString from "query-string";
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
-import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import {
   cqlLibraryStore,
   useDocumentTitle,
@@ -17,6 +16,7 @@ import {
   checkUserCanEdit,
   useFeatureFlags,
   useUserServiceApi,
+  useCqlLibraryServiceApi,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
