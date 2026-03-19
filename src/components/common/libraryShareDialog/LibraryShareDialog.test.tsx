@@ -907,6 +907,6 @@ describe("Admin user with AdminShareLibrary feature flag enabled", () => {
       />
     );
 
-    expect(screen.getByTestId("export-user-list-link")).toBeInTheDocument();
+    expect(screen.getByTestId("export-user-list-button")).toBeInTheDocument();
   });
 });

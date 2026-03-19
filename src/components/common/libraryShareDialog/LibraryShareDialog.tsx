@@ -531,12 +531,12 @@ const LibraryShareDialog = ({
     if (isAdminShareLibraryEnabled) {
       return (
         <Button
-          className="export-link"
-          data-testid="export-user-list-link"
+          className="export-button"
+          data-testid="export-user-list-button"
           onClick={handleExportUserList}
         >
           <SaveAltIcon sx={{ marginRight: "8px" }} />
-          <span className="export-link-text">Export User List (.CSV)</span>
+          <span className="export-button-text">Export User List (.CSV)</span>
         </Button>
       );
     }
@@ -604,20 +604,20 @@ const LibraryShareDialog = ({
             </div>
           )}
           <div className="share-unshare-dialog-info-text">
-            <div>
-              When sharing a Library, all versions and drafts are shared, so
-              only the most recent library name appears here.
-            </div>
-            {option !== "Unshare" && getAdminUserExportLink()}
-          </div>
-          {option === "Unshare" && (
-            <div className="share-unshare-dialog-info-text">
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <div>
-                Deselect the users with whom you want to unshare the library(s).
+                When sharing a Library, all versions and drafts are shared, so
+                only the most recent library name appears here.
               </div>
-              {getAdminUserExportLink()}
+              {option === "Unshare" && (
+                <div>
+                  Deselect the users with whom you want to unshare the
+                  library(s).
+                </div>
+              )}
             </div>
-          )}
+            {getAdminUserExportLink()}
+          </div>
           <div className="cql-library-table">
             <div className="table" style={{ overflow: "auto" }}>
               <table
