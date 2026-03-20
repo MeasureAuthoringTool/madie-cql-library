@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
-import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import {
   MadieDialog,
@@ -14,7 +13,11 @@ import {
 import { Box } from "@mui/system";
 import { MenuItem } from "@mui/material";
 import { useFormik } from "formik";
-import { useOrganizationApi, useFeatureFlags } from "@madie/madie-util";
+import {
+  useOrganizationApi,
+  useFeatureFlags,
+  useCqlLibraryServiceApi,
+} from "@madie/madie-util";
 import { v4 as uuidv4 } from "uuid";
 
 interface TestProps {

@@ -30,10 +30,9 @@ import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import tw from "twin.macro";
 import "styled-components/macro";
-import useCqlLibraryServiceApi from "../../../api/useCqlLibraryServiceApi";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useOktaTokens } from "@madie/madie-util";
+import { useOktaTokens, useCqlLibraryServiceApi } from "@madie/madie-util";
 
 interface ShareDialogProps {
   libraries: CqlLibrary[];

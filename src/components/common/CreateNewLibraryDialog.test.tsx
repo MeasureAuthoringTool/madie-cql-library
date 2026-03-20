@@ -13,9 +13,8 @@ import { act, Simulate } from "react-dom/test-utils";
 import userEvent from "@testing-library/user-event";
 import CreateNewLibraryDialog from "./CreateNewLibraryDialog";
 import { Model } from "@madie/madie-models";
-import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
-import { useFeatureFlags } from "@madie/madie-util";
+import { useFeatureFlags, CqlLibraryServiceApi } from "@madie/madie-util";
 
 const { getByTestId, findByTestId } = screen;
 const cqlLibrary = [
@@ -29,19 +28,7 @@ const cqlLibrary = [
     lastModifiedBy: null,
   },
 ];
-jest.mock("@madie/madie-util", () => ({
-  useOktaTokens: () => ({
-    getAccessToken: () => "test.jwt",
-  }),
-  useOrganizationApi: jest.fn(() => ({
-    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
-  })),
-  useFeatureFlags: jest.fn(() => {
-    return {
-      qiCore6: false,
-    };
-  }),
-}));
+
 const organizations = [
   {
     id: "1234",
@@ -68,18 +55,26 @@ const serviceConfig: ServiceConfig = {
     baseUrl: "terminology.com",
   },
 };
-jest.mock("../../hooks/useOktaTokens", () => () => ({
-  getAccessToken: () => "test.jwt",
-}));
 
 const mockCqlLibraryServiceApi = {
   fetchCqlLibraries: jest.fn().mockResolvedValue(cqlLibrary),
   createCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary),
 } as unknown as CqlLibraryServiceApi;
 
-jest.mock("../../api/useCqlLibraryServiceApi", () =>
-  jest.fn(() => mockCqlLibraryServiceApi)
-);
+jest.mock("@madie/madie-util", () => ({
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+  }),
+  useOrganizationApi: jest.fn(() => ({
+    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
+  })),
+  useFeatureFlags: jest.fn(() => {
+    return {
+      qiCore6: false,
+    };
+  }),
+  useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
+}));
 
 const formikInfo = {
   cqlLibraryName: "",

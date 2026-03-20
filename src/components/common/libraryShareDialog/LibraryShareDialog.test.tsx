@@ -1,11 +1,12 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import * as React from "react";
 import LibraryShareDialog, { convertDate } from "./LibraryShareDialog";
-import useCqlLibraryServiceApi, {
-  CqlLibraryServiceApi,
-} from "../../../api/useCqlLibraryServiceApi";
 import { CqlLibrary } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
+import {
+  useCqlLibraryServiceApi,
+  CqlLibraryServiceApi,
+} from "@madie/madie-util";
 
 const testUser = "test user";
 
@@ -49,11 +50,6 @@ const today = new Date();
 const yesterday = new Date();
 yesterday.setDate(new Date().getDate() - 1);
 
-jest.mock("../../../api/useCqlLibraryServiceApi");
-
-const useLibraryServiceMock =
-  useCqlLibraryServiceApi as jest.Mock<CqlLibraryServiceApi>;
-
 const mockGetSharedCqlLibraries = jest.fn().mockResolvedValue({
   [mockCqlLibrary1.id]: mockCqlLibrary1?.librarySet?.acls
     ? mockCqlLibrary1?.librarySet?.acls.map((acl) => ({
@@ -68,6 +64,13 @@ const mockGetSharedCqlLibraries = jest.fn().mockResolvedValue({
       }))
     : [],
 });
+jest.mock("@madie/madie-util", () => ({
+  useCqlLibraryServiceApi: jest.fn(),
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => "test-fake-user@email.com",
+  }),
+}));
 
 const mockGetRecentLibrariesByLibrarySetId = jest.fn((librarySetIds) => {
   const libraries = [];
@@ -102,9 +105,9 @@ describe("Create Share Dialog component", () => {
   beforeEach(() => {
     jest.resetModules();
 
-    useLibraryServiceMock.mockImplementation(() => {
-      return mockLibraryServiceApi;
-    });
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
   });
 
   it("should render share dialog", async () => {
@@ -128,10 +131,6 @@ describe("Create Share Dialog component", () => {
       getSharedLibraries: jest.fn().mockResolvedValue([]),
       getRecentLibrariesByLibrarySetId: jest.fn().mockResolvedValue([]),
     } as unknown as CqlLibraryServiceApi;
-
-    useLibraryServiceMock.mockImplementation(() => {
-      return mockLibraryServiceApi;
-    });
 
     render(
       <LibraryShareDialog
@@ -159,9 +158,9 @@ describe("Create Share Dialog component", () => {
         .mockResolvedValue([mockCqlLibrary1, mockCqlLibrary2]),
     } as unknown as CqlLibraryServiceApi;
 
-    useLibraryServiceMock.mockImplementation(() => {
-      return mockLibraryServiceApi;
-    });
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
 
     render(
       <LibraryShareDialog
@@ -459,9 +458,9 @@ describe("Create Share Dialog component", () => {
       shareLibraries: jest.fn().mockRejectedValue(new Error(errorMessage)),
     } as unknown as CqlLibraryServiceApi;
 
-    useLibraryServiceMock.mockImplementation(() => {
-      return mockLibraryServiceApi;
-    });
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
 
     const mockOnClose = jest.fn();
 
@@ -699,9 +698,9 @@ describe("Create Share Dialog component", () => {
       unshareLibraries: jest.fn().mockRejectedValue(new Error(errorMessage)),
     } as unknown as CqlLibraryServiceApi;
 
-    useLibraryServiceMock.mockImplementation(() => {
-      return mockLibraryServiceApi;
-    });
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
 
     render(
       <LibraryShareDialog
@@ -822,7 +821,10 @@ describe("Create Share Dialog component", () => {
       ...mockLibraryServiceApi,
       unshareLibraries: jest.fn().mockRejectedValue(new Error(errorMessage)),
     };
-    useLibraryServiceMock.mockReturnValue(mockLibraryServiceApiWithError);
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApiWithError
+    );
 
     const mockOnSave = jest.fn();
 

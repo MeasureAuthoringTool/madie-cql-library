@@ -3,7 +3,7 @@ import { Backdrop } from "@mui/material";
 import { CqlLibrary } from "@madie/madie-models";
 import { MadieSpinner } from "@madie/madie-design-system/dist/react";
 import ReactDiffViewer from "react-diff-viewer-continued";
-import useCqlLibraryServiceApi from "../../../api/useCqlLibraryServiceApi";
+import { useCqlLibraryServiceApi } from "@madie/madie-util";
 
 interface CqlDiffViewerProps {
   oldLibrary: CqlLibrary;

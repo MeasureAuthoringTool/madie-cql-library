@@ -7,7 +7,9 @@ declare module "@madie/madie-util" {
     Organization,
     Acl,
     UserDetails,
+    OwnershipType,
   } from "@madie/madie-models";
+  import { AxiosResponse } from "axios";
   export interface OktaConfig {
     baseUrl: string;
     issuer: string;
@@ -114,4 +116,57 @@ declare module "@madie/madie-util" {
   export const unmount: LifeCycleFn<void>;
 
   export function useIsRoleOrFeatureEnabled(feature: string): boolean;
+
+  export type AuditRow = {
+    actionType: string;
+    additionalActionMessage: string;
+    performedAt: string;
+    performedBy: string;
+  };
+
+  export class CqlLibraryServiceApi {
+    constructor(baseUrl: string, getAccessToken: () => string);
+    fetchCqlLibraries(
+      ownershipType: OwnershipType,
+      limit: string | number,
+      page: number,
+      searchCriteria: any,
+      sortInfo: any,
+      signal: any
+    ): Promise<any>;
+    fetchCqlLibrary(id: string): Promise<CqlLibrary>;
+    createCqlLibrary(cqlLibrary: CqlLibrary): Promise<void>;
+    updateCqlLibrary(cqlLibrary: CqlLibrary): Promise<any>;
+    createVersion(
+      id: string,
+      isMajor: boolean
+    ): Promise<AxiosResponse<CqlLibrary>>;
+    createDraft(
+      cqlLibraryId: string,
+      cqlLibraryName: string,
+      model: string
+    ): Promise<AxiosResponse<CqlLibrary>>;
+    deleteDraft(id: string): Promise<AxiosResponse<CqlLibrary>>;
+    fetchAllOwners(librarySetIds: string[]): Promise<any>;
+    getCqlDiff(oldLibraryId: string, newLibraryId: string): Promise<any>;
+    shareLibraries(libraries: Map<string, string[]>): Promise<any>;
+    getSharedLibraries(libraryIds: string[]): Promise<any>;
+    getRecentLibrariesByLibrarySetId(librarySetIds: string[]): Promise<any>;
+    unshareLibraries(libraryUserIdMap: Map<string, string[]>): Promise<any>;
+    getLibrariesByLibrarySetId(
+      librarySetId: string,
+      sortByLatestVersion?: boolean,
+      librarySearchCriteria?: any
+    ): Promise<any>;
+    getLibraryHistory(selectedLibrary: CqlLibrary): Promise<AuditRow[]>;
+    lockLibrary(libraryId: string): Promise<any>;
+    unlockLibrary(libraryId: string): Promise<any>;
+    transferLibraries(
+      libraryIds: Array<string>,
+      harpId: string,
+      retainShareAccess: boolean
+    ): Promise<any>;
+    unlockLibraries(): Promise<String>;
+  }
+  export function useCqlLibraryServiceApi(): CqlLibraryServiceApi;
 }
