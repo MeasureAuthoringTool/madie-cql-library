@@ -1,19 +1,18 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import DraftAction, {
   DRAFT_LIBRARY,
   NOTHING_SELECTED,
   CANNOT_DRAFT_LIBRARY_WITH_600,
 } from "./DraftAction";
 import { CqlLibrary, Model } from "@madie/madie-models";
-import { CqlLibraryServiceApi } from "../../../../api/useCqlLibraryServiceApi";
 
 const mockUser = "test user";
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
     getUserName: () => mockUser,
   }),
+  useCqlLibraryServiceApi: () => mockCqlLibraryServiceApi,
 }));
 
 const libraryVersion = {
@@ -36,10 +35,17 @@ const libraryDraft = {
 
 const mockCqlLibraryServiceApi = {
   getLibrariesByLibrarySetId: jest.fn().mockResolvedValue([]),
-} as unknown as CqlLibraryServiceApi;
-jest.mock("../../../../api/useCqlLibraryServiceApi", () =>
-  jest.fn(() => mockCqlLibraryServiceApi)
-);
+  fetchMeasureDraftStatuses: jest.fn().mockResolvedValue([]),
+};
+
+const qiCoreMeasure = {
+  id: "test-id",
+  cqlLibraryName: "QI-Core Test",
+  createdAt: "2024-10-22T20:40:53.212Z",
+  model: "QI-Core v4.1.1",
+  version: "0.0.000",
+  draft: false,
+} as CqlLibrary;
 
 describe("DraftAction", () => {
   beforeEach(() => {
@@ -120,11 +126,9 @@ describe("DraftAction", () => {
 
   //change and implement later
   it.skip("Should show an error toast if API call fails", async () => {
-    mockedUselibrarieserviceApi.mockReturnValue({
-      fetchMeasureDraftStatuses: jest
-        .fn()
-        .mockRejectedValue(new Error("Network Error")),
-    });
+    mockCqlLibraryServiceApi.fetchMeasureDraftStatuses.mockResolvedValueOnce(
+      jest.fn().mockRejectedValue(new Error("Network Error"))
+    );
 
     render(
       <DraftAction

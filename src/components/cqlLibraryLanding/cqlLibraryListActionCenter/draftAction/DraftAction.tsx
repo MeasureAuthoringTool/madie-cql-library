@@ -3,8 +3,8 @@ import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
-import useCqlLibraryServiceApi from "../../../../api/useCqlLibraryServiceApi";
 import { Toast } from "@madie/madie-design-system/dist/react";
+import { useCqlLibraryServiceApi } from "@madie/madie-util";
 
 import { grey, blue } from "@mui/material/colors";
 import _ from "lodash";

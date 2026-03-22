@@ -1,7 +1,8 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import CqlLibrayHistoryDialog, { AuditRow } from "./CqlLibraryHistoryDialog";
+import CqlLibrayHistoryDialog from "./CqlLibraryHistoryDialog";
+import { AuditRow } from "@madie/madie-util";
 
 jest.mock("@madie/madie-design-system/dist/react", () => ({
   MadieDialog: ({ children, ...props }) => (

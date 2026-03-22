@@ -10,9 +10,9 @@ const mockLibraryServiceApi = {
   getCqlDiff: jest.fn(),
 };
 
-jest.mock("../../../api/useCqlLibraryServiceApi", () =>
-  jest.fn(() => mockLibraryServiceApi)
-);
+jest.mock("@madie/madie-util", () => ({
+  useCqlLibraryServiceApi: jest.fn(() => mockLibraryServiceApi),
+}));
 
 const mockOnClose = jest.fn();
 

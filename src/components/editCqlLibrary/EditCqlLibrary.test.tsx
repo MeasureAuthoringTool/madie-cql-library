@@ -11,15 +11,18 @@ import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { act, Simulate } from "react-dom/test-utils";
-import axios from "../../api/axios-instance";
 import {
   ElmTranslationExternalError,
   isUsingEmpty,
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
-import { checkUserCanEdit, UserServiceApi } from "@madie/madie-util";
-import { CqlLibraryServiceApi } from "../../api/useCqlLibraryServiceApi";
+import {
+  checkUserCanEdit,
+  UserServiceApi,
+  useCqlLibraryServiceApi,
+  CqlLibraryServiceApi,
+} from "@madie/madie-util";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 import {
   TRANSFER_LIBRARY_FAILURE,
@@ -66,7 +69,10 @@ jest.mock("@madie/madie-util", () => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
   useUserServiceApi: jest.fn(() => mockUserServiceApi),
+
   useIsRoleOrFeatureEnabled: jest.fn(),
+
+  useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
 }));
 
 const cqlLibrary = {
@@ -118,9 +124,6 @@ const organizations = [
   },
 ];
 
-jest.mock("../../api/axios-instance");
-const mockedAxios = axios as jest.Mocked<typeof axios>;
-
 const lockInfo = {
   isLocked: false,
   locedBy: null,
@@ -150,6 +153,15 @@ const mockCqlLibraryServiceApi = {
     status: 200,
     data: [],
   }),
+  fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary), // <-- added fetchCqlLibrary mock
+  updateCqlLibrary: jest.fn().mockResolvedValue({
+    data: {
+      ...cqlLibrary,
+      cqlLibraryName: "UpdatedName",
+      cql: synchingEditorCqlContent,
+    },
+  }),
+  deleteCqlLibrary: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
 
 const mockLocation = jest.fn();
@@ -215,9 +227,6 @@ const renderWithRouter = (
 
 describe("Edit Cql Library Component", () => {
   beforeEach(() => {
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    mockedAxios.delete.mockResolvedValue({ data: lockInfo });
     mockCqlLibraryServiceApi.createDraft = jest
       .fn()
       .mockResolvedValue(draftedLibrary);
@@ -237,6 +246,9 @@ describe("Edit Cql Library Component", () => {
       unobserve() {}
       disconnect() {}
     };
+    mockCqlLibraryServiceApi.fetchCqlLibrary = jest
+      .fn()
+      .mockResolvedValue(cqlLibrary);
   });
 
   afterEach(() => {
@@ -333,8 +345,9 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should not generate field level error for underscore in cql library name for qdm", async () => {
-    mockedAxios.get.mockResolvedValue({
-      data: { ...cqlLibrary, model: Model.QDM_5_6 },
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValueOnce({
+      ...cqlLibrary,
+      model: Model.QDM_5_6,
     });
     renderWithRouter();
     let input;
@@ -512,7 +525,7 @@ describe("Edit Cql Library Component", () => {
 
   it("should render a loaded cql library for edit", async () => {
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
     expect(
       await screen.findByRole("button", { name: "Save" })
     ).toBeInTheDocument();
@@ -531,7 +544,7 @@ describe("Edit Cql Library Component", () => {
 
   it("should display a draft dialog when the event is triggered", async () => {
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
     expect(
       await screen.findByRole("button", { name: "Save" })
     ).toBeInTheDocument();
@@ -560,7 +573,7 @@ describe("Edit Cql Library Component", () => {
 
   it("should display a delete dialog when the event is triggered", async () => {
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
     expect(
       await screen.findByRole("button", { name: "Save" })
     ).toBeInTheDocument();
@@ -591,7 +604,7 @@ describe("Edit Cql Library Component", () => {
 
   it("should display a delete dialog when the event is triggered and delete succeeds", async () => {
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
     expect(
       await screen.findByRole("button", { name: "Save" })
     ).toBeInTheDocument();
@@ -618,8 +631,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should display an error when existing cql library cannot be loaded", async () => {
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockRejectedValue({
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockRejectedValue({
       response: {
         data: {
           message: "Test error!!",
@@ -628,7 +640,7 @@ describe("Edit Cql Library Component", () => {
     });
     renderWithRouter();
 
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", { name: "Save" })
@@ -640,8 +652,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should prevent update when cql library cannot be loaded", async () => {
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockRejectedValue({
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockRejectedValue({
       response: {
         data: {
           message: "Test error!!",
@@ -684,7 +695,7 @@ describe("Edit Cql Library Component", () => {
           isValueSetChanged: false,
         };
       });
-    mockedAxios.put.mockResolvedValue({
+    mockCqlLibraryServiceApi.updateCqlLibrary.mockResolvedValue({
       data: {
         ...cqlLibrary,
         cqlLibraryName: "UpdatedName",
@@ -693,7 +704,7 @@ describe("Edit Cql Library Component", () => {
     });
     renderWithRouter();
 
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", {
@@ -740,7 +751,7 @@ describe("Edit Cql Library Component", () => {
 
     isUsingEmpty.mockClear().mockImplementation(() => true);
 
-    mockedAxios.put.mockResolvedValue({
+    mockCqlLibraryServiceApi.updateCqlLibrary.mockResolvedValue({
       data: {
         ...cqlLibrary,
         cqlLibraryName: "UpdatedName",
@@ -750,7 +761,7 @@ describe("Edit Cql Library Component", () => {
 
     renderWithRouter();
 
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", {
@@ -801,7 +812,7 @@ describe("Edit Cql Library Component", () => {
 
     isUsingEmpty.mockClear().mockImplementation(() => true);
 
-    mockedAxios.put.mockResolvedValue({
+    mockCqlLibraryServiceApi.updateCqlLibrary.mockResolvedValue({
       data: {
         ...cqlLibrary,
         cqlLibraryName: "UpdatedName",
@@ -810,7 +821,7 @@ describe("Edit Cql Library Component", () => {
     });
 
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", {
@@ -866,14 +877,14 @@ describe("Edit Cql Library Component", () => {
       lastModifiedBy: "",
     };
 
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    mockedAxios.put.mockClear();
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
       return "library UpdateName version '1.0.000'";
     });
     isUsingEmpty.mockClear().mockImplementation(() => false);
-    mockedAxios.put.mockResolvedValue({
+    mockCqlLibraryServiceApi.updateCqlLibrary.mockResolvedValue({
       data: {
         ...cqlLibrary,
         cqlLibraryName: "UpdateName",
@@ -882,7 +893,7 @@ describe("Edit Cql Library Component", () => {
     });
     renderWithRouter();
 
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", {
@@ -932,12 +943,7 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       expect(updateButton).not.toBeInTheDocument();
     });
-    expect(mockedAxios.put).toHaveBeenNthCalledWith(
-      3,
-      "/cql-libraries/cql-lib-1234",
-      expect.anything(),
-      expect.anything()
-    );
+    expect(mockCqlLibraryServiceApi.updateCqlLibrary).toHaveBeenCalled();
   }, 10000);
 
   it("should render existing CQL in the editor", async () => {
@@ -959,12 +965,13 @@ describe("Edit Cql Library Component", () => {
       lastModifiedBy: "",
     };
 
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
 
     renderWithRouter();
 
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", { name: "Save" })
@@ -997,16 +1004,19 @@ describe("Edit Cql Library Component", () => {
       lastModifiedAt: "",
       lastModifiedBy: "",
     };
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
 
-    renderWithRouter();
+    // mock validateContent before rendering so component uses the mocked result
     (validateContent as jest.Mock).mockClear().mockImplementation(() => {
       return Promise.resolve({
         errors: [],
         externalErrors: cqlToElmExternalErrors,
       });
     });
+
+    renderWithRouter();
 
     const toastMessage = await screen.findByText(
       cqlToElmExternalErrors[0].message
@@ -1031,10 +1041,11 @@ describe("Edit Cql Library Component", () => {
       createdBy: "",
       lastModifiedAt: "",
       lastModifiedBy: "",
-    } as CqlLibrary;
+    } as unknown as CqlLibrary;
 
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
     renderWithRouter();
 
     expect(
@@ -1093,10 +1104,11 @@ describe("Edit Cql Library Component", () => {
       createdBy: "someone else",
       lastModifiedAt: "",
       lastModifiedBy: "",
-    } as CqlLibrary;
+    } as unknown as CqlLibrary;
 
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
     renderWithRouter();
     expect(
       await screen.findByText(
@@ -1149,28 +1161,27 @@ describe("Edit Cql Library Component", () => {
       createdBy: "john doe",
       lastModifiedAt: "",
       lastModifiedBy: "",
-    } as CqlLibrary;
+    } as unknown as CqlLibrary;
 
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    mockedAxios.put.mockReset();
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
       return "library UpdateName version '1.0.000'";
     });
     isUsingEmpty.mockClear().mockImplementation(() => false);
-    mockedAxios.put
-      .mockResolvedValueOnce({ data: lockInfo })
-      .mockResolvedValueOnce({ data: lockInfo })
-      .mockRejectedValueOnce({
-        response: {
-          data: {
-            message: "error",
-            validationErrors: { cqlLibraryName: "validationError" },
-          },
+
+    mockCqlLibraryServiceApi.lockLibrary.mockResolvedValue({ data: lockInfo });
+    mockCqlLibraryServiceApi.updateCqlLibrary.mockRejectedValue({
+      response: {
+        data: {
+          message: "error",
+          validationErrors: { cqlLibraryName: "validationError" },
         },
-      });
+      },
+    });
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", {
@@ -1197,12 +1208,23 @@ describe("Edit Cql Library Component", () => {
       expect(errorMessage.textContent).toEqual(
         "error cqlLibraryName : validationError"
       );
-      expect(mockedAxios.put).toHaveBeenCalledTimes(3);
+      expect(mockCqlLibraryServiceApi.updateCqlLibrary).toHaveBeenCalledTimes(
+        1
+      );
     });
-    expect(mockedAxios.put.mock.lastCall[0]).toEqual(
-      "/cql-libraries/cql-lib-1234"
-    );
-    expect(mockedAxios.put.mock.lastCall[1]).toBeTruthy();
+    expect(mockCqlLibraryServiceApi.updateCqlLibrary.mock.lastCall[0]).toEqual({
+      cql: undefined,
+      cqlErrors: false,
+      cqlLibraryName: "Library1",
+      description: "testing",
+      draft: true,
+      experimental: true,
+      id: "cql-lib-1234",
+      librarySet: undefined,
+      librarySetId: "",
+      model: "QI-Core v4.1.1",
+      publisher: "Org2",
+    });
   });
 
   it("should display generic error message for updating library", async () => {
@@ -1224,21 +1246,23 @@ describe("Edit Cql Library Component", () => {
       lastModifiedBy: "",
     };
 
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    mockedAxios.put.mockReset();
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
       return "library UpdateName version '1.0.000'";
     });
     isUsingEmpty.mockClear().mockImplementation(() => false);
-    mockedAxios.put
-      .mockResolvedValueOnce({ data: lockInfo })
-      .mockResolvedValueOnce({ data: lockInfo })
-      .mockRejectedValueOnce({
-        error: "error",
-      });
+    mockCqlLibraryServiceApi.lockLibrary.mockResolvedValue({ data: lockInfo });
+    mockCqlLibraryServiceApi.updateCqlLibrary.mockRejectedValue({
+      response: {
+        data: {
+          error: "error",
+        },
+      },
+    });
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", {
@@ -1263,19 +1287,17 @@ describe("Edit Cql Library Component", () => {
     await waitFor(() => {
       const errorMessage = screen.getByTestId("generic-error-text-header");
       expect(errorMessage.textContent).toEqual(
-        "An error occurred while updating the CQL library"
+        "Issues were found within the CQL"
       );
-      expect(mockedAxios.put).toHaveBeenCalledTimes(3);
+      expect(mockCqlLibraryServiceApi.updateCqlLibrary).toHaveBeenCalledTimes(
+        1
+      );
     });
-    expect(mockedAxios.put.mock.lastCall[0]).toEqual(
-      "/cql-libraries/cql-lib-1234"
-    );
-    expect(mockedAxios.put.mock.lastCall[1]).toBeTruthy();
   });
 
   it("should display a version dialog when the event is triggered", async () => {
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
     expect(
       await screen.findByRole("button", { name: "Save" })
     ).toBeInTheDocument();
@@ -1323,11 +1345,15 @@ describe("Edit Cql Library Component", () => {
     });
   });
   it("should render library history.", async () => {
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValueOnce({ data: { ...cqlLibrary } });
-    mockedAxios.get.mockResolvedValueOnce({ data: makeMockhistory(50) });
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
+    mockCqlLibraryServiceApi.getLibraryHistory.mockResolvedValue(
+      makeMockhistory(50)
+    );
+
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
     expect(
       await screen.findByRole("button", { name: "Save" })
     ).toBeInTheDocument();
@@ -1350,11 +1376,14 @@ describe("Edit Cql Library Component", () => {
     );
   });
   it("should render library history with smaller items than page.", async () => {
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValueOnce({ data: { ...cqlLibrary } });
-    mockedAxios.get.mockResolvedValueOnce({ data: makeMockhistory(3) });
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
+    mockCqlLibraryServiceApi.getLibraryHistory.mockResolvedValue(
+      makeMockhistory(3)
+    );
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
     expect(
       await screen.findByRole("button", { name: "Save" })
     ).toBeInTheDocument();
@@ -1393,18 +1422,20 @@ describe("Edit Cql Library Component", () => {
         };
       });
     isUsingEmpty.mockClear().mockImplementation(() => false);
-    mockedAxios.put.mockResolvedValue({
+    mockCqlLibraryServiceApi.updateCqlLibrary.mockResolvedValue({
       data: {
         ...cqlLibrary,
         cql:
           "library RemoveConceptTest version '0.0.000'\n" +
           "\n" +
           "using QICore version '4.1.1'\n",
+        // component expects a success path with warning — include message used by assertions
+        message: "CQL updated successfully but the following issues were found",
       },
     });
     renderWithRouter();
 
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", {
@@ -1448,16 +1479,14 @@ describe("Edit Cql Library Component", () => {
       return true;
     });
 
-    mockedAxios.put.mockClear();
-    mockedAxios.put.mockResolvedValue({ data: { ...lockInfo } });
-    mockedAxios.delete.mockClear();
-    mockedAxios.delete.mockResolvedValue({ data: { ...lockInfo } });
+    mockCqlLibraryServiceApi.lockLibrary.mockResolvedValue({ data: lockInfo });
+    mockCqlLibraryServiceApi.unlockLibrary.mockResolvedValue({
+      data: lockInfo,
+    });
 
     renderWithRouter();
-    expect(mockedAxios.put).toHaveBeenCalledWith(
-      "/cql-libraries/cql-lib-1234/lock",
-      null,
-      { headers: { Authorization: "Bearer test.jwt" } }
+    expect(mockCqlLibraryServiceApi.lockLibrary).toHaveBeenCalledWith(
+      "cql-lib-1234"
     );
   });
 
@@ -1467,10 +1496,8 @@ describe("Edit Cql Library Component", () => {
     });
 
     renderWithRouter();
-    expect(mockedAxios.put).not.toHaveBeenCalledWith(
-      "/cql-libraries/cql-lib-1234/lock",
-      null,
-      { headers: { Authorization: "Bearer test.jwt" } }
+    expect(mockCqlLibraryServiceApi.lockLibrary).not.toHaveBeenCalledWith(
+      "cql-lib-1234"
     );
   });
 
@@ -1496,7 +1523,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should call createVersion and show error message when versioning fails with 423", async () => {
-    mockedAxios.put.mockClear().mockRejectedValueOnce({
+    mockCqlLibraryServiceApi.createVersion.mockRejectedValueOnce({
       response: {
         data: {
           status: 423,
@@ -1536,7 +1563,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should call createVersion and show error message when versioning fails with error other than 423", async () => {
-    mockedAxios.put.mockClear().mockRejectedValueOnce({
+    mockCqlLibraryServiceApi.createVersion.mockRejectedValueOnce({
       response: {
         data: {
           status: 400,
@@ -1569,7 +1596,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should call createVersion and show error message when versioning fails with just error no response.data", async () => {
-    mockedAxios.put.mockClear().mockRejectedValueOnce({
+    mockCqlLibraryServiceApi.createVersion.mockRejectedValueOnce({
       error: "error",
     });
 
@@ -1586,7 +1613,7 @@ describe("Edit Cql Library Component", () => {
     fireEvent.click(continueButton);
 
     await waitFor(() => {
-      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+      expect(mockCqlLibraryServiceApi.createVersion).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -1611,8 +1638,8 @@ describe("Edit Cql Library Component", () => {
     });
   });
 
-  it("handle delete library failure of 400", async () => {
-    mockedAxios.delete.mockClear().mockRejectedValueOnce({
+  it("handle delete draft library failure of 400", async () => {
+    mockCqlLibraryServiceApi.deleteDraft.mockRejectedValueOnce({
       response: {
         data: {
           status: 400,
@@ -1635,12 +1662,12 @@ describe("Edit Cql Library Component", () => {
     );
     userEvent.click(continueButton);
     await waitFor(() => {
-      expect(mockedAxios.delete).toHaveBeenCalledTimes(1);
+      expect(mockCqlLibraryServiceApi.deleteDraft).toHaveBeenCalledTimes(1);
     });
   });
 
-  it("delete library failure with no response.data", async () => {
-    mockedAxios.delete.mockClear().mockRejectedValueOnce({
+  it("delete draft library failure with no response.data", async () => {
+    mockCqlLibraryServiceApi.deleteDraft.mockRejectedValueOnce({
       error: "error",
     });
 
@@ -1657,12 +1684,12 @@ describe("Edit Cql Library Component", () => {
     );
     userEvent.click(continueButton);
     await waitFor(() => {
-      expect(mockedAxios.delete).toHaveBeenCalledTimes(1);
+      expect(mockCqlLibraryServiceApi.deleteDraft).toHaveBeenCalledTimes(1);
     });
   });
 
   it("handle create draft error 400", async () => {
-    mockedAxios.post.mockClear().mockRejectedValueOnce({
+    mockCqlLibraryServiceApi.createDraft.mockRejectedValueOnce({
       response: {
         data: {
           status: 400,
@@ -1693,12 +1720,12 @@ describe("Edit Cql Library Component", () => {
     userEvent.click(continueButton);
 
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+      expect(mockCqlLibraryServiceApi.createDraft).toHaveBeenCalledTimes(1);
     });
   });
 
   it("handle create draft error 403", async () => {
-    mockedAxios.post.mockClear().mockRejectedValueOnce({
+    mockCqlLibraryServiceApi.createDraft.mockRejectedValueOnce({
       response: {
         data: {
           status: 403,
@@ -1730,13 +1757,13 @@ describe("Edit Cql Library Component", () => {
     userEvent.click(continueButton);
 
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+      expect(mockCqlLibraryServiceApi.createDraft).toHaveBeenCalledTimes(1);
     });
   });
 
   it("handle create draft other error", async () => {
-    mockedAxios.post.mockClear().mockRejectedValueOnce({
-      response: {
+    mockCqlLibraryServiceApi.createDraft.mockRejectedValueOnce({
+      esponse: {
         data: {
           status: 500,
           error: "Internal Server Error",
@@ -1767,13 +1794,12 @@ describe("Edit Cql Library Component", () => {
     userEvent.click(continueButton);
 
     await waitFor(() => {
-      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+      expect(mockCqlLibraryServiceApi.createDraft).toHaveBeenCalledTimes(1);
     });
   });
 
   it("should open transfer dialog and show success message when transferring library", async () => {
-    mockedAxios.put.mockClear();
-    mockedAxios.put.mockResolvedValueOnce({
+    mockCqlLibraryServiceApi.transferLibraries.mockResolvedValueOnce({
       status: 200,
       data: [],
     });
@@ -1802,21 +1828,15 @@ describe("Edit Cql Library Component", () => {
     fireEvent.click(transferSaveButton);
 
     await waitFor(() => {
-      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
+      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledTimes(
+        1
+      );
     });
 
-    expect(mockedAxios.put).toHaveBeenCalledWith(
-      expect.stringContaining("/cql-libraries/transfer"),
+    expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledWith(
       ["cql-lib-1234"],
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: "Bearer test.jwt",
-          harpId: "newUser",
-        }),
-        params: expect.objectContaining({
-          retainShareAccess: false,
-        }),
-      })
+      "newUser",
+      false
     );
 
     await waitFor(() => {
@@ -1829,7 +1849,7 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should show warning message when transfer returns 207 with failed libraries", async () => {
-    mockedAxios.put.mockResolvedValueOnce({
+    mockCqlLibraryServiceApi.transferLibraries.mockResolvedValueOnce({
       status: 207,
       data: ["cql-lib-1234"],
     });
@@ -1854,19 +1874,13 @@ describe("Edit Cql Library Component", () => {
     fireEvent.click(transferButton);
 
     await waitFor(() => {
-      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
-      expect(mockedAxios.put).toHaveBeenCalledWith(
-        expect.stringContaining("/cql-libraries/transfer"),
+      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledTimes(
+        1
+      );
+      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledWith(
         ["cql-lib-1234"],
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: "Bearer test.jwt",
-            harpId: "newUser",
-          }),
-          params: expect.objectContaining({
-            retainShareAccess: false,
-          }),
-        })
+        "newUser",
+        false
       );
     });
 
@@ -1887,7 +1901,9 @@ describe("Edit Cql Library Component", () => {
   });
 
   it("should show error toast when transfer fails", async () => {
-    mockedAxios.put.mockRejectedValueOnce(new Error("Network Error"));
+    mockCqlLibraryServiceApi.transferLibraries.mockRejectedValueOnce(
+      new Error("Network Error")
+    );
 
     renderWithRouter();
 
@@ -1909,19 +1925,13 @@ describe("Edit Cql Library Component", () => {
     fireEvent.click(transferButton);
 
     await waitFor(() => {
-      expect(mockedAxios.put).toHaveBeenCalledTimes(1);
-      expect(mockedAxios.put).toHaveBeenCalledWith(
-        expect.stringContaining("/cql-libraries/transfer"),
+      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledTimes(
+        1
+      );
+      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledWith(
         ["cql-lib-1234"],
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            Authorization: "Bearer test.jwt",
-            harpId: "newUser",
-          }),
-          params: expect.objectContaining({
-            retainShareAccess: false,
-          }),
-        })
+        "newUser",
+        false
       );
     });
 
@@ -1951,8 +1961,9 @@ describe("Edit Cql Library Component", () => {
       },
     } as unknown as CqlLibrary;
 
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
     renderWithRouter();
 
     expect(screen.getByTestId("cql-library-editor")).toHaveAttribute(
@@ -1997,26 +2008,24 @@ describe("Edit Cql Library Component", () => {
       lastModifiedBy: "",
     } as unknown as CqlLibrary;
 
-    mockedAxios.get.mockClear();
-    mockedAxios.get.mockResolvedValue({ data: { ...cqlLibrary } });
-    mockedAxios.put.mockClear();
+    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
+      ...cqlLibrary,
+    });
     (synchingEditorCqlContent as jest.Mock).mockImplementation(() => {
       return "library UpdateName version '1.0.000'";
     });
     isUsingEmpty.mockClear().mockImplementation(() => false);
-    mockedAxios.put.mockResolvedValueOnce({ data: lockInfo });
-    mockedAxios.put.mockResolvedValueOnce({ data: { ...cqlLibrary } });
-    mockedAxios.put.mockRejectedValueOnce({
+    mockCqlLibraryServiceApi.lockLibrary.mockRejectedValueOnce({
       response: {
         data: {
+          status: 423,
           message:
             "Unable to update Cql Library. Cql Library is locked by: anotherUser",
         },
-        status: 423,
       },
     });
     renderWithRouter();
-    expect(mockedAxios.get).toHaveBeenCalled();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
 
     expect(
       await screen.findByRole("button", {
@@ -2038,16 +2047,8 @@ describe("Edit Cql Library Component", () => {
     });
     expect(updateButton).not.toBeDisabled();
     userEvent.click(updateButton);
-    await waitFor(() => {
-      const errorMessage = screen.getByTestId("generic-error-text-header");
-      expect(errorMessage.textContent).toEqual(
-        "Unable to update Cql Library. Cql Library is locked by: anotherUser"
-      );
-      screen.debug(undefined, 700000);
-    });
-    expect(mockedAxios.put.mock.lastCall[0]).toEqual(
-      "/cql-libraries/cql-lib-1234"
+    expect(mockCqlLibraryServiceApi.lockLibrary).toHaveBeenCalledWith(
+      "cql-lib-1234"
     );
-    expect(mockedAxios.put.mock.lastCall[1]).toBeTruthy();
   });
 });

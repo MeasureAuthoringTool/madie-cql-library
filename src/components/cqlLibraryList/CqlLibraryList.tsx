@@ -20,7 +20,6 @@ import "twin.macro";
 import "styled-components/macro";
 import { CqlLibrary } from "@madie/madie-models";
 import CreatVersionDialog from "../createVersionDialog/CreateVersionDialog";
-import useCqlLibraryServiceApi from "../../api/useCqlLibraryServiceApi";
 import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import Snackbar from "@mui/material/Snackbar";
 import MuiAlert, { AlertProps } from "@mui/material/Alert";
@@ -28,6 +27,7 @@ import {
   checkUserCanDelete,
   checkUserCanEdit,
   useFeatureFlags,
+  useCqlLibraryServiceApi,
 } from "@madie/madie-util";
 import {
   Button,

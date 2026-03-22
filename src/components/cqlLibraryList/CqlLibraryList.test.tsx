@@ -9,11 +9,13 @@ import {
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CqlLibraryList, { sortResults } from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
-import useCqlLibraryServiceApi, {
-  CqlLibraryServiceApi,
-} from "../../api/useCqlLibraryServiceApi";
 // @ts-ignore
-import { checkUserCanEdit, useFeatureFlags } from "@madie/madie-util";
+import CqlLibraryServiceApi, {
+  useIsRoleOrFeatureEnabled,
+  checkUserCanEdit,
+  useFeatureFlags,
+  useCqlLibraryServiceApi,
+} from "@madie/madie-util";
 
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
@@ -72,8 +74,6 @@ const mockSearchCriteria = {
 
 const loadCqlLibraries = jest.fn();
 
-// Mocking the service calls to create Draft and version
-jest.mock("../../api/useCqlLibraryServiceApi");
 const mockLocation = jest.fn();
 const mockPush = jest.fn();
 const useCqlLibraryServiceMock =
@@ -84,7 +84,7 @@ jest.mock("react-router-dom", () => ({
   useLocation: () => mockLocation,
 }));
 
-const useCqlLibraryServiceMockResolved = {
+const mockCqlLibraryServiceResolved = {
   createVersion: jest.fn().mockResolvedValue({}),
   createDraft: jest.fn().mockResolvedValue({}),
   deleteDraft: jest.fn().mockResolvedValue({}),
@@ -93,28 +93,42 @@ const useCqlLibraryServiceMockResolved = {
   getLibrariesByLibrarySetId: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
 
+jest.mock("@madie/madie-util", () => ({
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => "test user",
+  }),
+  checkUserCanEdit: jest.fn(() => {
+    return true;
+  }),
+  checkUserCanDelete: jest.fn(() => {
+    return true;
+  }),
+  useFeatureFlags: jest.fn().mockReturnValue({}),
+  useUserRoles: jest.fn(() => ({})),
+  useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceResolved),
+  useIsRoleOrFeatureEnabled: jest.fn(),
+}));
+
 describe("CqlLibrary List component", () => {
   beforeEach(() => {
     jest.resetModules();
-    useCqlLibraryServiceMockResolved.createVersion = jest
+    mockCqlLibraryServiceResolved.createVersion = jest
       .fn()
       .mockResolvedValue({});
-    useCqlLibraryServiceMockResolved.createDraft = jest
+    mockCqlLibraryServiceResolved.createDraft = jest.fn().mockResolvedValue({});
+    mockCqlLibraryServiceResolved.deleteDraft = jest.fn().mockResolvedValue({});
+    mockCqlLibraryServiceResolved.fetchCqlLibrary = jest
       .fn()
       .mockResolvedValue({});
-    useCqlLibraryServiceMockResolved.deleteDraft = jest
-      .fn()
-      .mockResolvedValue({});
-    useCqlLibraryServiceMockResolved.fetchCqlLibrary = jest
-      .fn()
-      .mockResolvedValue({});
-    useCqlLibraryServiceMockResolved.getLibrariesByLibrarySetId = jest
+    mockCqlLibraryServiceResolved.getLibrariesByLibrarySetId = jest
       .fn()
       .mockResolvedValue({});
     useCqlLibraryServiceMock.mockReset().mockImplementation(() => {
-      return useCqlLibraryServiceMockResolved;
+      return mockCqlLibraryServiceResolved;
     });
     (checkUserCanEdit as jest.Mock).mockReturnValue(true);
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
   });
   afterEach(() => {
     cleanup();
@@ -412,7 +426,7 @@ describe("CqlLibrary List component", () => {
       },
     ];
 
-    useCqlLibraryServiceMockResolved.getLibrariesByLibrarySetId = jest
+    mockCqlLibraryServiceResolved.getLibrariesByLibrarySetId = jest
       .fn()
       .mockReturnValue(cqlLibrary);
 
