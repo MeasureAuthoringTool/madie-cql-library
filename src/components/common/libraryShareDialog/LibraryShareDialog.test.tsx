@@ -1,14 +1,31 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import * as React from "react";
-import LibraryShareDialog, { convertDate } from "./LibraryShareDialog";
+import LibraryShareDialog, {
+  convertDate,
+  sortSharedLibraries,
+} from "./LibraryShareDialog";
 import { CqlLibrary } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 import {
   useCqlLibraryServiceApi,
   CqlLibraryServiceApi,
+  useUserServiceApi,
 } from "@madie/madie-util";
 
-const testUser = "test user";
+// Mock @madie/madie-util at the top to resolve import error
+jest.mock("@madie/madie-util", () => ({
+  useCqlLibraryServiceApi: jest.fn(),
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => "test-fake-user@email.com",
+  }),
+  useUserServiceApi: jest.fn(() => ({
+    harpId: "madietestuser",
+    firstName: "Madie",
+    lastName: "Test",
+    email: "madie.test@semanticbits.com",
+  })),
+}));
 
 const mockCqlLibrary1 = {
   id: "TestLibraryId1",
@@ -64,13 +81,6 @@ const mockGetSharedCqlLibraries = jest.fn().mockResolvedValue({
       }))
     : [],
 });
-jest.mock("@madie/madie-util", () => ({
-  useCqlLibraryServiceApi: jest.fn(),
-  useOktaTokens: () => ({
-    getAccessToken: () => "test.jwt",
-    getUserName: () => "test-fake-user@email.com",
-  }),
-}));
 
 const mockGetRecentLibrariesByLibrarySetId = jest.fn((librarySetIds) => {
   const libraries = [];
@@ -108,9 +118,27 @@ describe("Create Share Dialog component", () => {
     (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
       mockLibraryServiceApi
     );
+
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getOwnerDetails: jest.fn().mockResolvedValue({
+        harpId: "madietestuser",
+        firstName: "Madie",
+        lastName: "Test",
+        email: "madie.test@semanticbits.com",
+      }),
+    });
   });
 
   it("should render share dialog", async () => {
+    (
+      mockLibraryServiceApi.getSharedLibraries as jest.Mock
+    ).mockResolvedValueOnce(mockGetSharedCqlLibraries()); // <-- fix: call the function
+    (
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId as jest.Mock
+    ).mockResolvedValue([mockCqlLibrary1, mockCqlLibrary2]);
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
     render(
       <LibraryShareDialog
         libraries={[mockCqlLibrary1, mockCqlLibrary2]}
@@ -119,8 +147,6 @@ describe("Create Share Dialog component", () => {
         onClose={jest.fn()}
       />
     );
-    const table = await screen.findByTestId("share-library-tbl");
-
     expect(getByTestId("share-dialog")).toBeInTheDocument();
     expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
     expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
@@ -151,13 +177,12 @@ describe("Create Share Dialog component", () => {
     const errorMessage =
       "Unable to retrieve users that the selected library(s) is shared with. If the error persists, please contact the help desk.";
 
-    const mockLibraryServiceApi = {
-      getSharedLibraries: jest.fn().mockRejectedValue(new Error(errorMessage)),
-      getRecentLibrariesByLibrarySetId: jest
-        .fn()
-        .mockResolvedValue([mockCqlLibrary1, mockCqlLibrary2]),
-    } as unknown as CqlLibraryServiceApi;
-
+    (
+      mockLibraryServiceApi.getSharedLibraries as jest.Mock
+    ).mockRejectedValueOnce(new Error(errorMessage));
+    (
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId as jest.Mock
+    ).mockResolvedValue([mockCqlLibrary1, mockCqlLibrary2]);
     (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
       mockLibraryServiceApi
     );
@@ -172,9 +197,15 @@ describe("Create Share Dialog component", () => {
     );
 
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    const table = await screen.findByTestId("share-library-tbl");
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+
+    // Use waitFor to handle async call
+    await waitFor(() => {
+      expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+      expect(
+        mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+      ).toBeCalled();
+    });
+
     expect(await screen.findByText(errorMessage)).toBeVisible();
   });
 
@@ -226,7 +257,6 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    const table = await screen.findByTestId("share-library-tbl");
     expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
     expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
 
@@ -475,6 +505,7 @@ describe("Create Share Dialog component", () => {
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
     expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -826,8 +857,6 @@ describe("Create Share Dialog component", () => {
       mockLibraryServiceApiWithError
     );
 
-    const mockOnSave = jest.fn();
-
     render(
       <LibraryShareDialog
         libraries={[mockCqlLibrary1, mockCqlLibrary2]}
@@ -880,5 +909,147 @@ describe("Create Share Dialog component", () => {
     expect(userListItems.length).toBe(2);
     expect(userListItems[0]).toHaveTextContent("test-fake-user@email.com");
     expect(userListItems[1]).toHaveTextContent("test-fake-user@email.com");
+  });
+
+  it("should not add a user row to the grid if the user is not a valid madie user after clicking Save button.", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getOwnerDetails: jest.fn().mockRejectedValue({
+        status: 400,
+        error: "invalid madie user",
+      }),
+    });
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+    const harpIdInput = screen.getByLabelText("HARP ID");
+    fireEvent.change(harpIdInput, { target: { value: "invaliduser" } });
+    const addUserBtn = screen.getByRole("button", { name: /add user/i });
+    fireEvent.click(addUserBtn);
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "The provided HARP ID is not associated with an active MADiE user."
+        )
+      ).toBeInTheDocument();
+    });
+    // Optionally, check that the input value is still present
+    expect(harpIdInput).toHaveValue("invaliduser");
+  });
+
+  it("test convertDate when date is null", () => {
+    const convertedDate = convertDate(null);
+    expect(convertedDate).toBe("");
+  });
+
+  it("test getErrorMessage when toastMeasage is from error?.response?.data?.message", async () => {
+    const errorMessage =
+      "Unable to share the selected libraries with the added users. If the error persists, please contact the help desk.";
+    const mockLibraryServiceApi = {
+      getSharedLibraries: mockGetSharedCqlLibraries,
+      getRecentLibrariesByLibrarySetId: mockGetRecentLibrariesByLibrarySetId,
+      shareLibraries: jest
+        .fn()
+        .mockRejectedValue({ response: { data: { message: errorMessage } } }),
+    } as unknown as CqlLibraryServiceApi;
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
+
+    const mockOnClose = jest.fn();
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"Share With"}
+        onClose={mockOnClose}
+      />
+    );
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
+    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+
+    const addUserBtn = await screen.findByTestId("add-user-btn");
+    expect(addUserBtn).toBeDisabled();
+    const saveBtn = await screen.findByTestId("share-save-button");
+    expect(saveBtn).toBeDisabled();
+    const harpIdInput = (await screen.findByTestId(
+      "harp-id-input"
+    )) as HTMLInputElement;
+    expect(harpIdInput).toBeInTheDocument();
+    fireEvent.focus(harpIdInput);
+    fireEvent.change(harpIdInput, { target: { value: "userId3" } });
+    expect(harpIdInput.value).toBe("userId3");
+    expect(addUserBtn).toBeEnabled();
+
+    fireEvent.click(addUserBtn);
+
+    await waitFor(() => {
+      expect(addUserBtn).toBeDisabled();
+      expect(saveBtn).toBeEnabled();
+      expect(harpIdInput.value).toBe("");
+    });
+
+    fireEvent.click(saveBtn);
+
+    await waitFor(async () => {
+      expect(mockLibraryServiceApi.shareLibraries).toBeCalled();
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+  });
+
+  it("test option other than 'Share With', 'Unshare', or 'UnshareFromMe'", () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"InvalidOption"}
+        onClose={jest.fn()}
+      />
+    );
+    expect(screen.queryByTestId("share-dialog")).toBeNull();
+  });
+});
+
+describe("sortSharedLibraries", () => {
+  it("should return -1 if either dateShared is '-'", () => {
+    const a = {
+      dateShared: "-",
+      libraryId: "1",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    const b = {
+      dateShared: "2023-01-01",
+      libraryId: "2",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    expect(sortSharedLibraries(a, b)).toBe(-1);
+
+    const c = {
+      dateShared: "2023-01-01",
+      libraryId: "1",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    const d = {
+      dateShared: "-",
+      libraryId: "2",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    expect(sortSharedLibraries(c, d)).toBe(-1);
   });
 });

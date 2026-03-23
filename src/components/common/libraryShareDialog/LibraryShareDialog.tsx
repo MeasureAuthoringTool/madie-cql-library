@@ -32,7 +32,11 @@ import tw from "twin.macro";
 import "styled-components/macro";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import { useOktaTokens, useCqlLibraryServiceApi } from "@madie/madie-util";
+import {
+  useOktaTokens,
+  useCqlLibraryServiceApi,
+  useUserServiceApi,
+} from "@madie/madie-util";
 
 interface ShareDialogProps {
   libraries: CqlLibrary[];
@@ -75,7 +79,7 @@ export const convertDate = (date: string) => {
   return `${month}/${day}/${year}`;
 };
 
-const sortSharedLibraries = (a: SharedLibrary, b: SharedLibrary) => {
+export const sortSharedLibraries = (a: SharedLibrary, b: SharedLibrary) => {
   if (a.dateShared === "-" || b.dateShared === "-") {
     return -1;
   }
@@ -105,6 +109,7 @@ const LibraryShareDialog = ({
   const userName = getUserName();
 
   const libraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  const userServiceApi = useRef(useUserServiceApi()).current;
 
   const [loading, setLoading] = useState<boolean>(false);
   const [saveDisabled, setSaveDisabled] = useState<boolean>(true);
@@ -161,13 +166,24 @@ const LibraryShareDialog = ({
     };
   };
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     // Remove all spaces from harpId
     const harpId = formik.getFieldProps("harpId").value.replace(/\s/g, "");
 
     // If no harpId is passed in (string with all whitespace), only clear out the harpId field
     if (!harpId) {
       formik.setFieldValue("harpId", "");
+      return;
+    }
+
+    try {
+      await userServiceApi.getOwnerDetails(harpId.toLowerCase());
+    } catch (error) {
+      // set error for haprId field
+      formik.setFieldError(
+        "harpId",
+        "The provided HARP ID is not associated with an active MADiE user."
+      );
       return;
     }
 

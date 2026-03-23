@@ -14,6 +14,7 @@ import CqlLibraryServiceApi, {
   checkUserCanEdit,
   useFeatureFlags,
   useCqlLibraryServiceApi,
+  useUserServiceApi,
 } from "@madie/madie-util";
 
 const cqlLibrary = [
@@ -90,6 +91,7 @@ jest.mock("@madie/madie-util", () => ({
   useFeatureFlags: jest.fn().mockReturnValue({}),
   useUserRoles: jest.fn(() => ({})),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceResolved),
+  useUserServiceApi: jest.fn(),
 }));
 
 describe("CqlLibrary List component", () => {
