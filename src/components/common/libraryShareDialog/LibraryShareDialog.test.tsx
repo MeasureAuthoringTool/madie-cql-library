@@ -4,11 +4,20 @@ import LibraryShareDialog, { convertDate } from "./LibraryShareDialog";
 import { CqlLibrary } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 import {
+  useIsRoleOrFeatureEnabled,
   useCqlLibraryServiceApi,
   CqlLibraryServiceApi,
 } from "@madie/madie-util";
 
-const testUser = "test user";
+//@ts-ignore
+const testUser = "test-fake-user@email.com";
+jest.mock("@madie/madie-util", () => ({
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => testUser,
+  }),
+  useIsRoleOrFeatureEnabled: jest.fn(),
+}));
 
 const mockCqlLibrary1 = {
   id: "TestLibraryId1",
@@ -65,6 +74,7 @@ const mockGetSharedCqlLibraries = jest.fn().mockResolvedValue({
     : [],
 });
 jest.mock("@madie/madie-util", () => ({
+  useIsRoleOrFeatureEnabled: jest.fn(),
   useCqlLibraryServiceApi: jest.fn(),
   useOktaTokens: () => ({
     getAccessToken: () => "test.jwt",
@@ -104,6 +114,8 @@ describe("Create Share Dialog component", () => {
 
   beforeEach(() => {
     jest.resetModules();
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
 
     (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
       mockLibraryServiceApi
@@ -880,5 +892,24 @@ describe("Create Share Dialog component", () => {
     expect(userListItems.length).toBe(2);
     expect(userListItems[0]).toHaveTextContent("test-fake-user@email.com");
     expect(userListItems[1]).toHaveTextContent("test-fake-user@email.com");
+  });
+});
+
+describe("Admin user with AdminShareLibrary feature flag enabled", () => {
+  beforeEach(() => {
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(true);
+  });
+
+  it("should display export user list link when user is admin and feature flag is enabled", () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="Unshare"
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(screen.getByTestId("export-user-list-button")).toBeInTheDocument();
   });
 });

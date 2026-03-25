@@ -1,5 +1,5 @@
 #add-user-id-search {
-  margin: 0 32px 40px 32px;
+  margin: 0 32px 20px 32px;
   display: flex;
   flex-direction: row;
   column-gap: 24px;
@@ -34,4 +34,38 @@
     list-style: inside;
     margin-left: 20px;
   }
+}
+
+.export-button {
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  background: transparent !important;
+  box-shadow: none !important;
+  text-transform: none;
+  outline: none;
+  margin-top: 12px;
+  color: #0073c8 !important;
+  font-family: "Rubik", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 17px;
+  text-align: center;
+  margin-left: auto; /* aligns to right in flex container */
+}
+
+.export-button-text {
+  white-space: nowrap;
+}
+
+.share-unshare-dialog-info-text {
+  color: #515151;
+  font-weight: 400;
+  font-family: Rubik, sans-serif;
+  margin-left: 32px;
+  margin-right: 32px;
+  padding-bottom: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
