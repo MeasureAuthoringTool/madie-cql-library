@@ -63,9 +63,11 @@ export default function ShareAction(props: PropTypes) {
       if (libraries?.length === 0) {
         setTooltipMessage(NOTHING_SELECTED);
       } else if (
-        props.owners?.length > 1 ||
-        (props.owners?.length == 1 &&
-          props.owners[0] === userName.toLowerCase()) ||
+        // either all libraries are owned by the user or admin share library feature is enabled
+        (props.owners?.length > 0 &&
+          props.owners.filter(
+            (owner) => owner.toLowerCase() === userName.toLowerCase()
+          ).length === props.owners.length) ||
         isAdminShareLibraryEnabled
       ) {
         setDisableShareBtn(false);
