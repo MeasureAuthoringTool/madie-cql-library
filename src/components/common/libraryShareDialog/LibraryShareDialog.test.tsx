@@ -7,6 +7,7 @@ import LibraryShareDialog, {
 import { CqlLibrary } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 import {
+  useIsRoleOrFeatureEnabled,
   useCqlLibraryServiceApi,
   CqlLibraryServiceApi,
   useUserServiceApi,
@@ -19,6 +20,7 @@ jest.mock("@madie/madie-util", () => ({
     getAccessToken: () => "test.jwt",
     getUserName: () => "test-fake-user@email.com",
   }),
+  useIsRoleOrFeatureEnabled: jest.fn(),
   useUserServiceApi: jest.fn(() => ({
     harpId: "madietestuser",
     firstName: "Madie",
@@ -114,6 +116,8 @@ describe("Create Share Dialog component", () => {
 
   beforeEach(() => {
     jest.resetModules();
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
 
     (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
       mockLibraryServiceApi
@@ -1051,5 +1055,24 @@ describe("sortSharedLibraries", () => {
       subRows: [],
     };
     expect(sortSharedLibraries(c, d)).toBe(-1);
+  });
+});
+
+describe("Admin user with AdminShareLibrary feature flag enabled", () => {
+  beforeEach(() => {
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(true);
+  });
+
+  it("should display export user list link when user is admin and feature flag is enabled", () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="Unshare"
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(screen.getByTestId("export-user-list-button")).toBeInTheDocument();
   });
 });

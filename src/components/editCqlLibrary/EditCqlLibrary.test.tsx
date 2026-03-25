@@ -69,6 +69,9 @@ jest.mock("@madie/madie-util", () => ({
     getAllOrganizations: jest.fn().mockResolvedValue(organizations),
   })),
   useUserServiceApi: jest.fn(() => mockUserServiceApi),
+
+  useIsRoleOrFeatureEnabled: jest.fn(),
+
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
 }));
 

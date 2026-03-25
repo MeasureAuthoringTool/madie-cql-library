@@ -15,7 +15,6 @@ import {
   MadieSpinner,
 } from "@madie/madie-design-system/dist/react";
 import "./LibraryShareDialog.scss";
-import * as _ from "lodash";
 import {
   ColumnDef,
   flexRender,
@@ -32,8 +31,10 @@ import tw from "twin.macro";
 import "styled-components/macro";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import {
   useOktaTokens,
+  useIsRoleOrFeatureEnabled,
   useCqlLibraryServiceApi,
   useUserServiceApi,
 } from "@madie/madie-util";
@@ -132,6 +133,8 @@ const LibraryShareDialog = ({
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
 
   const showShareDialog = option === "Share With" || option === "Unshare";
+  const isAdminShareLibraryEnabled =
+    useIsRoleOrFeatureEnabled("AdminShareLibrary");
 
   useEffect(() => {
     if (option === "UnshareFromMe" && open) {
@@ -535,6 +538,24 @@ const LibraryShareDialog = ({
     }
   };
 
+  const handleExportUserList = () => {
+    // to be implemented - will trigger export of user list for admin in Share With and Unshare dialogs
+  };
+  const getAdminUserExportButton = () => {
+    if (isAdminShareLibraryEnabled) {
+      return (
+        <Button
+          className="export-button"
+          data-testid="export-user-list-button"
+          onClick={handleExportUserList}
+        >
+          <SaveAltIcon sx={{ marginRight: "8px" }} />
+          <span className="export-button-text">Export User List (.CSV)</span>
+        </Button>
+      );
+    }
+  };
+
   return (
     <>
       <GlobalStyles />
@@ -597,15 +618,19 @@ const LibraryShareDialog = ({
             </div>
           )}
           <div className="share-unshare-dialog-info-text">
-            <div>
-              When sharing a Library, all versions and drafts are shared, so
-              only the most recent library name appears here.
-            </div>
-            {option === "Unshare" && (
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <div>
-                Deselect the users with whom you want to unshare the library(s).
+                When sharing a Library, all versions and drafts are shared, so
+                only the most recent library name appears here.
               </div>
-            )}
+              {option === "Unshare" && (
+                <div>
+                  Deselect the users with whom you want to unshare the
+                  library(s).
+                </div>
+              )}
+            </div>
+            {getAdminUserExportButton()}
           </div>
           <div className="cql-library-table">
             <div className="table" style={{ overflow: "auto" }}>

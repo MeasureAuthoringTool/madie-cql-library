@@ -21,6 +21,28 @@ import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 
 const abortController = new AbortController();
 
+jest.mock("@madie/madie-util", () => ({
+  useDocumentTitle: jest.fn(),
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => "test user",
+  }),
+  checkUserCanEdit: jest.fn(() => {
+    return true;
+  }),
+  checkUserCanDelete: jest.fn(() => {
+    return true;
+  }),
+  useOrganizationApi: jest.fn(() => ({
+    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
+  })),
+  useFeatureFlags: jest.fn().mockReturnValue({
+    qdm: false,
+  }),
+  useUserRoles: jest.fn(() => ({})),
+  useIsRoleOrFeatureEnabled: jest.fn(),
+}));
+
 const organizations = [
   {
     id: "1234",

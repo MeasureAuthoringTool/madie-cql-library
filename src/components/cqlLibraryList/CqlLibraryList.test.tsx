@@ -11,11 +11,28 @@ import CqlLibraryList, { sortResults } from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
 // @ts-ignore
 import CqlLibraryServiceApi, {
+  useIsRoleOrFeatureEnabled,
   checkUserCanEdit,
   useFeatureFlags,
   useCqlLibraryServiceApi,
   useUserServiceApi,
 } from "@madie/madie-util";
+
+jest.mock("@madie/madie-util", () => ({
+  useOktaTokens: () => ({
+    getAccessToken: () => "test.jwt",
+    getUserName: () => "test user",
+  }),
+  checkUserCanEdit: jest.fn(() => {
+    return true;
+  }),
+  checkUserCanDelete: jest.fn(() => {
+    return true;
+  }),
+  useFeatureFlags: jest.fn().mockReturnValue({}),
+  useUserRoles: jest.fn(() => ({})),
+  useIsRoleOrFeatureEnabled: jest.fn(),
+}));
 
 const cqlLibrary = [
   {
@@ -92,6 +109,7 @@ jest.mock("@madie/madie-util", () => ({
   useUserRoles: jest.fn(() => ({})),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceResolved),
   useUserServiceApi: jest.fn(),
+  useIsRoleOrFeatureEnabled: jest.fn(),
 }));
 
 describe("CqlLibrary List component", () => {
@@ -112,6 +130,7 @@ describe("CqlLibrary List component", () => {
       return mockCqlLibraryServiceResolved;
     });
     (checkUserCanEdit as jest.Mock).mockReturnValue(true);
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
   });
   afterEach(() => {
     cleanup();
