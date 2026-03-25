@@ -2,7 +2,7 @@ import * as React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { within } from "@testing-library/dom";
 import { CqlLibrary } from "@madie/madie-models";
-import TransferDialog from "./TransferDialog";
+import TransferDialog, { INVALID_HARP_ID_MESSAGE } from "./TransferDialog";
 import userEvent from "@testing-library/user-event";
 // @ts-ignore
 import { useUserRoles } from "@madie/madie-util";
@@ -180,6 +180,35 @@ describe("Transfer Libraries Dialog component", () => {
 
       await waitFor(() => {
         expect(mockOnSubmit).toHaveBeenCalledWith("newOwner", true);
+      });
+    });
+
+    it("should display field-level error and not close dialog when onSubmit rejects with INVALID_HARP_ID_MESSAGE", async () => {
+      const mockOnSubmit = jest.fn().mockRejectedValue({
+        response: {
+          status: 400,
+          data: { message: INVALID_HARP_ID_MESSAGE },
+        },
+      });
+      const onCloseMock = jest.fn();
+
+      render(
+        <TransferDialog
+          libraries={[]}
+          open={true}
+          onClose={onCloseMock}
+          onSubmit={mockOnSubmit}
+        />
+      );
+
+      fireEvent.change(getByTestId("harp-id-input"), {
+        target: { value: "invalidUser" },
+      });
+      fireEvent.click(getByTestId("transfer-save-button"));
+
+      await waitFor(() => {
+        expect(screen.getByText(INVALID_HARP_ID_MESSAGE)).toBeInTheDocument();
+        expect(onCloseMock).not.toHaveBeenCalled();
       });
     });
 

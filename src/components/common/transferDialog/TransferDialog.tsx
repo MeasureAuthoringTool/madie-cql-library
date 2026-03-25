@@ -24,6 +24,9 @@ import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import * as Yup from "yup";
 import { UserRoles, useUserRoles } from "@madie/madie-util";
 
+export const INVALID_HARP_ID_MESSAGE =
+  "The provided HARP ID is not associated with an active MADiE user.";
+
 // Define the data type for rows
 interface RowData {
   libraryName: string;
@@ -231,8 +234,17 @@ const TransferDialog = ({
       harpId: Yup.string().required("New Library Owner is required."),
     }),
     onSubmit: async ({ harpId, retainShareAccess }) => {
-      formik.resetForm();
-      return onSubmit(harpId, retainShareAccess);
+      try {
+        await onSubmit(harpId, retainShareAccess);
+        formik.resetForm();
+      } catch (error) {
+        if (
+          error?.response?.status === 400 &&
+          error?.response?.data?.message === INVALID_HARP_ID_MESSAGE
+        ) {
+          formik.setFieldError("harpId", INVALID_HARP_ID_MESSAGE);
+        }
+      }
     },
   });
 
