@@ -751,7 +751,7 @@ const EditCqlLibrary = () => {
       } else if (response.status === 207) {
         setWarning({
           status: true,
-          primaryMessage: `1 Libraries could not be transferred. Please try again, or contact help desk if the issue persists.`,
+          primaryMessage: `This Library could not be transferred. Please try again, or contact help desk if the issue persists.`,
           secondaryMessages: [loadedCqlLibrary.cqlLibraryName],
         });
       }

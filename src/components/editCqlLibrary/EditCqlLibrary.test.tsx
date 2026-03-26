@@ -1887,7 +1887,7 @@ describe("Edit Cql Library Component", () => {
     );
     expect(warningHeader).toBeInTheDocument();
     expect(warningHeader).toHaveTextContent(
-      "1 Libraries could not be transferred. Please try again, or contact help desk if the issue persists."
+      "This Library could not be transferred. Please try again, or contact help desk if the issue persists."
     );
 
     const failedLibrary = screen.getByTestId("library-warning");
