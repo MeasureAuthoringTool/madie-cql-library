@@ -942,7 +942,7 @@ describe("Create Share Dialog component", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "The provided HARP ID is not associated with an active MADiE user."
+          "The provided HARP ID invaliduser is not associated with an active MADiE user."
         )
       ).toBeInTheDocument();
     });
@@ -975,7 +975,7 @@ describe("Create Share Dialog component", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "The provided HARP ID is not associated with an active MADiE user."
+          "The provided HARP ID invaliduser is not associated with an active MADiE user."
         )
       ).toBeInTheDocument();
     });

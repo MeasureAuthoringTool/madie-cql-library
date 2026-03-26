@@ -187,10 +187,10 @@ const LibraryShareDialog = ({
         throw new Error("User is not active");
       }
     } catch (error) {
-      // set error for haprId field
+      // set error for harpId field
       formik.setFieldError(
         "harpId",
-        "The provided HARP ID is not associated with an active MADiE user."
+        `The provided HARP ID ${harpId} is not associated with an active MADiE user.`
       );
       return;
     }
