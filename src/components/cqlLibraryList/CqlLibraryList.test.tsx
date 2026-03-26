@@ -4,10 +4,16 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
-import CqlLibraryList, { sortResults } from "./CqlLibraryList";
+import CqlLibraryList, {
+  sortResults,
+  TRANSFER_LIBRARY_SUCCESS,
+  TRANSFER_LIBRARY_FAILURE,
+} from "./CqlLibraryList";
+import { INVALID_HARP_ID_MESSAGE } from "../common/transferDialog/TransferDialog";
 import userEvent from "@testing-library/user-event";
 // @ts-ignore
 import CqlLibraryServiceApi, {
@@ -91,6 +97,7 @@ const mockCqlLibraryServiceResolved = {
   fetchCqlLibrary: jest.fn().mockResolvedValue({}),
   fetchAllOwners: jest.fn().mockResolvedValue(["owner1", "owner2"]),
   getLibrariesByLibrarySetId: jest.fn().mockResolvedValue({}),
+  transferLibraries: jest.fn().mockResolvedValue({ status: 200 }),
 } as unknown as CqlLibraryServiceApi;
 
 jest.mock("@madie/madie-util", () => ({
@@ -990,5 +997,147 @@ describe("Library lock functionality", () => {
         "library-lock-icon-622e1f46d1fd3729d861e6cb"
       )
     ).not.toBeInTheDocument();
+  });
+
+  describe("transferLibraries", () => {
+    const mockSetToastOpen = jest.fn();
+    const mockSetToastMessage = jest.fn();
+    const mockSetToastType = jest.fn();
+    const mockSetStatusHandler = jest.fn();
+
+    const renderWithTransferDialog = () =>
+      render(
+        <CqlLibraryList
+          cqlLibraryList={[]}
+          onListUpdate={loadCqlLibraries}
+          setSelectedLibraries={jest.fn()}
+          deleteDraftDialog={jest.fn()}
+          setDeleteDraftDialog={jest.fn()}
+          selectedCQLLibrary={cqlLibrary[0]}
+          setSelectedCqlLibrary={jest.fn()}
+          createVersionDialog={jest.fn()}
+          setCreateVersionDialog={jest.fn()}
+          createDraftDialog={jest.fn()}
+          setCreateDraftDialog={jest.fn()}
+          shareDialog={jest.fn()}
+          setShareDialog={jest.fn()}
+          transferDialog={{ open: true }}
+          setTransferDialog={jest.fn()}
+          compareVersionsDialog={false}
+          setCompareVersionsDialog={jest.fn()}
+          setOwners={jest.fn()}
+          setSnackBar={jest.fn()}
+          snackBar={jest.fn()}
+          totalItems={10}
+          activeTab={1}
+          totalPages={20}
+          visibleItems={10}
+          offset={0}
+          sorting={[{ id: "cqlLibraryName", desc: false }]}
+          handleSort={jest.fn()}
+          handlePageChange={jest.fn()}
+          curLimit={10}
+          curPage={1}
+          searchCriteria={mockSearchCriteria}
+          setToastOpen={mockSetToastOpen}
+          setToastMessage={mockSetToastMessage}
+          setToastType={mockSetToastType}
+          setStatusHandler={mockSetStatusHandler}
+        />
+      );
+
+    beforeEach(() => {
+      mockSetToastOpen.mockClear();
+      mockSetToastMessage.mockClear();
+      mockSetToastType.mockClear();
+      mockSetStatusHandler.mockClear();
+      mockCqlLibraryServiceResolved.transferLibraries = jest
+        .fn()
+        .mockResolvedValue({ status: 200 });
+    });
+
+    it("should show success toast and close dialog on successful transfer", async () => {
+      const { getByTestId } = renderWithTransferDialog();
+
+      fireEvent.change(getByTestId("harp-id-input"), {
+        target: { value: "validUser" },
+      });
+      fireEvent.click(getByTestId("transfer-save-button"));
+
+      await waitFor(() => {
+        expect(mockSetToastOpen).toHaveBeenCalledWith(true);
+        expect(mockSetToastType).toHaveBeenCalledWith("success");
+        expect(mockSetToastMessage).toHaveBeenCalledWith(
+          TRANSFER_LIBRARY_SUCCESS
+        );
+      });
+    });
+
+    it("should call setStatusHandler with warning on partial transfer failure (207)", async () => {
+      mockCqlLibraryServiceResolved.transferLibraries = jest
+        .fn()
+        .mockResolvedValue({ status: 207, data: [] });
+
+      const { getByTestId } = renderWithTransferDialog();
+
+      fireEvent.change(getByTestId("harp-id-input"), {
+        target: { value: "someUser" },
+      });
+      fireEvent.click(getByTestId("transfer-save-button"));
+
+      await waitFor(() => {
+        expect(mockSetStatusHandler).toHaveBeenCalledWith(
+          expect.objectContaining({
+            warning: expect.objectContaining({ status: true }),
+          })
+        );
+        expect(mockSetToastOpen).not.toHaveBeenCalled();
+      });
+    });
+
+    it("should show field-levl error and keep dialog open when API returns 400 with invalid HARP ID", async () => {
+      mockCqlLibraryServiceResolved.transferLibraries = jest
+        .fn()
+        .mockRejectedValue({
+          response: {
+            status: 400,
+            data: { message: INVALID_HARP_ID_MESSAGE },
+          },
+        });
+
+      const { getByTestId } = renderWithTransferDialog();
+
+      fireEvent.change(getByTestId("harp-id-input"), {
+        target: { value: "invalidUser" },
+      });
+      fireEvent.click(getByTestId("transfer-save-button"));
+
+      await waitFor(() => {
+        expect(screen.getByText(INVALID_HARP_ID_MESSAGE)).toBeInTheDocument();
+        expect(screen.getByTestId("transfer-dialog")).toBeInTheDocument();
+        expect(mockSetToastOpen).not.toHaveBeenCalled();
+      });
+    });
+
+    it("should show failure toast and close dialog on generic error", async () => {
+      mockCqlLibraryServiceResolved.transferLibraries = jest
+        .fn()
+        .mockRejectedValue({ response: { status: 500 } });
+
+      const { getByTestId } = renderWithTransferDialog();
+
+      fireEvent.change(getByTestId("harp-id-input"), {
+        target: { value: "someUser" },
+      });
+      fireEvent.click(getByTestId("transfer-save-button"));
+
+      await waitFor(() => {
+        expect(mockSetToastOpen).toHaveBeenCalledWith(true);
+        expect(mockSetToastType).toHaveBeenCalledWith("danger");
+        expect(mockSetToastMessage).toHaveBeenCalledWith(
+          TRANSFER_LIBRARY_FAILURE
+        );
+      });
+    });
   });
 });

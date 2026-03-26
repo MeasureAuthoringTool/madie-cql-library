@@ -57,7 +57,9 @@ import CreateVersionDialog from "../createVersionDialog/CreateVersionDialog";
 import { AxiosResponse } from "axios";
 import CreateDraftDialog from "../createDraftDialog/CreateDraftDialog";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
-import TransferDialog from "../common/transferDialog/TransferDialog";
+import TransferDialog, {
+  INVALID_HARP_ID_MESSAGE,
+} from "../common/transferDialog/TransferDialog";
 import {
   TRANSFER_LIBRARY_FAILURE,
   TRANSFER_LIBRARY_SUCCESS,
@@ -719,7 +721,10 @@ const EditCqlLibrary = () => {
     [shareDialog]
   );
 
-  const transferLibrary = (newOwner: string, retainShareAccess: boolean) => {
+  const transferLibrary = async (
+    newOwner: string,
+    retainShareAccess: boolean
+  ) => {
     setWarning({
       status: false,
       primaryMessage: "",
@@ -727,34 +732,46 @@ const EditCqlLibrary = () => {
     });
 
     const libraryIds = loadedCqlLibrary.id;
-    return cqlLibraryServiceApi
-      .transferLibraries([libraryIds], newOwner, retainShareAccess)
-      .then((response) => {
-        if (response.status === 200) {
-          setToastOpen(true);
-          setToastType("success");
-          setToastMessage(TRANSFER_LIBRARY_SUCCESS);
 
-          setTimeout(() => {
-            navigate("/cql-libraries");
-          }, 1000);
-        } else if (response.status === 207) {
-          setWarning({
-            status: true,
-            primaryMessage: `1 Libraries could not be transferred. Please try again, or contact help desk if the issue persists.`,
-            secondaryMessages: [loadedCqlLibrary.cqlLibraryName],
-          });
-        }
-      })
-      .catch((error) => {
-        console.error("TransferDialog: handleSave: error = ", error);
+    try {
+      const response = await cqlLibraryServiceApi.transferLibraries(
+        [libraryIds],
+        newOwner,
+        retainShareAccess
+      );
+
+      if (response.status === 200) {
         setToastOpen(true);
-        setToastType("danger");
-        setToastMessage(TRANSFER_LIBRARY_FAILURE);
-      })
-      .finally(() => {
-        handleDialogClose();
-      });
+        setToastType("success");
+        setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+
+        setTimeout(() => {
+          navigate("/cql-libraries");
+        }, 1000);
+      } else if (response.status === 207) {
+        setWarning({
+          status: true,
+          primaryMessage: `This Library could not be transferred. Please try again, or contact help desk if the issue persists.`,
+          secondaryMessages: [loadedCqlLibrary.cqlLibraryName],
+        });
+      }
+
+      handleDialogClose();
+    } catch (error) {
+      console.error("TransferDialog: handleSave: error = ", error);
+
+      if (
+        error?.response?.status === 400 &&
+        error?.response?.data?.message === INVALID_HARP_ID_MESSAGE
+      ) {
+        throw error;
+      }
+
+      setToastOpen(true);
+      setToastType("danger");
+      setToastMessage(TRANSFER_LIBRARY_FAILURE);
+      handleDialogClose();
+    }
   };
 
   return (

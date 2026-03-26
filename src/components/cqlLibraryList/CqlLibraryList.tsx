@@ -43,7 +43,9 @@ import queryString from "query-string";
 import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 import * as _ from "lodash";
 import { Chip, Tooltip } from "@mui/material";
-import TransferDialog from "../common/transferDialog/TransferDialog";
+import TransferDialog, {
+  INVALID_HARP_ID_MESSAGE,
+} from "../common/transferDialog/TransferDialog";
 import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
 import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
@@ -352,44 +354,57 @@ export default function CqlLibraryList({
         }
       });
   };
-  const transferLibraries = (newOwner: string, retainShareAccess: boolean) => {
+  const transferLibraries = async (
+    newOwner: string,
+    retainShareAccess: boolean
+  ) => {
     setStatusHandler(INITIAL_STATUS_HANDLER);
 
     const libraryIds = selectedLibraries.map((lib) => lib.id);
-    return cqlLibraryServiceApi
-      .transferLibraries(libraryIds, newOwner, retainShareAccess)
-      .then((response) => {
-        if (response.status === 200) {
-          setToastOpen(true);
-          setToastType("success");
-          setToastMessage(TRANSFER_LIBRARY_SUCCESS);
-        } else if (response.status === 207) {
-          const failedLibraryIds: string[] = response.data;
 
-          const failedLibraryNames = selectedLibraries
-            .filter((lib) => failedLibraryIds.includes(lib.id))
-            .map((lib) => lib.cqlLibraryName);
+    try {
+      const response = await cqlLibraryServiceApi.transferLibraries(
+        libraryIds,
+        newOwner,
+        retainShareAccess
+      );
 
-          setStatusHandler({
-            warning: {
-              status: true,
-              primaryMessage: `${failedLibraryNames?.length} Libraries could not be transferred. Please try again, or contact help desk if the issue persists.`,
-              secondaryMessages: failedLibraryNames,
-            },
-          });
-        }
-
-        onListUpdate();
-      })
-      .catch((error) => {
-        console.error("TransferDialog: handleSave: error = ", error);
+      if (response.status === 200) {
         setToastOpen(true);
-        setToastType("danger");
-        setToastMessage(TRANSFER_LIBRARY_FAILURE);
-      })
-      .finally(() => {
-        handleDialogClose();
-      });
+        setToastType("success");
+        setToastMessage(TRANSFER_LIBRARY_SUCCESS);
+      } else if (response.status === 207) {
+        const failedLibraryIds: string[] = response.data;
+
+        const failedLibraryNames = selectedLibraries
+          .filter((lib) => failedLibraryIds.includes(lib.id))
+          .map((lib) => lib.cqlLibraryName);
+
+        setStatusHandler({
+          warning: {
+            status: true,
+            primaryMessage: `${failedLibraryNames?.length} Libraries could not be transferred. Please try again, or contact help desk if the issue persists.`,
+            secondaryMessages: failedLibraryNames,
+          },
+        });
+      }
+      onListUpdate();
+      handleDialogClose();
+    } catch (error) {
+      console.error("TransferDialog: handleSave: error = ", error);
+
+      if (
+        error?.response?.status === 400 &&
+        error?.response?.data?.message === INVALID_HARP_ID_MESSAGE
+      ) {
+        throw error;
+      }
+
+      setToastOpen(true);
+      setToastType("danger");
+      setToastMessage(TRANSFER_LIBRARY_FAILURE);
+      handleDialogClose();
+    }
   };
 
   // Popover utilities

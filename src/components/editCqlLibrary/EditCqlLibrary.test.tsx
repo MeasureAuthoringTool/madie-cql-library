@@ -28,6 +28,7 @@ import {
   TRANSFER_LIBRARY_FAILURE,
   TRANSFER_LIBRARY_SUCCESS,
 } from "../cqlLibraryList/CqlLibraryList";
+import { INVALID_HARP_ID_MESSAGE } from "../common/transferDialog/TransferDialog";
 
 const { getByTestId, queryByTestId, queryByText } = screen;
 const mockUserServiceApi = {
@@ -1889,7 +1890,7 @@ describe("Edit Cql Library Component", () => {
     );
     expect(warningHeader).toBeInTheDocument();
     expect(warningHeader).toHaveTextContent(
-      "1 Libraries could not be transferred. Please try again, or contact help desk if the issue persists."
+      "This Library could not be transferred. Please try again, or contact help desk if the issue persists."
     );
 
     const failedLibrary = screen.getByTestId("library-warning");
@@ -1941,6 +1942,39 @@ describe("Edit Cql Library Component", () => {
 
     await waitFor(() => {
       expect(screen.queryByTestId("transfer-dialog")).not.toBeInTheDocument();
+    });
+  });
+
+  it("should display field-level error and not close dialog when transfer returns 400 with invalid HARP ID", async () => {
+    mockCqlLibraryServiceApi.transferLibraries.mockRejectedValueOnce({
+      response: {
+        status: 400,
+        data: { message: INVALID_HARP_ID_MESSAGE },
+      },
+    });
+
+    renderWithRouter();
+
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event("transfer-library"));
+    });
+
+    const transferDialog = await screen.findByTestId("transfer-dialog");
+    expect(transferDialog).toBeInTheDocument();
+
+    const harpInput = screen.getByTestId("harp-id-input");
+    fireEvent.change(harpInput, { target: { value: "invalidUser" } });
+
+    const transferButton = screen.getByTestId("transfer-save-button");
+    fireEvent.click(transferButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(INVALID_HARP_ID_MESSAGE)).toBeInTheDocument();
+      expect(screen.getByTestId("transfer-dialog")).toBeInTheDocument();
     });
   });
 
