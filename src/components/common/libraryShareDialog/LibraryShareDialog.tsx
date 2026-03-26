@@ -22,7 +22,7 @@ import {
   getExpandedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { CqlLibrary } from "@madie/madie-models";
+import { CqlLibrary, UserDetails, UserStatus } from "@madie/madie-models";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
@@ -180,7 +180,12 @@ const LibraryShareDialog = ({
     }
 
     try {
-      await userServiceApi.getOwnerDetails(harpId.toLowerCase());
+      const userDetails = await userServiceApi.getOwnerDetails(
+        harpId.toLowerCase()
+      );
+      if (userDetails && UserStatus[0] !== userDetails.userStatus.toString()) {
+        throw new Error("User is not active");
+      }
     } catch (error) {
       // set error for haprId field
       formik.setFieldError(

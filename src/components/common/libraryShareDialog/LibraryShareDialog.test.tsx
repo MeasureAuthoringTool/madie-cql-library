@@ -4,7 +4,7 @@ import LibraryShareDialog, {
   convertDate,
   sortSharedLibraries,
 } from "./LibraryShareDialog";
-import { CqlLibrary } from "@madie/madie-models";
+import { CqlLibrary, UserStatus } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 import {
   useIsRoleOrFeatureEnabled,
@@ -28,6 +28,8 @@ jest.mock("@madie/madie-util", () => ({
     email: "madie.test@semanticbits.com",
   })),
 }));
+
+const testUser = "test-fake-user@email.com";
 
 const mockCqlLibrary1 = {
   id: "TestLibraryId1",
@@ -129,8 +131,11 @@ describe("Create Share Dialog component", () => {
         firstName: "Madie",
         lastName: "Test",
         email: "madie.test@semanticbits.com",
+        userStatus: UserStatus[0],
       }),
     });
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
   });
 
   it("should render share dialog", async () => {
@@ -920,6 +925,39 @@ describe("Create Share Dialog component", () => {
       getOwnerDetails: jest.fn().mockRejectedValue({
         status: 400,
         error: "invalid madie user",
+      }),
+    });
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+    const harpIdInput = screen.getByLabelText("HARP ID");
+    fireEvent.change(harpIdInput, { target: { value: "invaliduser" } });
+    const addUserBtn = screen.getByRole("button", { name: /add user/i });
+    fireEvent.click(addUserBtn);
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "The provided HARP ID is not associated with an active MADiE user."
+        )
+      ).toBeInTheDocument();
+    });
+    // Optionally, check that the input value is still present
+    expect(harpIdInput).toHaveValue("invaliduser");
+  });
+
+  it("should not add a user row to the grid if the user is not active after clicking Save button.", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getOwnerDetails: jest.fn().mockResolvedValue({
+        harpId: "madietestuser",
+        firstName: "Madie",
+        lastName: "Test",
+        email: "madie.test@semanticbits.com",
+        userStatus: UserStatus[1],
       }),
     });
     render(
