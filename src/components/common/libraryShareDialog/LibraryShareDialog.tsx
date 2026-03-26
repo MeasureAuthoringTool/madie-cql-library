@@ -14,6 +14,7 @@ import {
   TruncateText,
   MadieSpinner,
   DSLink,
+  Toast,
 } from "@madie/madie-design-system/dist/react";
 import "./LibraryShareDialog.scss";
 import * as _ from "lodash";
@@ -39,6 +40,13 @@ import {
   useIsRoleOrFeatureEnabled,
   useCqlLibraryServiceApi,
 } from "@madie/madie-util";
+import FileSaver from "file-saver";
+import { format } from "date-fns";
+
+export const LIBRARY_SHARING_EXPORT_SUCCESS =
+  "Library Sharing Report exported successfully.";
+export const LIBRARY_SHARING_EXPORT_ERROR =
+  "Unable to export the user list. Please try again. If the issue persists, please contact the help desk.";
 
 interface ShareDialogProps {
   libraries: CqlLibrary[];
@@ -131,6 +139,13 @@ const LibraryShareDialog = ({
   const [rowSelection, setRowSelection] = useState({});
   const [initialRowIdsSelected, setInitialRowIdsSelected] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+
+  // Toast state
+  const [toast, setToast] = useState({
+    open: false,
+    type: "danger",
+    message: "",
+  });
 
   const showShareDialog = option === "Share With" || option === "Unshare";
   const isAdminShareLibraryEnabled =
@@ -527,9 +542,44 @@ const LibraryShareDialog = ({
     }
   };
 
-  const handleExportUserList = () => {
-    // to be implemented - will trigger export of user list for admin in Share With and Unshare dialogs
+  const handleExportUserList = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const ids = sharedLibraries.map((m) => m.libraryId);
+      const blob = await libraryServiceApi.getSharedAccessReportForLibraries(
+        ids
+      );
+      const fileName = generateTimestampedFileName(
+        "LibrarySharingExport",
+        "xlsx"
+      );
+      FileSaver.saveAs(blob, fileName);
+      setToast({
+        open: true,
+        type: "success",
+        message: LIBRARY_SHARING_EXPORT_SUCCESS,
+      });
+    } catch (error) {
+      console.error(error);
+      setToast({
+        open: true,
+        type: "danger",
+        message: LIBRARY_SHARING_EXPORT_ERROR,
+      });
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const generateTimestampedFileName = (
+    baseName: string,
+    extension: string
+  ): string => {
+    const timestamp = format(new Date(), "yyyyMMdd_HHmmss");
+    return `${baseName}_${timestamp}.${extension}`;
+  };
+
   const getAdminUserExportLink = () => {
     if (isAdminShareLibraryEnabled) {
       return (
@@ -539,7 +589,7 @@ const LibraryShareDialog = ({
           onClick={handleExportUserList}
         >
           <SaveAltIcon sx={{ marginRight: "8px" }} />
-          <span className="export-button-text">Export User List (.CSV)</span>
+          <span className="export-button-text">Export User List</span>
         </Button>
       );
     }
@@ -725,6 +775,21 @@ const LibraryShareDialog = ({
           </section>
         </div>
       </MadieDialog>
+      <Toast
+        toastKey="export-user-list-toast"
+        testId="export-user-list-toast"
+        toastType={toast.type}
+        open={toast.open}
+        message={toast.message}
+        onClose={() =>
+          setToast({
+            open: false,
+            type: "danger",
+            message: "",
+          })
+        }
+        autoHideDuration={8000}
+      />
     </>
   );
 };
