@@ -187,11 +187,21 @@ const LibraryShareDialog = ({
         throw new Error("User is not active");
       }
     } catch (error) {
-      // set error for harpId field
-      formik.setFieldError(
-        "harpId",
-        `The provided HARP ID ${harpId} is not associated with an active MADiE user.`
-      );
+      if (error?.status === 400 || error?.message === "User is not active") {
+        // set error for harpId field
+        formik.setFieldError(
+          "harpId",
+          `The provided HARP ID ${harpId} is not associated with an active MADiE user.`
+        );
+      } else {
+        onClose(
+          "danger",
+          getErrorMessage(
+            error,
+            "Unable to share the selected library(s) with the added users. If the error persists, please contact the help desk."
+          )
+        );
+      }
       return;
     }
 

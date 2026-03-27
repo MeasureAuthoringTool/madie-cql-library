@@ -983,6 +983,38 @@ describe("Create Share Dialog component", () => {
     expect(harpIdInput).toHaveValue("invaliduser");
   });
 
+  it("should not add a user row to the grid getting user details returns status code other than 400 after clicking Save button.", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getOwnerDetails: jest.fn().mockRejectedValue({
+        response: {
+          status: 500,
+          error: "server error",
+        },
+      }),
+    });
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+    const harpIdInput = screen.getByLabelText("HARP ID");
+    fireEvent.change(harpIdInput, { target: { value: "invaliduser" } });
+    const addUserBtn = screen.getByRole("button", { name: /add user/i });
+    fireEvent.click(addUserBtn);
+    screen.debug(undefined, 8000000);
+    await waitFor(() => {
+      expect(
+        screen.queryByText(
+          "The provided HARP ID invaliduser is not associated with an active MADiE user."
+        )
+      ).not.toBeInTheDocument();
+    });
+    expect(harpIdInput).toHaveValue("invaliduser");
+  });
+
   it("test convertDate when date is null", () => {
     const convertedDate = convertDate(null);
     expect(convertedDate).toBe("");
