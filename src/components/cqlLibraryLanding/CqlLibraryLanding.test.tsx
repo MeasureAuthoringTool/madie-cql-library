@@ -9,6 +9,7 @@ import {
   useFeatureFlags,
   useIsRoleOrFeatureEnabled,
   CqlLibraryServiceApi,
+  useUserServiceApi,
 } from "@madie/madie-util";
 import {
   useNavigate,
@@ -163,6 +164,7 @@ jest.mock("@madie/madie-util", () => ({
   useIsRoleOrFeatureEnabled: jest.fn(),
   useUserRoles: jest.fn(() => ({})),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
+  useUserServiceApi: jest.fn(),
 }));
 jest.setTimeout(10000);
 describe("Cql Library Page", () => {
