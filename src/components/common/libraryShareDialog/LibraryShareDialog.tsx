@@ -13,11 +13,9 @@ import {
   Button,
   TruncateText,
   MadieSpinner,
-  DSLink,
   Toast,
 } from "@madie/madie-design-system/dist/react";
 import "./LibraryShareDialog.scss";
-import * as _ from "lodash";
 import {
   ColumnDef,
   flexRender,
@@ -25,7 +23,7 @@ import {
   getExpandedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { CqlLibrary } from "@madie/madie-models";
+import { CqlLibrary, UserDetails, UserStatus } from "@madie/madie-models";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
@@ -39,6 +37,7 @@ import {
   useOktaTokens,
   useIsRoleOrFeatureEnabled,
   useCqlLibraryServiceApi,
+  useUserServiceApi,
 } from "@madie/madie-util";
 import FileSaver from "file-saver";
 import { format } from "date-fns";
@@ -89,7 +88,7 @@ export const convertDate = (date: string) => {
   return `${month}/${day}/${year}`;
 };
 
-const sortSharedLibraries = (a: SharedLibrary, b: SharedLibrary) => {
+export const sortSharedLibraries = (a: SharedLibrary, b: SharedLibrary) => {
   if (a.dateShared === "-" || b.dateShared === "-") {
     return -1;
   }
@@ -119,6 +118,7 @@ const LibraryShareDialog = ({
   const userName = getUserName();
 
   const libraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  const userServiceApi = useRef(useUserServiceApi()).current;
 
   const [loading, setLoading] = useState<boolean>(false);
   const [saveDisabled, setSaveDisabled] = useState<boolean>(true);
@@ -184,13 +184,39 @@ const LibraryShareDialog = ({
     };
   };
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     // Remove all spaces from harpId
     const harpId = formik.getFieldProps("harpId").value.replace(/\s/g, "");
 
     // If no harpId is passed in (string with all whitespace), only clear out the harpId field
     if (!harpId) {
       formik.setFieldValue("harpId", "");
+      return;
+    }
+
+    try {
+      const userDetails = await userServiceApi.getOwnerDetails(
+        harpId.toLowerCase()
+      );
+      if (userDetails && UserStatus[0] !== userDetails.userStatus.toString()) {
+        throw new Error("User is not active");
+      }
+    } catch (error) {
+      if (error?.status === 400 || error?.message === "User is not active") {
+        // set error for harpId field
+        formik.setFieldError(
+          "harpId",
+          `The provided HARP ID ${harpId} is not associated with an active MADiE user.`
+        );
+      } else {
+        onClose(
+          "danger",
+          getErrorMessage(
+            error,
+            "Unable to share the selected library(s) with the added users. If the error persists, please contact the help desk."
+          )
+        );
+      }
       return;
     }
 
@@ -580,7 +606,7 @@ const LibraryShareDialog = ({
     return `${baseName}_${timestamp}.${extension}`;
   };
 
-  const getAdminUserExportLink = () => {
+  const getAdminUserExportButton = () => {
     if (isAdminShareLibraryEnabled) {
       return (
         <Button
@@ -669,7 +695,7 @@ const LibraryShareDialog = ({
                 </div>
               )}
             </div>
-            {getAdminUserExportLink()}
+            {getAdminUserExportButton()}
           </div>
           <div className="cql-library-table">
             <div className="table" style={{ overflow: "auto" }}>
