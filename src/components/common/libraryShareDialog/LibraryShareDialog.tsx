@@ -22,13 +22,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-<<<<<<< HEAD
-import { CqlLibrary, UserDetails, UserStatus } from "@madie/madie-models";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
-=======
-import { CqlLibrary } from "@madie/madie-models";
->>>>>>> 29aa72e (MAT-9636: Update share dialog display)
+import { CqlLibrary, UserStatus } from "@madie/madie-models";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import tw from "twin.macro";
