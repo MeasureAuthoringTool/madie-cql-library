@@ -23,7 +23,15 @@ module.exports = (webpackConfigEnv, argv) => {
   });
 
   const externalsConfig = {
-    externals: ["@madie/madie-editor", "@madie/madie-util"],
+    externals: [
+      "@madie/madie-editor",
+      "@madie/madie-util",
+      // Shared singleton libraries — loaded via import map
+      "@emotion/react",
+      "@emotion/styled",
+      "react-is",
+      "styled-components",
+    ],
   };
 
   // We need to override the css loading rule from the parent configuration

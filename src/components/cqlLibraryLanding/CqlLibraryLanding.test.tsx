@@ -514,7 +514,7 @@ describe("Cql Library Page", () => {
 
     userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.deleteDraft).toBeCalled();
+      expect(mockCqlLibraryServiceApi.deleteDraft).toHaveBeenCalled();
     });
   });
   test("Delete should not delete when cancel is clicked", async () => {
@@ -549,7 +549,7 @@ describe("Cql Library Page", () => {
 
     userEvent.click(screen.getByRole("button", { name: "Cancel" }));
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.deleteDraft).not.toBeCalled();
+      expect(mockCqlLibraryServiceApi.deleteDraft).not.toHaveBeenCalled();
     });
     expect(
       screen.queryByText("The Draft CQL Library has been deleted.")
@@ -689,7 +689,7 @@ describe("Cql Library Page", () => {
 
     userEvent.click(historyButton);
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.getLibraryHistory).toBeCalled();
+      expect(mockCqlLibraryServiceApi.getLibraryHistory).toHaveBeenCalled();
     });
 
     await waitFor(() => {
@@ -749,7 +749,7 @@ describe("Cql Library Page", () => {
 
     userEvent.click(versionButton);
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toBeCalled();
+      expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
     });
     await waitFor(() => {
       expect(screen.getByLabelText("Major")).toBeInTheDocument();
@@ -765,7 +765,7 @@ describe("Cql Library Page", () => {
     const continueButton = screen.getByTestId("create-version-continue-button");
     userEvent.click(continueButton);
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.createVersion).toBeCalled();
+      expect(mockCqlLibraryServiceApi.createVersion).toHaveBeenCalled();
     });
   });
   test("Version should not version when cancel is clicked", async () => {
@@ -791,7 +791,7 @@ describe("Cql Library Page", () => {
 
     userEvent.click(versionButton);
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toBeCalled();
+      expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
     });
     await waitFor(() => {
       expect(screen.getByLabelText("Major")).toBeInTheDocument();
