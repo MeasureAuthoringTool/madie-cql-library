@@ -3,6 +3,8 @@ import * as React from "react";
 import LibraryShareDialog, {
   convertDate,
   sortSharedLibraries,
+  LIBRARY_SHARING_EXPORT_SUCCESS,
+  LIBRARY_SHARING_EXPORT_ERROR,
 } from "./LibraryShareDialog";
 import { CqlLibrary, UserStatus } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
@@ -13,12 +15,18 @@ import {
   useUserServiceApi,
 } from "@madie/madie-util";
 
+jest.mock("file-saver", () => ({
+  saveAs: jest.fn(),
+}));
+
+//@ts-ignore
+const testUser = "test-fake-user@email.com";
 // Mock @madie/madie-util at the top to resolve import error
 jest.mock("@madie/madie-util", () => ({
   useCqlLibraryServiceApi: jest.fn(),
   useOktaTokens: () => ({
     getAccessToken: () => "test.jwt",
-    getUserName: () => "test-fake-user@email.com",
+    getUserName: () => testUser,
   }),
   useIsRoleOrFeatureEnabled: jest.fn(),
   useUserServiceApi: jest.fn(() => ({
@@ -28,8 +36,6 @@ jest.mock("@madie/madie-util", () => ({
     email: "madie.test@semanticbits.com",
   })),
 }));
-
-const testUser = "test-fake-user@email.com";
 
 const mockCqlLibrary1 = {
   id: "TestLibraryId1",
@@ -1131,6 +1137,9 @@ describe("sortSharedLibraries", () => {
 describe("Admin user with AdminShareLibrary feature flag enabled", () => {
   beforeEach(() => {
     (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(true);
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
   });
 
   it("should display export user list link when user is admin and feature flag is enabled", () => {
@@ -1144,5 +1153,136 @@ describe("Admin user with AdminShareLibrary feature flag enabled", () => {
     );
 
     expect(screen.getByTestId("export-user-list-button")).toBeInTheDocument();
+  });
+
+  it("should successfully export user list when export button is clicked", async () => {
+    const mockBlob = new Blob(["test content"], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const mockGetSharedAccessReportForLibraries = jest
+      .fn()
+      .mockResolvedValue(mockBlob);
+
+    const mockLibraryServiceApiWithExport = {
+      getSharedLibraries: mockGetSharedCqlLibraries,
+      getRecentLibrariesByLibrarySetId: mockGetRecentLibrariesByLibrarySetId,
+      shareLibraries: mockShareLibraries,
+      unshareLibraries: mockUnshareLibraries,
+      getSharedAccessReportForLibraries: mockGetSharedAccessReportForLibraries,
+    } as unknown as CqlLibraryServiceApi;
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApiWithExport
+    );
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="Unshare"
+        onClose={jest.fn()}
+      />
+    );
+
+    await screen.findByTestId("share-library-tbl");
+
+    const exportButton = screen.getByTestId("export-user-list-button");
+    userEvent.click(exportButton);
+
+    await waitFor(() => {
+      expect(mockGetSharedAccessReportForLibraries).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(LIBRARY_SHARING_EXPORT_SUCCESS)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should show error toast when export user list fails", async () => {
+    const mockGetSharedAccessReportForLibraries = jest
+      .fn()
+      .mockRejectedValue(new Error("Export failed"));
+
+    const mockLibraryServiceApiWithExport = {
+      getSharedLibraries: mockGetSharedCqlLibraries,
+      getRecentLibrariesByLibrarySetId: mockGetRecentLibrariesByLibrarySetId,
+      shareLibraries: mockShareLibraries,
+      unshareLibraries: mockUnshareLibraries,
+      getSharedAccessReportForLibraries: mockGetSharedAccessReportForLibraries,
+    } as unknown as CqlLibraryServiceApi;
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApiWithExport
+    );
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="Unshare"
+        onClose={jest.fn()}
+      />
+    );
+
+    await screen.findByTestId("share-library-tbl");
+
+    const exportButton = screen.getByTestId("export-user-list-button");
+    userEvent.click(exportButton);
+
+    await waitFor(() => {
+      expect(mockGetSharedAccessReportForLibraries).toHaveBeenCalled();
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(LIBRARY_SHARING_EXPORT_ERROR)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should not display export user list link when feature flag is disabled", () => {
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option="Unshare"
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(screen.queryByTestId("export-user-list-button")).toBeNull();
+  });
+});
+
+describe("convertDate function", () => {
+  it("returns empty string when date is null", () => {
+    expect(convertDate(null)).toBe("");
+  });
+
+  it("returns empty string when date is undefined", () => {
+    expect(convertDate(undefined)).toBe("");
+  });
+
+  it("returns empty string when date is empty string", () => {
+    expect(convertDate("")).toBe("");
+  });
+
+  it("formats date correctly without leading zero in month", () => {
+    const date = "2025-01-15T12:00:00Z";
+    expect(convertDate(date)).toBe("1/15/2025");
+  });
+
+  it("formats date correctly for double digit month", () => {
+    const date = "2025-12-25T12:00:00Z";
+    expect(convertDate(date)).toBe("12/25/2025");
+  });
+
+  it("formats date correctly with leading zero in day", () => {
+    const date = "2025-03-01T12:00:00Z";
+    expect(convertDate(date)).toBe("3/01/2025");
   });
 });

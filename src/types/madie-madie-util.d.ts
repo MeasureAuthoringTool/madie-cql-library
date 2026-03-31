@@ -161,6 +161,7 @@ declare module "@madie/madie-util" {
     getLibraryHistory(selectedLibrary: CqlLibrary): Promise<AuditRow[]>;
     lockLibrary(libraryId: string): Promise<any>;
     unlockLibrary(libraryId: string): Promise<any>;
+    getSharedAccessReportForLibraries(ids: Array<string>): Promise<Blob>;
     transferLibraries(
       libraryIds: Array<string>,
       harpId: string,
