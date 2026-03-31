@@ -157,8 +157,10 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
   });
 
   it("should render share dialog but not call getSharedLibraries if no library is passed in to share dialog component", () => {
@@ -176,10 +178,10 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).not.toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).not.toHaveBeenCalled();
     expect(
       mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
-    ).not.toBeCalled();
+    ).not.toHaveBeenCalled();
   });
 
   it("should render share dialog and display error message if getSharedLibaries call throws an exception", async () => {
@@ -209,10 +211,10 @@ describe("Create Share Dialog component", () => {
 
     // Use waitFor to handle async call
     await waitFor(() => {
-      expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
       expect(
         mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
-      ).toBeCalled();
+      ).toHaveBeenCalled();
     });
 
     expect(await screen.findByText(errorMessage)).toBeVisible();
@@ -266,8 +268,10 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     expect(await screen.findByTestId("harp-id-input")).toBeInTheDocument();
   });
@@ -282,8 +286,10 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     expect(screen.queryByTestId("harp-id-input")).toBeNull();
   });
@@ -299,8 +305,10 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -336,7 +344,7 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -376,8 +384,10 @@ describe("Create Share Dialog component", () => {
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -455,8 +465,10 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -482,7 +494,7 @@ describe("Create Share Dialog component", () => {
     fireEvent.click(saveBtn);
 
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.shareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.shareLibraries).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
@@ -513,8 +525,10 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -540,7 +554,7 @@ describe("Create Share Dialog component", () => {
     fireEvent.click(saveBtn);
 
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.shareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.shareLibraries).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
@@ -556,7 +570,7 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -634,8 +648,10 @@ describe("Create Share Dialog component", () => {
     );
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const table = await screen.findByTestId("share-library-tbl");
     const tableHeaders = table.querySelectorAll("thead th");
@@ -663,8 +679,10 @@ describe("Create Share Dialog component", () => {
     );
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const table = await screen.findByTestId("share-library-tbl");
     const tableHeaders = table.querySelectorAll("thead th");
@@ -692,8 +710,10 @@ describe("Create Share Dialog component", () => {
     );
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const saveBtn = await screen.findByTestId("share-save-button");
     expect(saveBtn).toBeDisabled();
@@ -724,7 +744,7 @@ describe("Create Share Dialog component", () => {
 
     userEvent.click(acceptBtn);
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.unshareLibraries).toHaveBeenCalled();
     });
   });
 
@@ -752,8 +772,10 @@ describe("Create Share Dialog component", () => {
     );
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const saveBtn = await screen.findByTestId("share-save-button");
     expect(saveBtn).toBeDisabled();
@@ -784,7 +806,7 @@ describe("Create Share Dialog component", () => {
 
     userEvent.click(acceptBtn);
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.unshareLibraries).toHaveBeenCalled();
     });
   });
 
@@ -849,7 +871,7 @@ describe("Create Share Dialog component", () => {
     userEvent.click(acceptBtn);
 
     await waitFor(() => {
-      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.unshareLibraries).toHaveBeenCalled();
     });
   });
 
@@ -883,7 +905,9 @@ describe("Create Share Dialog component", () => {
     userEvent.click(acceptBtn);
 
     await waitFor(() => {
-      expect(mockLibraryServiceApiWithError.unshareLibraries).toBeCalled();
+      expect(
+        mockLibraryServiceApiWithError.unshareLibraries
+      ).toHaveBeenCalled();
     });
   });
 
@@ -1047,8 +1071,10 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -1074,7 +1100,7 @@ describe("Create Share Dialog component", () => {
     fireEvent.click(saveBtn);
 
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.shareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.shareLibraries).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
