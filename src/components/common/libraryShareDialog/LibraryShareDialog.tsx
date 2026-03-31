@@ -20,12 +20,15 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
-  getExpandedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+<<<<<<< HEAD
 import { CqlLibrary, UserDetails, UserStatus } from "@madie/madie-models";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+=======
+import { CqlLibrary } from "@madie/madie-models";
+>>>>>>> 29aa72e (MAT-9636: Update share dialog display)
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import tw from "twin.macro";
@@ -127,6 +130,11 @@ const LibraryShareDialog = ({
 
   const [libraryMap, setLibraryMap] = useState(new Map<string, CqlLibrary>());
   const [sharedLibraries, setSharedLibraries] = useState<SharedLibrary[]>([]);
+
+  const flattenedSharedLibraries = useMemo(() => {
+    return sharedLibraries.flatMap((library) => library.subRows ?? []);
+  }, [sharedLibraries]);
+
   const [sharedWithAllSelectedLibraries, setSharedWithAllSelectedLibraries] =
     useState<boolean>(false);
   const [shareLibrariesRequest, setShareLibrariesRequest] = useState(
@@ -297,6 +305,7 @@ const LibraryShareDialog = ({
           subRows: sharedLibraries[libraryId]
             .map((sharedUser: SharedUser) => ({
               libraryId,
+              cqlLibraryName: libraryMap.get(libraryId).cqlLibraryName,
               userId: sharedUser.userId,
               dateShared: sharedUser.performedAt
                 ? sharedUser.performedAt.toLocaleString()
@@ -426,7 +435,6 @@ const LibraryShareDialog = ({
 
   const columns = useMemo<ColumnDef<SharedLibrary>[]>(() => {
     let columnDefs = [];
-
     if (option === "Share With") {
       columnDefs.push({
         header: "Library",
@@ -442,36 +450,51 @@ const LibraryShareDialog = ({
     } else if (option === "Unshare") {
       columnDefs.push({
         header: "Library",
-        cell: (info) =>
-          info.row.original.cqlLibraryName ? (
-            <TruncateText
-              text={info.row.original.cqlLibraryName}
-              maxLength={120}
-              dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
-            />
-          ) : (
-            <Checkbox
-              icon={icon}
-              checkedIcon={checkedIcon}
-              checked={info.row.getIsSelected()}
-              onChange={info.row.getToggleSelectedHandler()}
-              data-testid={`unshare-checkbox-${info.row.original.userId}_${info.row.original.libraryId}`}
-            />
-          ),
+        cell: (info) => (
+          <TruncateText
+            text={info.row.original.cqlLibraryName}
+            maxLength={120}
+            dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
+          />
+        ),
         accessorKey: "cqlLibraryName",
       });
     }
-
     columnDefs = [
       ...columnDefs,
       {
-        header: "User",
+        header: ({ table }) => (
+          <div className="shared-with-header">
+            {option === "Unshare" && (
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                indeterminate={table.getIsSomeRowsSelected()}
+                checked={table.getIsAllRowsSelected()}
+                onChange={table.getToggleAllRowsSelectedHandler()}
+                data-testid="shared-with-select-all"
+              />
+            )}
+            <span>Shared With</span>
+          </div>
+        ),
         cell: (info) => (
-          <TruncateText
-            text={info.row.original.userId}
-            maxLength={120}
-            dataTestId={`user-${info.row.original.userId}_${info.row.original.libraryId}`}
-          />
+          <div className="shared-with-cell">
+            {option === "Unshare" && (
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                checked={info.row.getIsSelected()}
+                onChange={info.row.getToggleSelectedHandler()}
+                data-testid={`unshare-checkbox-${info.row.original.userId}_${info.row.original.libraryId}`}
+              />
+            )}
+            <TruncateText
+              text={info.row.original.userId}
+              maxLength={120}
+              dataTestId={`user-${info.row.original.userId}_${info.row.original.libraryId}`}
+            />
+          </div>
         ),
         accessorKey: "userId",
       },
@@ -492,34 +515,13 @@ const LibraryShareDialog = ({
         ),
         accessorKey: "dateShared",
       },
-      {
-        cell: ({ row }) => (
-          <>
-            {row.getCanExpand() ? (
-              <button
-                type="button"
-                data-testid={`expand-button-${row.original.libraryId}`}
-                onClick={row.getToggleExpandedHandler()}
-                style={{ cursor: "pointer" }}
-              >
-                {row.getIsExpanded() ? (
-                  <KeyboardArrowDownIcon sx={keyboardArrowStyles} />
-                ) : (
-                  <KeyboardArrowRightIcon sx={keyboardArrowStyles} />
-                )}
-              </button>
-            ) : null}
-          </>
-        ),
-        id: "expandButton",
-      },
     ];
 
     return columnDefs;
   }, [libraries]);
 
   const table = useReactTable({
-    data: sharedLibraries,
+    data: flattenedSharedLibraries,
     getRowId: (row) => `${row.libraryId}${row.userId ? ` ${row.userId}` : ""}`,
     columns,
     defaultColumn: {
@@ -528,8 +530,6 @@ const LibraryShareDialog = ({
       maxSize: 500,
     },
     getCoreRowModel: getCoreRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    getSubRows: (row) => row.subRows,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     state: {
@@ -626,7 +626,7 @@ const LibraryShareDialog = ({
       <GlobalStyles />
       <MadieDialog
         form
-        title={option}
+        title={option === "Unshare" ? "Unshare From" : option}
         dialogProps={{
           onClose,
           open: showShareDialog && open,
@@ -684,10 +684,12 @@ const LibraryShareDialog = ({
           )}
           <div className="share-unshare-dialog-info-text">
             <div style={{ display: "flex", flexDirection: "column" }}>
-              <div>
-                When sharing a Library, all versions and drafts are shared, so
-                only the most recent library name appears here.
-              </div>
+             <div>
+              Please note: When sharing a library, all versions and drafts are
+              shared, but only the most recent library name appears below. To
+              unshare library(s), deselect the usernames from whom you want to
+              unshare the library(s), then click the 'Unshare' button.
+            </div>
               {option === "Unshare" && (
                 <div>
                   Deselect the users with whom you want to unshare the
@@ -699,6 +701,7 @@ const LibraryShareDialog = ({
           </div>
           <div className="cql-library-table">
             <div className="table" style={{ overflow: "auto" }}>
+              {/* split table view between unshare and share views as MAT-9636 only asks for the update of unshare view. */}
               <table
                 tw="min-w-full"
                 data-testid="share-library-tbl"
