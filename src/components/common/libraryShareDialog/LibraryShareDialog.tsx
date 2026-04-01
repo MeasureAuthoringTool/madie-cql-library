@@ -601,7 +601,7 @@ const LibraryShareDialog = ({
   };
 
   const getAdminUserExportButton = () => {
-    // if (isAdminShareLibraryEnabled) {
+    if (isAdminShareLibraryEnabled) {
     return (
       <Button
         className="export-button"
@@ -612,7 +612,7 @@ const LibraryShareDialog = ({
         <span className="export-button-text">Export User List</span>
       </Button>
     );
-    // }
+    }
   };
 
   return (
