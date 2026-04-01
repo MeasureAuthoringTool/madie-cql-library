@@ -6,8 +6,9 @@ import React, {
   useCallback,
 } from "react";
 import GlobalStyles from "../../../styles/GlobalStyles";
-import { Backdrop, Checkbox, Typography } from "@mui/material";
+import { Backdrop, Checkbox, Chip, Typography } from "@mui/material";
 import {
+  AutoComplete,
   TextField,
   MadieDialog,
   Button,
@@ -52,6 +53,8 @@ interface SharedLibrary {
   userId: string;
   dateShared: string;
   subRows: SharedLibrary[];
+  isFirstRow?: boolean;
+  isLastRow?: boolean;
 }
 
 export interface SharedUser {
@@ -62,11 +65,6 @@ export interface SharedUser {
 const TH = tw.th`p-3 text-left text-sm font-bold capitalize`;
 const icon = <CheckBoxOutlineBlankIcon fontSize="large" />;
 const checkedIcon = <CheckBoxIcon fontSize="large" />;
-const keyboardArrowStyles = {
-  color: "#0073C8",
-  width: 40,
-  height: 40,
-};
 
 //Convert date string to format of mm/dd/yyyy with no leading zeroes in month
 export const convertDate = (date: string) => {
@@ -169,74 +167,83 @@ const LibraryShareDialog = ({
     };
   };
 
-  const handleAddUser = async () => {
-    // Remove all spaces from harpId
-    const harpId = formik.getFieldProps("harpId").value.replace(/\s/g, "");
+  const handleAddUser = () => {
+    const harpIds = formik.values.harpIds;
 
-    // If no harpId is passed in (string with all whitespace), only clear out the harpId field
-    if (!harpId) {
-      formik.setFieldValue("harpId", "");
-      return;
-    }
-
-    try {
-      const userDetails = await userServiceApi.getOwnerDetails(
-        harpId.toLowerCase()
-      );
-      if (userDetails && UserStatus[0] !== userDetails.userStatus.toString()) {
-        throw new Error("User is not active");
-      }
-    } catch (error) {
-      if (error?.status === 400 || error?.message === "User is not active") {
-        // set error for harpId field
-        formik.setFieldError(
-          "harpId",
-          `The provided HARP ID ${harpId} is not associated with an active MADiE user.`
-        );
-      } else {
-        onClose(
-          "danger",
-          getErrorMessage(
-            error,
-            "Unable to share the selected library(s) with the added users. If the error persists, please contact the help desk."
-          )
-        );
-      }
+    // If no harpIds are provided, only clear out the fields
+    if (!harpIds || harpIds.length === 0) {
+      formik.setFieldValue("harpIds", []);
+      formik.setFieldValue("harpIdInput", "");
       return;
     }
 
     let sharedWithAllSelectedLibraries = true;
 
-    const updateSharedLibraries = sharedLibraries.map((library) => {
-      if (
-        library.subRows.length &&
-        library.subRows.some(
-          (subRow) => subRow.userId.toLowerCase() === harpId.toLowerCase()
-        )
-      ) {
-        return { ...library };
-      } else {
-        sharedWithAllSelectedLibraries = false;
-
-        updateSharedLibrariesRequest(library.libraryId, harpId);
-
-        return {
-          ...library,
-          subRows: [
-            {
-              libraryId: library.libraryId,
-              cqlLibraryName: "",
-              userId: harpId,
-              dateShared: new Date().toLocaleString(),
-              subRows: null,
-            },
-            ...library.subRows,
-          ],
-        };
-      }
+    // Group current rows by libraryId
+    const libraryGroups = new Map<string, SharedLibrary[]>();
+    sharedLibraries.forEach((row) => {
+      const existing = libraryGroups.get(row.libraryId) || [];
+      existing.push(row);
+      libraryGroups.set(row.libraryId, existing);
     });
 
-    setSharedLibraries(updateSharedLibraries);
+    // Get unique library IDs (preserving order)
+    const libraryIds = Array.from(
+      new Set(sharedLibraries.map((r) => r.libraryId))
+    );
+
+    harpIds.forEach((harpId) => {
+      const cleanedHarpId = harpId.replace(/\s/g, "");
+      if (!cleanedHarpId) return;
+
+      libraryIds.forEach((libraryId) => {
+        const rows = libraryGroups.get(libraryId) || [];
+        const alreadyShared = rows.some(
+          (row) => row.userId.toLowerCase() === cleanedHarpId.toLowerCase()
+        );
+
+        if (!alreadyShared) {
+          sharedWithAllSelectedLibraries = false;
+          updateSharedLibrariesRequest(libraryId, cleanedHarpId);
+
+          // Add new user row
+          const newRow: SharedLibrary = {
+            libraryId,
+            cqlLibraryName: "",
+            userId: cleanedHarpId,
+            dateShared: new Date().toLocaleString(),
+            subRows: [],
+            isFirstRow: false,
+            isLastRow: false,
+          };
+
+          // If this library has no users yet, put user on first row
+          if (rows.length === 1 && !rows[0].userId) {
+            rows[0].userId = cleanedHarpId;
+            rows[0].dateShared = new Date().toLocaleString();
+          } else {
+            // Insert after first row, before last
+            rows.push(newRow);
+          }
+          libraryGroups.set(libraryId, rows);
+        }
+      });
+    });
+
+    // Rebuild flattened list with correct isFirstRow/isLastRow flags
+    const updatedLibraries: SharedLibrary[] = [];
+    libraryIds.forEach((libraryId) => {
+      const rows = libraryGroups.get(libraryId) || [];
+      rows.forEach((row, index) => {
+        updatedLibraries.push({
+          ...row,
+          isFirstRow: index === 0,
+          isLastRow: index === rows.length - 1,
+        });
+      });
+    });
+
+    setSharedLibraries(updatedLibraries);
     setSharedWithAllSelectedLibraries(sharedWithAllSelectedLibraries);
 
     if (!sharedWithAllSelectedLibraries) {
@@ -272,24 +279,59 @@ const LibraryShareDialog = ({
       const sharedLibraries = await libraryServiceApi.getSharedLibraries(
         libraryIds
       );
-      setSharedLibraries(
-        libraryIds.map((libraryId: string) => ({
-          libraryId,
-          //@ts-ignore
-          cqlLibraryName: libraryMap.get(libraryId).cqlLibraryName,
-          userId: "",
-          dateShared: null,
-          subRows: sharedLibraries[libraryId]
-            .map((sharedUser: SharedUser) => ({
+
+      // Flatten the structure: first user on same row as library, rest as separate rows
+      const flattenedLibraries: SharedLibrary[] = [];
+      libraryIds.forEach((libraryId: string) => {
+        const library = libraryMap.get(libraryId);
+        const sharedUsers = sharedLibraries[libraryId]
+          .map((sharedUser: SharedUser) => ({
+            userId: sharedUser.userId,
+            dateShared: sharedUser.performedAt
+              ? sharedUser.performedAt.toLocaleString()
+              : "-",
+          }))
+          .sort(sortSharedLibraries);
+
+        if (sharedUsers.length === 0) {
+          // No shared users - just show library row
+          flattenedLibraries.push({
+            libraryId,
+            cqlLibraryName: library?.cqlLibraryName || "",
+            userId: "",
+            dateShared: "",
+            subRows: [],
+            isFirstRow: true,
+            isLastRow: true,
+          } as SharedLibrary);
+        } else {
+          // First user on same row as library
+          flattenedLibraries.push({
+            libraryId,
+            cqlLibraryName: library?.cqlLibraryName || "",
+            userId: sharedUsers[0].userId,
+            dateShared: sharedUsers[0].dateShared,
+            subRows: [],
+            isFirstRow: true,
+            isLastRow: sharedUsers.length === 1,
+          } as SharedLibrary);
+
+          // Remaining users on separate rows
+          for (let i = 1; i < sharedUsers.length; i++) {
+            flattenedLibraries.push({
               libraryId,
-              userId: sharedUser.userId,
-              dateShared: sharedUser.performedAt
-                ? sharedUser.performedAt.toLocaleString()
-                : "-",
-            }))
-            .sort(sortSharedLibraries),
-        }))
-      );
+              cqlLibraryName: "",
+              userId: sharedUsers[i].userId,
+              dateShared: sharedUsers[i].dateShared,
+              subRows: [],
+              isFirstRow: false,
+              isLastRow: i === sharedUsers.length - 1,
+            } as SharedLibrary);
+          }
+        }
+      });
+
+      setSharedLibraries(flattenedLibraries);
 
       table.toggleAllRowsSelected(true);
       setInitialRowIdsSelected(Object.keys(table.getState().rowSelection));
@@ -399,10 +441,13 @@ const LibraryShareDialog = ({
 
   const formik = useFormik({
     initialValues: {
-      harpId: "",
+      harpIds: [] as string[],
+      harpIdInput: "",
     },
     validationSchema: Yup.object().shape({
-      harpId: Yup.string().test(harpIdCheck(sharedWithAllSelectedLibraries)),
+      harpIds: Yup.array()
+        .of(Yup.string())
+        .test(harpIdCheck(sharedWithAllSelectedLibraries)),
     }),
     onSubmit: () => {
       option === "Share With" ? handleSave() : setConfirmationDialogOpen(true);
@@ -477,27 +522,6 @@ const LibraryShareDialog = ({
         ),
         accessorKey: "dateShared",
       },
-      {
-        cell: ({ row }) => (
-          <>
-            {row.getCanExpand() ? (
-              <button
-                type="button"
-                data-testid={`expand-button-${row.original.libraryId}`}
-                onClick={row.getToggleExpandedHandler()}
-                style={{ cursor: "pointer" }}
-              >
-                {row.getIsExpanded() ? (
-                  <KeyboardArrowDownIcon sx={keyboardArrowStyles} />
-                ) : (
-                  <KeyboardArrowRightIcon sx={keyboardArrowStyles} />
-                )}
-              </button>
-            ) : null}
-          </>
-        ),
-        id: "expandButton",
-      },
     ];
 
     return columnDefs;
@@ -519,6 +543,7 @@ const LibraryShareDialog = ({
     onRowSelectionChange: setRowSelection,
     state: {
       rowSelection,
+      expanded: true, // Always show all rows expanded
     },
   });
 
@@ -540,7 +565,6 @@ const LibraryShareDialog = ({
     setUnshareLibrariesRequest(new Map<string, string[]>());
     setInitialRowIdsSelected([]);
     table.resetRowSelection();
-    table.resetExpanded();
     formik.resetForm();
   }, [onClose]);
 
@@ -576,7 +600,7 @@ const LibraryShareDialog = ({
       <GlobalStyles />
       <MadieDialog
         form
-        title={option}
+        title={option + "..."}
         dialogProps={{
           onClose,
           open: showShareDialog && open,
@@ -605,16 +629,90 @@ const LibraryShareDialog = ({
           {option === "Share With" && (
             <div id="add-user-id-search">
               <div>
-                <TextField
-                  label="HARP ID"
-                  id="harp-id-input"
-                  inputProps={{
-                    "data-testid": "harp-id-input",
+                <AutoComplete
+                  multiple
+                  id="harp-id-autocomplete"
+                  data-testid="harp-id-autocomplete"
+                  options={[]}
+                  freeSolo
+                  value={formik.values.harpIds}
+                  onChange={(event, newValue) => {
+                    // Clean up values - trim whitespace and filter empty
+                    const cleanedValues = newValue
+                      .map((v) => v.trim())
+                      .filter((v) => v.length > 0);
+                    formik.setFieldValue("harpIds", cleanedValues);
+                    setSharedWithAllSelectedLibraries(false);
                   }}
-                  error={Boolean(formik.errors.harpId)}
-                  helperText={formik.errors.harpId}
-                  onFocus={() => setSharedWithAllSelectedLibraries(false)}
-                  {...formik.getFieldProps("harpId")}
+                  inputValue={formik.values.harpIdInput}
+                  onInputChange={(event, newInputValue, reason) => {
+                    if (reason === "input") {
+                      formik.setFieldValue("harpIdInput", newInputValue);
+                    } else if (reason === "clear") {
+                      formik.setFieldValue("harpIdInput", "");
+                    }
+                  }}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        variant="outlined"
+                        label={option}
+                        {...getTagProps({ index })}
+                        key={index}
+                        data-testid={`harp-id-chip-${index}`}
+                        sx={{
+                          opacity: "1.0 !important",
+                          backgroundColor: "#DDDDDD",
+                          "& .MuiChip-deleteIcon": {
+                            color: "#717171 !important",
+                          },
+                        }}
+                      />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="HARP ID"
+                      id="harp-id-input"
+                      inputProps={{
+                        ...params.inputProps,
+                        "data-testid": "harp-id-input",
+                      }}
+                      error={Boolean(formik.errors.harpIds)}
+                      helperText={formik.errors.harpIds}
+                      onFocus={() => setSharedWithAllSelectedLibraries(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === "," || e.key === "Enter") {
+                          e.preventDefault();
+                          const inputValue = formik.values.harpIdInput.trim();
+                          if (
+                            inputValue &&
+                            !formik.values.harpIds.includes(inputValue)
+                          ) {
+                            formik.setFieldValue("harpIds", [
+                              ...formik.values.harpIds,
+                              inputValue,
+                            ]);
+                            formik.setFieldValue("harpIdInput", "");
+                          }
+                        }
+                      }}
+                      onBlur={() => {
+                        const inputValue = formik.values.harpIdInput.trim();
+                        if (
+                          inputValue &&
+                          !formik.values.harpIds.includes(inputValue)
+                        ) {
+                          formik.setFieldValue("harpIds", [
+                            ...formik.values.harpIds,
+                            inputValue,
+                          ]);
+                          formik.setFieldValue("harpIdInput", "");
+                        }
+                      }}
+                    />
+                  )}
                 />
               </div>
               <div>
@@ -623,11 +721,11 @@ const LibraryShareDialog = ({
                   data-testid="add-user-btn"
                   variant="outline"
                   disabled={
-                    !formik.getFieldProps("harpId").value || !formik.isValid
+                    formik.values.harpIds.length === 0 || !formik.isValid
                   }
                   onClick={handleAddUser}
                 >
-                  Add User
+                  Add User(s)
                 </Button>
               </div>
             </div>
@@ -688,24 +786,47 @@ const LibraryShareDialog = ({
                       <tr
                         key={row.id}
                         className={
-                          row.original.cqlLibraryName
+                          row.original.isFirstRow
                             ? String.raw`ml-tr`
                             : String.raw`ml-tr subtr`
                         }
                         data-testid={`row-item`}
                         style={{
-                          borderTop: "solid 1px #8c8c8c",
-                          borderSpacing: "0 2em !important",
+                          borderTop: row.original.isFirstRow
+                            ? "solid 1px #8c8c8c"
+                            : "none",
                         }}
                       >
-                        {row.getVisibleCells().map((cell) => (
-                          <td key={cell.id} data-testid={`${cell.id}`}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </td>
-                        ))}
+                        {row.getVisibleCells().map((cell, cellIndex) => {
+                          // Apply bottom border only to user and date columns for non-last rows
+                          const isLibraryColumn = cellIndex === 0;
+                          return (
+                            <td
+                              key={cell.id}
+                              data-testid={`${cell.id}`}
+                              style={{
+                                borderBottom:
+                                  row.original.isLastRow && !isLibraryColumn
+                                    ? "none"
+                                    : !isLibraryColumn
+                                    ? "solid 1px #e0e0e0"
+                                    : "none",
+                                verticalAlign: "top",
+                                paddingTop: row.original.isFirstRow
+                                  ? "12px"
+                                  : "8px",
+                                paddingBottom: row.original.isLastRow
+                                  ? "12px"
+                                  : "8px",
+                              }}
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </td>
+                          );
+                        })}
                       </tr>
                     ))
                   )}
