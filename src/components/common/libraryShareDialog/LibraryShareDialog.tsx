@@ -602,16 +602,16 @@ const LibraryShareDialog = ({
 
   const getAdminUserExportButton = () => {
     if (isAdminShareLibraryEnabled) {
-    return (
-      <Button
-        className="export-button"
-        data-testid="export-user-list-button"
-        onClick={handleExportUserList}
-      >
-        <SaveAltIcon sx={{ marginRight: "8px" }} />
-        <span className="export-button-text">Export User List</span>
-      </Button>
-    );
+      return (
+        <Button
+          className="export-button"
+          data-testid="export-user-list-button"
+          onClick={handleExportUserList}
+        >
+          <SaveAltIcon sx={{ marginRight: "8px" }} />
+          <span className="export-button-text">Export User List</span>
+        </Button>
+      );
     }
   };
 
