@@ -679,10 +679,13 @@ const LibraryShareDialog = ({
           <div className="share-unshare-dialog-info-text">
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div>
-                Please note: When sharing a library, all versions and drafts are
+                {option === "Unshare"
+                  ? `Please note: When sharing a library, all versions and drafts are
                 shared, but only the most recent library name appears below. To
                 unshare library(s), deselect the usernames from whom you want to
-                unshare the library(s), then click the 'Unshare' button.
+                unshare the library(s), then click the 'Unshare' button.`
+                  : `When sharing a Library, all versions and drafts are shared, so
+                only the most recent library name appears here.`}
               </div>
             </div>
             {getAdminUserExportButton()}
