@@ -3,13 +3,99 @@
   display: flex;
   flex-direction: row;
   column-gap: 24px;
+  align-items: flex-start;
 
-  > div {
-    flex-basis: 1;
+  > div:first-child {
+    flex-basis: auto;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     flex-grow: 1;
     max-width: 412px;
+  }
+
+  > div:last-child {
+    flex-grow: 0;
+    flex-shrink: 0;
+  }
+
+  #harp-id-autocomplete {
+    width: 100%;
+
+    .MuiFormControl-root {
+      width: 100%;
+    }
+
+    .MuiInputLabel-root {
+      font-family: Rubik, sans-serif;
+      font-size: 14px;
+      color: #515151;
+      background-color: #fff;
+      padding: 0 4px;
+      margin-left: -4px;
+
+      &.Mui-focused {
+        color: #0073c8;
+      }
+
+      &.Mui-error {
+        color: #d32f2f;
+      }
+    }
+
+    .MuiOutlinedInput-root {
+      font-family: Rubik, sans-serif;
+      font-size: 14px;
+      min-height: 40px;
+      border-radius: 4px;
+      background-color: #fff;
+      padding: 4px 9px;
+
+      .MuiOutlinedInput-notchedOutline {
+        border-color: #8c8c8c;
+        border-width: 1px;
+      }
+
+      &:hover .MuiOutlinedInput-notchedOutline {
+        border-color: #515151;
+      }
+
+      &.Mui-focused .MuiOutlinedInput-notchedOutline {
+        border-color: #0073c8;
+        border-width: 1px;
+      }
+
+      &.Mui-error .MuiOutlinedInput-notchedOutline {
+        border-color: #d32f2f;
+      }
+
+      .MuiAutocomplete-input {
+        padding: 4px 4px 4px 6px;
+      }
+    }
+
+    .MuiChip-root {
+      height: 24px;
+      margin: 2px;
+      font-family: Rubik, sans-serif;
+      font-size: 13px;
+      border-radius: 16px;
+      border-color: #0073c8;
+
+      .MuiChip-deleteIcon {
+        color: #0073c8;
+        font-size: 18px;
+
+        &:hover {
+          color: #005a9e;
+        }
+      }
+    }
+
+    .MuiFormHelperText-root {
+      font-family: Rubik, sans-serif;
+      font-size: 12px;
+      margin-left: 0;
+    }
   }
 }
 
@@ -68,4 +154,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+.shared-with-cell {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.shared-with-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
 }

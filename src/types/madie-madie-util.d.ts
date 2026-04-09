@@ -77,10 +77,7 @@ declare module "@madie/madie-util" {
     getAllOrganizations(): Promise<Organization[]>;
   }
 
-  export class UserServiceApi {
-    constructor(getAccessToken: () => string);
-    getOwnerDetails(harpId: string): Promise<UserDetails>;
-  }
+  export function useUserServiceApi(): UserServiceApi;
 
   export function useOrganizationApi(): OrganizationApi;
   export function useUserServiceApi(): UserServiceApi;
@@ -161,6 +158,7 @@ declare module "@madie/madie-util" {
     getLibraryHistory(selectedLibrary: CqlLibrary): Promise<AuditRow[]>;
     lockLibrary(libraryId: string): Promise<any>;
     unlockLibrary(libraryId: string): Promise<any>;
+    getSharedAccessReportForLibraries(ids: Array<string>): Promise<Blob>;
     transferLibraries(
       libraryIds: Array<string>,
       harpId: string,

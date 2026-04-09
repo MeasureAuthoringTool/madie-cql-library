@@ -4,7 +4,7 @@ import LibraryShareDialog, {
   convertDate,
   sortSharedLibraries,
 } from "./LibraryShareDialog";
-import { CqlLibrary, UserStatus } from "@madie/madie-models";
+import { CqlLibrary } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 import {
   useIsRoleOrFeatureEnabled,
@@ -28,8 +28,6 @@ jest.mock("@madie/madie-util", () => ({
     email: "madie.test@semanticbits.com",
   })),
 }));
-
-const testUser = "test-fake-user@email.com";
 
 const mockCqlLibrary1 = {
   id: "TestLibraryId1",
@@ -131,7 +129,7 @@ describe("Create Share Dialog component", () => {
         firstName: "Madie",
         lastName: "Test",
         email: "madie.test@semanticbits.com",
-        userStatus: UserStatus[0],
+        userStatus: "ACTIVE",
       }),
     });
 
@@ -157,8 +155,10 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
   });
 
   it("should render share dialog but not call getSharedLibraries if no library is passed in to share dialog component", () => {
@@ -176,10 +176,10 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).not.toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).not.toHaveBeenCalled();
     expect(
       mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
-    ).not.toBeCalled();
+    ).not.toHaveBeenCalled();
   });
 
   it("should render share dialog and display error message if getSharedLibaries call throws an exception", async () => {
@@ -209,10 +209,10 @@ describe("Create Share Dialog component", () => {
 
     // Use waitFor to handle async call
     await waitFor(() => {
-      expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
       expect(
         mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
-      ).toBeCalled();
+      ).toHaveBeenCalled();
     });
 
     expect(await screen.findByText(errorMessage)).toBeVisible();
@@ -243,7 +243,7 @@ describe("Create Share Dialog component", () => {
     expect(await screen.findByText("Share With...")).toBeInTheDocument();
   });
 
-  it("should render share dialog and show 'Unshare...' title in dialog", async () => {
+  it("should render share dialog and show 'Unshare From...' title in dialog", async () => {
     render(
       <LibraryShareDialog
         libraries={[mockCqlLibrary1, mockCqlLibrary2]}
@@ -253,7 +253,7 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(await screen.findByText("Unshare...")).toBeInTheDocument();
+    expect(await screen.findByText("Unshare From...")).toBeInTheDocument();
   });
 
   it("should render share dialog and show HARP ID input if option is Share With", async () => {
@@ -266,8 +266,10 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     expect(await screen.findByTestId("harp-id-input")).toBeInTheDocument();
   });
@@ -282,8 +284,10 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     expect(screen.queryByTestId("harp-id-input")).toBeNull();
   });
@@ -299,8 +303,10 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -311,17 +317,15 @@ describe("Create Share Dialog component", () => {
     )) as HTMLInputElement;
     expect(harpIdInput).toBeInTheDocument();
 
-    // Type and press Enter to create chip for an existing user
     fireEvent.change(harpIdInput, { target: { value: "userId1" } });
+    expect(harpIdInput.value).toBe("userId1");
     fireEvent.keyDown(harpIdInput, { key: "Enter" });
-
-    await waitFor(() => {
-      expect(addUserBtn).toBeEnabled();
-    });
+    expect(addUserBtn).toBeEnabled();
 
     fireEvent.click(addUserBtn);
 
     expect(saveBtn).toBeDisabled();
+    expect(harpIdInput.value).toBe("");
     const helperText = await screen.findByText(
       "The selected library(s) are already shared with this user."
     );
@@ -339,7 +343,7 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -377,8 +381,10 @@ describe("Create Share Dialog component", () => {
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -404,23 +410,22 @@ describe("Create Share Dialog component", () => {
       expect(saveBtn).toBeEnabled();
     });
 
-    // With flattened rows, new users are added after existing users
-    // userId3 should be added to both libraries
+    // Rows are now displayed flat without expansion
+    //Row 1
+    expect(
+      screen.getByTestId("TestLibraryId1 userId3_cqlLibraryName")
+    ).toHaveTextContent("mockCqlLibrary1");
     expect(
       screen.getByTestId("TestLibraryId1 userId3_userId")
     ).toHaveTextContent("userId3");
 
+    //Row 2
     expect(
       screen.getByTestId("TestLibraryId2 userId3_userId")
     ).toHaveTextContent("userId3");
     expect(
       screen.getByTestId("TestLibraryId2 userId3_dateShared")
     ).toHaveTextContent(convertDate(today.toUTCString()));
-
-    // Existing users should still be visible
-    expect(
-      screen.getByTestId("TestLibraryId1 userId1_userId")
-    ).toHaveTextContent("userId1");
     expect(
       screen.getByTestId("TestLibraryId2 userId1_userId")
     ).toHaveTextContent("userId1");
@@ -448,8 +453,10 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -478,7 +485,7 @@ describe("Create Share Dialog component", () => {
     fireEvent.click(saveBtn);
 
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.shareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.shareLibraries).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
@@ -509,8 +516,10 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -539,7 +548,7 @@ describe("Create Share Dialog component", () => {
     fireEvent.click(saveBtn);
 
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.shareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.shareLibraries).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
@@ -555,7 +564,7 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -613,14 +622,16 @@ describe("Create Share Dialog component", () => {
     );
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const table = await screen.findByTestId("share-library-tbl");
     const tableHeaders = table.querySelectorAll("thead th");
 
     expect(tableHeaders[0]).toHaveTextContent("Library");
-    expect(tableHeaders[1]).toHaveTextContent("User");
+    expect(tableHeaders[1]).toHaveTextContent("Shared With");
     expect(tableHeaders[2]).toHaveTextContent("Date Shared");
 
     const tableRows = table.querySelectorAll("tbody tr");
@@ -641,14 +652,16 @@ describe("Create Share Dialog component", () => {
     );
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const table = await screen.findByTestId("share-library-tbl");
     const tableHeaders = table.querySelectorAll("thead th");
 
     expect(tableHeaders[0]).toHaveTextContent("Library");
-    expect(tableHeaders[1]).toHaveTextContent("User");
+    expect(tableHeaders[1]).toHaveTextContent("Shared With");
     expect(tableHeaders[2]).toHaveTextContent("Date Shared");
 
     const tableRows = table.querySelectorAll("tbody tr");
@@ -669,8 +682,10 @@ describe("Create Share Dialog component", () => {
     );
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const saveBtn = await screen.findByTestId("share-save-button");
     expect(saveBtn).toBeDisabled();
@@ -696,7 +711,7 @@ describe("Create Share Dialog component", () => {
 
     userEvent.click(acceptBtn);
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.unshareLibraries).toHaveBeenCalled();
     });
   });
 
@@ -724,8 +739,10 @@ describe("Create Share Dialog component", () => {
     );
 
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const saveBtn = await screen.findByTestId("share-save-button");
     expect(saveBtn).toBeDisabled();
@@ -751,7 +768,7 @@ describe("Create Share Dialog component", () => {
 
     userEvent.click(acceptBtn);
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.unshareLibraries).toHaveBeenCalled();
     });
   });
 
@@ -816,7 +833,7 @@ describe("Create Share Dialog component", () => {
     userEvent.click(acceptBtn);
 
     await waitFor(() => {
-      expect(mockLibraryServiceApi.unshareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.unshareLibraries).toHaveBeenCalled();
     });
   });
 
@@ -850,7 +867,9 @@ describe("Create Share Dialog component", () => {
     userEvent.click(acceptBtn);
 
     await waitFor(() => {
-      expect(mockLibraryServiceApiWithError.unshareLibraries).toBeCalled();
+      expect(
+        mockLibraryServiceApiWithError.unshareLibraries
+      ).toHaveBeenCalled();
     });
   });
 
@@ -931,7 +950,7 @@ describe("Create Share Dialog component", () => {
         firstName: "Madie",
         lastName: "Test",
         email: "madie.test@semanticbits.com",
-        userStatus: UserStatus[1],
+        userStatus: "INACTIVE",
       }),
     });
     render(
@@ -1032,8 +1051,10 @@ describe("Create Share Dialog component", () => {
     );
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     expect(await screen.findByTestId("share-library-tbl")).toBeInTheDocument();
-    expect(mockLibraryServiceApi.getSharedLibraries).toBeCalled();
-    expect(mockLibraryServiceApi.getRecentLibrariesByLibrarySetId).toBeCalled();
+    expect(mockLibraryServiceApi.getSharedLibraries).toHaveBeenCalled();
+    expect(
+      mockLibraryServiceApi.getRecentLibrariesByLibrarySetId
+    ).toHaveBeenCalled();
 
     const addUserBtn = await screen.findByTestId("add-user-btn");
     expect(addUserBtn).toBeDisabled();
@@ -1062,7 +1083,7 @@ describe("Create Share Dialog component", () => {
     fireEvent.click(saveBtn);
 
     await waitFor(async () => {
-      expect(mockLibraryServiceApi.shareLibraries).toBeCalled();
+      expect(mockLibraryServiceApi.shareLibraries).toHaveBeenCalled();
       expect(mockOnClose).toHaveBeenCalled();
     });
   });
@@ -1136,8 +1157,6 @@ describe("Admin user with AdminShareLibrary feature flag enabled", () => {
 });
 
 describe("Multiple HARP ID chip input functionality", () => {
-  const { getByTestId } = screen;
-
   beforeEach(() => {
     jest.resetModules();
 
@@ -1170,7 +1189,9 @@ describe("Multiple HARP ID chip input functionality", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("harp-id-chip-0")).toBeInTheDocument();
-      expect(screen.getByTestId("harp-id-chip-0")).toHaveTextContent("newUser1");
+      expect(screen.getByTestId("harp-id-chip-0")).toHaveTextContent(
+        "newUser1"
+      );
     });
   });
 
@@ -1196,7 +1217,9 @@ describe("Multiple HARP ID chip input functionality", () => {
 
     await waitFor(() => {
       expect(screen.getByTestId("harp-id-chip-0")).toBeInTheDocument();
-      expect(screen.getByTestId("harp-id-chip-0")).toHaveTextContent("newUser1");
+      expect(screen.getByTestId("harp-id-chip-0")).toHaveTextContent(
+        "newUser1"
+      );
     });
   });
 
@@ -1311,7 +1334,9 @@ describe("Multiple HARP ID chip input functionality", () => {
     fireEvent.keyDown(harpIdInput, { key: "Enter" });
 
     await waitFor(() => {
-      expect(screen.getByTestId("harp-id-chip-0")).toHaveTextContent("trimmedUser");
+      expect(screen.getByTestId("harp-id-chip-0")).toHaveTextContent(
+        "trimmedUser"
+      );
     });
   });
 
@@ -1380,8 +1405,12 @@ describe("Multiple HARP ID chip input functionality", () => {
       expect(screen.getByTestId("share-save-button")).toBeEnabled();
     });
 
-    expect(screen.getByTestId("TestLibraryId1 newUser1_userId")).toHaveTextContent("newUser1");
-    expect(screen.getByTestId("TestLibraryId1 newUser2_userId")).toHaveTextContent("newUser2");
+    expect(
+      screen.getByTestId("TestLibraryId1 newUser1_userId")
+    ).toHaveTextContent("newUser1");
+    expect(
+      screen.getByTestId("TestLibraryId1 newUser2_userId")
+    ).toHaveTextContent("newUser2");
   });
 
   it("should clear chips after clicking Add User(s) button", async () => {
@@ -1437,14 +1466,14 @@ describe("Multiple HARP ID chip input functionality", () => {
     fireEvent.blur(harpIdInput);
 
     await waitFor(() => {
-      expect(screen.getByTestId("harp-id-chip-0")).toHaveTextContent("blurUser");
+      expect(screen.getByTestId("harp-id-chip-0")).toHaveTextContent(
+        "blurUser"
+      );
     });
   });
 });
 
 describe("Flattened row display", () => {
-  const { getByTestId } = screen;
-
   beforeEach(() => {
     jest.resetModules();
 
@@ -1508,8 +1537,12 @@ describe("Flattened row display", () => {
     expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
     await screen.findByTestId("share-library-tbl");
 
-    expect(screen.getByTestId("TestLibraryId1 userId1_userId")).toHaveTextContent("userId1");
-    expect(screen.getByTestId("TestLibraryId1 userId2_userId")).toHaveTextContent("userId2");
+    expect(
+      screen.getByTestId("TestLibraryId1 userId1_userId")
+    ).toHaveTextContent("userId1");
+    expect(
+      screen.getByTestId("TestLibraryId1 userId2_userId")
+    ).toHaveTextContent("userId2");
   });
 
   it("should display library with no shared users showing empty user fields", async () => {
@@ -1527,9 +1560,9 @@ describe("Flattened row display", () => {
       [mockLibraryWithNoSharedUsers.id]: [],
     });
 
-    const mockGetRecentLibrariesEmpty = jest.fn().mockResolvedValue([
-      mockLibraryWithNoSharedUsers,
-    ]);
+    const mockGetRecentLibrariesEmpty = jest
+      .fn()
+      .mockResolvedValue([mockLibraryWithNoSharedUsers]);
 
     const mockLibraryServiceApiEmpty = {
       getSharedLibraries: mockGetSharedCqlLibrariesEmpty,
@@ -1577,8 +1610,781 @@ describe("Flattened row display", () => {
 
     expect(tableHeaders.length).toBe(3);
     expect(tableHeaders[0]).toHaveTextContent("Library");
-    expect(tableHeaders[1]).toHaveTextContent("User");
+    expect(tableHeaders[1]).toHaveTextContent("Shared With");
     expect(tableHeaders[2]).toHaveTextContent("Date Shared");
   });
 });
 
+describe("Bulk user validation with getBulkUserDetails", () => {
+  beforeEach(() => {
+    jest.resetModules();
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
+  });
+
+  it("should add only valid users when some users are invalid", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getBulkUserDetails: jest.fn().mockResolvedValue({
+        validUser: { userStatus: "ACTIVE" },
+        invalidUser: { userStatus: "INACTIVE" },
+      }),
+    });
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const harpIdInput = (await screen.findByTestId(
+      "harp-id-input"
+    )) as HTMLInputElement;
+
+    fireEvent.change(harpIdInput, { target: { value: "validUser" } });
+    fireEvent.keyDown(harpIdInput, { key: "Enter" });
+
+    fireEvent.change(harpIdInput, { target: { value: "invalidUser" } });
+    fireEvent.keyDown(harpIdInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("harp-id-chip-0")).toBeInTheDocument();
+      expect(screen.getByTestId("harp-id-chip-1")).toBeInTheDocument();
+    });
+
+    const addUserBtn = await screen.findByTestId("add-user-btn");
+    fireEvent.click(addUserBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("TestLibraryId1 validUser_userId")
+      ).toHaveTextContent("validUser");
+    });
+
+    expect(
+      screen.getByText(
+        /invalidUser.*is not associated with an active MADiE user/i
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("should show error for multiple invalid users", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getBulkUserDetails: jest.fn().mockResolvedValue({
+        invalidUser1: { userStatus: "INACTIVE" },
+        invalidUser2: { userStatus: "INACTIVE" },
+      }),
+    });
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const harpIdInput = (await screen.findByTestId(
+      "harp-id-input"
+    )) as HTMLInputElement;
+
+    fireEvent.change(harpIdInput, { target: { value: "invalidUser1" } });
+    fireEvent.keyDown(harpIdInput, { key: "Enter" });
+
+    fireEvent.change(harpIdInput, { target: { value: "invalidUser2" } });
+    fireEvent.keyDown(harpIdInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("harp-id-chip-0")).toBeInTheDocument();
+      expect(screen.getByTestId("harp-id-chip-1")).toBeInTheDocument();
+    });
+
+    const addUserBtn = await screen.findByTestId("add-user-btn");
+    fireEvent.click(addUserBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          /invalidUser1, invalidUser2.*are not associated with an active MADiE user/i
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should show toast error when bulk user validation fails with non-400 error", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getBulkUserDetails: jest.fn().mockRejectedValue({
+        response: { status: 500 },
+      }),
+    });
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const harpIdInput = (await screen.findByTestId(
+      "harp-id-input"
+    )) as HTMLInputElement;
+
+    fireEvent.change(harpIdInput, { target: { value: "someUser" } });
+    fireEvent.keyDown(harpIdInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("harp-id-chip-0")).toBeInTheDocument();
+    });
+
+    const addUserBtn = await screen.findByTestId("add-user-btn");
+    fireEvent.click(addUserBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Unable to validate the provided HARP ID. If the error persists, please contact the help desk."
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should show error when bulk user validation fails with 400 status", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getBulkUserDetails: jest.fn().mockRejectedValue({
+        response: { status: 400 },
+      }),
+    });
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const harpIdInput = (await screen.findByTestId(
+      "harp-id-input"
+    )) as HTMLInputElement;
+
+    fireEvent.change(harpIdInput, { target: { value: "badUser" } });
+    fireEvent.keyDown(harpIdInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("harp-id-chip-0")).toBeInTheDocument();
+    });
+
+    const addUserBtn = await screen.findByTestId("add-user-btn");
+    fireEvent.click(addUserBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "The provided HARP ID is not associated with an active MADiE user."
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should skip users already shared with all libraries", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getBulkUserDetails: jest.fn().mockResolvedValue({
+        userId1: { userStatus: "ACTIVE" },
+      }),
+    });
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const harpIdInput = (await screen.findByTestId(
+      "harp-id-input"
+    )) as HTMLInputElement;
+
+    fireEvent.change(harpIdInput, { target: { value: "userId1" } });
+    fireEvent.keyDown(harpIdInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("harp-id-chip-0")).toBeInTheDocument();
+    });
+
+    const addUserBtn = await screen.findByTestId("add-user-btn");
+    fireEvent.click(addUserBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "The selected library(s) are already shared with the entered user(s)."
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should handle input value still pending when Add User is clicked", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getBulkUserDetails: jest.fn().mockResolvedValue({
+        pendingUser: { userStatus: "ACTIVE" },
+      }),
+    });
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const harpIdInput = (await screen.findByTestId(
+      "harp-id-input"
+    )) as HTMLInputElement;
+
+    fireEvent.change(harpIdInput, { target: { value: "pendingUser" } });
+
+    const addUserBtn = await screen.findByTestId("add-user-btn");
+    fireEvent.click(addUserBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("TestLibraryId1 pendingUser_userId")
+      ).toHaveTextContent("pendingUser");
+    });
+  });
+});
+
+describe("Export user list functionality", () => {
+  beforeEach(() => {
+    jest.resetModules();
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(true);
+  });
+
+  it("should show success toast on successful export", async () => {
+    const mockBlob = new Blob(["test"], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+
+    const mockLibraryServiceApiWithExport = {
+      ...mockLibraryServiceApi,
+      getSharedAccessReportForLibraries: jest.fn().mockResolvedValue(mockBlob),
+    };
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApiWithExport
+    );
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const exportBtn = await screen.findByTestId("export-user-list-button");
+    fireEvent.click(exportBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Library Sharing Report exported successfully.")
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should show error toast on failed export", async () => {
+    const mockLibraryServiceApiWithExportError = {
+      ...mockLibraryServiceApi,
+      getSharedAccessReportForLibraries: jest
+        .fn()
+        .mockRejectedValue(new Error("Export failed")),
+    };
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApiWithExportError
+    );
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const exportBtn = await screen.findByTestId("export-user-list-button");
+    fireEvent.click(exportBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "Unable to export the user list. Please try again. If the issue persists, please contact the help desk."
+        )
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should not show export button when admin feature is disabled", async () => {
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+
+    expect(screen.queryByTestId("export-user-list-button")).toBeNull();
+  });
+});
+
+describe("convertDate utility function", () => {
+  it("should return empty string for undefined date", () => {
+    const convertedDate = convertDate(undefined);
+    expect(convertedDate).toBe("");
+  });
+
+  it("should format date with single digit month without leading zero", () => {
+    const convertedDate = convertDate("2023-01-15T00:00:00.000Z");
+    expect(convertedDate).toBe("1/15/2023");
+  });
+
+  it("should format date with double digit month", () => {
+    const convertedDate = convertDate("2023-12-25T00:00:00.000Z");
+    expect(convertedDate).toBe("12/25/2023");
+  });
+
+  it("should format date with day padded with leading zero", () => {
+    const convertedDate = convertDate("2023-06-05T00:00:00.000Z");
+    expect(convertedDate).toBe("6/05/2023");
+  });
+});
+
+describe("sortSharedLibraries utility function", () => {
+  it("should sort libraries by date in descending order", () => {
+    const a = {
+      dateShared: "2023-01-01",
+      libraryId: "1",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    const b = {
+      dateShared: "2023-06-01",
+      libraryId: "2",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    expect(sortSharedLibraries(a, b)).toBeGreaterThan(0);
+  });
+
+  it("should return negative when first date is more recent", () => {
+    const a = {
+      dateShared: "2023-12-01",
+      libraryId: "1",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    const b = {
+      dateShared: "2023-01-01",
+      libraryId: "2",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    expect(sortSharedLibraries(a, b)).toBeLessThan(0);
+  });
+
+  it("should return 0 when dates are equal", () => {
+    const a = {
+      dateShared: "2023-06-15",
+      libraryId: "1",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    const b = {
+      dateShared: "2023-06-15",
+      libraryId: "2",
+      cqlLibraryName: "",
+      userId: "",
+      subRows: [],
+    };
+    expect(sortSharedLibraries(a, b)).toBe(0);
+  });
+});
+
+describe("Unshare dialog select all functionality", () => {
+  beforeEach(() => {
+    jest.resetModules();
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
+  });
+
+  it("should disable save button when all rows are selected", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Unshare"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const saveBtn = await screen.findByTestId("share-save-button");
+    expect(saveBtn).toBeDisabled();
+  });
+
+  it("should show select all checkbox in unshare mode", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Unshare"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    expect(screen.getByTestId("shared-with-select-all")).toBeInTheDocument();
+  });
+
+  it("should not show select all checkbox in share mode", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    expect(screen.queryByTestId("shared-with-select-all")).toBeNull();
+  });
+
+  it("should toggle all rows when select all is clicked", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Unshare"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const selectAllCheckbox = screen.getByTestId("shared-with-select-all");
+    const checkBoxes = await screen.findAllByRole("checkbox");
+
+    checkBoxes.slice(1).forEach((checkbox) => {
+      expect(checkbox).toBeChecked();
+    });
+
+    userEvent.click(selectAllCheckbox);
+
+    await waitFor(() => {
+      checkBoxes.slice(1).forEach((checkbox) => {
+        expect(checkbox).not.toBeChecked();
+      });
+    });
+  });
+});
+
+describe("Cancel button functionality", () => {
+  beforeEach(() => {
+    jest.resetModules();
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
+  });
+
+  it("should call onClose when cancel button is clicked in Share dialog", async () => {
+    const onCloseMock = jest.fn();
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={onCloseMock}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+
+    const cancelBtn = await screen.findByTestId("share-cancel-button");
+    fireEvent.click(cancelBtn);
+
+    expect(onCloseMock).toHaveBeenCalled();
+  });
+
+  it("should call onClose when cancel button is clicked in Unshare dialog", async () => {
+    const onCloseMock = jest.fn();
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Unshare"}
+        onClose={onCloseMock}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+
+    const cancelBtn = await screen.findByTestId("share-cancel-button");
+    fireEvent.click(cancelBtn);
+
+    expect(onCloseMock).toHaveBeenCalled();
+  });
+});
+
+describe("Informational text display", () => {
+  beforeEach(() => {
+    jest.resetModules();
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
+  });
+
+  it("should display correct info text for Share With option", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+
+    expect(
+      screen.getByText(
+        /When sharing a Library, all versions and drafts are shared/i
+      )
+    ).toBeInTheDocument();
+  });
+
+  it("should display correct info text for Unshare option", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Unshare"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+
+    expect(
+      screen.getByText(/To unshare library\(s\), deselect the usernames/i)
+    ).toBeInTheDocument();
+  });
+});
+
+describe("Multiple libraries sharing", () => {
+  beforeEach(() => {
+    jest.resetModules();
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
+
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getBulkUserDetails: jest.fn().mockResolvedValue({
+        newSharedUser: { userStatus: "ACTIVE" },
+      }),
+    });
+  });
+
+  it("should add user to multiple libraries at once", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1, mockCqlLibrary2]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const harpIdInput = (await screen.findByTestId(
+      "harp-id-input"
+    )) as HTMLInputElement;
+
+    fireEvent.change(harpIdInput, { target: { value: "newSharedUser" } });
+    fireEvent.keyDown(harpIdInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("harp-id-chip-0")).toBeInTheDocument();
+    });
+
+    const addUserBtn = await screen.findByTestId("add-user-btn");
+    fireEvent.click(addUserBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId("TestLibraryId1 newSharedUser_userId")
+      ).toHaveTextContent("newSharedUser");
+      expect(
+        screen.getByTestId("TestLibraryId2 newSharedUser_userId")
+      ).toHaveTextContent("newSharedUser");
+    });
+  });
+});
+
+describe("Helper text display", () => {
+  beforeEach(() => {
+    jest.resetModules();
+
+    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+
+    (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
+      mockLibraryServiceApi
+    );
+  });
+
+  it("should display default helper text when no error", async () => {
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+
+    expect(
+      screen.getByText("Hit comma (,) to add multiple")
+    ).toBeInTheDocument();
+  });
+
+  it("should clear error when input changes", async () => {
+    (useUserServiceApi as jest.Mock).mockReturnValue({
+      getBulkUserDetails: jest.fn().mockResolvedValue({
+        userId1: { userStatus: "ACTIVE" },
+      }),
+    });
+
+    render(
+      <LibraryShareDialog
+        libraries={[mockCqlLibrary1]}
+        open={true}
+        option={"Share With"}
+        onClose={jest.fn()}
+      />
+    );
+
+    expect(await screen.findByTestId("share-dialog")).toBeInTheDocument();
+    await screen.findByTestId("share-library-tbl");
+
+    const harpIdInput = (await screen.findByTestId(
+      "harp-id-input"
+    )) as HTMLInputElement;
+
+    fireEvent.change(harpIdInput, { target: { value: "userId1" } });
+    fireEvent.keyDown(harpIdInput, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("harp-id-chip-0")).toBeInTheDocument();
+    });
+
+    const addUserBtn = await screen.findByTestId("add-user-btn");
+    fireEvent.click(addUserBtn);
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(
+          "The selected library(s) are already shared with the entered user(s)."
+        )
+      ).toBeInTheDocument();
+    });
+
+    fireEvent.change(harpIdInput, { target: { value: "new" } });
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Hit comma (,) to add multiple")
+      ).toBeInTheDocument();
+    });
+  });
+});
