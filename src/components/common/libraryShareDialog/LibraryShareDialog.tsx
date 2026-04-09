@@ -181,7 +181,7 @@ const LibraryShareDialog = ({
 
   const harpIdCheck = (isSharedWithAllSelectedLibraries: boolean) => {
     return {
-      message: `The selected library(s) are already shared with this user.`,
+      message: `The selected library(s) are already shared with the entered user(s).`,
       test: () => {
         return !isSharedWithAllSelectedLibraries;
       },
