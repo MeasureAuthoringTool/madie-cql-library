@@ -263,7 +263,7 @@ const LibraryShareDialog = ({
             subRows: [
               {
                 libraryId: library.libraryId,
-                cqlLibraryName: "",
+                cqlLibraryName: library.cqlLibraryName,
                 userId: harpId,
                 dateShared: new Date().toLocaleString(),
                 subRows: null,
