@@ -354,7 +354,7 @@ const LibraryShareDialog = ({
     } finally {
       setLoading(false);
     }
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open]);
 
   const handleSave = async () => {
     setConfirmationDialogOpen(false);
@@ -412,7 +412,7 @@ const LibraryShareDialog = ({
         updateUnsharedLibrariesRequest(libraryId, userId);
       });
     }
-  }, [rowSelection, option]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [rowSelection, option]);
 
   const confirmationDialogWarningContent = () => {
     let requestToUse = unshareLibrariesRequest;
@@ -545,7 +545,7 @@ const LibraryShareDialog = ({
     ];
 
     return columnDefs;
-  }, [libraries]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [libraries]);
 
   const table = useReactTable({
     data: flattenedSharedLibraries,
@@ -570,11 +570,11 @@ const LibraryShareDialog = ({
 
   useEffect(() => {
     formik.validateForm();
-  }, [sharedWithAllSelectedLibraries]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sharedWithAllSelectedLibraries]);
 
   useEffect(() => {
     onRowSelectionChange();
-  }, [table.getState().rowSelection]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [table.getState().rowSelection]);
 
   useEffect(() => {
     setSaveDisabled(true);
@@ -584,7 +584,7 @@ const LibraryShareDialog = ({
     table.resetRowSelection();
     table.resetExpanded();
     formik.resetForm();
-  }, [onClose]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [onClose]);
 
   const handleConfirmationDialogClose = () => {
     setConfirmationDialogOpen(false);
