@@ -110,6 +110,7 @@ export default function ShareAction(props: PropTypes) {
       title={tooltipMessage}
       onMouseOver={validateShareActionState}
       arrow
+      placement="top"
       slotProps={{
         tooltip: {
           sx: {
