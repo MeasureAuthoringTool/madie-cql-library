@@ -61,6 +61,7 @@ export default function TransferAction(props: PropTypes) {
       data-testid="transfer-action-tooltip"
       title={tooltipMessage}
       arrow
+      placement="top"
       slotProps={{
         tooltip: {
           sx: {
