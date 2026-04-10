@@ -6,8 +6,9 @@ import React, {
   useCallback,
 } from "react";
 import GlobalStyles from "../../../styles/GlobalStyles";
-import { Backdrop, Checkbox, Typography } from "@mui/material";
+import { Backdrop, Checkbox, Chip, Typography } from "@mui/material";
 import {
+  AutoComplete,
   TextField,
   MadieDialog,
   Button,
@@ -22,7 +23,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { CqlLibrary, UserStatus } from "@madie/madie-models";
+import { CqlLibrary } from "@madie/madie-models";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import tw from "twin.macro";
@@ -43,6 +44,10 @@ export const LIBRARY_SHARING_EXPORT_SUCCESS =
   "Library Sharing Report exported successfully.";
 export const LIBRARY_SHARING_EXPORT_ERROR =
   "Unable to export the user list. Please try again. If the issue persists, please contact the help desk.";
+export const INVALID_HARP_ID_MESSAGE =
+  "The provided HARP ID is not associated with an active MADiE user.";
+export const HARP_ID_VALIDATION_FAILURE =
+  "Unable to validate the provided HARP ID. If the error persists, please contact the help desk.";
 
 interface ShareDialogProps {
   libraries: CqlLibrary[];
@@ -67,11 +72,6 @@ export interface SharedUser {
 const TH = tw.th`p-3 text-left text-sm font-bold capitalize`;
 const icon = <CheckBoxOutlineBlankIcon fontSize="large" />;
 const checkedIcon = <CheckBoxIcon fontSize="large" />;
-const keyboardArrowStyles = {
-  color: "#0073C8",
-  width: 40,
-  height: 40,
-};
 
 //Convert date string to format of mm/dd/yyyy with no leading zeroes in month
 export const convertDate = (date: string) => {
@@ -141,6 +141,8 @@ const LibraryShareDialog = ({
   const [rowSelection, setRowSelection] = useState({});
   const [initialRowIdsSelected, setInitialRowIdsSelected] = useState([]);
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [harpIds, setHarpIds] = useState<string[]>([]);
+  const [harpInputValue, setHarpInputValue] = useState<string>("");
 
   // Toast state
   const [toast, setToast] = useState({
@@ -179,7 +181,7 @@ const LibraryShareDialog = ({
 
   const harpIdCheck = (isSharedWithAllSelectedLibraries: boolean) => {
     return {
-      message: `The selected library(s) are already shared with this user.`,
+      message: `The selected library(s) are already shared with the entered user(s).`,
       test: () => {
         return !isSharedWithAllSelectedLibraries;
       },
@@ -187,78 +189,109 @@ const LibraryShareDialog = ({
   };
 
   const handleAddUser = async () => {
-    // Remove all spaces from harpId
-    const harpId = formik.getFieldProps("harpId").value.replace(/\s/g, "");
+    const allIds = [...harpIds];
+    const remaining = harpInputValue.replace(/\s/g, "");
+    if (remaining) {
+      allIds.push(remaining);
+    }
+    // @ts-ignore
+    const uniqueIds = [...new Set(allIds)];
+    if (uniqueIds.length === 0) {
+      setHarpInputValue("");
+      return;
+    }
 
-    // If no harpId is passed in (string with all whitespace), only clear out the harpId field
-    if (!harpId) {
-      formik.setFieldValue("harpId", "");
+    const newIds = uniqueIds.filter(
+      (id) =>
+        !sharedLibraries.every((library) =>
+          library.subRows.some((subRow) => subRow.userId === id)
+        )
+    );
+    if (newIds.length === 0) {
+      formik.setFieldError(
+        "harpId",
+        `The selected library(s) are already shared with the entered user(s).`
+      );
       return;
     }
 
     try {
-      const userDetails = await userServiceApi.getOwnerDetails(
-        harpId.toLowerCase()
+      const userDetails = await userServiceApi.getBulkUserDetails(newIds);
+      const validUsers: string[] = [];
+      const invalidUsers: string[] = [];
+
+      Object.entries(userDetails).forEach(
+        ([harpId, details]: [string, any]) => {
+          if (details.userStatus && String(details.userStatus) === "ACTIVE") {
+            validUsers.push(harpId);
+          } else {
+            invalidUsers.push(harpId);
+          }
+        }
       );
-      if (userDetails && UserStatus[0] !== userDetails.userStatus.toString()) {
-        throw new Error("User is not active");
+
+      if (invalidUsers.length > 0) {
+        if (invalidUsers.length === 1) {
+          formik.setFieldError(
+            "harpId",
+            `The provided HARP ID (${invalidUsers[0]}) is not associated with an active MADiE user.`
+          );
+        } else {
+          formik.setFieldError(
+            "harpId",
+            `The provided HARP IDs (${invalidUsers.join(
+              ", "
+            )}) are not associated with an active MADiE user.`
+          );
+        }
+      }
+
+      if (validUsers.length === 0) {
+        return;
+      }
+
+      let updatedLibraries = [...sharedLibraries];
+      validUsers.forEach((harpId) => {
+        updatedLibraries = updatedLibraries.map((library) => {
+          // Skip libraries where this user is already shared
+          if (library.subRows.some((subRow) => subRow.userId === harpId)) {
+            return library;
+          }
+          updateSharedLibrariesRequest(library.libraryId, harpId);
+          return {
+            ...library,
+            subRows: [
+              {
+                libraryId: library.libraryId,
+                cqlLibraryName: library.cqlLibraryName,
+                userId: harpId,
+                dateShared: new Date().toLocaleString(),
+                subRows: null,
+              },
+              ...library.subRows,
+            ],
+          };
+        });
+      });
+
+      setSharedLibraries(updatedLibraries);
+      setSaveDisabled(false);
+      setHarpIds([]);
+      setHarpInputValue("");
+
+      if (invalidUsers.length === 0) {
+        formik.resetForm();
       }
     } catch (error) {
-      if (error?.status === 400 || error?.message === "User is not active") {
-        // set error for harpId field
-        formik.setFieldError(
-          "harpId",
-          `The provided HARP ID ${harpId} is not associated with an active MADiE user.`
-        );
+      if (error?.response?.status === 400) {
+        formik.setFieldError("harpId", INVALID_HARP_ID_MESSAGE);
       } else {
-        onClose(
-          "danger",
-          getErrorMessage(
-            error,
-            "Unable to share the selected library(s) with the added users. If the error persists, please contact the help desk."
-          )
-        );
+        setToast({
+          open: true,
+          type: "danger",
+          message: HARP_ID_VALIDATION_FAILURE,
+        });
       }
-      return;
-    }
-
-    let sharedWithAllSelectedLibraries = true;
-
-    const updateSharedLibraries = sharedLibraries.map((library) => {
-      if (
-        library.subRows.length &&
-        library.subRows.some(
-          (subRow) => subRow.userId.toLowerCase() === harpId.toLowerCase()
-        )
-      ) {
-        return { ...library };
-      } else {
-        sharedWithAllSelectedLibraries = false;
-
-        updateSharedLibrariesRequest(library.libraryId, harpId);
-
-        return {
-          ...library,
-          subRows: [
-            {
-              libraryId: library.libraryId,
-              cqlLibraryName: "",
-              userId: harpId,
-              dateShared: new Date().toLocaleString(),
-              subRows: null,
-            },
-            ...library.subRows,
-          ],
-        };
-      }
-    });
-
-    setSharedLibraries(updateSharedLibraries);
-    setSharedWithAllSelectedLibraries(sharedWithAllSelectedLibraries);
-
-    if (!sharedWithAllSelectedLibraries) {
-      setSaveDisabled(false);
-      formik.resetForm();
     }
   };
 
@@ -620,7 +653,7 @@ const LibraryShareDialog = ({
       <GlobalStyles />
       <MadieDialog
         form
-        title={option === "Unshare" ? "Unshare From..." : option}
+        title={option === "Unshare" ? "Unshare From..." : "Share With..."}
         dialogProps={{
           onClose,
           open: showShareDialog && open,
@@ -649,29 +682,113 @@ const LibraryShareDialog = ({
           {option === "Share With" && (
             <div id="add-user-id-search">
               <div>
-                <TextField
-                  label="HARP ID"
-                  id="harp-id-input"
-                  inputProps={{
-                    "data-testid": "harp-id-input",
+                <AutoComplete
+                  multiple
+                  id="harp-id-autocomplete"
+                  data-testid="harp-id-autocomplete"
+                  options={[]}
+                  freeSolo
+                  value={harpIds}
+                  onChange={(event, newValue) => {
+                    // Clean up values - trim whitespace and filter empty
+                    const cleanedValues = newValue
+                      .map((v) => v.trim())
+                      .filter((v) => v.length > 0);
+                    setHarpIds(cleanedValues);
+                    setSharedWithAllSelectedLibraries(false);
                   }}
-                  error={Boolean(formik.errors.harpId)}
-                  helperText={formik.errors.harpId}
-                  onFocus={() => setSharedWithAllSelectedLibraries(false)}
-                  {...formik.getFieldProps("harpId")}
+                  inputValue={harpInputValue}
+                  onInputChange={(event, newInputValue, reason) => {
+                    if (reason === "input") {
+                      setHarpInputValue(newInputValue);
+                    } else if (reason === "clear") {
+                      setHarpInputValue("");
+                    }
+                    if (formik.errors.harpId) {
+                      formik.setFieldError("harpId", undefined);
+                    }
+                  }}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        variant="outlined"
+                        label={option}
+                        {...getTagProps({ index })}
+                        key={index}
+                        data-testid={`harp-id-chip-${index}`}
+                        sx={{
+                          opacity: "1.0 !important",
+                          backgroundColor: "#DDDDDD",
+                          "& .MuiChip-deleteIcon": {
+                            color: "#717171 !important",
+                          },
+                        }}
+                      />
+                    ))
+                  }
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="HARP ID"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          padding: "10px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                          backgroundColor: "#fff",
+                        },
+                        "& .MuiOutlinedInput-root:hover": {
+                          borderColor: "#0073C8",
+                        },
+                        "& .MuiOutlinedInput-root.Mui-focused": {
+                          borderColor: "#0073C8",
+                          boxShadow: "0 0 0 2px rgba(0, 115, 200, 0.2)",
+                        },
+                      }}
+                      id="harp-id-input"
+                      inputProps={{
+                        ...params.inputProps,
+                        "data-testid": "harp-id-input",
+                      }}
+                      error={Boolean(formik.errors.harpId)}
+                      onFocus={() => setSharedWithAllSelectedLibraries(false)}
+                      onKeyDown={(e) => {
+                        if (e.key === "," || e.key === "Enter") {
+                          e.preventDefault();
+                          const inputValue = harpInputValue.trim();
+                          if (inputValue && !harpIds.includes(inputValue)) {
+                            setHarpIds([...harpIds, inputValue]);
+                            setHarpInputValue("");
+                          }
+                        }
+                      }}
+                      onBlur={formik.handleBlur("harpId")}
+                    />
+                  )}
                 />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: formik.errors.harpId ? "#d32f2f" : "#666",
+                    marginTop: "4px",
+                    marginLeft: "14px",
+                    display: "block",
+                    fontSize: "0.75rem",
+                  }}
+                  data-testid="harp-id-helper-text"
+                >
+                  {formik.errors.harpId || "Hit comma (,) to add multiple"}
+                </Typography>
               </div>
               <div>
                 <Button
                   id="add-user-btn"
                   data-testid="add-user-btn"
                   variant="outline"
-                  disabled={
-                    !formik.getFieldProps("harpId").value || !formik.isValid
-                  }
+                  disabled={harpIds.length === 0 || !formik.isValid}
                   onClick={handleAddUser}
                 >
-                  Add User
+                  Add User(s)
                 </Button>
               </div>
             </div>
@@ -748,12 +865,8 @@ const LibraryShareDialog = ({
                     table.getRowModel().rows.map((row) => (
                       <tr
                         key={row.id}
-                        className={
-                          row.original.cqlLibraryName
-                            ? String.raw`ml-tr`
-                            : String.raw`ml-tr subtr`
-                        }
-                        data-testid={`row-item`}
+                        className="ml-tr"
+                        data-testid="row-item"
                         style={{
                           borderTop: "solid 1px #8c8c8c",
                           borderSpacing: "0 2em !important",

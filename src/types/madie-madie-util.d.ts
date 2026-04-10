@@ -77,10 +77,7 @@ declare module "@madie/madie-util" {
     getAllOrganizations(): Promise<Organization[]>;
   }
 
-  export class UserServiceApi {
-    constructor(getAccessToken: () => string);
-    getOwnerDetails(harpId: string): Promise<UserDetails>;
-  }
+  export function useUserServiceApi(): UserServiceApi;
 
   export function useOrganizationApi(): OrganizationApi;
   export function useUserServiceApi(): UserServiceApi;
