@@ -51,6 +51,7 @@ export default function VersionAction(props: PropTypes) {
       data-testid="version-action-tooltip"
       title={tooltipMessage}
       arrow
+      placement="top"
       slotProps={{
         tooltip: {
           sx: {

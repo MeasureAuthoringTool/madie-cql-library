@@ -58,6 +58,7 @@ export default function DeleteAction(props: PropTypes) {
       data-testid="delete-action-tooltip"
       title={tooltipMessage}
       arrow
+      placement="top"
       slotProps={{
         tooltip: {
           sx: {

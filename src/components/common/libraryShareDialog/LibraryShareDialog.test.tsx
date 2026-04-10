@@ -263,7 +263,7 @@ describe("Create Share Dialog component", () => {
       />
     );
     expect(getByTestId("share-dialog")).toBeInTheDocument();
-    expect(await screen.findByText("Unshare From")).toBeInTheDocument();
+    expect(await screen.findByText("Unshare From...")).toBeInTheDocument();
   });
 
   it("should render share dialog and show HARP ID input if option is Share With", async () => {

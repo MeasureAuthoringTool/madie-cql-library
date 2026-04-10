@@ -620,7 +620,7 @@ const LibraryShareDialog = ({
       <GlobalStyles />
       <MadieDialog
         form
-        title={option === "Unshare" ? "Unshare From" : option}
+        title={option === "Unshare" ? "Unshare From..." : option}
         dialogProps={{
           onClose,
           open: showShareDialog && open,
@@ -679,13 +679,30 @@ const LibraryShareDialog = ({
           <div className="share-unshare-dialog-info-text">
             <div style={{ display: "flex", flexDirection: "column" }}>
               <div>
-                {option === "Unshare"
-                  ? `Please note: When sharing a library, all versions and drafts are
-                shared, but only the most recent library name appears below. To
-                unshare library(s), deselect the usernames from whom you want to
-                unshare the library(s), then click the 'Unshare' button.`
-                  : `When sharing a Library, all versions and drafts are shared, so
-                only the most recent library name appears here.`}
+                {option === "Unshare" ? (
+                  <div>
+                    <span>
+                      <strong>Please note: </strong>
+                    </span>
+                    <span>
+                      When sharing a library, all versions and drafts are
+                      shared, but only the most recent library name appears
+                      below.
+                    </span>
+                    <br />
+                    <span>
+                      To unshare library(s),{" "}
+                      <strong>
+                        deselect the usernames from whom you want to unshare the
+                        library(s)
+                      </strong>
+                      , then click the 'Unshare' button.
+                    </span>
+                  </div>
+                ) : (
+                  `When sharing a Library, all versions and drafts are shared, so
+                only the most recent library name appears here.`
+                )}
               </div>
             </div>
             {getAdminUserExportButton()}
