@@ -785,7 +785,10 @@ const LibraryShareDialog = ({
                   id="add-user-btn"
                   data-testid="add-user-btn"
                   variant="outline"
-                  disabled={harpIds.length === 0 || !formik.isValid}
+                  disabled={
+                    (harpIds.length === 0 && !harpInputValue.trim()) ||
+                    !formik.isValid
+                  }
                   onClick={handleAddUser}
                 >
                   Add User(s)
