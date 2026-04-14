@@ -370,6 +370,131 @@ describe("LibraryShareDialog", () => {
         expect(screen.queryByTestId("harp-id-chip-0")).toBeNull()
       );
     });
+
+    it("enables Add User button when input has text without creating chip", async () => {
+      renderShareDialog();
+      await waitForDialog();
+
+      const addBtn = await screen.findByTestId("add-user-btn");
+      expect(addBtn).toBeDisabled();
+
+      const input = await getHarpIdInput();
+      fireEvent.change(input, { target: { value: "someUser" } });
+
+      await waitFor(() => expect(addBtn).toBeEnabled());
+    });
+
+    it("adds user from input text without requiring chip creation", async () => {
+      renderShareDialog({ libraries: [mockCqlLibrary1] });
+      await waitForDialog();
+
+      const input = await getHarpIdInput();
+      fireEvent.change(input, { target: { value: "directInputUser" } });
+      await clickAddUserButton();
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("TestLibraryId1 directInputUser_userId")
+        ).toHaveTextContent("directInputUser");
+      });
+    });
+
+    it("displays library name in new row when user is added", async () => {
+      renderShareDialog({ libraries: [mockCqlLibrary1] });
+      await waitForDialog();
+      await addHarpIdChip("newUserId");
+
+      await waitFor(() =>
+        expect(screen.findByTestId("add-user-btn")).resolves.toBeEnabled()
+      );
+      await clickAddUserButton();
+
+      await waitFor(() => {
+        const newRowCell = screen.getByTestId(
+          "TestLibraryId1 newUserId_cqlLibraryName"
+        );
+        expect(newRowCell).toHaveTextContent("mockCqlLibrary1");
+      });
+    });
+
+    it("displays library name for each library when adding user to multiple libraries", async () => {
+      renderShareDialog({ libraries: [mockCqlLibrary1, mockCqlLibrary2] });
+      await waitForDialog();
+      await addHarpIdChip("multiLibUser");
+
+      await waitFor(() =>
+        expect(screen.findByTestId("add-user-btn")).resolves.toBeEnabled()
+      );
+      await clickAddUserButton();
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("TestLibraryId1 multiLibUser_cqlLibraryName")
+        ).toHaveTextContent("mockCqlLibrary1");
+        expect(
+          screen.getByTestId("TestLibraryId2 multiLibUser_cqlLibraryName")
+        ).toHaveTextContent("mockCqlLibrary2");
+      });
+    });
+
+    it("processes both chips and trailing input value together", async () => {
+      renderShareDialog({ libraries: [mockCqlLibrary1] });
+      await waitForDialog();
+
+      await addHarpIdChip("chipUser");
+      const input = await getHarpIdInput();
+      fireEvent.change(input, { target: { value: "trailingUser" } });
+      await clickAddUserButton();
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("TestLibraryId1 chipUser_userId")
+        ).toHaveTextContent("chipUser");
+        expect(
+          screen.getByTestId("TestLibraryId1 trailingUser_userId")
+        ).toHaveTextContent("trailingUser");
+      });
+    });
+
+    it("clears input value after adding users", async () => {
+      renderShareDialog({ libraries: [mockCqlLibrary1] });
+      await waitForDialog();
+
+      const input = await getHarpIdInput();
+      fireEvent.change(input, { target: { value: "userToClear" } });
+      await clickAddUserButton();
+
+      await waitFor(() => {
+        expect(input.value).toBe("");
+      });
+    });
+
+    it("does nothing when both harpIds and harpInputValue are empty", async () => {
+      const mockUserApi = createMockUserServiceApi();
+      (useUserServiceApi as jest.Mock).mockReturnValue(mockUserApi);
+
+      renderShareDialog({ libraries: [mockCqlLibrary1] });
+      await waitForDialog();
+
+      await clickAddUserButton();
+
+      expect(mockUserApi.getBulkUserDetails).not.toHaveBeenCalled();
+    });
+
+    it("deduplicates HARP IDs from chips and input", async () => {
+      renderShareDialog({ libraries: [mockCqlLibrary1] });
+      await waitForDialog();
+
+      await addHarpIdChip("sameUser");
+      const input = await getHarpIdInput();
+      fireEvent.change(input, { target: { value: "sameUser" } });
+      await clickAddUserButton();
+
+      await waitFor(() => {
+        const rows = screen.getAllByTestId(/TestLibraryId1 sameUser_userId/);
+        expect(rows).toHaveLength(1);
+      });
+    });
   });
 
   describe("Bulk User Validation", () => {
@@ -449,6 +574,32 @@ describe("LibraryShareDialog", () => {
         ).toBeInTheDocument();
       });
     });
+
+    it("shows error message listing multiple invalid users", async () => {
+      setupDefaultMocks(
+        {},
+        {
+          getBulkUserDetails: jest.fn().mockResolvedValue({
+            invalidUser1: { userStatus: "INACTIVE" },
+            invalidUser2: { userStatus: "INACTIVE" },
+          }),
+        }
+      );
+
+      renderShareDialog({ libraries: [mockCqlLibrary1] });
+      await waitForDialog();
+      await addHarpIdChip("invalidUser1");
+      await addHarpIdChip("invalidUser2");
+      await clickAddUserButton();
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(
+            /invalidUser1, invalidUser2.*are not associated with an active MADiE user/i
+          )
+        ).toBeInTheDocument();
+      });
+    });
   });
 
   describe("Saving Changes", () => {
@@ -473,6 +624,90 @@ describe("LibraryShareDialog", () => {
       await waitFor(() => {
         expect(mockApi.shareLibraries).toHaveBeenCalled();
         expect(mockOnClose).toHaveBeenCalled();
+      });
+    });
+
+    it("shows error when shareLibraries API fails", async () => {
+      const mockOnClose = jest.fn();
+      setupDefaultMocks({
+        shareLibraries: jest.fn().mockRejectedValue(new Error("API Error")),
+      });
+
+      renderShareDialog({ onClose: mockOnClose });
+      await waitForDialog();
+      await addHarpIdChip("userId3");
+
+      await waitFor(() =>
+        expect(screen.findByTestId("add-user-btn")).resolves.toBeEnabled()
+      );
+      await clickAddUserButton();
+
+      const saveBtn = await screen.findByTestId("share-save-button");
+      await waitFor(() => expect(saveBtn).toBeEnabled());
+      fireEvent.click(saveBtn);
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalledWith(
+          "danger",
+          "Unable to share the selected library(s) with the added users. If the error persists, please contact the help desk."
+        );
+      });
+    });
+
+    it("shows API error message when provided in response", async () => {
+      const mockOnClose = jest.fn();
+      const customErrorMessage = "Custom API error message";
+      setupDefaultMocks({
+        shareLibraries: jest.fn().mockRejectedValue({
+          response: { data: { message: customErrorMessage } },
+        }),
+      });
+
+      renderShareDialog({ onClose: mockOnClose });
+      await waitForDialog();
+      await addHarpIdChip("userId3");
+
+      await waitFor(() =>
+        expect(screen.findByTestId("add-user-btn")).resolves.toBeEnabled()
+      );
+      await clickAddUserButton();
+
+      const saveBtn = await screen.findByTestId("share-save-button");
+      await waitFor(() => expect(saveBtn).toBeEnabled());
+      fireEvent.click(saveBtn);
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalledWith("danger", customErrorMessage);
+      });
+    });
+
+    it("shows error when unshareLibraries API fails", async () => {
+      const mockOnClose = jest.fn();
+      setupDefaultMocks({
+        unshareLibraries: jest.fn().mockRejectedValue(new Error("API Error")),
+      });
+
+      renderShareDialog({ option: "Unshare", onClose: mockOnClose });
+      await waitForDialog();
+
+      const checkboxes = await screen.findAllByRole("checkbox");
+      userEvent.click(checkboxes[0]);
+
+      await waitFor(() => expect(checkboxes[0]).not.toBeChecked());
+
+      const saveBtn = await screen.findByTestId("share-save-button");
+      userEvent.click(saveBtn);
+
+      const acceptBtn = await screen.findByTestId(
+        "share-confirmation-dialog-accept-button"
+      );
+      userEvent.click(acceptBtn);
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalledWith(
+          "danger",
+          "Unable to unshare the selected library(s) with the users who were unchecked. If the error persists, please contact the help desk."
+        );
       });
     });
   });
@@ -520,6 +755,65 @@ describe("LibraryShareDialog", () => {
       renderShareDialog({ option: "Share With" });
       await waitForDialog();
       expect(screen.queryByTestId("shared-with-select-all")).toBeNull();
+    });
+
+    it("closes confirmation dialog on cancel without unsharing", async () => {
+      const mockOnClose = jest.fn();
+      const mockApi = createMockLibraryServiceApi();
+      (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(mockApi);
+
+      renderShareDialog({ option: "Unshare", onClose: mockOnClose });
+      await waitForDialog();
+
+      const checkboxes = await screen.findAllByRole("checkbox");
+      userEvent.click(checkboxes[0]);
+
+      const saveBtn = await screen.findByTestId("share-save-button");
+      userEvent.click(saveBtn);
+
+      const cancelBtn = await screen.findByTestId(
+        "share-confirmation-dialog-cancel-button"
+      );
+      userEvent.click(cancelBtn);
+
+      await waitFor(() => {
+        expect(mockApi.unshareLibraries).not.toHaveBeenCalled();
+      });
+    });
+
+    it("closes dialog when UnshareFromMe confirmation is cancelled", async () => {
+      const mockOnClose = jest.fn();
+      renderShareDialog({ option: "UnshareFromMe", onClose: mockOnClose });
+
+      const cancelBtn = await screen.findByTestId(
+        "share-confirmation-dialog-cancel-button"
+      );
+      userEvent.click(cancelBtn);
+
+      await waitFor(() => {
+        expect(mockOnClose).toHaveBeenCalled();
+      });
+    });
+
+    it("unshares current user when UnshareFromMe is accepted", async () => {
+      const mockOnClose = jest.fn();
+      const mockApi = createMockLibraryServiceApi();
+      (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(mockApi);
+
+      renderShareDialog({
+        option: "UnshareFromMe",
+        onClose: mockOnClose,
+        libraries: [mockCqlLibrary1],
+      });
+
+      const acceptBtn = await screen.findByTestId(
+        "share-confirmation-dialog-accept-button"
+      );
+      userEvent.click(acceptBtn);
+
+      await waitFor(() => {
+        expect(mockApi.unshareLibraries).toHaveBeenCalled();
+      });
     });
   });
 
