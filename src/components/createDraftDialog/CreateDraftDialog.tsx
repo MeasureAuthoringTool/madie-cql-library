@@ -32,17 +32,17 @@ const CreateDraftDialog = ({
   const getModelOptions = (model) => {
     if (!featureFlags.qiCore7) {
       if (model === Model.QICORE) {
-        modelOptions = modelOptions.filter((model) => model !== "QICORE_7_0_0");
+        modelOptions = modelOptions.filter((model) => model !== "QICORE_7_0_2");
       } else if (model === Model.QICORE_6_0_0) {
         modelOptions = modelOptions.filter((model) => model === "QICORE_6_0_0");
       } else {
-        modelOptions = modelOptions.filter((model) => model === "QICORE_7_0_0");
+        modelOptions = modelOptions.filter((model) => model === "QICORE_7_0_2");
       }
     } else {
       if (model === Model.QICORE_6_0_0) {
         modelOptions = modelOptions.filter((model) => model !== "QICORE");
-      } else if (model === Model.QICORE_7_0_0) {
-        modelOptions = modelOptions.filter((model) => model === "QICORE_7_0_0");
+      } else if (model === Model.QICORE_7_0_2) {
+        modelOptions = modelOptions.filter((model) => model === "QICORE_7_0_2");
       }
     }
     return modelOptions;
