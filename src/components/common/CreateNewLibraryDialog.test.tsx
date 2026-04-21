@@ -353,7 +353,7 @@ describe("Library Dialog", () => {
           hidden: true,
         })) as HTMLInputElement
       ).value
-    ).toEqual("QI-Core v7.0.0");
+    ).toEqual("QI-Core v7.0.2");
   }, 20000);
 
   test("QI-Core 7 is not enabled", async () => {

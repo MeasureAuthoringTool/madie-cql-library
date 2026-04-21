@@ -335,7 +335,7 @@ describe("Create Draft Dialog component", () => {
           screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
         ).toBeInTheDocument();
         expect(
-          screen.getByTestId("cql-library-model-option-QI-Core v7.0.0")
+          screen.getByTestId("cql-library-model-option-QI-Core v7.0.2")
         ).toBeInTheDocument();
 
         expect(
@@ -387,7 +387,7 @@ describe("Create Draft Dialog component", () => {
           screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
         ).toBeInTheDocument();
         expect(
-          screen.getByTestId("cql-library-model-option-QI-Core v7.0.0")
+          screen.getByTestId("cql-library-model-option-QI-Core v7.0.2")
         ).toBeInTheDocument();
         expect(
           screen.queryByTestId("cql-library-model-option-QI-Core v4.1.1")
@@ -400,8 +400,8 @@ describe("Create Draft Dialog component", () => {
       expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
     });
 
-    it("should display model version options for QI-Core v7.0.0", async () => {
-      cqlLibrary.model = Model.QICORE_7_0_0;
+    it("should display model version options for QI-Core v7.0.2", async () => {
+      cqlLibrary.model = Model.QICORE_7_0_2;
       render(
         <CreateDraftDialog
           open={true}
@@ -418,7 +418,7 @@ describe("Create Draft Dialog component", () => {
       expect(
         await screen.findByText("Update Model Version")
       ).toBeInTheDocument();
-      expect(await screen.findByText("QI-Core v7.0.0")).toBeInTheDocument();
+      expect(await screen.findByText("QI-Core v7.0.2")).toBeInTheDocument();
 
       const modelInput = await screen.getByTestId("cql-library-model-select");
       expect(modelInput).toHaveAttribute("readonly");
@@ -479,7 +479,7 @@ describe("Create Draft Dialog component", () => {
           screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
         ).toBeInTheDocument();
         expect(
-          screen.queryByTestId("cql-library-model-option-QI-Core v7.0.0")
+          screen.queryByTestId("cql-library-model-option-QI-Core v7.0.2")
         ).not.toBeInTheDocument();
 
         expect(
@@ -516,8 +516,8 @@ describe("Create Draft Dialog component", () => {
       expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
     });
 
-    it("should display model version options for QI-Core v7.0.0", async () => {
-      cqlLibrary.model = Model.QICORE_7_0_0;
+    it("should display model version options for QI-Core v7.0.2", async () => {
+      cqlLibrary.model = Model.QICORE_7_0_2;
       render(
         <CreateDraftDialog
           open={true}
@@ -534,7 +534,7 @@ describe("Create Draft Dialog component", () => {
       expect(
         await screen.findByText("Update Model Version")
       ).toBeInTheDocument();
-      expect(await screen.findByText("QI-Core v7.0.0")).toBeInTheDocument();
+      expect(await screen.findByText("QI-Core v7.0.2")).toBeInTheDocument();
 
       const modelInput = await screen.getByTestId("cql-library-model-select");
       expect(modelInput).toHaveAttribute("readonly");
