@@ -248,6 +248,12 @@ const TransferDialog = ({
     },
   });
 
+  useEffect(() => {
+    if (!open) {
+      formik.resetForm();
+    }
+  }, [open]);
+
   return (
     <>
       <MadieDialog
