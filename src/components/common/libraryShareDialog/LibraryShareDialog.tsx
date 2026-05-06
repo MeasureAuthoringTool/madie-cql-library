@@ -577,14 +577,18 @@ const LibraryShareDialog = ({
   }, [table.getState().rowSelection]);
 
   useEffect(() => {
-    setSaveDisabled(true);
-    setShareLibrariesRequest(new Map<string, string[]>());
-    setUnshareLibrariesRequest(new Map<string, string[]>());
-    setInitialRowIdsSelected([]);
-    table.resetRowSelection();
-    table.resetExpanded();
-    formik.resetForm();
-  }, [onClose]);
+    if (!open) {
+      setSaveDisabled(true);
+      setShareLibrariesRequest(new Map<string, string[]>());
+      setUnshareLibrariesRequest(new Map<string, string[]>());
+      setInitialRowIdsSelected([]);
+      setHarpIds([]);
+      setHarpInputValue("");
+      table.resetRowSelection();
+      table.resetExpanded();
+      formik.resetForm();
+    }
+  }, [open]);
 
   const handleConfirmationDialogClose = () => {
     setConfirmationDialogOpen(false);
