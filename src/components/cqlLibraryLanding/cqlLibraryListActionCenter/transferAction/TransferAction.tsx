@@ -3,7 +3,7 @@ import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary } from "@madie/madie-models";
 import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
-import { checkUserCanEdit, useIsRoleOrFeatureEnabled } from "@madie/madie-util";
+import { checkUserCanEdit, useUserRoles } from "@madie/madie-util";
 
 interface PropTypes {
   libraries: CqlLibrary[];
@@ -30,14 +30,12 @@ export default function TransferAction(props: PropTypes) {
   const { libraries, activeTab } = props;
   const [disableTransferBtn, setDisableTransferBtn] = useState(true);
   const [tooltipMessage, setTooltipMessage] = useState(NOTHING_SELECTED);
-  const isAdminTransferLibraryEnabled = useIsRoleOrFeatureEnabled(
-    "AdminTransferLibrary"
-  );
+  const userRoles = useUserRoles();
   const validateTransferActionState = useCallback(() => {
     if (libraries?.length === 0) {
       setDisableTransferBtn(true);
       setTooltipMessage(NOTHING_SELECTED);
-    } else if (isAdminTransferLibraryEnabled) {
+    } else if (userRoles?.isAdmin) {
       setDisableTransferBtn(false);
       setTooltipMessage(TRANSFER);
     } else if (activeTab === 1) {
@@ -50,7 +48,7 @@ export default function TransferAction(props: PropTypes) {
       setDisableTransferBtn(false);
       setTooltipMessage(TRANSFER);
     }
-  }, [libraries, activeTab, isAdminTransferLibraryEnabled]);
+  }, [libraries, activeTab, userRoles]);
 
   useEffect(() => {
     validateTransferActionState();

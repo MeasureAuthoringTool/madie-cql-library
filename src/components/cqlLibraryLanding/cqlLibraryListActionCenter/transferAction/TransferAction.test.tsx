@@ -8,7 +8,7 @@ import TransferAction, {
   TRANSFER,
 } from "./TransferAction";
 // @ts-ignore
-import { checkUserCanEdit, useIsRoleOrFeatureEnabled } from "@madie/madie-util";
+import { checkUserCanEdit, useUserRoles } from "@madie/madie-util";
 import { CqlLibrary, LibrarySet } from "@madie/madie-models";
 
 const mockUser = "test user";
@@ -23,24 +23,18 @@ const mockLibrary = {
   librarySetId: "1-2-3-4",
 } as unknown as CqlLibrary;
 
-const mockUseFeatureFlags = jest.fn().mockReturnValue({});
-const mockUseUserRoles = jest.fn().mockReturnValue({
-  isAdmin: true,
-  roles: ["MADiE-admin"],
-});
-
 jest.mock("@madie/madie-util", () => ({
   checkUserCanEdit: jest.fn(() => {
     return true;
   }),
-  useIsRoleOrFeatureEnabled: jest.fn(),
+  useUserRoles: jest.fn().mockReturnValue({ isAdmin: false, roles: [] }),
 }));
 
 describe("TransferAction Component", () => {
   const mockOnClick = jest.fn();
 
   beforeEach(() => {
-    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+    (useUserRoles as jest.Mock).mockReturnValue({ isAdmin: false, roles: [] });
     (checkUserCanEdit as jest.Mock).mockImplementation(() => true);
   });
 
@@ -116,8 +110,11 @@ describe("TransferAction Component", () => {
     expect(mockOnClick).toHaveBeenCalled();
   });
 
-  it("enables the button and shows 'Transfer' tooltip when AdminTransferLibrary feature flag is enabled and user is admin", () => {
-    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(true);
+  it("enables the button and shows 'Transfer' tooltip for admin user", () => {
+    (useUserRoles as jest.Mock).mockReturnValue({
+      isAdmin: true,
+      roles: ["MADiE-admin"],
+    });
 
     render(
       <TransferAction
@@ -131,17 +128,6 @@ describe("TransferAction Component", () => {
 
     expect(button).not.toBeDisabled();
     expect(tooltip).toHaveAttribute("aria-label", TRANSFER);
-  });
-
-  it("does not grant admin override when feature flag is disabled even if user is admin", () => {
-    (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
-
-    render(<TransferAction libraries={[]} onClick={() => {}} activeTab={0} />);
-    const button = screen.getByTestId("transfer-action-btn");
-    const tooltip = screen.getByTestId("transfer-action-tooltip");
-
-    expect(button).toBeDisabled();
-    expect(tooltip).toHaveAttribute("aria-label", NOTHING_SELECTED);
   });
 
   it("enables the button and shows 'Transfer' tooltip when activeTab is 2 and user owns all selected libraries", () => {

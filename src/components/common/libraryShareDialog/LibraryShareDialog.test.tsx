@@ -9,7 +9,7 @@ import LibraryShareDialog, {
 import { CqlLibrary } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
 import {
-  useIsRoleOrFeatureEnabled,
+  useUserRoles,
   useCqlLibraryServiceApi,
   CqlLibraryServiceApi,
   useUserServiceApi,
@@ -25,7 +25,7 @@ jest.mock("@madie/madie-util", () => ({
     getAccessToken: () => "test.jwt",
     getUserName: () => testUser,
   }),
-  useIsRoleOrFeatureEnabled: jest.fn(),
+  useUserRoles: jest.fn().mockReturnValue({ isAdmin: false, roles: [] }),
   useUserServiceApi: jest.fn(),
 }));
 
@@ -129,9 +129,12 @@ const renderShareDialog = (
 const setupDefaultMocks = (
   apiOverrides = {},
   userApiOverrides = {},
-  featureEnabled = false
+  isAdmin = false
 ) => {
-  (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(featureEnabled);
+  (useUserRoles as jest.Mock).mockReturnValue({
+    isAdmin,
+    roles: isAdmin ? ["MADiE-Admin"] : [],
+  });
   (useCqlLibraryServiceApi as jest.Mock).mockReturnValue(
     createMockLibraryServiceApi(apiOverrides)
   );
