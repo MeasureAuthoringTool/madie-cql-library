@@ -33,7 +33,7 @@ import * as Yup from "yup";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
 import {
   useOktaTokens,
-  useIsRoleOrFeatureEnabled,
+  useUserRoles,
   useCqlLibraryServiceApi,
   useUserServiceApi,
 } from "@madie/madie-util";
@@ -152,8 +152,7 @@ const LibraryShareDialog = ({
   });
 
   const showShareDialog = option === "Share With" || option === "Unshare";
-  const isAdminShareLibraryEnabled =
-    useIsRoleOrFeatureEnabled("AdminShareLibrary");
+  const userRoles = useUserRoles();
 
   useEffect(() => {
     if (option === "UnshareFromMe" && open) {
@@ -638,7 +637,7 @@ const LibraryShareDialog = ({
   };
 
   const getAdminUserExportButton = () => {
-    if (isAdminShareLibraryEnabled) {
+    if (userRoles?.isAdmin) {
       return (
         <Button
           className="export-button"
