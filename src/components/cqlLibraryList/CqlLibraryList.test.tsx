@@ -169,8 +169,11 @@ describe("CqlLibrary List component", () => {
         totalPages={20}
         visibleItems={10}
         offset={0}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         curLimit={10}
         curPage={1}
@@ -257,8 +260,11 @@ describe("CqlLibrary List component", () => {
         totalPages={20}
         visibleItems={10}
         offset={0}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         curLimit={10}
         curPage={1}
@@ -318,8 +324,11 @@ describe("CqlLibrary List component", () => {
         totalPages={20}
         visibleItems={10}
         offset={0}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         curLimit={10}
         curPage={1}
@@ -380,8 +389,11 @@ describe("CqlLibrary List component", () => {
         totalPages={20}
         visibleItems={10}
         offset={0}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         curLimit={10}
         curPage={1}
@@ -459,8 +471,11 @@ describe("CqlLibrary List component", () => {
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         totalItems={10}
         activeTab={1}
@@ -484,7 +499,7 @@ describe("CqlLibrary List component", () => {
       screen.queryByTestId("cqlLibrary-expanded-622e1f46d1fd3729d861e6ca")
     ).not.toBeInTheDocument();
 
-    const expandSection = screen.getByTestId("cqlLibrary-button-0_expandArrow");
+    const expandSection = screen.getByTestId("measure-name-0_expandArrow");
     expect(expandSection).toBeInTheDocument();
     const expandButton = await within(expandSection).getByRole("button");
     fireEvent.click(expandButton);
@@ -539,8 +554,11 @@ describe("CqlLibrary List component", () => {
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         totalItems={10}
         activeTab={0}
@@ -570,7 +588,7 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("0.0.000")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument();
     expect(screen.getByText("QI-Core v4.1.1")).toBeInTheDocument();
-    expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
+    expect(screen.getByTestId("measure-name-0_model")).toBeInTheDocument();
   });
 
   it("should render columnsToBeAdded (without Shared column) on Shared Libraries tab", async () => {
@@ -618,8 +636,11 @@ describe("CqlLibrary List component", () => {
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         totalItems={10}
         activeTab={1}
@@ -649,7 +670,7 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("0.0.000")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument();
     expect(screen.getByText("QI-Core v4.1.1")).toBeInTheDocument();
-    expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
+    expect(screen.getByTestId("measure-name-0_model")).toBeInTheDocument();
   });
 
   it("should render columnsToBeAdded on All Libraries tab", async () => {
@@ -697,8 +718,11 @@ describe("CqlLibrary List component", () => {
         snackBar={jest.fn()}
         setSnackBar={jest.fn()}
         setOwners={jest.fn()}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         totalItems={10}
         activeTab={2}
@@ -728,56 +752,7 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("0.0.000")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument();
     expect(screen.getByText("QI-Core v4.1.1")).toBeInTheDocument();
-    expect(screen.getByTestId("cqlLibrary-button-0_model")).toBeInTheDocument();
-  });
-
-  it("should set and clear hoveredHeader on mouse enter and leave", async () => {
-    const { getByTestId } = render(
-      <CqlLibraryList
-        cqlLibraryList={cqlLibrary}
-        onListUpdate={loadCqlLibraries}
-        setSelectedLibraries={jest.fn()}
-        deleteDraftDialog={jest.fn()}
-        setDeleteDraftDialog={jest.fn()}
-        selectedCQLLibrary={cqlLibrary[0]}
-        setSelectedCqlLibrary={jest.fn()}
-        createVersionDialog={jest.fn()}
-        setCreateVersionDialog={jest.fn()}
-        createDraftDialog={jest.fn()}
-        shareDialog={jest.fn()}
-        setShareDialog={jest.fn()}
-        transferDialog={jest.fn()}
-        setTransferDialog={jest.fn()}
-        setCreateDraftDialog={jest.fn()}
-        setOwners={jest.fn()}
-        setSnackBar={jest.fn()}
-        snackBar={jest.fn()}
-        totalItems={10}
-        activeTab={1}
-        totalPages={20}
-        visibleItems={10}
-        offset={0}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
-        handlePageChange={jest.fn()}
-        curLimit={10}
-        curPage={1}
-        searchCriteria={mockSearchCriteria}
-        setToastOpen={jest.fn()}
-        setToastMessage={jest.fn()}
-        setToastType={jest.fn()}
-      />
-    );
-    const header = getByTestId("header-cqlLibraryName");
-    fireEvent.mouseOver(header);
-    const th = getByTestId("header-cqlLibraryName");
-    const title = th.getAttribute("title");
-    expect(title).toBe("Sort descending");
-    // The hover state should update (check for icon or internal state)
-    expect(header.querySelector(".arrowDisplay")).toBeInTheDocument();
-    fireEvent.mouseLeave(header);
-    // The hover state should clear (icon hidden or state reset)
-    expect(header.querySelector(".arrowDisplay")).toBeInTheDocument();
+    expect(screen.getByTestId("measure-name-0_model")).toBeInTheDocument();
   });
 });
 
@@ -856,8 +831,11 @@ describe("Library lock functionality", () => {
         totalPages={20}
         visibleItems={10}
         offset={0}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         curLimit={10}
         curPage={1}
@@ -920,8 +898,11 @@ describe("Library lock functionality", () => {
         totalPages={20}
         visibleItems={10}
         offset={0}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         curLimit={10}
         curPage={1}
@@ -977,8 +958,11 @@ describe("Library lock functionality", () => {
         totalPages={20}
         visibleItems={10}
         offset={0}
-        sorting={[{ id: "cqlLibraryName", desc: false }]}
-        handleSort={jest.fn()}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
         handlePageChange={jest.fn()}
         curLimit={10}
         curPage={1}

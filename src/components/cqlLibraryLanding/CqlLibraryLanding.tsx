@@ -13,13 +13,11 @@ import {
   Tab,
   Toast,
 } from "@madie/madie-design-system/dist/react";
-import { CqlLibraryListActionCenter as ActionCenter } from "./cqlLibraryListActionCenter/CqlLibraryListActionCenter";
 import "./CqlLibraryLanding.scss";
 import "twin.macro";
 import "styled-components/macro";
 import queryString from "query-string";
 import { useNavigate, useLocation } from "react-router-dom";
-import Search from "../librarySearch/Search";
 import * as _ from "lodash";
 import { getTabStorageKey } from "./cqlLibraryLandingUtils";
 import CqlLibraryHistoryDialog from "./CqlLibraryHistoryDialog";
@@ -178,27 +176,6 @@ function CqlLibraryLanding() {
     fetchTotalCounts();
   }, []);
 
-  const createVersion = async () => {
-    await cqlLibraryServiceApi
-      .fetchCqlLibrary(selectedLibraries[0].id)
-      .then((cqlLibrary) => {
-        setSelectedCqlLibrary(cqlLibrary);
-        setCreateVersionDialog({
-          open: true,
-          cqlLibraryId: cqlLibrary.id,
-          cqlLibraryError: cqlLibrary.cqlErrors,
-          isCqlPresent: cqlLibrary && cqlLibrary.cql?.trim().length > 0,
-        });
-      })
-      .catch(() => {
-        setSnackBar({
-          message: "An error occurred while fetching the CQL Library!",
-          open: true,
-          severity: "error",
-        });
-      });
-  };
-
   const retrieveLibraries = useCallback(
     async (tab, limit, page, searchCriteria, relevantSorting) => {
       setLoading(true);
@@ -260,16 +237,11 @@ function CqlLibraryLanding() {
   };
 
   // sort logic
-  const [sorting, setSorting] = useState(null);
-  let sortID = sorting?.[0]?.id;
-  if (sortID === "librarySet_acls") {
-    sortID = "librarySet.acls";
-  }
-  const sortingString = sortID ? `${sortID},${sorting[0]?.desc}` : "";
-  const handleSort = (sort) => {
-    setSorting(sort);
-    navigate(`?tab=${activeTab}&page=1&limit=${values?.limit || 10}`);
-  };
+  const [currentSort, setCurrentSort] = useState<string>("");
+  const [currentDirection, setCurrentDirection] = useState<string>("");
+  const sortingString = currentSort
+    ? `${currentSort},${currentDirection === "DESC"}`
+    : "";
   // sort logic end.
 
   // useEffect to fetch libraries
@@ -439,69 +411,53 @@ function CqlLibraryLanding() {
           <span tw="flex-grow" />
         </section>
 
-        <div tw="grid grid-cols-4 gap-4" style={{ padding: 16 }}>
-          <Search
-            searchCriteria={searchCriteria}
-            setSearchCriteria={setSearchCriteria}
-            handlePageChange={handlePageChange}
-          />
-          <div tw="col-start-4 justify-self-end p-3">
-            <ActionCenter
-              openLibraryHistoryDialog={openLibraryHistoryDialog}
-              selectedLibraries={selectedLibraries}
-              setDeleteDraftDialog={setDeleteDraftDialog}
-              setSelectedCqlLibrary={setSelectedCqlLibrary}
-              setCreateDraftDialog={setCreateDraftDialog}
-              setShareDialog={setShareDialog}
-              createVersion={createVersion}
-              owners={owners}
-              activeTab={activeTab}
-              setTransferDialog={setTransferDialog}
-              setCompareVersionsDialog={setCompareVersionsDialog}
-            />
-          </div>
-        </div>
         <div>
-          <div className="table">
-            {!loading && (
-              <CqlLibraryList
-                curLimit={curLimit}
-                curPage={curPage}
-                cqlLibraryList={cqlLibraryList}
-                offset={offset}
-                activeTab={activeTab}
-                totalPages={totalPages}
-                visibleItems={visibleItems}
-                totalItems={totalItems}
-                onListUpdate={onListUpdate}
-                setSelectedLibraries={setSelectedLibraries}
-                deleteDraftDialog={deleteDraftDialog}
-                setDeleteDraftDialog={setDeleteDraftDialog}
-                selectedCQLLibrary={selectedCQLLibrary}
-                setSelectedCqlLibrary={setSelectedCqlLibrary}
-                createVersionDialog={createVersionDialog}
-                setCreateVersionDialog={setCreateVersionDialog}
-                shareDialog={shareDialog}
-                setShareDialog={setShareDialog}
-                transferDialog={transferDialog}
-                setTransferDialog={setTransferDialog}
-                compareVersionsDialog={compareVersionsDialog}
-                setCompareVersionsDialog={setCompareVersionsDialog}
-                createDraftDialog={createDraftDialog}
-                setCreateDraftDialog={setCreateDraftDialog}
-                snackBar={snackBar}
-                setSnackBar={setSnackBar}
-                setOwners={setOwners}
-                sorting={sorting}
-                handleSort={handleSort}
-                handlePageChange={handlePageChange}
-                searchCriteria={searchCriteria}
-                setToastOpen={setToastOpen}
-                setToastMessage={setToastMessage}
-                setToastType={setToastType}
-                setStatusHandler={setStatusHandler}
-              />
-            )}
+          <div
+            className="table"
+            style={{ display: loading ? "none" : "block" }}
+          >
+            <CqlLibraryList
+              curLimit={curLimit}
+              curPage={curPage}
+              cqlLibraryList={cqlLibraryList}
+              offset={offset}
+              activeTab={activeTab}
+              totalPages={totalPages}
+              visibleItems={visibleItems}
+              totalItems={totalItems}
+              onListUpdate={onListUpdate}
+              setSelectedLibraries={setSelectedLibraries}
+              deleteDraftDialog={deleteDraftDialog}
+              setDeleteDraftDialog={setDeleteDraftDialog}
+              selectedCQLLibrary={selectedCQLLibrary}
+              setSelectedCqlLibrary={setSelectedCqlLibrary}
+              createVersionDialog={createVersionDialog}
+              setCreateVersionDialog={setCreateVersionDialog}
+              shareDialog={shareDialog}
+              setShareDialog={setShareDialog}
+              transferDialog={transferDialog}
+              setTransferDialog={setTransferDialog}
+              compareVersionsDialog={compareVersionsDialog}
+              setCompareVersionsDialog={setCompareVersionsDialog}
+              createDraftDialog={createDraftDialog}
+              setCreateDraftDialog={setCreateDraftDialog}
+              snackBar={snackBar}
+              setSnackBar={setSnackBar}
+              setOwners={setOwners}
+              owners={owners}
+              openLibraryHistoryDialog={openLibraryHistoryDialog}
+              currentSort={currentSort}
+              currentDirection={currentDirection}
+              setCurrentSort={setCurrentSort}
+              setCurrentDirection={setCurrentDirection}
+              setSearchCriteria={setSearchCriteria}
+              handlePageChange={handlePageChange}
+              searchCriteria={searchCriteria}
+              setToastOpen={setToastOpen}
+              setToastMessage={setToastMessage}
+              setToastType={setToastType}
+              setStatusHandler={setStatusHandler}
+            />
           </div>
           {loading && (
             <div style={{ display: "flex", justifyContent: "center" }}>

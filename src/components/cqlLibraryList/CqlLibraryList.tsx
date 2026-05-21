@@ -32,11 +32,15 @@ import {
 import {
   Button,
   MadieDeleteDialog,
+  MadieTable,
   Pagination,
+  SearchAndFilter,
   TruncateText,
   MadieTooltipIcon,
+  useFilterSearch,
 } from "@madie/madie-design-system/dist/react";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
+import { CqlLibraryListActionCenter as ActionCenter } from "../cqlLibraryLanding/cqlLibraryListActionCenter/CqlLibraryListActionCenter";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { useNavigate, useLocation } from "react-router-dom";
 import queryString from "query-string";
@@ -46,9 +50,6 @@ import { Chip, Tooltip } from "@mui/material";
 import TransferDialog, {
   INVALID_HARP_ID_MESSAGE,
 } from "../common/transferDialog/TransferDialog";
-import UnfoldMoreIcon from "@mui/icons-material/UnfoldMore";
-import KeyboardArrowUpIcon from "@mui/icons-material/KeyboardArrowUp";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import "./CqlLibraryList.scss";
 import { INITIAL_STATUS_HANDLER } from "../editCqlLibrary/statusHandler/StatusHandler";
@@ -139,6 +140,8 @@ export default function CqlLibraryList({
   setCompareVersionsDialog,
   setCreateDraftDialog,
   setOwners,
+  owners,
+  openLibraryHistoryDialog,
   setSnackBar,
   snackBar,
   totalItems,
@@ -146,8 +149,11 @@ export default function CqlLibraryList({
   totalPages,
   visibleItems,
   offset,
-  sorting,
-  handleSort,
+  currentSort,
+  currentDirection,
+  setCurrentSort,
+  setCurrentDirection,
+  setSearchCriteria,
   handlePageChange,
   curLimit,
   curPage,
@@ -157,7 +163,6 @@ export default function CqlLibraryList({
   setToastType,
   setStatusHandler,
 }) {
-  const [hoveredHeader, setHoveredHeader] = useState<string>("");
   const [selectedIdForExpansion, setSelectedIdForExpansion] = useState(null);
   const [isRowExpanded, setIsRowExpanded] = useState<boolean>(false);
   const [selectedExpandedLibrariesIds, setSelectedExpandedLibrariesIds] =
@@ -170,6 +175,79 @@ export default function CqlLibraryList({
   const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
+
+  const LIBRARY_FILTER_OPTIONS = ["Library", "Version", "Model"];
+  const LIBRARY_FILTER_MAP: Record<string, string> = {
+    Library: "library",
+    Version: "version",
+    Model: "model",
+  };
+
+  const {
+    filterBy,
+    searchField,
+    handleFilter,
+    handleSearch,
+    finalizeSearchCriteria,
+    blankSearchCriteria,
+  } = useFilterSearch();
+
+  const handleSearchTrigger = () => {
+    finalizeSearchCriteria();
+    const optionalSearchProperties: string[] = [];
+    if (filterBy && LIBRARY_FILTER_MAP[filterBy]) {
+      optionalSearchProperties.push(LIBRARY_FILTER_MAP[filterBy]);
+    } else if (!filterBy && searchField) {
+      LIBRARY_FILTER_OPTIONS.forEach((opt) =>
+        optionalSearchProperties.push(LIBRARY_FILTER_MAP[opt])
+      );
+    }
+    setSearchCriteria({ searchField, optionalSearchProperties });
+    handlePageChange(null, 1);
+  };
+
+  const handleSearchClear = () => {
+    blankSearchCriteria();
+    setSearchCriteria({ searchField: "", optionalSearchProperties: [] });
+  };
+
+  const openCreateVersionDialog = async () => {
+    await cqlLibraryServiceApi
+      .fetchCqlLibrary(selectedLibraries[0].id)
+      .then((cqlLibrary) => {
+        setSelectedCqlLibrary(cqlLibrary);
+        setCreateVersionDialog({
+          open: true,
+          cqlLibraryId: cqlLibrary.id,
+          cqlLibraryError: cqlLibrary.cqlErrors,
+          isCqlPresent: cqlLibrary && cqlLibrary.cql?.trim().length > 0,
+        });
+      })
+      .catch(() => {
+        setSnackBar({
+          message: "An error occurred while fetching the CQL Library!",
+          open: true,
+          severity: "error",
+        });
+      });
+  };
+
+  const handleSort = (sort: string) => {
+    let sortChange = "";
+    let directionChange = "";
+    if (sort === currentSort) {
+      if (currentDirection === "ASC") {
+        sortChange = sort;
+        directionChange = "DESC";
+      }
+    } else {
+      sortChange = sort;
+      directionChange = "ASC";
+    }
+    setCurrentSort(sortChange);
+    setCurrentDirection(directionChange);
+    handlePageChange(null, 1);
+  };
 
   const handleLimitChange = (e) => {
     navigate(`?tab=${activeTab}&page=1&limit=${e.target.value}`);
@@ -787,10 +865,6 @@ export default function CqlLibraryList({
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
-    state: {
-      sorting,
-    },
-    onSortingChange: handleSort,
   });
   const parentLibraries =
     cqlLibraryList?.filter((library) => {
@@ -837,8 +911,8 @@ export default function CqlLibraryList({
         (result) => result.id !== actions?.id
       );
       //property version is a string here. does not appear to work as expected.
-      const sortBy = sorting?.[0]?.id; // string for property to sort
-      const descending = sorting?.[0]?.desc; // bool whether the list should be descending
+      const sortBy = currentSort;
+      const descending = currentDirection === "DESC";
       if (sortBy) {
         filteredResults = sortResults(filteredResults, sortBy, descending);
       }
@@ -892,16 +966,6 @@ export default function CqlLibraryList({
     [shareDialog]
   );
 
-  const isButton = (header) => {
-    return (
-      header.column.columnDef.header !== "Action" &&
-      !header.column.columnDef.header
-        .toString()
-        .includes("Library Selection") &&
-      header.column.columnDef.header !== "select" &&
-      header.column.columnDef.header !== ""
-    );
-  };
   return (
     <div data-testid="cqlLibrary-list">
       {snackBar.message !== "backdropClick" &&
@@ -1083,151 +1147,80 @@ export default function CqlLibraryList({
           </div>
         )}
       </Popover>
-      <div tw="flex flex-col" className="calc-vh">
-        <div tw="sm:-mx-6 lg:-mx-8">
-          <div tw="align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div>
-              <table tw="min-w-full" className="ll-table" id="libraryListTable">
-                <thead tw="bg-slate" className="sticky-table">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        const button = isButton(header);
-                        const isHovered = hoveredHeader?.includes(header.id);
-                        return (
-                          <th
-                            key={header.id}
-                            data-testId={`header-${header.id}`}
-                            scope="col"
-                            role={button ? "button" : ""}
-                            tabIndex={button ? 0 : undefined}
-                            className="col-header"
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter" || e.key === " ") {
-                                e.preventDefault();
-                                if (button) {
-                                  const handler =
-                                    header.column.getToggleSortingHandler();
-                                  handler(e);
-                                }
-                              }
-                            }}
-                            onClick={
-                              button
-                                ? (e) =>
-                                    header.column.getToggleSortingHandler()(e)
-                                : undefined
-                            }
-                            style={button ? { cursor: "pointer" } : null}
-                            onMouseEnter={() => setHoveredHeader(header.id)}
-                            onMouseLeave={() => setHoveredHeader(null)}
-                            title={
-                              header.column.getCanSort()
-                                ? header.column.getNextSortingOrder() === "asc"
-                                  ? "Sort ascending"
-                                  : header.column.getNextSortingOrder() ===
-                                    "desc"
-                                  ? "Sort descending"
-                                  : "Clear sort"
-                                : undefined
-                            }
-                          >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-
-                            {header.id !== "select" && (
-                              <span className="arrowDisplay">
-                                {header.column.getCanSort() ? (
-                                  header.column.getIsSorted() === "asc" ? (
-                                    <KeyboardArrowUpIcon />
-                                  ) : header.column.getIsSorted() === "desc" ? (
-                                    <KeyboardArrowDownIcon />
-                                  ) : isHovered ? (
-                                    <UnfoldMoreIcon />
-                                  ) : (
-                                    // Always render a transparent icon to reserve space
-                                    <span style={{ visibility: "hidden" }}>
-                                      <UnfoldMoreIcon />
-                                    </span>
-                                  )
-                                ) : (
-                                  // Non-sortable columns: reserve space
-                                  <span style={{ visibility: "hidden" }}>
-                                    <UnfoldMoreIcon />
-                                  </span>
-                                )}
-                              </span>
-                            )}
-                          </th>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </thead>
-                <tbody data-testid="table-body" className="table-body">
-                  {table.getRowModel().rows.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={table.getAllColumns().length}
-                        style={{ padding: "40px 0", textAlign: "center" }}
-                      >
-                        <span>No results were found</span>
-                      </td>
-                    </tr>
-                  )}
-                  {table.getRowModel().rows.map((row) => (
-                    <React.Fragment key={row.id}>
-                      <tr key={row.id} data-testid="row-item" className="ll-tr">
-                        {row.getVisibleCells().map((cell) => (
-                          <td
-                            key={cell.id}
-                            data-testid={`cqlLibrary-button-${cell.id}`}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                      {selectedIdForExpansion === row.original.librarySetId &&
-                        expandedSectionData?.map((subRow) => (
-                          <tr
-                            key={subRow.id}
-                            className="expanded-row"
-                            data-testid={`cqlLibrary-expanded-${subRow.id}`}
-                          >
-                            {/* This is lost between renders. I guess we may need to instead retain an expansion ref? */}
-                            {expandedColumns.map((column: any) =>
-                              column?.accessorKey === "expandArrow" ? (
-                                <td></td>
-                              ) : (
-                                <td
-                                  key={column?.accessorKey || column.id}
-                                  data-testid={`cqlLibrary-button-${subRow.id}_${column.accessorKey}`}
-                                >
-                                  {flexRender(
-                                    column.cell ?? column.accessorKey,
-                                    {
-                                      row: { original: subRow },
-                                      getValue: () =>
-                                        subRow[column.accessorKey],
-                                    }
-                                  )}
-                                </td>
-                              )
-                            )}
-                          </tr>
-                        ))}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <div style={{ overflow: "auto", maxHeight: "703px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            justifyContent: "space-between",
+            padding: 16,
+            backgroundColor: "#fff",
+            alignItems: "end",
+            position: "sticky",
+            top: 0,
+            zIndex: 20,
+          }}
+        >
+          <SearchAndFilter
+            filterBy={filterBy}
+            searchField={searchField}
+            onFilterChange={handleFilter}
+            onSearchChange={handleSearch}
+            onSearchTrigger={handleSearchTrigger}
+            onSearchClear={handleSearchClear}
+            filterByOpts={LIBRARY_FILTER_OPTIONS}
+            textFieldID="library"
+          />
+          <div>
+            <ActionCenter
+              openLibraryHistoryDialog={openLibraryHistoryDialog}
+              selectedLibraries={selectedLibraries}
+              setDeleteDraftDialog={setDeleteDraftDialog}
+              setSelectedCqlLibrary={setSelectedCqlLibrary}
+              setCreateDraftDialog={setCreateDraftDialog}
+              setShareDialog={setShareDialog}
+              createVersion={openCreateVersionDialog}
+              owners={owners}
+              activeTab={activeTab}
+              setTransferDialog={setTransferDialog}
+              setCompareVersionsDialog={setCompareVersionsDialog}
+            />
           </div>
         </div>
+        <MadieTable
+          table={table}
+          currentSort={currentSort}
+          currentDirection={currentDirection}
+          handleSort={handleSort}
+          id="libraryListTable"
+          dataTestId="library-list-tbl"
+          renderExpandedRow={(row) =>
+            selectedIdForExpansion === row.original.librarySetId &&
+            expandedSectionData?.map((subRow) => (
+              <tr
+                key={subRow.id}
+                className="expanded-row"
+                data-testid={`cqlLibrary-expanded-${subRow.id}`}
+              >
+                {expandedColumns.map((column: any) =>
+                  column?.accessorKey === "expandArrow" ? (
+                    <td key={`${subRow.id}-expand`}></td>
+                  ) : (
+                    <td
+                      key={column?.accessorKey || column.id}
+                      data-testid={`cqlLibrary-button-${subRow.id}_${column.accessorKey}`}
+                    >
+                      {flexRender(column.cell ?? column.accessorKey, {
+                        row: { original: subRow },
+                        getValue: () => subRow[column.accessorKey],
+                      })}
+                    </td>
+                  )
+                )}
+              </tr>
+            ))
+          }
+        />
       </div>
       <Pagination
         totalItems={totalItems}
