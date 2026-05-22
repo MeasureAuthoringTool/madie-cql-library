@@ -1,6 +1,13 @@
 // NOTE: jest-dom adds handy assertions to Jest and is recommended, but not required
 import * as React from "react";
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { Model, OwnershipType } from "@madie/madie-models";
 import userEvent from "@testing-library/user-event";
@@ -329,11 +336,11 @@ describe("Cql Library Page", () => {
     const ownedLibrariesTab = screen.getByTestId("owned-libraries-tab");
     expect(ownedLibrariesTab).toHaveClass("Mui-selected");
 
-    const aclHeader = screen.getByTestId("header-librarySet_acls");
+    const aclHeader = screen.getByTestId("header-librarySet.acls");
     expect(aclHeader).toBeInTheDocument();
     expect(aclHeader.title).toBe("Sort ascending");
 
-    userEvent.click(screen.getByTestId("header-librarySet_acls"));
+    fireEvent.click(screen.getByTestId("header-librarySet.acls"));
     await waitFor(() => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
@@ -346,9 +353,9 @@ describe("Cql Library Page", () => {
         expect.any(AbortSignal)
       );
     });
-    const aclHeader2 = screen.getByTestId("header-librarySet_acls");
+    const aclHeader2 = screen.getByTestId("header-librarySet.acls");
     expect(aclHeader2.title).toBe("Sort descending");
-    userEvent.click(aclHeader2);
+    fireEvent.click(aclHeader2);
     await waitFor(() => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
@@ -361,9 +368,9 @@ describe("Cql Library Page", () => {
         expect.any(AbortSignal)
       );
     });
-    const aclHeader3 = screen.getByTestId("header-librarySet_acls");
+    const aclHeader3 = screen.getByTestId("header-librarySet.acls");
     expect(aclHeader3.title).toBe("Clear sort");
-    userEvent.click(aclHeader3);
+    fireEvent.click(aclHeader3);
     await waitFor(() => {
       expect(
         mockCqlLibraryServiceApi.fetchCqlLibraries
@@ -407,10 +414,6 @@ describe("Cql Library Page", () => {
         expect.any(AbortSignal)
       );
     });
-    // hit extra code coverage. nothing happens.
-    const target = screen.getByTestId("header-Actions");
-    target.focus();
-    userEvent.keyboard("{Enter}");
   });
 
   test("filter by and search libraries based on criteria", async () => {
@@ -425,7 +428,7 @@ describe("Cql Library Page", () => {
 
     expect(mockCqlLibraryServiceApi.fetchCqlLibraries).toHaveBeenCalledTimes(4);
 
-    const filterBy = screen.getByTestId("filter-by");
+    const filterBy = screen.getByTestId("filter-by-select");
     const filterByDropDown = within(filterBy).getByRole("combobox", {
       hidden: true,
     }) as HTMLInputElement;
@@ -436,12 +439,12 @@ describe("Cql Library Page", () => {
     expect(optionsList[1]).toHaveTextContent("Library");
     userEvent.click(optionsList[1]);
 
-    const input = screen.getByTestId("library-search-input");
+    const input = screen.getByTestId("library-list-search-input");
 
     userEvent.type(input, "Diabetes");
     expect(input).toHaveValue("Diabetes");
 
-    const searchIcon = await screen.findByTestId("search-icon");
+    const searchIcon = await screen.findByTestId("library-trigger-search");
     expect(searchIcon).toBeVisible();
     userEvent.click(searchIcon);
 
