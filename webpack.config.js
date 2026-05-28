@@ -1,6 +1,7 @@
 /** @format */
 const { mergeWithRules } = require("webpack-merge");
 const singleSpaDefaults = require("webpack-config-single-spa-react-ts");
+const webpack = require("webpack");
 
 const merge = mergeWithRules({
   module: {
@@ -11,6 +12,15 @@ const merge = mergeWithRules({
   },
   plugins: "append",
 });
+
+const contextFix = {
+  module: {
+    exprContextCritical: false,
+  },
+  ignoreWarnings: [
+    /Critical dependency: the request of a dependency is an expression/,
+  ],
+};
 
 module.exports = (webpackConfigEnv, argv) => {
   const defaultConfig = singleSpaDefaults({
@@ -24,9 +34,9 @@ module.exports = (webpackConfigEnv, argv) => {
 
   const externalsConfig = {
     externals: [
-      "@madie/madie-editor",
+      "react",
+      "react-dom",
       "@madie/madie-util",
-      // Shared singleton libraries — loaded via import map
       "@emotion/react",
       "@emotion/styled",
       "react-is",
@@ -34,8 +44,6 @@ module.exports = (webpackConfigEnv, argv) => {
     ],
   };
 
-  // We need to override the css loading rule from the parent configuration
-  // so that we can add postcss-loader to the chain
   const newCssRule = {
     module: {
       rules: [
@@ -43,11 +51,7 @@ module.exports = (webpackConfigEnv, argv) => {
         {
           test: /\.css$/i,
           include: [/node_modules/, /src/],
-          use: [
-            "style-loader",
-            "css-loader", // uses modules: true, which I think we want. Parent does not
-            "postcss-loader",
-          ],
+          use: ["style-loader", "css-loader", "postcss-loader"],
         },
         {
           test: /\.scss$/,
@@ -55,9 +59,7 @@ module.exports = (webpackConfigEnv, argv) => {
             extensions: [".scss", ".sass"],
           },
           use: [
-            {
-              loader: "style-loader",
-            },
+            { loader: "style-loader" },
             {
               loader: "css-loader",
               options: { sourceMap: true, importLoaders: 2 },
@@ -68,9 +70,7 @@ module.exports = (webpackConfigEnv, argv) => {
                 sourceMap: true,
               },
             },
-            {
-              loader: "sass-loader",
-            },
+            { loader: "sass-loader" },
           ],
           exclude: /node_modules/,
         },
@@ -78,5 +78,26 @@ module.exports = (webpackConfigEnv, argv) => {
     },
   };
 
-  return merge(externalsConfig, defaultConfig, newCssRule);
+  const polyfillFix = {
+    resolve: {
+      fallback: {
+        process: require.resolve("process/browser.js"),
+      },
+    },
+    plugins: [
+      new webpack.ProvidePlugin({
+        process: "process/browser.js", // ✅ FIXED
+      }),
+    ],
+  };
+
+  // ✅ ADD polyfillFix HERE (last)
+  return merge(
+    externalsConfig,
+    defaultConfig,
+    newCssRule,
+    polyfillFix,
+
+    contextFix // ✅ ADD THIS
+  );
 };

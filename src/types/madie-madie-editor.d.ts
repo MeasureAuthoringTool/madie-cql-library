@@ -1,6 +1,5 @@
 declare module "@madie/madie-editor" {
   import { FC } from "react";
-  import { LifeCycleFn } from "single-spa";
 
   export type EditorAnnotation = {
     row?: number;
@@ -96,7 +95,4 @@ declare module "@madie/madie-editor" {
     readOnly?: boolean;
     setOutboundAnnotations?: Function;
   }>;
-  export const bootstrap: LifeCycleFn<void>;
-  export const mount: LifeCycleFn<void>;
-  export const unmount: LifeCycleFn<void>;
 }
