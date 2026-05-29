@@ -590,7 +590,7 @@ export default function CqlLibraryList({
             sortDescFirst: false,
             header: "Owner",
             cell: (info) => {
-              const owner = info.row.original.owner;
+              const owner = info.row.original.ownerDisplayName;
               if (!_.isEmpty(owner) && owner.trim() !== "") {
                 return <span>{`${owner}`.trim()}</span>;
               }
