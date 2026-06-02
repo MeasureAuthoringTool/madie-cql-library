@@ -71,6 +71,8 @@ jest.mock("@madie/madie-util", () => ({
   useFeatureFlags: jest.fn(() => {
     return {
       qiCore6: false,
+      qiCore7: false,
+      usQualityCore: false,
     };
   }),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
@@ -87,6 +89,7 @@ const formikInfo = {
 
 const onFormSubmit = jest.fn();
 const onFormCancel = jest.fn();
+const usQualityCoreModel = Model.US_QUALITY_0_5_0;
 
 describe("Library Dialog", () => {
   afterEach(() => {
@@ -138,16 +141,18 @@ describe("Library Dialog", () => {
       expect(submitButton).toBeInTheDocument();
       expect(submitButton).toBeDisabled();
 
-      const libraryNameNode = await getByTestId(
+      const libraryNameNode = getByTestId(
         "cql-library-name-text-field-input"
-      );
+      ) as HTMLInputElement;
       userEvent.type(libraryNameNode, formikInfo.cqlLibraryName);
       expect(libraryNameNode.value).toBe(formikInfo.cqlLibraryName);
       Simulate.change(libraryNameNode);
 
-      const modelSelect = await getByTestId("cql-library-model-select");
+      const modelSelect = getByTestId("cql-library-model-select");
       fireEvent.click(modelSelect);
-      const modelNode = await getByTestId("cql-library-model-select-input");
+      const modelNode = getByTestId(
+        "cql-library-model-select-input"
+      ) as HTMLInputElement;
       fireEvent.select(modelNode, { target: { value: formikInfo.model } });
       expect(modelNode.value).toBe(formikInfo.model);
       Simulate.change(modelNode);
@@ -189,17 +194,17 @@ describe("Library Dialog", () => {
       expect(libraryDescription.value).toEqual("QDM Library Description")
     );
 
-    const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    const modelSelect = getByTestId("cql-library-model-select");
+    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(3);
-    userEvent.click(options[2]);
+    userEvent.click(screen.getByRole("option", { name: Model.QDM_5_6 }));
     expect(
       (
-        (await within(modelSelect).getByRole("textbox", {
+        within(modelSelect).getByRole("textbox", {
           hidden: true,
-        })) as HTMLInputElement
+        }) as HTMLInputElement
       ).value
     ).toEqual("QDM v5.6");
 
@@ -265,17 +270,17 @@ describe("Library Dialog", () => {
       expect(libraryDescription.value).toEqual("QDM Library Description")
     );
 
-    const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    const modelSelect = getByTestId("cql-library-model-select");
+    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(3);
-    userEvent.click(options[0]);
+    userEvent.click(screen.getByRole("option", { name: Model.QICORE }));
     expect(
       (
-        (await within(modelSelect).getByRole("textbox", {
+        within(modelSelect).getByRole("textbox", {
           hidden: true,
-        })) as HTMLInputElement
+        }) as HTMLInputElement
       ).value
     ).toEqual(Model.QICORE);
 
@@ -296,6 +301,8 @@ describe("Library Dialog", () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
       return {
         qiCore6: true,
+        qiCore7: false,
+        usQualityCore: false,
       };
     });
     render(
@@ -309,17 +316,17 @@ describe("Library Dialog", () => {
       </ApiContextProvider>
     );
 
-    const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    const modelSelect = getByTestId("cql-library-model-select");
+    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(3);
-    userEvent.click(options[1]);
+    userEvent.click(screen.getByRole("option", { name: Model.QICORE_6_0_0 }));
     expect(
       (
-        (await within(modelSelect).getByRole("textbox", {
+        within(modelSelect).getByRole("textbox", {
           hidden: true,
-        })) as HTMLInputElement
+        }) as HTMLInputElement
       ).value
     ).toEqual("QI-Core v6.0.0");
   }, 20000);
@@ -328,6 +335,7 @@ describe("Library Dialog", () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
       return {
         qiCore7: true,
+        usQualityCore: false,
       };
     });
     render(
@@ -341,17 +349,17 @@ describe("Library Dialog", () => {
       </ApiContextProvider>
     );
 
-    const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    const modelSelect = getByTestId("cql-library-model-select");
+    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(4);
-    userEvent.click(options[2]);
+    userEvent.click(screen.getByRole("option", { name: Model.QICORE_7_0_2 }));
     expect(
       (
-        (await within(modelSelect).getByRole("textbox", {
+        within(modelSelect).getByRole("textbox", {
           hidden: true,
-        })) as HTMLInputElement
+        }) as HTMLInputElement
       ).value
     ).toEqual("QI-Core v7.0.2");
   }, 20000);
@@ -360,6 +368,7 @@ describe("Library Dialog", () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
       return {
         qiCore7: false,
+        usQualityCore: false,
       };
     });
     render(
@@ -373,19 +382,52 @@ describe("Library Dialog", () => {
       </ApiContextProvider>
     );
 
-    const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    const modelSelect = getByTestId("cql-library-model-select");
+    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(3);
-    userEvent.click(options[1]);
+    userEvent.click(screen.getByRole("option", { name: Model.QICORE_6_0_0 }));
     expect(
       (
-        (await within(modelSelect).getByRole("textbox", {
+        within(modelSelect).getByRole("textbox", {
           hidden: true,
-        })) as HTMLInputElement
+        }) as HTMLInputElement
       ).value
     ).toEqual("QI-Core v6.0.0");
+  }, 20000);
+
+  test("US Quality Core is enabled", async () => {
+    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
+      return {
+        qiCore7: false,
+        usQualityCore: true,
+      };
+    });
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const modelSelect = getByTestId("cql-library-model-select");
+    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(3);
+    userEvent.click(screen.getByRole("option", { name: usQualityCoreModel }));
+    expect(
+      (
+        within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        }) as HTMLInputElement
+      ).value
+    ).toEqual(usQualityCoreModel);
   }, 20000);
 
   test("Creation of a QDM library fails", async () => {
@@ -426,17 +468,17 @@ describe("Library Dialog", () => {
       expect(libraryDescription.value).toEqual("QDM Library Description")
     );
 
-    const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    const modelSelect = getByTestId("cql-library-model-select");
+    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(3);
-    userEvent.click(options[2]);
+    userEvent.click(screen.getByRole("option", { name: Model.QDM_5_6 }));
     expect(
       (
-        (await within(modelSelect).getByRole("textbox", {
+        within(modelSelect).getByRole("textbox", {
           hidden: true,
-        })) as HTMLInputElement
+        }) as HTMLInputElement
       ).value
     ).toEqual("QDM v5.6");
 
@@ -514,17 +556,17 @@ describe("Library Dialog", () => {
       expect(libraryDescription.value).toEqual("QDM Library Description")
     );
 
-    const modelSelect = await getByTestId("cql-library-model-select");
-    const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
+    const modelSelect = getByTestId("cql-library-model-select");
+    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(3);
-    userEvent.click(options[2]);
+    userEvent.click(screen.getByRole("option", { name: Model.QDM_5_6 }));
     expect(
       (
-        (await within(modelSelect).getByRole("textbox", {
+        within(modelSelect).getByRole("textbox", {
           hidden: true,
-        })) as HTMLInputElement
+        }) as HTMLInputElement
       ).value
     ).toEqual("QDM v5.6");
 

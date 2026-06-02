@@ -48,10 +48,16 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
 
   let modelOptions = Object.keys(Model);
   const featureFlags = useFeatureFlags();
-  if (!featureFlags.qiCore7) {
-    // remove QI-Core 7.0.0 from model options if the feature flag is not enabled
-    modelOptions = modelOptions.filter((model) => model !== "QICORE_7_0_2");
+  const hiddenModels = new Set<string>();
+  if (featureFlags?.usQualityCore) {
+    hiddenModels.add("QICORE");
+  } else {
+    hiddenModels.add("US_QUALITY_0_5_0");
   }
+  if (!featureFlags?.qiCore7) {
+    hiddenModels.add("QICORE_7_0_2");
+  }
+  modelOptions = modelOptions.filter((model) => !hiddenModels.has(model));
 
   // fetch organizations DB using measure service and sorts alphabetically
   useEffect(() => {
@@ -62,6 +68,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       setOrganizations(organizationsList);
     });
   }, []);
+
   async function createCqlLibrary(cqlLibrary: CqlLibrary) {
     cqlLibrary.librarySetId = uuidv4();
     cqlLibraryServiceApi
@@ -102,9 +109,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
         }
       });
   }
-  async function handleSubmit(cqlLibrary: CqlLibrary) {
-    createCqlLibrary(cqlLibrary);
-  }
+
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: "",
@@ -115,9 +120,9 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       publisher: "",
     } as CqlLibrary,
     validationSchema: CqlLibrarySchemaValidator,
-    onSubmit: handleSubmit,
+    onSubmit: createCqlLibrary,
   });
-  const { resetForm, setFieldTouched } = formik;
+  const { resetForm } = formik;
   function formikErrorHandler(name: string) {
     if (formik.touched[name] && formik.errors[name]) {
       return `${formik.errors[name]}`;
@@ -163,6 +168,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
       return "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters";
     }
   })();
+
   return (
     <div>
       <MadieDialog

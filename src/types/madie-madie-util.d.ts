@@ -60,6 +60,7 @@ declare module "@madie/madie-util" {
   interface FeatureFlags {
     MinimizeAlerts: boolean;
     qiCore7: boolean;
+    usQualityCore: boolean;
   }
 
   export interface UserRoles {
