@@ -311,19 +311,17 @@ describe("Create Draft Dialog component", () => {
       ).toBeInTheDocument();
       expect(await screen.findByText("QI-Core v4.1.1")).toBeInTheDocument();
 
-      const modelSelect = await screen.getByTestId("cql-library-model-select");
-      const modelSelectComboBox = await within(modelSelect).getByRole(
-        "combobox"
-      );
+      const modelSelect = screen.getByTestId("cql-library-model-select");
+      const modelSelectComboBox = within(modelSelect).getByRole("combobox");
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
       expect(options.length).toEqual(4);
       userEvent.click(options[0]);
       expect(
         (
-          (await within(modelSelect).getByRole("textbox", {
+          within(modelSelect).getByRole("textbox", {
             hidden: true,
-          })) as HTMLInputElement
+          }) as HTMLInputElement
         ).value
       ).toEqual("QI-Core v4.1.1");
 
@@ -366,19 +364,17 @@ describe("Create Draft Dialog component", () => {
       ).toBeInTheDocument();
       expect(await screen.findByText("QI-Core v6.0.0")).toBeInTheDocument();
 
-      const modelSelect = await screen.getByTestId("cql-library-model-select");
-      const modelSelectComboBox = await within(modelSelect).getByRole(
-        "combobox"
-      );
+      const modelSelect = screen.getByTestId("cql-library-model-select");
+      const modelSelectComboBox = within(modelSelect).getByRole("combobox");
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
       expect(options.length).toEqual(3);
       userEvent.click(options[0]);
       expect(
         (
-          (await within(modelSelect).getByRole("textbox", {
+          within(modelSelect).getByRole("textbox", {
             hidden: true,
-          })) as HTMLInputElement
+          }) as HTMLInputElement
         ).value
       ).toEqual("QI-Core v6.0.0");
 
@@ -420,7 +416,7 @@ describe("Create Draft Dialog component", () => {
       ).toBeInTheDocument();
       expect(await screen.findByText("QI-Core v7.0.2")).toBeInTheDocument();
 
-      const modelInput = await screen.getByTestId("cql-library-model-select");
+      const modelInput = screen.getByTestId("cql-library-model-select");
       expect(modelInput).toHaveAttribute("readonly");
 
       expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
@@ -455,19 +451,17 @@ describe("Create Draft Dialog component", () => {
       ).toBeInTheDocument();
       expect(await screen.findByText("QI-Core v4.1.1")).toBeInTheDocument();
 
-      const modelSelect = await screen.getByTestId("cql-library-model-select");
-      const modelSelectComboBox = await within(modelSelect).getByRole(
-        "combobox"
-      );
+      const modelSelect = screen.getByTestId("cql-library-model-select");
+      const modelSelectComboBox = within(modelSelect).getByRole("combobox");
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
       expect(options.length).toEqual(3);
       userEvent.click(options[0]);
       expect(
         (
-          (await within(modelSelect).getByRole("textbox", {
+          within(modelSelect).getByRole("textbox", {
             hidden: true,
-          })) as HTMLInputElement
+          }) as HTMLInputElement
         ).value
       ).toEqual("QI-Core v4.1.1");
 
@@ -510,7 +504,7 @@ describe("Create Draft Dialog component", () => {
       ).toBeInTheDocument();
       expect(await screen.findByText("QI-Core v6.0.0")).toBeInTheDocument();
 
-      const modelInput = await screen.getByTestId("cql-library-model-select");
+      const modelInput = screen.getByTestId("cql-library-model-select");
       expect(modelInput).toHaveAttribute("readonly");
 
       expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
@@ -536,7 +530,7 @@ describe("Create Draft Dialog component", () => {
       ).toBeInTheDocument();
       expect(await screen.findByText("QI-Core v7.0.2")).toBeInTheDocument();
 
-      const modelInput = await screen.getByTestId("cql-library-model-select");
+      const modelInput = screen.getByTestId("cql-library-model-select");
       expect(modelInput).toHaveAttribute("readonly");
 
       expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
