@@ -317,7 +317,7 @@ describe("Create Draft Dialog component", () => {
       );
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
-      expect(options.length).toEqual(3);
+      expect(options.length).toEqual(4);
       userEvent.click(options[0]);
       expect(
         (
@@ -372,7 +372,7 @@ describe("Create Draft Dialog component", () => {
       );
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
-      expect(options.length).toEqual(2);
+      expect(options.length).toEqual(3);
       userEvent.click(options[0]);
       expect(
         (
@@ -461,7 +461,7 @@ describe("Create Draft Dialog component", () => {
       );
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
-      expect(options.length).toEqual(2);
+      expect(options.length).toEqual(3);
       userEvent.click(options[0]);
       expect(
         (
