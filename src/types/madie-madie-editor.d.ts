@@ -87,6 +87,7 @@ declare module "@madie/madie-editor" {
   export function isUsingEmpty(editorVal: string): boolean;
 
   export const MadieEditor: FC<{
+    serviceConfig: any
     value: string;
     onChange: (value: string) => void;
     parseDebounceTime?: number;
