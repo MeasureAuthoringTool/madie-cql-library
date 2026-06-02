@@ -60,12 +60,14 @@ interface SharedLibrary {
   libraryId: string;
   cqlLibraryName: string;
   userId: string;
+  displayName?: string;
   dateShared: string;
   subRows: SharedLibrary[];
 }
 
 export interface SharedUser {
   userId: string;
+  displayName: string;
   performedAt: Date;
 }
 
@@ -218,11 +220,18 @@ const LibraryShareDialog = ({
       const userDetails = await userServiceApi.getBulkUserDetails(newIds);
       const validUsers: string[] = [];
       const invalidUsers: string[] = [];
+      const displayNameMap = new Map<string, string>();
 
       Object.entries(userDetails).forEach(
         ([harpId, details]: [string, any]) => {
           if (details.userStatus && String(details.userStatus) === "ACTIVE") {
             validUsers.push(harpId);
+
+            const name = [details.firstName, details.lastName]
+              .filter(Boolean)
+              .join(" ");
+
+            displayNameMap.set(harpId, name ? `${name} (${harpId})` : harpId);
           } else {
             invalidUsers.push(harpId);
           }
@@ -264,6 +273,7 @@ const LibraryShareDialog = ({
                 libraryId: library.libraryId,
                 cqlLibraryName: library.cqlLibraryName,
                 userId: harpId,
+                displayName: displayNameMap.get(harpId) ?? harpId,
                 dateShared: new Date().toLocaleString(),
                 subRows: null,
               },
@@ -333,6 +343,7 @@ const LibraryShareDialog = ({
               libraryId,
               cqlLibraryName: libraryMap.get(libraryId).cqlLibraryName,
               userId: sharedUser.userId,
+              displayName: sharedUser.displayName,
               dateShared: sharedUser.performedAt
                 ? sharedUser.performedAt.toLocaleString()
                 : "-",
@@ -437,9 +448,23 @@ const LibraryShareDialog = ({
             </div>
             <div> with the following users:</div>
             <ul>
-              {userIds.map((userId) => (
-                <li key={userId}>{userId}</li>
-              ))}
+              {userIds.map((userId) => {
+                const sharedUser =
+                  option === "UnshareFromMe"
+                    ? sharedLibraries
+                        .flatMap((library) => library.subRows)
+                        .find(
+                          (row) =>
+                            row.userId.toLowerCase() === userId.toLowerCase()
+                        )
+                    : sharedLibraries
+                        .find((library) => library.libraryId === libraryId)
+                        ?.subRows.find((row) => row.userId === userId);
+
+                const displayName = sharedUser?.displayName ?? userId;
+
+                return <li key={userId}>{displayName}</li>;
+              })}
             </ul>
           </div>
         ))}
@@ -516,7 +541,7 @@ const LibraryShareDialog = ({
               />
             )}
             <TruncateText
-              text={info.row.original.userId}
+              text={info.row.original.displayName ?? info.row.original.userId}
               maxLength={120}
               dataTestId={`user-${info.row.original.userId}_${info.row.original.libraryId}`}
             />
