@@ -198,7 +198,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(4);
     userEvent.click(screen.getByRole("option", { name: Model.QDM_5_6 }));
     expect(
       (
@@ -274,7 +274,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(4);
     userEvent.click(screen.getByRole("option", { name: Model.QICORE }));
     expect(
       (
@@ -320,7 +320,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(4);
     userEvent.click(screen.getByRole("option", { name: Model.QICORE_6_0_0 }));
     expect(
       (
@@ -353,7 +353,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(4);
+    expect(options.length).toEqual(5);
     userEvent.click(screen.getByRole("option", { name: Model.QICORE_7_0_2 }));
     expect(
       (
@@ -386,7 +386,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(4);
     userEvent.click(screen.getByRole("option", { name: Model.QICORE_6_0_0 }));
     expect(
       (
@@ -419,7 +419,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(4);
     userEvent.click(screen.getByRole("option", { name: usQualityCoreModel }));
     expect(
       (
@@ -472,7 +472,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(4);
     userEvent.click(screen.getByRole("option", { name: Model.QDM_5_6 }));
     expect(
       (
@@ -560,7 +560,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(4);
     userEvent.click(screen.getByRole("option", { name: Model.QDM_5_6 }));
     expect(
       (
