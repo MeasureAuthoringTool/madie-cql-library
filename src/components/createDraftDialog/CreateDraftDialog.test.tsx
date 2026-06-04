@@ -315,7 +315,7 @@ describe("Create Draft Dialog component", () => {
       const modelSelectComboBox = within(modelSelect).getByRole("combobox");
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
-      expect(options.length).toEqual(4);
+      expect(options.length).toEqual(6);
       userEvent.click(options[0]);
       expect(
         (
@@ -323,7 +323,7 @@ describe("Create Draft Dialog component", () => {
             hidden: true,
           }) as HTMLInputElement
         ).value
-      ).toEqual("QI-Core v4.1.1");
+      ).toEqual("FHIR v4.0.1");
 
       await waitFor(() => {
         expect(
@@ -368,7 +368,7 @@ describe("Create Draft Dialog component", () => {
       const modelSelectComboBox = within(modelSelect).getByRole("combobox");
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
-      expect(options.length).toEqual(3);
+      expect(options.length).toEqual(5);
       userEvent.click(options[0]);
       expect(
         (
@@ -376,7 +376,7 @@ describe("Create Draft Dialog component", () => {
             hidden: true,
           }) as HTMLInputElement
         ).value
-      ).toEqual("QI-Core v6.0.0");
+      ).toEqual("FHIR v4.0.1");
 
       await waitFor(() => {
         expect(
@@ -455,7 +455,7 @@ describe("Create Draft Dialog component", () => {
       const modelSelectComboBox = within(modelSelect).getByRole("combobox");
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
-      expect(options.length).toEqual(3);
+      expect(options.length).toEqual(5);
       userEvent.click(options[0]);
       expect(
         (
@@ -463,11 +463,11 @@ describe("Create Draft Dialog component", () => {
             hidden: true,
           }) as HTMLInputElement
         ).value
-      ).toEqual("QI-Core v4.1.1");
+      ).toEqual("FHIR v4.0.1");
 
       await waitFor(() => {
         expect(
-          screen.getByTestId("cql-library-model-option-QI-Core v4.1.1")
+          screen.getByTestId("cql-library-model-option-FHIR v4.0.1")
         ).toBeInTheDocument();
         expect(
           screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
