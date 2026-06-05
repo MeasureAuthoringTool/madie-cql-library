@@ -51,8 +51,8 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   const hiddenModels = new Set<string>();
   if (featureFlags?.usQualityCore) {
     hiddenModels.add("QICORE");
-    hiddenModels.add("FHIR_4_0_1");
   } else {
+    hiddenModels.add("FHIR_4_0_1");
     hiddenModels.add("US_CORE_6_1_0");
     hiddenModels.add("US_QUALITY_0_5_0");
   }
