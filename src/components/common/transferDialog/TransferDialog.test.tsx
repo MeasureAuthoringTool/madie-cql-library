@@ -264,6 +264,46 @@ describe("Transfer Libraries Dialog component", () => {
         expect(tableBody?.querySelectorAll("tbody tr")).toHaveLength(1);
       });
     });
+    it("should display formatted owner name in Current Library Owner field", async () => {
+      const library = {
+        cqlLibraryName: "Library 1",
+        model: "Model A",
+        ownerDisplayName: "John Doe",
+        librarySet: { id: "1", librarySetId: "ls1", owner: "john_doe" },
+      };
+
+      render(
+        <TransferDialog
+          libraries={[library] as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
+
+      expect(
+        await screen.findByText("John Doe (john_doe)")
+      ).toBeInTheDocument();
+    });
+
+    it("should fall back to harpId in Current Library Owner field when ownerDisplayName is missing", async () => {
+      const library = {
+        cqlLibraryName: "Library 1",
+        model: "Model A",
+        librarySet: { id: "1", librarySetId: "ls1", owner: "john_doe" },
+      };
+
+      render(
+        <TransferDialog
+          libraries={[library] as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
+
+      expect(await screen.findByText("john_doe")).toBeInTheDocument();
+    });
   });
 
   describe("Admin user", () => {
@@ -416,6 +456,40 @@ describe("Transfer Libraries Dialog component", () => {
       await waitFor(() => {
         expect(tableBody?.querySelectorAll("tbody tr")).toHaveLength(1);
       });
+    });
+
+    it("should display formatted owner name in Current Library Owner column for admin", () => {
+      const libraries = [
+        {
+          cqlLibraryName: "Library 1",
+          model: "Model A",
+          ownerDisplayName: "John Doe",
+          librarySet: { id: "1", librarySetId: "ls1", owner: "john_doe" },
+        },
+        {
+          cqlLibraryName: "Library 2",
+          model: "Model B",
+          ownerDisplayName: "Jane Doe",
+          librarySet: { id: "2", librarySetId: "ls2", owner: "jane_doe" },
+        },
+      ];
+
+      render(
+        <TransferDialog
+          libraries={libraries as CqlLibrary[]}
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      );
+
+      const table = getByTestId("transfer-library-tbl");
+      expect(
+        within(table).getByText("John Doe (john_doe)")
+      ).toBeInTheDocument();
+      expect(
+        within(table).getByText("Jane Doe (jane_doe)")
+      ).toBeInTheDocument();
     });
   });
 });

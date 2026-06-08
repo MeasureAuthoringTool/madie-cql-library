@@ -23,6 +23,7 @@ import "./TransferDialog.scss";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import * as Yup from "yup";
 import { UserRoles, useUserRoles } from "@madie/madie-util";
+import { formatOwner } from "../../../utils/ownerFormatter";
 
 export const INVALID_HARP_ID_MESSAGE =
   "The provided HARP ID is not associated with an active MADiE user.";
@@ -105,7 +106,10 @@ const TransferredLibraries = ({
       visibleLibraries.map((library) => ({
         libraryName: library.cqlLibraryName,
         model: library.model,
-        owner: library.librarySet?.owner,
+        owner: formatOwner(
+          (library as any).ownerDisplayName,
+          library.librarySet?.owner
+        ),
       })),
     [visibleLibraries]
   );
@@ -225,7 +229,10 @@ const TransferDialog = ({
   const userRoles: UserRoles = useUserRoles();
   const formik = useFormik({
     initialValues: {
-      currentUser: libraries?.[0]?.librarySet?.owner,
+      currentUser: formatOwner(
+        (libraries?.[0] as any)?.ownerDisplayName,
+        libraries?.[0]?.librarySet?.owner
+      ),
       harpId: "",
       retainShareAccess: false,
     },
