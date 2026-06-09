@@ -211,6 +211,27 @@ describe("LibraryShareDialog", () => {
       expect(headers[1]).toHaveTextContent("Shared With");
       expect(headers[2]).toHaveTextContent("Date Shared");
     });
+
+    it("displays display name format for API-loaded users in grid", async () => {
+      setupDefaultMocks({
+        getSharedLibraries: jest.fn().mockResolvedValue({
+          [mockCqlLibrary1.id]: [
+            {
+              userId: "userId1",
+              displayName: "John Doe (userId1)",
+              performedAt: yesterday.toISOString(),
+            },
+          ],
+          [mockCqlLibrary2.id]: [],
+        }),
+      });
+      renderShareDialog();
+      await waitForDialog();
+
+      expect(
+        screen.getByTestId(`${mockCqlLibrary1.id} userId1_userId`)
+      ).toHaveTextContent("John Doe (userId1)");
+    });
   });
 
   describe("API Calls", () => {
@@ -323,6 +344,18 @@ describe("LibraryShareDialog", () => {
     });
 
     it("adds user rows when Add User is clicked", async () => {
+      setupDefaultMocks(
+        {},
+        {
+          getBulkUserDetails: jest.fn().mockResolvedValue({
+            userId3: {
+              userStatus: "ACTIVE",
+              firstName: "John",
+              lastName: "Doe",
+            },
+          }),
+        }
+      );
       renderShareDialog();
       await waitForDialog();
       await addHarpIdChip("userId3");
@@ -335,10 +368,10 @@ describe("LibraryShareDialog", () => {
       await waitFor(() => {
         expect(
           screen.getByTestId("TestLibraryId1 userId3_userId")
-        ).toHaveTextContent("userId3");
+        ).toHaveTextContent("John Doe (userId3)");
         expect(
           screen.getByTestId("TestLibraryId2 userId3_userId")
-        ).toHaveTextContent("userId3");
+        ).toHaveTextContent("John Doe (userId3)");
       });
     });
 
@@ -816,6 +849,67 @@ describe("LibraryShareDialog", () => {
 
       await waitFor(() => {
         expect(mockApi.unshareLibraries).toHaveBeenCalled();
+      });
+    });
+
+    it("shows display name in confirmation dialog when unsharing", async () => {
+      setupDefaultMocks({
+        getSharedLibraries: jest.fn().mockResolvedValue({
+          [mockCqlLibrary1.id]: [
+            {
+              userId: "userId1",
+              displayName: "John Doe (userId1)",
+              performedAt: yesterday.toISOString(),
+            },
+            {
+              userId: "userId2",
+              displayName: "Jane Doe (userId2)",
+              performedAt: yesterday.toISOString(),
+            },
+          ],
+          [mockCqlLibrary2.id]: [],
+        }),
+      });
+      renderShareDialog({ option: "Unshare", libraries: [mockCqlLibrary1] });
+      await waitForDialog();
+
+      const checkboxes = await screen.findAllByRole("checkbox");
+      userEvent.click(checkboxes[0]);
+      await waitFor(() => expect(checkboxes[0]).not.toBeChecked());
+
+      const saveBtn = await screen.findByTestId("share-save-button");
+      userEvent.click(saveBtn);
+
+      expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
+
+      const userListItems = screen.getAllByRole("listitem");
+      expect(userListItems[0]).toHaveTextContent("John Doe (userId1)");
+    });
+
+    it("shows display name in confirmation dialog for UnshareFromMe", async () => {
+      setupDefaultMocks({
+        getSharedLibraries: jest.fn().mockResolvedValue({
+          [mockCqlLibrary1.id]: [
+            {
+              userId: testUser,
+              displayName: `Test User (${testUser})`,
+              performedAt: yesterday.toISOString(),
+            },
+          ],
+        }),
+        getRecentLibrariesByLibrarySetId: jest
+          .fn()
+          .mockResolvedValue([mockCqlLibrary1]),
+      });
+
+      renderShareDialog({
+        option: "UnshareFromMe",
+        libraries: [mockCqlLibrary1],
+      });
+
+      await waitFor(() => {
+        const userListItems = screen.getAllByRole("listitem");
+        expect(userListItems[0]).toHaveTextContent(`Test User (${testUser})`);
       });
     });
   });
