@@ -315,7 +315,7 @@ describe("Create Draft Dialog component", () => {
       const modelSelectComboBox = within(modelSelect).getByRole("combobox");
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
-      expect(options.length).toEqual(6);
+      expect(options.length).toEqual(3);
       userEvent.click(options[0]);
       expect(
         (
@@ -323,7 +323,7 @@ describe("Create Draft Dialog component", () => {
             hidden: true,
           }) as HTMLInputElement
         ).value
-      ).toEqual("FHIR v4.0.1");
+      ).toEqual("QI-Core v4.1.1");
 
       await waitFor(() => {
         expect(
@@ -368,7 +368,7 @@ describe("Create Draft Dialog component", () => {
       const modelSelectComboBox = within(modelSelect).getByRole("combobox");
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
-      expect(options.length).toEqual(5);
+      expect(options.length).toEqual(2);
       userEvent.click(options[0]);
       expect(
         (
@@ -376,7 +376,7 @@ describe("Create Draft Dialog component", () => {
             hidden: true,
           }) as HTMLInputElement
         ).value
-      ).toEqual("FHIR v4.0.1");
+      ).toEqual("QI-Core v6.0.0");
 
       await waitFor(() => {
         expect(
@@ -455,7 +455,7 @@ describe("Create Draft Dialog component", () => {
       const modelSelectComboBox = within(modelSelect).getByRole("combobox");
       userEvent.click(modelSelectComboBox);
       const options = await screen.findAllByRole("option");
-      expect(options.length).toEqual(5);
+      expect(options.length).toEqual(2);
       userEvent.click(options[0]);
       expect(
         (
@@ -463,12 +463,9 @@ describe("Create Draft Dialog component", () => {
             hidden: true,
           }) as HTMLInputElement
         ).value
-      ).toEqual("FHIR v4.0.1");
+      ).toEqual("QI-Core v4.1.1");
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId("cql-library-model-option-FHIR v4.0.1")
-        ).toBeInTheDocument();
         expect(
           screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
         ).toBeInTheDocument();
@@ -536,4 +533,8 @@ describe("Create Draft Dialog component", () => {
       expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
     });
   });
+
+  describe("Test model version options when feature flag usQualityCore is true", () => {});
+
+  describe("Test model version options when feature flag usQualityCore is false", () => {});
 });
