@@ -6,6 +6,7 @@ import { ElmTranslationError } from "./editorUtil";
 import tw from "twin.macro";
 import { IconButton } from "@mui/material";
 import Search from "@mui/icons-material/Search";
+import useServiceConfig from "../../api/useServiceConfig";
 
 const MessageText = tw.p`text-sm font-medium`;
 const SuccessText = tw(MessageText)`text-green-800`;
@@ -43,9 +44,11 @@ const CqlLibraryEditor = ({
   readOnly,
   setOutboundAnnotations,
 }: CqlLibraryEditorProps) => {
+  const serviceConfig = useServiceConfig();
   return (
     <>
       <MadieEditor
+        serviceConfig={serviceConfig}
         onChange={onChange}
         value={value}
         inboundAnnotations={inboundAnnotations}

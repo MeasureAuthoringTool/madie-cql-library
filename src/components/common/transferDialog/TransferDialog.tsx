@@ -279,7 +279,7 @@ const TransferDialog = ({
           "data-testid": "transfer-cancel-button",
         }}
         continueButtonProps={{
-          variant: userRoles.isAdmin ? "cyan" : "danger-primary",
+          variant: userRoles?.isAdmin ? "cyan" : "danger-primary",
           type: "submit",
           continueText: "Transfer",
           "data-testid": "transfer-save-button",
@@ -293,7 +293,7 @@ const TransferDialog = ({
             transferred, but only the most recent library name appears in the
             list below.
           </div>
-          {!userRoles.isAdmin && (
+          {!userRoles?.isAdmin && (
             <div className="warning-message">
               <ErrorOutlineIcon color="error" fontSize="small" />
               This action cannot be undone.
@@ -303,10 +303,10 @@ const TransferDialog = ({
         <div data-testid="transferred-libraries-list">
           <TransferredLibraries
             libraries={libraries}
-            isAdmin={userRoles.isAdmin}
+            isAdmin={userRoles?.isAdmin}
           />
         </div>
-        {!userRoles.isAdmin && (
+        {!userRoles?.isAdmin && (
           <>
             <div className="owner">Owner</div>
             <Divider sx={{ borderColor: "#8c8c8c", paddingBottom: "16px" }} />
@@ -314,7 +314,7 @@ const TransferDialog = ({
         )}
 
         <div id="transfer-library">
-          {!userRoles.isAdmin && (
+          {!userRoles?.isAdmin && (
             <div className="current-owner">
               <ReadOnlyTextField
                 label="Current Library Owner"

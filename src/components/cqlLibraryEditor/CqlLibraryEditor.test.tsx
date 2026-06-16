@@ -8,7 +8,6 @@ import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { CqlLibrary } from "@madie/madie-models";
 import axios from "axios";
 import { FHIRValueSet } from "../../api/useTerminologyServiceApi";
-import { validateContent } from "@madie/madie-editor";
 import {
   ElmTranslationError,
   ElmTranslation,
