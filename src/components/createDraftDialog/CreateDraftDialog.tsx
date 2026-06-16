@@ -35,12 +35,13 @@ const CreateDraftDialog = ({
       return opts;
     }
     if (model === Model.US_CORE_6_1_0) {
-      return [
-        "US_CORE_6_1_0",
-        "QICORE_6_0_0",
-        "QICORE_7_0_2",
-        "US_QUALITY_0_5_0",
-      ];
+      if (!featureFlags.usQualityCore) {
+        return ["US_CORE_6_1_0"];
+      }
+      const opts = ["US_CORE_6_1_0", "QICORE_6_0_0"];
+      if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
+      opts.push("US_QUALITY_0_5_0");
+      return opts;
     }
     if (model === Model.QICORE) {
       if (featureFlags.usQualityCore) {
