@@ -25,33 +25,63 @@ const CreateDraftDialog = ({
   onSubmit,
   cqlLibrary,
 }: CreateDraftDialogProps) => {
-  let modelOptions = Object.keys(Model);
-
   const featureFlags = useFeatureFlags();
 
   const getModelOptions = (model) => {
-    if (!featureFlags.qiCore7) {
-      if (model === Model.QICORE) {
-        modelOptions = modelOptions.filter((model) => model !== "QICORE_7_0_2");
-      } else if (model === Model.QICORE_6_0_0) {
-        modelOptions = modelOptions.filter((model) => model === "QICORE_6_0_0");
-      } else {
-        modelOptions = modelOptions.filter((model) => model === "QICORE_7_0_2");
-      }
-    } else {
-      if (model === Model.QICORE_6_0_0) {
-        modelOptions = modelOptions.filter((model) => model !== "QICORE");
-      } else if (model === Model.QICORE_7_0_2) {
-        modelOptions = modelOptions.filter((model) => model === "QICORE_7_0_2");
-      }
+    if (model === Model.FHIR_4_0_1) {
+      const opts = ["FHIR_4_0_1", "US_CORE_6_1_0", "QICORE_6_0_0"];
+      if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
+      opts.push("US_QUALITY_0_5_0");
+      return opts;
     }
-    return modelOptions;
+    if (model === Model.US_CORE_6_1_0) {
+      if (!featureFlags.usQualityCore) {
+        return ["US_CORE_6_1_0"];
+      }
+      const opts = ["US_CORE_6_1_0", "QICORE_6_0_0"];
+      if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
+      opts.push("US_QUALITY_0_5_0");
+      return opts;
+    }
+    if (model === Model.QICORE) {
+      if (featureFlags.usQualityCore) {
+        const opts = ["QICORE_6_0_0"];
+        if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
+        opts.push("US_QUALITY_0_5_0");
+        return opts;
+      }
+      const opts = ["QICORE", "QICORE_6_0_0"];
+      if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
+      return opts;
+    }
+    if (model === Model.QICORE_6_0_0) {
+      const opts = ["QICORE_6_0_0"];
+      if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
+      if (featureFlags.usQualityCore) opts.push("US_QUALITY_0_5_0");
+      return opts;
+    }
+    if (model === Model.QICORE_7_0_2) {
+      const opts = ["QICORE_7_0_2"];
+      if (featureFlags.usQualityCore) opts.push("US_QUALITY_0_5_0");
+      return opts;
+    }
+    if (model === Model.US_QUALITY_0_5_0) {
+      return ["US_QUALITY_0_5_0"];
+    }
+    return [];
   };
+
+  // QI-Core v4.1.1 libraries default the dropdown to QI-Core v6.0.0
+  // when usQualityCore is on, since 4.1.1 itself isn't offered then.
+  const defaultModel =
+    cqlLibrary?.model === Model.QICORE && featureFlags.usQualityCore
+      ? Model.QICORE_6_0_0
+      : cqlLibrary?.model;
 
   const formik = useFormik({
     initialValues: {
       cqlLibraryName: cqlLibrary?.cqlLibraryName,
-      model: cqlLibrary?.model,
+      model: defaultModel,
     } as CqlLibrary,
     validationSchema: Yup.object().shape({
       cqlLibraryName: Yup.string()

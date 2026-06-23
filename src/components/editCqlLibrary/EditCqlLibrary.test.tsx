@@ -1711,7 +1711,7 @@ describe("Edit Cql Library Component", () => {
     const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(5);
+    expect(options.length).toEqual(2);
     userEvent.click(options[0]);
 
     const continueButton = await screen.findByTestId(
@@ -1748,7 +1748,7 @@ describe("Edit Cql Library Component", () => {
     const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(5);
+    expect(options.length).toEqual(2);
     userEvent.click(options[0]);
 
     const continueButton = await screen.findByTestId(
@@ -1785,7 +1785,7 @@ describe("Edit Cql Library Component", () => {
     const modelSelectComboBox = await within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(5);
+    expect(options.length).toEqual(2);
     userEvent.click(options[0]);
 
     const continueButton = await screen.findByTestId(
