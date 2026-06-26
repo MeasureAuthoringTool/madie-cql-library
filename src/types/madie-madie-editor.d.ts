@@ -72,7 +72,12 @@ declare module "@madie/madie-editor" {
   }
 
   export const parseContent: (content: string) => CqlError[];
-  export const validateContent: (content: string) => Promise<ValidationResult>;
+  export const validateContent: (
+    content: string,
+    checkContext: boolean,
+    terminologyServiceApi: TerminologyServiceApi
+  ) => Promise<ValidationResult>;
+
   export const synchingEditorCqlContent: (
     editorVal: string,
     existingCql: string,

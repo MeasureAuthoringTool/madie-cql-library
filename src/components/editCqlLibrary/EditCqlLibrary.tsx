@@ -17,6 +17,7 @@ import {
   useFeatureFlags,
   useUserServiceApi,
   useCqlLibraryServiceApi,
+  useTerminologyServiceApi,
 } from "@madie/madie-util";
 import * as _ from "lodash";
 import CqlLibraryEditor, {
@@ -259,6 +260,7 @@ const EditCqlLibrary = () => {
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const organizationApi = useRef(useOrganizationApi()).current;
   const userServiceApi = useRef(useUserServiceApi()).current;
+  const terminologyServiceApi = useRef(useTerminologyServiceApi());
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
@@ -669,7 +671,11 @@ const EditCqlLibrary = () => {
   ): Promise<ValidationResult> => {
     setError(false);
     if (cql && cql.trim().length > 0) {
-      const result = await validateContent(cql);
+      const result = await validateContent(
+        cql,
+        true,
+        terminologyServiceApi.current
+      );
       const { errors, externalErrors } = result;
       // right now we are only displaying the external errors related to included libraries
       // and only the first error returned by elm translator
