@@ -80,6 +80,7 @@ declare module "@madie/madie-util" {
 
   export function useUserServiceApi(): UserServiceApi;
 
+  export function useTerminologyServiceApi(): TerminologyServiceApi;
   export function useOrganizationApi(): OrganizationApi;
   export function useUserServiceApi(): UserServiceApi;
 
