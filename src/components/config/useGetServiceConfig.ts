@@ -21,6 +21,12 @@ export interface ServiceConfig {
   terminologyService: {
     baseUrl: string;
   };
+  qdmElmTranslationService: {
+    baseUrl: string;
+  };
+  fhirElmTranslationService: {
+    baseUrl: string;
+  };
 }
 
 const useGetServiceConfig = () => {

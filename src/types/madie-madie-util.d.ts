@@ -1,6 +1,7 @@
+//madie-madie-util.d.ts
 declare module "@madie/madie-util" {
   import { LifeCycleFn } from "single-spa";
-  // import { Measure } from "@madie/madie-models/dist/Measure";
+
   import {
     CqlLibrary,
     Measure,
@@ -10,6 +11,24 @@ declare module "@madie/madie-util" {
     OwnershipType,
   } from "@madie/madie-models";
   import { AxiosResponse } from "axios";
+
+  import { ValidationResult } from "@madie/madie-editor";
+  export function validateContent(
+    content: string,
+    checkContext: boolean,
+    terminologyServiceApi: TerminologyServiceApi,
+    qdmApi: QdmElmTranslationServiceApi,
+    fhirApi: FhirElmTranslationServiceApi
+  ): Promise<ValidationResult>;
+
+  export function getAllErrors(
+    content: string,
+    checkContext: boolean,
+    terminologyServiceApi: TerminologyServiceApi,
+    qdmApi: QdmElmTranslationServiceApi,
+    fhirApi: FhirElmTranslationServiceApi
+  ): Promise<ValidationResult>;
+
   export interface OktaConfig {
     baseUrl: string;
     issuer: string;
@@ -80,6 +99,7 @@ declare module "@madie/madie-util" {
 
   export function useUserServiceApi(): UserServiceApi;
 
+  export function useTerminologyServiceApi(): TerminologyServiceApi;
   export function useOrganizationApi(): OrganizationApi;
   export function useUserServiceApi(): UserServiceApi;
 
