@@ -17,7 +17,9 @@ import {
   useFeatureFlags,
   useUserServiceApi,
   useCqlLibraryServiceApi,
+  useTerminologyServiceApi,
 } from "@madie/madie-util";
+
 import * as _ from "lodash";
 import CqlLibraryEditor, {
   mapElmErrorsToAceAnnotations,
@@ -27,8 +29,8 @@ import {
   isUsingEmpty,
   parseContent,
   synchingEditorCqlContent,
-  validateContent,
   ValidationResult,
+  validateContent,
 } from "@madie/madie-editor";
 import {
   Toast,
@@ -66,6 +68,8 @@ import {
 } from "../cqlLibraryList/CqlLibraryList";
 import CqlLibraryHistoryDialog from "../cqlLibraryLanding/CqlLibraryHistoryDialog";
 import LibraryLockedPopup from "./libraryLockedPopup/LibraryLockedPopup";
+import useFhirElmTranslationServiceApi from "../../api/useFhirElmTranslationServiceApi";
+import useQdmElmTranslationServiceApi from "../../api/useQdmElmTranslationServiceApi";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -259,6 +263,10 @@ const EditCqlLibrary = () => {
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const organizationApi = useRef(useOrganizationApi()).current;
   const userServiceApi = useRef(useUserServiceApi()).current;
+  const terminologyServiceApi = useTerminologyServiceApi();
+  const qdmElmTranslationService = useQdmElmTranslationServiceApi();
+  const fhirElmTranslationService = useFhirElmTranslationServiceApi();
+
   const [valuesetMsg, setValuesetMsg] = useState(null);
   const [valuesetSuccess, setValuesetSuccess] = useState<boolean>(true);
   const [elmAnnotations, setElmAnnotations] = useState<EditorAnnotation[]>([]);
@@ -669,7 +677,13 @@ const EditCqlLibrary = () => {
   ): Promise<ValidationResult> => {
     setError(false);
     if (cql && cql.trim().length > 0) {
-      const result = await validateContent(cql);
+      const result = await validateContent(
+        cql,
+        true,
+        terminologyServiceApi,
+        qdmElmTranslationService,
+        fhirElmTranslationService
+      );
       const { errors, externalErrors } = result;
       // right now we are only displaying the external errors related to included libraries
       // and only the first error returned by elm translator

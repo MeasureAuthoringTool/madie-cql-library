@@ -22,6 +22,7 @@ import {
   UserServiceApi,
   useCqlLibraryServiceApi,
   CqlLibraryServiceApi,
+  useTerminologyServiceApi,
 } from "@madie/madie-util";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 import {
@@ -31,6 +32,13 @@ import {
 import { INVALID_HARP_ID_MESSAGE } from "../common/transferDialog/TransferDialog";
 
 const { getByTestId, queryByTestId, queryByText } = screen;
+
+const mockTerminologyServiceApi = {
+  checkLogin: jest.fn().mockResolvedValue(true),
+  validateCodes: jest.fn().mockResolvedValue([]),
+  getValueSet: jest.fn().mockResolvedValue({}),
+} as any;
+
 const mockUserServiceApi = {
   getOwnerDetails: jest.fn().mockResolvedValue({}),
 } as unknown as UserServiceApi;
@@ -74,6 +82,7 @@ jest.mock("@madie/madie-util", () => ({
   useIsRoleOrFeatureEnabled: jest.fn(),
 
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
+  useTerminologyServiceApi: jest.fn(() => mockTerminologyServiceApi),
 }));
 
 const cqlLibrary = {
@@ -183,8 +192,14 @@ const serviceConfig: ServiceConfig = {
   cqlLibraryService: {
     baseUrl: "",
   },
+  qdmElmTranslationService: {
+    baseurl: "",
+  },
+  fhirElmTranslationService: {
+    baseurl: "",
+  },
   terminologyService: {
-    baseUrl: "",
+    baseurl: "",
   },
 } as unknown as ServiceConfig;
 
