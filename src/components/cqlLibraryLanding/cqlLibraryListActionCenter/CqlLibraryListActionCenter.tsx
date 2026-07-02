@@ -8,10 +8,12 @@ import CompareVersionsAction from "./compareVersionsAction/CompareVersionsAction
 import { CqlLibrary } from "@madie/madie-models";
 import {
   checkUserCanEdit,
+  FeatureFlags,
   useFeatureFlags,
   useOktaTokens,
 } from "@madie/madie-util";
 import TransferAction from "./transferAction/TransferAction";
+import ReviewAction from "./reviewAction/ReviewAction";
 
 interface PropTypes {
   selectedLibraries: CqlLibrary[];
@@ -35,8 +37,12 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     createVersion,
     owners,
     openLibraryHistoryDialog,
+    activeTab,
+    setShareDialog,
+    setTransferDialog,
+    setCompareVersionsDialog,
   } = props;
-  const featureFlags = useFeatureFlags();
+  const featureFlags: FeatureFlags = useFeatureFlags();
   const { getUserName } = useOktaTokens();
   const userName = getUserName();
   const canEdit = selectedLibraries
@@ -45,7 +51,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         selectedLibraries[0]?.librarySet?.acls
       )
     : false;
-  const [isSharedWithUser, setIsSharedWithUser] = useState<boolean>(true);
+  const [isSharedWithUser] = useState<boolean>(true);
 
   function deleteLibrary() {
     setDeleteDraftDialog({
@@ -63,26 +69,30 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
   const shareLibrary = useCallback(
     (actionType: string) => {
       const shareOption =
-        actionType === "Unshare" && props.activeTab === 1
+        actionType === "Unshare" && activeTab === 1
           ? "UnshareFromMe"
           : actionType;
 
-      props.setShareDialog({ open: true, option: shareOption });
+      setShareDialog({ open: true, option: shareOption });
     },
-    [props.setShareDialog, props.activeTab]
+    [setShareDialog, activeTab]
   );
 
   const transferLibrary = useCallback(() => {
     if (selectedLibraries?.length > 0) {
-      props.setTransferDialog({ open: true });
+      setTransferDialog({ open: true });
     }
-  }, [selectedLibraries?.length, props]);
+  }, [selectedLibraries?.length, setTransferDialog]);
 
   const compareVersions = useCallback(() => {
     if (selectedLibraries?.length === 2) {
-      props.setCompareVersionsDialog(true);
+      setCompareVersionsDialog(true);
     }
-  }, [selectedLibraries?.length, props.setCompareVersionsDialog]);
+  }, [selectedLibraries?.length, setCompareVersionsDialog]);
+
+  const reviewLibrary = useCallback(() => {
+    // Review click handling will be implemented in a follow-up story.
+  }, []);
 
   return (
     <div data-testid="action-center">
@@ -97,7 +107,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         userName={userName}
         owners={owners}
         isSharedWithUser={isSharedWithUser}
-        activeTab={props?.activeTab}
+        activeTab={activeTab}
       />
       <VersionAction
         libraries={selectedLibraries}
@@ -117,12 +127,19 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
       <TransferAction
         libraries={selectedLibraries}
         onClick={transferLibrary}
-        activeTab={props?.activeTab}
+        activeTab={activeTab}
       />
       <CompareVersionsAction
         libraries={selectedLibraries}
         onClick={compareVersions}
       />
+      {featureFlags?.LibraryReviewStatus && (
+        <ReviewAction
+          libraries={selectedLibraries}
+          onClick={reviewLibrary}
+          canEdit={canEdit}
+        />
+      )}
     </div>
   );
 }
