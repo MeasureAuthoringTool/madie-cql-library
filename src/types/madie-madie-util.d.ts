@@ -80,6 +80,7 @@ declare module "@madie/madie-util" {
     MinimizeAlerts: boolean;
     qiCore7: boolean;
     usQualityCore: boolean;
+    LibraryReviewStatus: boolean;
   }
 
   export interface UserRoles {

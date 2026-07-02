@@ -40,7 +40,7 @@ import {
   useFilterSearch,
 } from "@madie/madie-design-system/dist/react";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
-import { CqlLibraryListActionCenter as ActionCenter } from "../cqlLibraryLanding/cqlLibraryListActionCenter/CqlLibraryListActionCenter";
+import { CqlLibraryListActionCenter } from "../cqlLibraryLanding/cqlLibraryListActionCenter/CqlLibraryListActionCenter";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import { useNavigate, useLocation } from "react-router-dom";
 import queryString from "query-string";
@@ -1172,7 +1172,7 @@ export default function CqlLibraryList({
             textFieldID="library"
           />
           <div>
-            <ActionCenter
+            <CqlLibraryListActionCenter
               openLibraryHistoryDialog={openLibraryHistoryDialog}
               selectedLibraries={selectedLibraries}
               setDeleteDraftDialog={setDeleteDraftDialog}
