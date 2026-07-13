@@ -130,6 +130,8 @@ declare module "@madie/madie-util" {
 
   export function wafIntercept(): void;
 
+  export function useOwnerName(harpId: string): string;
+
   export const bootstrap: LifeCycleFn<void>;
   export const mount: LifeCycleFn<void>;
   export const unmount: LifeCycleFn<void>;
