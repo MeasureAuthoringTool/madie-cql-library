@@ -37,6 +37,25 @@ describe("LibraryLockedPopup component", () => {
     expect(mockUseOwnerName).toHaveBeenCalledWith("user123");
   });
 
+  it("falls back to the HARP ID wording when no name is available", () => {
+    mockUseOwnerName.mockReturnValue("user123");
+    render(
+      <MemoryRouter>
+        <LibraryLockedPopup
+          libraryLockedBy="user123"
+          lockedLibraryPopupOpen={true}
+          setLockedLibraryPopupOpen={jest.fn()}
+        />
+      </MemoryRouter>
+    );
+
+    const message = screen.getByTestId("library-locked-popup-message");
+    expect(message).toHaveTextContent(
+      "This library is currently being edited by user123."
+    );
+    expect(message).not.toHaveTextContent("(user123)");
+  });
+
   it("does not render when closed", () => {
     render(
       <MemoryRouter>
