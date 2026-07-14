@@ -54,6 +54,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import "./CqlLibraryList.scss";
 import { INITIAL_STATUS_HANDLER } from "../editCqlLibrary/statusHandler/StatusHandler";
 import CompareVersionsDialog from "../common/compareVersionsDialog/CompareVersionsDialog";
+import ReviewDialog from "../common/reviewDialog/ReviewDialog";
 
 export const TRANSFER_LIBRARY_SUCCESS =
   "The library(s) were successfully transferred. If you chose to retain share access, you will still be able to edit the libraries.";
@@ -170,6 +171,17 @@ export default function CqlLibraryList({
   const [expandedSectionData, setExpandedSectionData] = useState<CqlLibrary[]>(
     []
   );
+  const [reviewDialog, setReviewDialog] = useState({
+    open: false,
+    measureId: "",
+  });
+
+  const handleReviewDialogClose = () => {
+    setReviewDialog({
+      open: false,
+      measureId: "",
+    });
+  };
 
   const featureFlags = useFeatureFlags();
   const navigate = useNavigate();
@@ -1022,6 +1034,11 @@ export default function CqlLibraryList({
         open={compareVersionsDialog}
         onClose={handleDialogClose}
       />
+      <ReviewDialog
+        open={reviewDialog.open}
+        library={selectedLibraries[0]}
+        onClose={handleReviewDialogClose}
+      />
       <Popover
         open={optionsOpen}
         anchorEl={anchorEl}
@@ -1184,6 +1201,7 @@ export default function CqlLibraryList({
               activeTab={activeTab}
               setTransferDialog={setTransferDialog}
               setCompareVersionsDialog={setCompareVersionsDialog}
+              setReviewDialog={setReviewDialog}
             />
           </div>
         </div>

@@ -27,6 +27,7 @@ interface PropTypes {
   setTransferDialog: (value: any) => void;
   openLibraryHistoryDialog: () => void;
   setCompareVersionsDialog: any;
+  setReviewDialog: (value: any) => void;
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
@@ -41,6 +42,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     setShareDialog,
     setTransferDialog,
     setCompareVersionsDialog,
+    setReviewDialog,
   } = props;
   const featureFlags: FeatureFlags = useFeatureFlags();
   const { getUserName } = useOktaTokens();
@@ -91,8 +93,13 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
   }, [selectedLibraries?.length, setCompareVersionsDialog]);
 
   const reviewLibrary = useCallback(() => {
-    // Review click handling will be implemented in a follow-up story.
-  }, []);
+    if (selectedLibraries?.length === 1) {
+      setReviewDialog?.({
+        open: true,
+        libraryId: selectedLibraries[0]?.id,
+      });
+    }
+  }, [selectedLibraries, setReviewDialog]);
 
   return (
     <div data-testid="action-center">
