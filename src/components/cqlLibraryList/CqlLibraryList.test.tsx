@@ -8,7 +8,7 @@ import {
   within,
 } from "@testing-library/react";
 import { CqlLibrary, Model } from "@madie/madie-models";
-import CqlLibraryList, {
+import CqlLibraryListComponent, {
   sortResults,
   TRANSFER_LIBRARY_SUCCESS,
   TRANSFER_LIBRARY_FAILURE,
@@ -23,6 +23,8 @@ import CqlLibraryServiceApi, {
   useCqlLibraryServiceApi,
   useUserServiceApi,
 } from "@madie/madie-util";
+
+const CqlLibraryList = CqlLibraryListComponent as any;
 
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
@@ -278,6 +280,72 @@ describe("CqlLibrary List component", () => {
     const checkBoxes = await screen.findAllByRole("checkbox");
     expect(checkBoxes.length).toBe(3);
     fireEvent.click(checkBoxes[1]);
+  });
+
+  it("should open and close review dialog from action center", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({
+      LibraryReviewStatus: true,
+    });
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={cqlLibrary[0]}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        compareVersionsDialog={false}
+        setCompareVersionsDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+        setStatusHandler={jest.fn()}
+      />
+    );
+
+    const checkBoxes = await screen.findAllByRole("checkbox");
+    fireEvent.click(checkBoxes[1]);
+
+    userEvent.click(screen.getByTestId("review-action-btn"));
+
+    expect(
+      await screen.findByText("Mark Library Ready for Review")
+    ).toBeInTheDocument();
+
+    userEvent.click(screen.getByTestId("review-dialog-cancel-button"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Mark Library Ready for Review")
+      ).not.toBeVisible();
+    });
   });
 
   it("Shows a View button when user cannot edit", async () => {

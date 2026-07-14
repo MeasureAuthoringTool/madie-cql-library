@@ -17,12 +17,11 @@ import {
   synchingEditorCqlContent,
   validateContent,
 } from "@madie/madie-editor";
+// @ts-ignore
 import {
   checkUserCanEdit,
   UserServiceApi,
-  useCqlLibraryServiceApi,
   CqlLibraryServiceApi,
-  useTerminologyServiceApi,
 } from "@madie/madie-util";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 import {
@@ -66,7 +65,7 @@ jest.mock("@madie/madie-util", () => ({
     unsubscribe: () => null,
   },
   routeHandlerStore: {
-    subscribe: (set) => {
+    subscribe: (_set) => {
       // set(measure)
       return { unsubscribe: () => null };
     },
@@ -257,11 +256,11 @@ describe("Edit Cql Library Component", () => {
       .fn()
       .mockResolvedValue(makeMockhistory(50));
 
-    global.ResizeObserver = class {
-      observe() {}
-      unobserve() {}
-      disconnect() {}
-    };
+    global.ResizeObserver = jest.fn().mockImplementation(() => ({
+      observe: jest.fn(),
+      unobserve: jest.fn(),
+      disconnect: jest.fn(),
+    }));
     mockCqlLibraryServiceApi.fetchCqlLibrary = jest
       .fn()
       .mockResolvedValue(cqlLibrary);
@@ -618,6 +617,30 @@ describe("Edit Cql Library Component", () => {
     });
   });
 
+  it("should display a review dialog when the event is triggered", async () => {
+    renderWithRouter();
+    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event("review-library"));
+    });
+
+    expect(
+      await screen.findByText("Mark Library Ready for Review")
+    ).toBeInTheDocument();
+
+    userEvent.click(screen.getByTestId("review-dialog-cancel-button"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Mark Library Ready for Review")
+      ).not.toBeVisible();
+    });
+  });
+
   it("should display a delete dialog when the event is triggered and delete succeeds", async () => {
     renderWithRouter();
     expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
@@ -887,6 +910,7 @@ describe("Edit Cql Library Component", () => {
       description: "testing",
       experimental: true,
       cql: "library UpdateName version '1.0.000'",
+      active: true,
       createdAt: "",
       createdBy: "john doe",
       lastModifiedAt: "",
@@ -975,6 +999,7 @@ describe("Edit Cql Library Component", () => {
       description: "Testing stuff.",
       experimental: true,
       cql: "library testCql version '1.0.000'",
+      active: true,
       createdAt: "",
       createdBy: "",
       lastModifiedAt: "",
@@ -1015,6 +1040,7 @@ describe("Edit Cql Library Component", () => {
       description: "Testing stuff.",
       experimental: true,
       cql: "some cql string",
+      active: true,
       createdAt: "",
       createdBy: "",
       lastModifiedAt: "",
@@ -1256,6 +1282,7 @@ describe("Edit Cql Library Component", () => {
       description: "testing",
       experimental: true,
       cql: "library UpdateName version '1.0.000'",
+      active: true,
       createdAt: "",
       createdBy: "john doe",
       lastModifiedAt: "",

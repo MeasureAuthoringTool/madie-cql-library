@@ -70,6 +70,7 @@ import CqlLibraryHistoryDialog from "../cqlLibraryLanding/CqlLibraryHistoryDialo
 import LibraryLockedPopup from "./libraryLockedPopup/LibraryLockedPopup";
 import useFhirElmTranslationServiceApi from "../../api/useFhirElmTranslationServiceApi";
 import useQdmElmTranslationServiceApi from "../../api/useQdmElmTranslationServiceApi";
+import ReviewDialog from "../common/reviewDialog/ReviewDialog";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -92,11 +93,34 @@ const EditCqlLibrary = () => {
     libraries: [],
   });
   const [libraryOwner, setLibraryOwner] = useState("-");
+  const [reviewDialog, setReviewDialog] = useState({
+    open: false,
+  });
 
   // on unmount forget library state.
   useEffect(() => {
     return () => {
       cqlLibraryStore.updateLibrary(null);
+    };
+  }, []);
+
+  const handleReviewDialogClose = () => {
+    setReviewDialog({
+      open: false,
+    });
+  };
+
+  useEffect(() => {
+    const reviewMeasureListener = () => {
+      setReviewDialog({
+        open: true,
+      });
+    };
+    window.addEventListener("review-library", reviewMeasureListener, {
+      passive: true,
+    });
+    return () => {
+      window.removeEventListener("review-library", reviewMeasureListener);
     };
   }, []);
 
@@ -1135,6 +1159,11 @@ const EditCqlLibrary = () => {
             open={transferDialog.open}
             onClose={handleDialogClose}
             onSubmit={transferLibrary}
+          />
+          <ReviewDialog
+            open={reviewDialog.open}
+            library={loadedCqlLibrary}
+            onClose={handleReviewDialogClose}
           />
         </form>
       )}

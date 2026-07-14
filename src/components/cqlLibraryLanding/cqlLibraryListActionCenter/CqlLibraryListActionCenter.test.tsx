@@ -2,6 +2,7 @@ import * as React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CqlLibrary } from "@madie/madie-models";
+// @ts-ignore
 import { useFeatureFlags } from "@madie/madie-util";
 import { CqlLibraryListActionCenter } from "./CqlLibraryListActionCenter";
 
@@ -49,6 +50,7 @@ const defaultProps = {
   setTransferDialog: jest.fn(),
   openLibraryHistoryDialog: jest.fn(),
   setCompareVersionsDialog: jest.fn(),
+  setReviewDialog: jest.fn(),
 };
 
 describe("CqlLibraryListActionCenter", () => {
@@ -127,6 +129,38 @@ describe("CqlLibraryListActionCenter", () => {
       open: true,
       cqlLibrary: versionedLibrary,
     });
+  });
+
+  it("fires review callback when one library is selected", () => {
+    const setReviewDialog = jest.fn();
+
+    render(
+      <CqlLibraryListActionCenter
+        {...defaultProps}
+        setReviewDialog={setReviewDialog}
+      />
+    );
+
+    userEvent.click(screen.getByTestId("review-action-btn"));
+    expect(setReviewDialog).toHaveBeenCalledWith({
+      open: true,
+      libraryId: selectedLibraries[0].id,
+    });
+  });
+
+  it("does not fire review callback when no libraries are selected", () => {
+    const setReviewDialog = jest.fn();
+
+    render(
+      <CqlLibraryListActionCenter
+        {...defaultProps}
+        selectedLibraries={[]}
+        setReviewDialog={setReviewDialog}
+      />
+    );
+
+    expect(screen.getByTestId("review-action-btn")).toBeDisabled();
+    expect(setReviewDialog).not.toHaveBeenCalled();
   });
 
   it("fires share callback and compare versions callback", async () => {
