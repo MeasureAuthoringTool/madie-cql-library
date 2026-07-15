@@ -93,7 +93,7 @@ const CqlLibrayHistoryDialog = (props) => {
         accessorKey: "actionType",
       },
       {
-        header: "HarpID",
+        header: "User",
         accessorKey: "performedBy",
       },
       {
