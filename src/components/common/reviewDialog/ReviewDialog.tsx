@@ -1,10 +1,12 @@
-import React, { useState } from "react";
-import { CqlLibrary } from "@madie/madie-models";
+import React, { useEffect, useMemo, useRef } from "react";
+import { useFormik } from "formik";
+import { CqlLibrary, ReviewStatus } from "@madie/madie-models";
 import {
   MadieDialog,
   RichTextEditor,
 } from "@madie/madie-design-system/dist/react";
 import { Divider, FormControlLabel, Switch } from "@mui/material";
+import { useCqlLibraryServiceApi } from "@madie/madie-util";
 
 interface ReviewDialogProps {
   open: boolean;
@@ -12,26 +14,54 @@ interface ReviewDialogProps {
   onClose: () => void;
 }
 
+const EMPTY_REVIEW_COMMENT = "<p></p>";
+
 export default function ReviewDialog({
   open,
   library,
   onClose,
 }: ReviewDialogProps) {
-  const [markAsReady, setMarkAsReady] = useState(false);
-  const [comments, setComments] = useState("");
+  const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
 
-  // useEffect(() => {
-  //   if (open) {
-  //     // TODO: Once the library model includes reviewStatus enum, update this logic
-  //     // to check if library?.reviewStatus === ReviewStatus.READY (or equivalent)
-  //     // For now, we default to false and clear comments
-  //     const isReady = library?.reviewStatus === "READY";
-  //     setMarkAsReady(isReady);
-  //     setComments("");
-  //   }
-  // }, [open, library?.reviewStatus]);
+  const initialValues = useMemo(
+    () => ({
+      markAsReady: library?.review?.status === ReviewStatus.READY_FOR_REVIEW,
+      comments: library?.review?.comment ?? EMPTY_REVIEW_COMMENT,
+    }),
+    [library?.review?.status, library?.review?.comment]
+  );
 
-  const isSaveDisabled = !markAsReady;
+  const formik = useFormik({
+    initialValues,
+    enableReinitialize: true,
+    onSubmit: async (values) => {
+      if (!library?.id) {
+        return;
+      }
+
+      const updatedLibrary: CqlLibrary = {
+        ...library,
+        review: {
+          status: values.markAsReady
+            ? ReviewStatus.READY_FOR_REVIEW
+            : ReviewStatus.NOT_READY_FOR_REVIEW,
+          comment: values.comments || EMPTY_REVIEW_COMMENT,
+        },
+      };
+
+      await cqlLibraryServiceApi.updateCqlLibrary(updatedLibrary);
+      onClose();
+    },
+  });
+  const { resetForm } = formik;
+
+  useEffect(() => {
+    if (open) {
+      resetForm({ values: initialValues });
+    }
+  }, [open, initialValues, resetForm]);
+
+  const isSaveDisabled = !library?.id || !formik.dirty;
 
   return (
     <MadieDialog
@@ -53,9 +83,7 @@ export default function ReviewDialog({
         variant: "cyan",
         continueText: "Save",
         disabled: isSaveDisabled,
-        onClick: () => {
-          // Save behavior is intentionally out of scope for this story.
-        },
+        onClick: formik.submitForm,
         "data-testid": "review-dialog-save-button",
       }}
     >
@@ -66,8 +94,10 @@ export default function ReviewDialog({
           control={
             <Switch
               data-testid="review-dialog-mark-ready-switch"
-              checked={markAsReady}
-              onChange={(event) => setMarkAsReady(event.target.checked)}
+              checked={formik.values.markAsReady}
+              onChange={(event) =>
+                formik.setFieldValue("markAsReady", event.target.checked)
+              }
               slotProps={{
                 input: {
                   "aria-label": "Mark as Ready",
@@ -94,8 +124,10 @@ export default function ReviewDialog({
             id="review-comments"
             name="reviewComments"
             label="Comments"
-            content={comments}
-            onChange={(value: string) => setComments(value)}
+            content={formik.values.comments}
+            onChange={(value: string) =>
+              formik.setFieldValue("comments", value)
+            }
           />
         </div>
         <Divider sx={{ mt: 2 }} />
