@@ -26,22 +26,6 @@ import CqlLibraryServiceApi, {
 
 const CqlLibraryList = CqlLibraryListComponent as any;
 
-jest.mock("@madie/madie-util", () => ({
-  useOktaTokens: () => ({
-    getAccessToken: () => "test.jwt",
-    getUserName: () => "test user",
-  }),
-  checkUserCanEdit: jest.fn(() => {
-    return true;
-  }),
-  checkUserCanDelete: jest.fn(() => {
-    return true;
-  }),
-  useFeatureFlags: jest.fn().mockReturnValue({}),
-  useUserRoles: jest.fn(() => ({})),
-  useIsRoleOrFeatureEnabled: jest.fn(),
-}));
-
 const cqlLibrary = [
   {
     id: "622e1f46d1fd3729d861e6cb",
@@ -103,6 +87,14 @@ const mockCqlLibraryServiceResolved = {
   transferLibraries: jest.fn().mockResolvedValue({ status: 200 }),
 } as unknown as CqlLibraryServiceApi;
 
+const mockCqlLibraryReviewServiceResolved = {
+  getCqlLibraryReview: jest.fn().mockResolvedValue(null),
+  createCqlLibraryReview: jest.fn().mockResolvedValue({ id: "new-review-id" }),
+  updateCqlLibraryReview: jest
+    .fn()
+    .mockResolvedValue({ id: "existing-review-id" }),
+};
+
 jest.mock("@madie/madie-util", () => ({
   useOktaTokens: () => ({
     getAccessToken: () => "test.jwt",
@@ -117,6 +109,9 @@ jest.mock("@madie/madie-util", () => ({
   useFeatureFlags: jest.fn().mockReturnValue({}),
   useUserRoles: jest.fn(() => ({})),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceResolved),
+  useCqlLibraryReviewServiceApi: jest.fn(
+    () => mockCqlLibraryReviewServiceResolved
+  ),
   useUserServiceApi: jest.fn(),
   useIsRoleOrFeatureEnabled: jest.fn(),
 }));

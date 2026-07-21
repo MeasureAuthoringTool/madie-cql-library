@@ -1,12 +1,16 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useFormik } from "formik";
-import { CqlLibrary, ReviewStatus } from "@madie/madie-models";
+import {
+  CqlLibrary,
+  ReviewStatus,
+  CqlLibraryReview,
+} from "@madie/madie-models";
 import {
   MadieDialog,
   RichTextEditor,
 } from "@madie/madie-design-system/dist/react";
 import { Divider, FormControlLabel, Switch } from "@mui/material";
-import { useCqlLibraryServiceApi } from "@madie/madie-util";
+import { useCqlLibraryReviewServiceApi } from "@madie/madie-util";
 
 interface ReviewDialogProps {
   open: boolean;
@@ -21,15 +25,53 @@ export default function ReviewDialog({
   library,
   onClose,
 }: ReviewDialogProps) {
-  const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  const cqlLibraryReviewServiceApi = useRef(
+    useCqlLibraryReviewServiceApi()
+  ).current;
+  const [review, setReview] = useState<CqlLibraryReview | null>(null);
+  const [isReviewLoading, setIsReviewLoading] = useState(false);
 
   const initialValues = useMemo(
     () => ({
-      markAsReady: library?.review?.status === ReviewStatus.READY_FOR_REVIEW,
-      comments: library?.review?.comment ?? EMPTY_REVIEW_COMMENT,
+      markAsReady: review?.status === ReviewStatus.READY_FOR_REVIEW,
+      comments: review?.comment ?? EMPTY_REVIEW_COMMENT,
     }),
-    [library?.review?.status, library?.review?.comment]
+    [review?.status, review?.comment]
   );
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReview = async () => {
+      if (!open || !library?.id) {
+        setReview(null);
+        return;
+      }
+
+      setIsReviewLoading(true);
+      try {
+        const reviewResponse =
+          await cqlLibraryReviewServiceApi.getCqlLibraryReview(library.id);
+        if (isMounted) {
+          setReview(reviewResponse);
+        }
+      } catch {
+        if (isMounted) {
+          setReview(null);
+        }
+      } finally {
+        if (isMounted) {
+          setIsReviewLoading(false);
+        }
+      }
+    };
+
+    fetchReview();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [open, library?.id, cqlLibraryReviewServiceApi]);
 
   const formik = useFormik({
     initialValues,
@@ -39,20 +81,31 @@ export default function ReviewDialog({
         return;
       }
 
-      const updatedLibrary: CqlLibrary = {
-        ...library,
-        review: {
-          status: values.markAsReady
-            ? ReviewStatus.READY_FOR_REVIEW
-            : ReviewStatus.NOT_READY_FOR_REVIEW,
-          comment: values.comments || EMPTY_REVIEW_COMMENT,
-        },
+      const reviewPayload: CqlLibraryReview = {
+        id: review?.id ?? "",
+        libraryId: library.id,
+        librarySetId: library.librarySetId,
+        status: values.markAsReady
+          ? ReviewStatus.READY_FOR_REVIEW
+          : ReviewStatus.NOT_READY_FOR_REVIEW,
+        comment: values.comments || EMPTY_REVIEW_COMMENT,
       };
 
-      await cqlLibraryServiceApi.updateCqlLibrary(updatedLibrary);
+      const savedReview = review?.id
+        ? await cqlLibraryReviewServiceApi.updateCqlLibraryReview(
+            library.id,
+            reviewPayload
+          )
+        : await cqlLibraryReviewServiceApi.createCqlLibraryReview(
+            library.id,
+            reviewPayload
+          );
+
+      setReview(savedReview);
       onClose();
     },
   });
+
   const { resetForm } = formik;
 
   useEffect(() => {
@@ -61,7 +114,7 @@ export default function ReviewDialog({
     }
   }, [open, initialValues, resetForm]);
 
-  const isSaveDisabled = !library?.id || !formik.dirty;
+  const isSaveDisabled = !library?.id || !formik.dirty || isReviewLoading;
 
   return (
     <MadieDialog
