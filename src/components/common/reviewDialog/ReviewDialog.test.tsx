@@ -121,6 +121,18 @@ describe("ReviewDialog", () => {
     await waitFor(() => {
       expect(onClose).toHaveBeenCalledTimes(1);
     });
+
+    expect(
+      await screen.findByText("Review information has been saved successfully.")
+    ).toBeInTheDocument();
+
+    userEvent.click(screen.getByTestId("review-dialog-toast-close-button"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Review information has been saved successfully.")
+      ).not.toBeInTheDocument();
+    });
   });
 
   it("uses default empty comment when comments are cleared", async () => {
@@ -205,6 +217,25 @@ describe("ReviewDialog", () => {
     });
 
     expect(mockCreateCqlLibraryReview).not.toHaveBeenCalled();
+  });
+
+  it("shows an error toast when saving a review fails", async () => {
+    const onClose = jest.fn();
+    mockCreateCqlLibraryReview.mockRejectedValueOnce(new Error("save failed"));
+    render(<ReviewDialog open={true} library={library} onClose={onClose} />);
+
+    userEvent.click(screen.getByTestId("review-dialog-mark-ready-switch"));
+    await waitFor(() => {
+      expect(screen.getByTestId("review-dialog-save-button")).toBeEnabled();
+    });
+    userEvent.click(screen.getByTestId("review-dialog-save-button"));
+
+    expect(
+      await screen.findByText(
+        "An error occurred while saving the review. Please try again."
+      )
+    ).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it("does not fetch review when the dialog is closed", () => {
