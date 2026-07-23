@@ -1059,6 +1059,10 @@ export default function CqlLibraryList({
         onSuccess={async () => {
           await onListUpdate();
           table.resetRowSelection();
+          setSelectedExpandedLibrariesIds([]);
+          setIsRowExpanded(false);
+          setExpandedSectionData(null);
+          setSelectedIdForExpansion(null);
         }}
       />
       <Popover
