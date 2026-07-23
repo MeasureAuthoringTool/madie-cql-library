@@ -17,6 +17,7 @@ interface ReviewDialogProps {
   open: boolean;
   library?: CqlLibrary;
   onClose: () => void;
+  onSuccess?: () => void | Promise<void>;
 }
 
 const EMPTY_REVIEW_COMMENT = "<p></p>";
@@ -25,6 +26,7 @@ export default function ReviewDialog({
   open,
   library,
   onClose,
+  onSuccess,
 }: ReviewDialogProps) {
   const cqlLibraryReviewServiceApi = useRef(
     useCqlLibraryReviewServiceApi()
@@ -120,6 +122,7 @@ export default function ReviewDialog({
           toastType: "success",
           toastMessage: "Review information has been saved successfully.",
         });
+        await onSuccess?.();
         onClose();
       } catch (error) {
         setToast({

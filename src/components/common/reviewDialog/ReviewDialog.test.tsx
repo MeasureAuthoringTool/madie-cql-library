@@ -238,6 +238,102 @@ describe("ReviewDialog", () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it("refreshes the library list after creating a review, before closing the dialog", async () => {
+    const onClose = jest.fn();
+    const onSuccess = jest.fn().mockResolvedValue(undefined);
+    render(
+      <ReviewDialog
+        open={true}
+        library={library}
+        onClose={onClose}
+        onSuccess={onSuccess}
+      />
+    );
+
+    userEvent.click(screen.getByTestId("review-dialog-mark-ready-switch"));
+    await waitFor(() => {
+      expect(screen.getByTestId("review-dialog-save-button")).toBeEnabled();
+    });
+    userEvent.click(screen.getByTestId("review-dialog-save-button"));
+
+    await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+    });
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+    expect(onSuccess.mock.invocationCallOrder[0]).toBeLessThan(
+      onClose.mock.invocationCallOrder[0]
+    );
+  });
+
+  it("refreshes the library list after updating an existing review", async () => {
+    const onClose = jest.fn();
+    const onSuccess = jest.fn().mockResolvedValue(undefined);
+    const existingReview: CqlLibraryReview = {
+      id: "existing-review-id",
+      libraryId: "library-1",
+      librarySetId: "set-1",
+      status: ReviewStatus.READY_FOR_REVIEW,
+      comment: "Previously reviewed",
+    };
+    mockGetCqlLibraryReview.mockResolvedValueOnce(existingReview);
+
+    render(
+      <ReviewDialog
+        open={true}
+        library={library}
+        onClose={onClose}
+        onSuccess={onSuccess}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mark as Ready")).toBeChecked();
+    });
+
+    userEvent.click(screen.getByTestId("review-dialog-mark-ready-switch"));
+    await waitFor(() => {
+      expect(screen.getByTestId("review-dialog-save-button")).toBeEnabled();
+    });
+    userEvent.click(screen.getByTestId("review-dialog-save-button"));
+
+    await waitFor(() => {
+      expect(mockUpdateCqlLibraryReview).toHaveBeenCalled();
+    });
+    await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("does not refresh the library list when saving a review fails", async () => {
+    const onClose = jest.fn();
+    const onSuccess = jest.fn().mockResolvedValue(undefined);
+    mockCreateCqlLibraryReview.mockRejectedValueOnce(new Error("save failed"));
+    render(
+      <ReviewDialog
+        open={true}
+        library={library}
+        onClose={onClose}
+        onSuccess={onSuccess}
+      />
+    );
+
+    userEvent.click(screen.getByTestId("review-dialog-mark-ready-switch"));
+    await waitFor(() => {
+      expect(screen.getByTestId("review-dialog-save-button")).toBeEnabled();
+    });
+    userEvent.click(screen.getByTestId("review-dialog-save-button"));
+
+    expect(
+      await screen.findByText(
+        "An error occurred while saving the review. Please try again."
+      )
+    ).toBeInTheDocument();
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it("does not fetch review when the dialog is closed", () => {
     render(<ReviewDialog open={false} library={library} onClose={jest.fn()} />);
 
