@@ -41,6 +41,13 @@ const mockTerminologyServiceApi = {
 const mockUserServiceApi = {
   getOwnerDetails: jest.fn().mockResolvedValue({}),
 } as unknown as UserServiceApi;
+const mockCqlLibraryReviewServiceApi = {
+  getCqlLibraryReview: jest.fn().mockResolvedValue(null),
+  createCqlLibraryReview: jest.fn().mockResolvedValue({ id: "new-review-id" }),
+  updateCqlLibraryReview: jest
+    .fn()
+    .mockResolvedValue({ id: "existing-review-id" }),
+};
 jest.mock("@madie/madie-util", () => ({
   checkUserCanEdit: jest.fn(() => {
     return true;
@@ -81,6 +88,7 @@ jest.mock("@madie/madie-util", () => ({
   useIsRoleOrFeatureEnabled: jest.fn(),
 
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
+  useCqlLibraryReviewServiceApi: jest.fn(() => mockCqlLibraryReviewServiceApi),
   useTerminologyServiceApi: jest.fn(() => mockTerminologyServiceApi),
 }));
 

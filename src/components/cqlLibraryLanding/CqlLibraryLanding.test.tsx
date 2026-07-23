@@ -28,29 +28,7 @@ import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 
 const abortController = new AbortController();
 
-jest.mock("@madie/madie-util", () => ({
-  useDocumentTitle: jest.fn(),
-  useOktaTokens: () => ({
-    getAccessToken: () => "test.jwt",
-    getUserName: () => "test user",
-  }),
-  checkUserCanEdit: jest.fn(() => {
-    return true;
-  }),
-  checkUserCanDelete: jest.fn(() => {
-    return true;
-  }),
-  useOrganizationApi: jest.fn(() => ({
-    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
-  })),
-  useFeatureFlags: jest.fn().mockReturnValue({
-    qdm: false,
-  }),
-  useUserRoles: jest.fn(() => ({})),
-  useIsRoleOrFeatureEnabled: jest.fn(),
-}));
-
-const organizations = [
+const mockOrganizations = [
   {
     id: "1234",
     name: "Org1",
@@ -75,6 +53,12 @@ const serviceConfig: ServiceConfig = {
   },
   terminologyService: {
     baseUrl: "example-terminology-url",
+  },
+  qdmElmTranslationService: {
+    baseUrl: "example-qmm-elm-url",
+  },
+  fhirElmTranslationService: {
+    baseUrl: "example-fhir-elm-url",
   },
 };
 
@@ -107,7 +91,7 @@ const generatePages = (count = 48) => {
   libraries.push(library2);
   for (let i = 1; i <= count; i++) {
     libraries.push({
-      ...cqlLibrary[0], // Spread the existing object
+      ...cqlLibrary[0],
       cqlLibraryName: `test-library-${i}`,
       id: `test-library-${i}`,
     });
@@ -145,6 +129,14 @@ const mockCqlLibraryServiceApi = {
   getLibrariesByLibrarySetId: jest.fn().mockResolvedValue([]),
 } as unknown as CqlLibraryServiceApi;
 
+const mockCqlLibraryReviewServiceApi = {
+  getCqlLibraryReview: jest.fn().mockResolvedValue(null),
+  createCqlLibraryReview: jest.fn().mockResolvedValue({ id: "new-review-id" }),
+  updateCqlLibraryReview: jest
+    .fn()
+    .mockResolvedValue({ id: "existing-review-id" }),
+};
+
 jest.mock("react-router-dom", () => ({
   ...jest.requireActual("react-router-dom"),
   useNavigate: jest.fn(),
@@ -163,7 +155,7 @@ jest.mock("@madie/madie-util", () => ({
     return true;
   }),
   useOrganizationApi: jest.fn(() => ({
-    getAllOrganizations: jest.fn().mockResolvedValue(organizations),
+    getAllOrganizations: jest.fn().mockResolvedValue(mockOrganizations),
   })),
   useFeatureFlags: jest.fn().mockReturnValue({
     qdm: false,
@@ -171,6 +163,7 @@ jest.mock("@madie/madie-util", () => ({
   useIsRoleOrFeatureEnabled: jest.fn(),
   useUserRoles: jest.fn(() => ({})),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
+  useCqlLibraryReviewServiceApi: jest.fn(() => mockCqlLibraryReviewServiceApi),
   useUserServiceApi: jest.fn(),
 }));
 jest.setTimeout(10000);
