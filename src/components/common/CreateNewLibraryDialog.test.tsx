@@ -420,6 +420,12 @@ describe("Library Dialog", () => {
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
     expect(options.length).toEqual(5);
+    expect(
+      screen.getByTestId("cql-library-model-option-US-Core v6.1.0-derived")
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("cql-library-model-option-US-Core v6.1.0")
+    ).not.toBeInTheDocument();
     userEvent.click(screen.getByRole("option", { name: usQualityCoreModel }));
     expect(
       (

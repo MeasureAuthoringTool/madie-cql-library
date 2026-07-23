@@ -557,7 +557,9 @@ describe("Create Draft Dialog component", () => {
       expect(
         await screen.findByText("Update Model Version")
       ).toBeInTheDocument();
-      expect(await screen.findByText("US-Core v6.1.0")).toBeInTheDocument();
+      expect(
+        await screen.findByText("US-Core v6.1.0-derived")
+      ).toBeInTheDocument();
 
       const modelSelect = screen.getByTestId("cql-library-model-select");
       const modelSelectComboBox = within(modelSelect).getByRole("combobox");
@@ -567,8 +569,11 @@ describe("Create Draft Dialog component", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId("cql-library-model-option-US-Core v6.1.0")
+          screen.getByTestId("cql-library-model-option-US-Core v6.1.0-derived")
         ).toBeInTheDocument();
+        expect(
+          screen.queryByTestId("cql-library-model-option-US-Core v6.1.0")
+        ).not.toBeInTheDocument();
         expect(
           screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
         ).toBeInTheDocument();
@@ -605,8 +610,11 @@ describe("Create Draft Dialog component", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId("cql-library-model-option-US-Core v6.1.0")
+          screen.getByTestId("cql-library-model-option-US-Core v6.1.0-derived")
         ).toBeInTheDocument();
+        expect(
+          screen.queryByTestId("cql-library-model-option-US-Core v6.1.0")
+        ).not.toBeInTheDocument();
         expect(
           screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
         ).toBeInTheDocument();
@@ -740,7 +748,9 @@ describe("Create Draft Dialog component", () => {
           cqlLibrary={cqlLibrary}
         />
       );
-      expect(await screen.findByText("US-Core v6.1.0")).toBeInTheDocument();
+      expect(
+        await screen.findByText("US-Core v6.1.0-derived")
+      ).toBeInTheDocument();
       const modelInput = screen.getByTestId("cql-library-model-select");
       expect(modelInput).toHaveAttribute("readonly");
     });
