@@ -188,11 +188,17 @@ export default function CqlLibraryList({
   const { search } = useLocation();
   const values = queryString.parse(search);
 
-  const LIBRARY_FILTER_OPTIONS = ["Library", "Version", "Model"];
+  const LIBRARY_FILTER_OPTIONS = [
+    "Library",
+    "Version",
+    "Model",
+    ...(featureFlags?.LibraryReviewStatus && activeTab !== 2 ? ["Review"] : []),
+  ];
   const LIBRARY_FILTER_MAP: Record<string, string> = {
     Library: "library",
     Version: "version",
     Model: "model",
+    Review: "review",
   };
 
   const {

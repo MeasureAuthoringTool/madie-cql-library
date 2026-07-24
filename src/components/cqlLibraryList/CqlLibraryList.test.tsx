@@ -536,6 +536,83 @@ describe("CqlLibrary List component", () => {
     });
   });
 
+  const renderListForFilter = (activeTab: number) =>
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={cqlLibrary[0]}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        compareVersionsDialog={false}
+        setCompareVersionsDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={10}
+        activeTab={activeTab}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+        setStatusHandler={jest.fn()}
+      />
+    );
+
+  const openFilterByOptions = async () => {
+    const filterBy = screen.getByTestId("filter-by-select");
+    const dropdown = within(filterBy).getByRole("combobox", { hidden: true });
+    userEvent.click(dropdown);
+    const options = await screen.findAllByRole("option");
+    return options.map((option) => option.textContent);
+  };
+
+  it("shows Review in the Filter By list on the Owned Libraries tab when LibraryReviewStatus is on", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({
+      LibraryReviewStatus: true,
+    });
+    renderListForFilter(0);
+
+    expect(await openFilterByOptions()).toContain("Review");
+  });
+
+  it("does not show Review in the Filter By list on the All Libraries tab even when LibraryReviewStatus is on", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({
+      LibraryReviewStatus: true,
+    });
+    renderListForFilter(2);
+
+    expect(await openFilterByOptions()).not.toContain("Review");
+  });
+
+  it("does not show Review in the Filter By list when LibraryReviewStatus is off", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+    renderListForFilter(0);
+
+    expect(await openFilterByOptions()).not.toContain("Review");
+  });
+
   it("Shows a View button when user cannot edit", async () => {
     (checkUserCanEdit as jest.Mock).mockReturnValue(false);
     const cqlLibrary: CqlLibrary[] = [
