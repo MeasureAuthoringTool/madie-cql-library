@@ -188,11 +188,17 @@ export default function CqlLibraryList({
   const { search } = useLocation();
   const values = queryString.parse(search);
 
-  const LIBRARY_FILTER_OPTIONS = ["Library", "Version", "Model"];
+  const LIBRARY_FILTER_OPTIONS = [
+    "Library",
+    "Version",
+    "Model",
+    ...(featureFlags?.LibraryReviewStatus && activeTab !== 2 ? ["Review"] : []),
+  ];
   const LIBRARY_FILTER_MAP: Record<string, string> = {
     Library: "library",
     Version: "version",
     Model: "model",
+    Review: "review",
   };
 
   const {
@@ -618,6 +624,18 @@ export default function CqlLibraryList({
         <p>{new Date(info.row.original.lastModifiedAt).toLocaleDateString()}</p>
       ),
     },
+    ...(featureFlags?.LibraryReviewStatus && activeTab !== 2
+      ? [
+          {
+            header: "Review",
+            accessorKey: "reviewStatus",
+            enableSorting: false,
+            cell: (info) => (
+              <p>{info.row.original.reviewStatus ? "Ready" : "-"}</p>
+            ),
+          },
+        ]
+      : []),
     {
       header: () => (
         <button tabIndex={-1} aria-label="Edit or View Library">
@@ -831,7 +849,13 @@ export default function CqlLibraryList({
     });
 
     return columnDefs;
-  }, [navigate, selectedIdForExpansion, isRowExpanded, activeTab]);
+  }, [
+    navigate,
+    selectedIdForExpansion,
+    isRowExpanded,
+    activeTab,
+    featureFlags,
+  ]);
 
   const expandedColumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     return [
@@ -1038,6 +1062,14 @@ export default function CqlLibraryList({
         open={reviewDialog.open}
         library={selectedLibraries[0]}
         onClose={handleReviewDialogClose}
+        onSuccess={async () => {
+          await onListUpdate();
+          table.resetRowSelection();
+          setSelectedExpandedLibrariesIds([]);
+          setIsRowExpanded(false);
+          setExpandedSectionData(null);
+          setSelectedIdForExpansion(null);
+        }}
       />
       <Popover
         open={optionsOpen}
