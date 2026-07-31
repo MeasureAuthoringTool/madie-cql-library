@@ -115,7 +115,10 @@ jest.mock("@madie/madie-util", () => ({
   useFeatureFlags: jest.fn().mockReturnValue({}),
   useUserRoles: jest.fn(() => ({})),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceResolved),
-  useUserServiceApi: jest.fn(),
+  useUserServiceApi: jest.fn(() => ({
+    getOwnerDetails: jest.fn(),
+    getBulkUserDetails: jest.fn().mockResolvedValue({}),
+  })),
   useIsRoleOrFeatureEnabled: jest.fn(),
 }));
 
@@ -861,6 +864,76 @@ describe("Library lock functionality", () => {
       "aria-label",
       expect.stringContaining("Locked by AnotherUser")
     );
+  });
+
+  it("should display the locking user's real name when it can be resolved", async () => {
+    const lockedLibrary = {
+      ...cqlLibrary[0],
+      cqlLibraryLock: {
+        lockedBy: "AnotherUser",
+        lockedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 900000).toISOString(),
+        libraryId: cqlLibrary[0].id,
+      },
+    };
+
+    (useUserServiceApi as jest.Mock).mockReturnValueOnce({
+      getOwnerDetails: jest.fn(),
+      getBulkUserDetails: jest.fn().mockResolvedValue({
+        AnotherUser: { firstName: "John", lastName: "Doe" },
+      }),
+    });
+
+    render(
+      <CqlLibraryList
+        setSelectedLibraries={jest.fn()}
+        cqlLibraryList={[lockedLibrary]}
+        onListUpdate={loadCqlLibraries}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        snackBar={jest.fn()}
+        setSnackBar={jest.fn()}
+        setOwners={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+      />
+    );
+
+    const actionButton = await screen.findByTestId(
+      `cql-library-action-${lockedLibrary.id}`
+    );
+
+    await waitFor(() => {
+      expect(actionButton).toHaveAttribute(
+        "aria-label",
+        expect.stringContaining("Locked by John Doe (AnotherUser)")
+      );
+    });
   });
 
   it("should display 'Edit' when user has edit permission and library is not locked", async () => {

@@ -28,6 +28,7 @@ import {
   checkUserCanEdit,
   useFeatureFlags,
   useCqlLibraryServiceApi,
+  useUserServiceApi,
 } from "@madie/madie-util";
 import {
   Button,
@@ -175,6 +176,62 @@ export default function CqlLibraryList({
   const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
+  const userServiceApi = useRef(useUserServiceApi()).current; //needs to be ref or triggers jest. throws warn
+
+  // Real names of users who currently have a library locked for editing,
+  // similar to the "in use" chip on the Page Header. Baked into `libraryData`
+  // (rather than read directly from the column defs) so resolving names
+  // doesn't force the memoized table columns/cells to be recreated and
+  // remounted.
+  const [lockedByDisplayNames, setLockedByDisplayNames] = useState<
+    Record<string, string>
+  >({});
+  const [libraryData, setLibraryData] = useState<CqlLibrary[]>([]);
+  useEffect(() => {
+    setLibraryData(
+      (cqlLibraryList ?? []).map((library: any) => {
+        const lockedBy = library?.cqlLibraryLock?.lockedBy;
+        return {
+          ...library,
+          lockedByDisplayName: lockedBy
+            ? lockedByDisplayNames[lockedBy] || lockedBy
+            : undefined,
+        };
+      })
+    );
+  }, [cqlLibraryList, lockedByDisplayNames]);
+
+  useEffect(() => {
+    const lockedByHarpIds = Array.from(
+      new Set(
+        (cqlLibraryList ?? [])
+          .map((library: any) => library?.cqlLibraryLock?.lockedBy)
+          .filter((harpId): harpId is string => !!harpId)
+      )
+    );
+    if (lockedByHarpIds.length === 0 || !userServiceApi) {
+      return;
+    }
+    userServiceApi
+      .getBulkUserDetails(lockedByHarpIds)
+      .then((userDetails: any) => {
+        setLockedByDisplayNames((prev) => {
+          const next = { ...prev };
+          Object.entries(userDetails || {}).forEach(
+            ([harpId, details]: [string, any]) => {
+              const name = [details?.firstName, details?.lastName]
+                .filter(Boolean)
+                .join(" ");
+              next[harpId] = name ? `${name} (${harpId})` : harpId;
+            }
+          );
+          return next;
+        });
+      })
+      .catch(() => {
+        // fall back to displaying the raw HARP ID if the lookup fails
+      });
+  }, [cqlLibraryList, userServiceApi]);
 
   const LIBRARY_FILTER_OPTIONS = ["Library", "Version", "Model"];
   const LIBRARY_FILTER_MAP: Record<string, string> = {
@@ -620,6 +677,9 @@ export default function CqlLibraryList({
           info.row.original.librarySet?.acls
         );
         const isLockedByOther = canEdit && !!info.row.original.cqlLibraryLock;
+        const lockedByDisplayName =
+          info.row.original.lockedByDisplayName ||
+          info.row.original.cqlLibraryLock?.lockedBy;
 
         const buttonText = isLockedByOther ? "View" : canEdit ? "Edit" : "View";
 
@@ -635,11 +695,7 @@ export default function CqlLibraryList({
               info.row.original.cqlLibraryName
             } ${info.row.original.version}${
               info.row.original.draft ? " Draft" : ""
-            }${
-              isLockedByOther
-                ? ` (Locked by ${info.row.original.cqlLibraryLock.lockedBy})`
-                : ""
-            }`}
+            }${isLockedByOther ? ` (Locked by ${lockedByDisplayName})` : ""}`}
             aria-live="polite"
             tabIndex={0}
             role="button"
@@ -661,7 +717,7 @@ export default function CqlLibraryList({
                 <>
                   Locked while being edited by
                   <br />
-                  {info.row.original.cqlLibraryLock.lockedBy}
+                  {lockedByDisplayName}
                 </>
               }
               arrow
@@ -861,7 +917,7 @@ export default function CqlLibraryList({
   }, [selectedExpandedLibrariesIds, isRowExpanded]);
 
   const table = useReactTable({
-    data: cqlLibraryList ?? [],
+    data: libraryData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     manualSorting: true,
