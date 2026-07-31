@@ -7,10 +7,18 @@ declare module "@madie/madie-util" {
     Measure,
     Organization,
     Acl,
-    UserDetails,
     OwnershipType,
+    ReviewStatus,
   } from "@madie/madie-models";
   import { AxiosResponse } from "axios";
+
+  export interface CqlLibraryReview {
+    id: string;
+    libraryId: string;
+    librarySetId: string;
+    status: ReviewStatus;
+    comment: string;
+  }
 
   import { ValidationResult } from "@madie/madie-editor";
   export function validateContent(
@@ -130,6 +138,8 @@ declare module "@madie/madie-util" {
 
   export function wafIntercept(): void;
 
+  export function useOwnerName(harpId: string): string;
+
   export const bootstrap: LifeCycleFn<void>;
   export const mount: LifeCycleFn<void>;
   export const unmount: LifeCycleFn<void>;
@@ -188,5 +198,23 @@ declare module "@madie/madie-util" {
     ): Promise<any>;
     unlockLibraries(): Promise<String>;
   }
+
+  export class CqlLibraryReviewServiceApi {
+    constructor(baseUrl: string, getAccessToken: () => string);
+    createCqlLibraryReview(
+      libraryId: string,
+      review: CqlLibraryReview
+    ): Promise<CqlLibraryReview>;
+    updateCqlLibraryReview(
+      libraryId: string,
+      review: CqlLibraryReview
+    ): Promise<CqlLibraryReview>;
+    getCqlLibraryReview(libraryId: string): Promise<CqlLibraryReview | null>;
+    getCqlLibraryReviewsByLibrarySetId(
+      librarySetId: string
+    ): Promise<CqlLibraryReview[]>;
+  }
+
   export function useCqlLibraryServiceApi(): CqlLibraryServiceApi;
+  export function useCqlLibraryReviewServiceApi(): CqlLibraryReviewServiceApi;
 }

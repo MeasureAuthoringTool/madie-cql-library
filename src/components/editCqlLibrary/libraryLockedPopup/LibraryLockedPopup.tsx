@@ -1,12 +1,15 @@
 import React from "react";
 import { MadieDialog } from "@madie/madie-design-system/dist/react";
 import { DialogContent, Typography } from "@mui/material";
+import { useOwnerName } from "@madie/madie-util";
 
 const LibraryLockedPopup = ({
   libraryLockedBy,
   lockedLibraryPopupOpen,
   setLockedLibraryPopupOpen,
 }) => {
+  const displayName = useOwnerName(libraryLockedBy);
+  const hasName = displayName !== libraryLockedBy;
   return (
     <MadieDialog
       title="Library currently In-Use"
@@ -26,9 +29,11 @@ const LibraryLockedPopup = ({
         <div data-testid="library-locked-popup-message">
           <Typography>
             <div>
-              This library is currently being edited by HARP ID{" "}
-              {libraryLockedBy}.<br></br> You will be unable to make changes at
-              this time.
+              This library is currently being edited by{" "}
+              {hasName
+                ? `${displayName} (${libraryLockedBy})`
+                : `${libraryLockedBy}`}
+              .<br></br> You will be unable to make changes at this time.
             </div>
           </Typography>
         </div>

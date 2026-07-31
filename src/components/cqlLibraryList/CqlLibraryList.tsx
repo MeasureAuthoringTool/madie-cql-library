@@ -55,6 +55,7 @@ import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import "./CqlLibraryList.scss";
 import { INITIAL_STATUS_HANDLER } from "../editCqlLibrary/statusHandler/StatusHandler";
 import CompareVersionsDialog from "../common/compareVersionsDialog/CompareVersionsDialog";
+import ReviewDialog from "../common/reviewDialog/ReviewDialog";
 
 export const TRANSFER_LIBRARY_SUCCESS =
   "The library(s) were successfully transferred. If you chose to retain share access, you will still be able to edit the libraries.";
@@ -171,6 +172,17 @@ export default function CqlLibraryList({
   const [expandedSectionData, setExpandedSectionData] = useState<CqlLibrary[]>(
     []
   );
+  const [reviewDialog, setReviewDialog] = useState({
+    open: false,
+    measureId: "",
+  });
+
+  const handleReviewDialogClose = () => {
+    setReviewDialog({
+      open: false,
+      measureId: "",
+    });
+  };
 
   const featureFlags = useFeatureFlags();
   const navigate = useNavigate();
@@ -233,11 +245,17 @@ export default function CqlLibraryList({
       });
   }, [cqlLibraryList, userServiceApi]);
 
-  const LIBRARY_FILTER_OPTIONS = ["Library", "Version", "Model"];
+  const LIBRARY_FILTER_OPTIONS = [
+    "Library",
+    "Version",
+    "Model",
+    ...(featureFlags?.LibraryReviewStatus && activeTab !== 2 ? ["Review"] : []),
+  ];
   const LIBRARY_FILTER_MAP: Record<string, string> = {
     Library: "library",
     Version: "version",
     Model: "model",
+    Review: "review",
   };
 
   const {
@@ -663,6 +681,18 @@ export default function CqlLibraryList({
         <p>{new Date(info.row.original.lastModifiedAt).toLocaleDateString()}</p>
       ),
     },
+    ...(featureFlags?.LibraryReviewStatus && activeTab !== 2
+      ? [
+          {
+            header: "Review",
+            accessorKey: "reviewStatus",
+            enableSorting: false,
+            cell: (info) => (
+              <p>{info.row.original.reviewStatus ? "Ready" : "-"}</p>
+            ),
+          },
+        ]
+      : []),
     {
       header: () => (
         <button tabIndex={-1} aria-label="Edit or View Library">
@@ -875,7 +905,13 @@ export default function CqlLibraryList({
     });
 
     return columnDefs;
-  }, [navigate, selectedIdForExpansion, isRowExpanded, activeTab]);
+  }, [
+    navigate,
+    selectedIdForExpansion,
+    isRowExpanded,
+    activeTab,
+    featureFlags,
+  ]);
 
   const expandedColumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
     return [
@@ -1078,6 +1114,19 @@ export default function CqlLibraryList({
         open={compareVersionsDialog}
         onClose={handleDialogClose}
       />
+      <ReviewDialog
+        open={reviewDialog.open}
+        library={selectedLibraries[0]}
+        onClose={handleReviewDialogClose}
+        onSuccess={async () => {
+          await onListUpdate();
+          table.resetRowSelection();
+          setSelectedExpandedLibrariesIds([]);
+          setIsRowExpanded(false);
+          setExpandedSectionData(null);
+          setSelectedIdForExpansion(null);
+        }}
+      />
       <Popover
         open={optionsOpen}
         anchorEl={anchorEl}
@@ -1240,6 +1289,7 @@ export default function CqlLibraryList({
               activeTab={activeTab}
               setTransferDialog={setTransferDialog}
               setCompareVersionsDialog={setCompareVersionsDialog}
+              setReviewDialog={setReviewDialog}
             />
           </div>
         </div>

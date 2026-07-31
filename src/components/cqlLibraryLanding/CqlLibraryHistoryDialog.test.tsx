@@ -79,8 +79,14 @@ describe("CqlLibrayHistoryDialog", () => {
     render(<CqlLibrayHistoryDialog {...baseProps} />);
     expect(screen.getByText("Date")).toBeInTheDocument();
     expect(screen.getByText("User Action")).toBeInTheDocument();
-    expect(screen.getByText("HarpID")).toBeInTheDocument();
+    expect(screen.getByText("User")).toBeInTheDocument();
     expect(screen.getByText("Additional Info")).toBeInTheDocument();
+  });
+
+  it("Displaying User column in the history dialog", () => {
+    render(<CqlLibrayHistoryDialog {...baseProps} />);
+    expect(screen.getByText("User")).toBeInTheDocument();
+    expect(screen.queryByText("HarpID")).not.toBeInTheDocument();
   });
 
   it("renders table rows with correct data", () => {
