@@ -232,6 +232,35 @@ describe("LibraryShareDialog", () => {
         screen.getByTestId(`${mockCqlLibrary1.id} userId1_userId`)
       ).toHaveTextContent("John Doe (userId1)");
     });
+
+    it("displays library name even when not shared with anyone", async () => {
+      setupDefaultMocks({
+        getSharedLibraries: jest.fn().mockResolvedValue({
+          [mockCqlLibrary1.id]: [],
+          [mockCqlLibrary2.id]: [],
+        }),
+      });
+      renderShareDialog();
+      await waitForDialog();
+
+      expect(
+        screen.getByTestId("TestLibraryId1_cqlLibraryName")
+      ).toHaveTextContent("mockCqlLibrary1");
+      expect(
+        screen.getByTestId("TestLibraryId2_cqlLibraryName")
+      ).toHaveTextContent("mockCqlLibrary2");
+    });
+
+    it("renders each grid row with a height of 68px", async () => {
+      renderShareDialog();
+      await waitForDialog();
+
+      const rows = screen.getAllByTestId("row-item");
+      expect(rows.length).toBeGreaterThan(0);
+      rows.forEach((row) => {
+        expect(row).toHaveStyle({ height: "68px" });
+      });
+    });
   });
 
   describe("API Calls", () => {
@@ -435,7 +464,7 @@ describe("LibraryShareDialog", () => {
       });
     });
 
-    it("displays library name in new row when user is added", async () => {
+    it("displays library name on its own row when user is added", async () => {
       renderShareDialog({ libraries: [mockCqlLibrary1] });
       await waitForDialog();
       await addHarpIdChip("newUserId");
@@ -446,14 +475,18 @@ describe("LibraryShareDialog", () => {
       await clickAddUserButton();
 
       await waitFor(() => {
-        const newRowCell = screen.getByTestId(
-          "TestLibraryId1 newUserId_cqlLibraryName"
+        const libraryNameCell = screen.getByTestId(
+          "TestLibraryId1_cqlLibraryName"
         );
-        expect(newRowCell).toHaveTextContent("mockCqlLibrary1");
+        expect(libraryNameCell).toHaveTextContent("mockCqlLibrary1");
       });
+      // Library name should not be repeated on the user's subrow
+      expect(
+        screen.getByTestId("TestLibraryId1 newUserId_cqlLibraryName")
+      ).toHaveTextContent("");
     });
 
-    it("displays library name for each library when adding user to multiple libraries", async () => {
+    it("displays library name once for each library when adding user to multiple libraries", async () => {
       renderShareDialog({ libraries: [mockCqlLibrary1, mockCqlLibrary2] });
       await waitForDialog();
       await addHarpIdChip("multiLibUser");
@@ -465,10 +498,10 @@ describe("LibraryShareDialog", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId("TestLibraryId1 multiLibUser_cqlLibraryName")
+          screen.getByTestId("TestLibraryId1_cqlLibraryName")
         ).toHaveTextContent("mockCqlLibrary1");
         expect(
-          screen.getByTestId("TestLibraryId2 multiLibUser_cqlLibraryName")
+          screen.getByTestId("TestLibraryId2_cqlLibraryName")
         ).toHaveTextContent("mockCqlLibrary2");
       });
     });
