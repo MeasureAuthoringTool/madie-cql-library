@@ -24,6 +24,43 @@ import CqlLibraryServiceApi, {
   useUserServiceApi,
 } from "@madie/madie-util";
 
+jest.mock("../common/reviewDialog/ReviewDialog", () => {
+  const React = require("react");
+
+  return function MockReviewDialog({ open, onClose, onSuccess }: any) {
+    const [isDirty, setIsDirty] = React.useState(false);
+
+    if (!open) {
+      return null;
+    }
+
+    return (
+      <div data-testid="review-dialog">
+        <div>Mark Library Ready for Review</div>
+        <button
+          data-testid="review-dialog-mark-ready-switch"
+          onClick={() => setIsDirty(true)}
+        >
+          Mark as Ready
+        </button>
+        <button data-testid="review-dialog-cancel-button" onClick={onClose}>
+          Cancel
+        </button>
+        <button
+          data-testid="review-dialog-save-button"
+          disabled={!isDirty}
+          onClick={async () => {
+            await onSuccess?.();
+            onClose();
+          }}
+        >
+          Save
+        </button>
+      </div>
+    );
+  };
+});
+
 const CqlLibraryList = CqlLibraryListComponent as any;
 
 const cqlLibrary = [
@@ -116,7 +153,6 @@ jest.mock("@madie/madie-util", () => ({
   useCqlLibraryReviewServiceApi: jest.fn(
     () => mockCqlLibraryReviewServiceResolved
   ),
-  useUserServiceApi: jest.fn(),
   useIsRoleOrFeatureEnabled: jest.fn(),
 }));
 
@@ -343,7 +379,7 @@ describe("CqlLibrary List component", () => {
     await waitFor(() => {
       expect(
         screen.queryByText("Mark Library Ready for Review")
-      ).not.toBeVisible();
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -1183,21 +1219,24 @@ describe("Library lock functionality", () => {
       />
     );
 
-    const actionButton = await screen.findByTestId(
-      `cql-library-action-${lockedLibrary.id}`
-    );
+    await screen.findByTestId(`cql-library-action-${lockedLibrary.id}`);
 
-    expect(actionButton).toBeInTheDocument();
-    expect(actionButton).toHaveTextContent("View");
-    expect(
-      within(actionButton).getByTestId(
-        "library-lock-icon-622e1f46d1fd3729d861e6cb"
-      )
-    ).toBeInTheDocument();
-    expect(actionButton).toHaveAttribute(
-      "aria-label",
-      expect.stringContaining("Locked by AnotherUser")
-    );
+    await waitFor(() => {
+      const actionButton = screen.getByTestId(
+        `cql-library-action-${lockedLibrary.id}`
+      );
+
+      expect(actionButton).toHaveTextContent("View");
+      expect(
+        within(actionButton).getByTestId(
+          `library-lock-icon-${lockedLibrary.id}`
+        )
+      ).toBeInTheDocument();
+      expect(actionButton).toHaveAttribute(
+        "aria-label",
+        expect.stringContaining("Locked by AnotherUser")
+      );
+    });
   });
 
   it("should display the locking user's real name when it can be resolved", async () => {
@@ -1258,11 +1297,11 @@ describe("Library lock functionality", () => {
       />
     );
 
-    const actionButton = await screen.findByTestId(
-      `cql-library-action-${lockedLibrary.id}`
-    );
-
     await waitFor(() => {
+      const actionButton = screen.getByTestId(
+        `cql-library-action-${lockedLibrary.id}`
+      );
+
       expect(actionButton).toHaveAttribute(
         "aria-label",
         expect.stringContaining("Locked by John Doe (AnotherUser)")
