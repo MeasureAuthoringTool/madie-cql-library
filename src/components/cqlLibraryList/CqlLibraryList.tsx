@@ -188,13 +188,9 @@ export default function CqlLibraryList({
   const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
-  const userServiceApi = useRef(useUserServiceApi()).current; //needs to be ref or triggers jest. throws warn
+  const userServiceApi = useRef(useUserServiceApi()).current;
 
-  // Real names of users who currently have a library locked for editing,
-  // similar to the "in use" chip on the Page Header. Baked into `libraryData`
-  // (rather than read directly from the column defs) so resolving names
-  // doesn't force the memoized table columns/cells to be recreated and
-  // remounted.
+  // Real names of users who currently have a library locked for editing
   const [lockedByDisplayNames, setLockedByDisplayNames] = useState<
     Record<string, string>
   >({});
