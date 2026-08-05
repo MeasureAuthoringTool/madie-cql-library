@@ -558,7 +558,7 @@ describe("Create Draft Dialog component", () => {
         await screen.findByText("Update Model Version")
       ).toBeInTheDocument();
       expect(
-        await screen.findByText("US-Core v6.1.0-derived")
+        await screen.findByText("US Core v6.1.0-derived")
       ).toBeInTheDocument();
 
       const modelSelect = screen.getByTestId("cql-library-model-select");
@@ -569,10 +569,10 @@ describe("Create Draft Dialog component", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId("cql-library-model-option-US-Core v6.1.0-derived")
+          screen.getByTestId("cql-library-model-option-US Core v6.1.0-derived")
         ).toBeInTheDocument();
         expect(
-          screen.queryByTestId("cql-library-model-option-US-Core v6.1.0")
+          screen.queryByTestId("cql-library-model-option-US Core v6.1.0")
         ).not.toBeInTheDocument();
         expect(
           screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
@@ -610,7 +610,7 @@ describe("Create Draft Dialog component", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByTestId("cql-library-model-option-US-Core v6.1.0-derived")
+          screen.getByTestId("cql-library-model-option-US Core v6.1.0-derived")
         ).toBeInTheDocument();
         expect(
           screen.queryByTestId("cql-library-model-option-US-Core v6.1.0")
@@ -749,7 +749,7 @@ describe("Create Draft Dialog component", () => {
         />
       );
       expect(
-        await screen.findByText("US-Core v6.1.0-derived")
+        await screen.findByText("US Core v6.1.0-derived")
       ).toBeInTheDocument();
       const modelInput = screen.getByTestId("cql-library-model-select");
       expect(modelInput).toHaveAttribute("readonly");
