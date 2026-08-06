@@ -14,9 +14,8 @@ import userEvent from "@testing-library/user-event";
 // @ts-ignore
 import {
   useFeatureFlags,
-  useIsRoleOrFeatureEnabled,
   CqlLibraryServiceApi,
-  useUserServiceApi,
+  useUserRoles,
 } from "@madie/madie-util";
 import {
   useNavigate,
@@ -106,6 +105,36 @@ const mockPageableVal = {
   numberOfElements: 50,
   pageable: { offset: 0 },
 };
+
+// Payload returned by the reviewer-only /reviews endpoint: the full, unpaginated
+// list of LibraryListDTOs, each carrying a populated reviewStatus.
+const reviewLibrary = {
+  id: "review-lib-1",
+  librarySetId: "review-set-1",
+  cqlLibraryName: "ReviewLibrary1",
+  model: Model.QICORE,
+  createdAt: null,
+  lastModifiedAt: "2026-01-01T00:00:00Z",
+  draft: true,
+  version: "0.0.000",
+  hasAssociatedLibraries: false,
+  reviewStatus: "READY_FOR_REVIEW",
+};
+const mockReviewLibraries = [
+  reviewLibrary,
+  {
+    ...reviewLibrary,
+    id: "review-lib-2",
+    cqlLibraryName: "ReviewLibrary2",
+    lastModifiedAt: "2026-02-01T00:00:00Z",
+  },
+  {
+    ...reviewLibrary,
+    id: "review-lib-3",
+    cqlLibraryName: "ReviewLibrary3",
+    lastModifiedAt: "2026-03-01T00:00:00Z",
+  },
+];
 const makeMockhistory = (number: number) => {
   const mockHistory = [];
   for (let i = 0; i < number; i++) {
@@ -121,6 +150,7 @@ const makeMockhistory = (number: number) => {
 
 const mockCqlLibraryServiceApi = {
   fetchCqlLibraries: jest.fn().mockResolvedValue({ mockPageableVal }),
+  fetchReviewLibraries: jest.fn().mockResolvedValue(mockReviewLibraries),
   fetchCqlLibrary: jest.fn().mockResolvedValue(cqlLibrary[0]),
   deleteDraft: jest.fn().mockResolvedValue({ data: "test" }),
   createDraft: jest.fn().mockResolvedValue({ data: "test" }),
@@ -184,6 +214,8 @@ describe("Cql Library Page", () => {
       TestCaseListActionCenter: true,
       CopyTestCases: true,
     });
+    // Default to a non-reviewer; reviewer-specific tests opt in explicitly.
+    (useUserRoles as jest.Mock).mockReturnValue({ roles: [], isAdmin: false });
     localStorage.clear();
   });
   afterEach(() => {
@@ -1190,6 +1222,72 @@ describe("Cql Library Page", () => {
       expect(screen.getByTestId("cql-library-list-snackBar")).toHaveTextContent(
         "Requested Cql Library cannot be drafted. Library name must be unique."
       );
+    });
+  });
+
+  test("does not show the All Reviews tab for non-reviewers", async () => {
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+      .fn()
+      .mockResolvedValue(mockPageableVal);
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(screen.getByText("TestCqlLibrary1")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId("all-reviews-tab")).not.toBeInTheDocument();
+    // Reviewer-only data should never be requested for a non-reviewer.
+    expect(
+      mockCqlLibraryServiceApi.fetchReviewLibraries
+    ).not.toHaveBeenCalled();
+  });
+
+  test("shows the All Reviews tab with its count for reviewers", async () => {
+    (useUserRoles as jest.Mock).mockReturnValue({
+      roles: ["MADiE-Reviewer"],
+      isAdmin: false,
+    });
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+      .fn()
+      .mockResolvedValue(mockPageableVal);
+    mockCqlLibraryServiceApi.fetchReviewLibraries = jest
+      .fn()
+      .mockResolvedValue(mockReviewLibraries);
+
+    renderWithRouter();
+
+    const allReviewsTab = await screen.findByTestId("all-reviews-tab");
+    expect(allReviewsTab).toBeInTheDocument();
+    // The count in parentheses is the length of the (unpaginated) review list.
+    expect(allReviewsTab).toHaveTextContent("All Reviews (3)");
+  });
+
+  test("loads reviewed libraries when the All Reviews tab is selected", async () => {
+    (useUserRoles as jest.Mock).mockReturnValue({
+      roles: ["MADiE-Reviewer"],
+      isAdmin: false,
+    });
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+      .fn()
+      .mockResolvedValue(mockPageableVal);
+    mockCqlLibraryServiceApi.fetchReviewLibraries = jest
+      .fn()
+      .mockResolvedValue(mockReviewLibraries);
+
+    renderWithRouter();
+
+    const allReviewsTab = await screen.findByTestId("all-reviews-tab");
+    await userEvent.click(allReviewsTab);
+
+    await waitFor(() => {
+      // Reviews tab pulls the full list from the dedicated endpoint.
+      expect(
+        mockCqlLibraryServiceApi.fetchReviewLibraries
+      ).toHaveBeenCalledWith(expect.any(AbortSignal));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("ReviewLibrary1")).toBeInTheDocument();
     });
   });
 });

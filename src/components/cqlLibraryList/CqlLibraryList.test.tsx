@@ -21,7 +21,6 @@ import CqlLibraryServiceApi, {
   checkUserCanEdit,
   useFeatureFlags,
   useCqlLibraryServiceApi,
-  useUserServiceApi,
 } from "@madie/madie-util";
 
 const CqlLibraryList = CqlLibraryListComponent as any;
@@ -451,6 +450,99 @@ describe("CqlLibrary List component", () => {
       "cqlLibrary-button-child-none_reviewStatus"
     );
     expect(noneCell).toHaveTextContent("-");
+  });
+
+  const reviewLibraries = [
+    {
+      id: "review-lib-1",
+      librarySetId: "review-set-1",
+      cqlLibraryName: "review lib one",
+      model: Model.QICORE,
+      draft: false,
+      version: "1.0.000",
+      active: true,
+      hasAssociatedLibraries: false,
+      reviewStatus: "READY_FOR_REVIEW",
+    },
+  ] as unknown as CqlLibrary[];
+
+  const renderReviewsTab = () =>
+    render(
+      <CqlLibraryList
+        cqlLibraryList={reviewLibraries}
+        onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={reviewLibraries[0]}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        compareVersionsDialog={false}
+        setCompareVersionsDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={1}
+        activeTab={3}
+        totalPages={1}
+        visibleItems={1}
+        offset={0}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+        setStatusHandler={jest.fn()}
+      />
+    );
+
+  it("renders the Review column on the reviews tab regardless of the feature flag", async () => {
+    // Feature flag intentionally left off: the reviews tab must always show Review.
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+    renderReviewsTab();
+
+    await screen.findByTestId("library-list-tbl");
+    // Review column header + populated status cell are always present here.
+    expect(screen.getByText("Review")).toBeInTheDocument();
+    expect(screen.getByText("review lib one")).toBeInTheDocument();
+    expect(screen.getByText("Ready")).toBeInTheDocument();
+  });
+
+  it("keeps the toolbar in the DOM but hidden on the reviews tab", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+    renderReviewsTab();
+
+    await screen.findByTestId("library-list-tbl");
+    // Search/filter and the action center are out of scope for the reviews tab,
+    // but the toolbar box must stay so the sticky table header keeps its 96px
+    // spacer (otherwise the <thead> overlaps the first row). It is therefore
+    // rendered but hidden/inert rather than removed.
+    const toolbar = screen.getByTestId("library-toolbar");
+    expect(toolbar).toHaveAttribute("aria-hidden", "true");
+    expect(toolbar).toHaveStyle({ visibility: "hidden" });
+  });
+
+  it("omits the Owner column on the reviews tab", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+    renderReviewsTab();
+
+    await screen.findByTestId("library-list-tbl");
+    // Owner is not part of the reviews tab column set.
+    expect(screen.queryByText("Owner")).not.toBeInTheDocument();
   });
 
   it("collapses the expanded section and clears expanded selection after a review is saved", async () => {

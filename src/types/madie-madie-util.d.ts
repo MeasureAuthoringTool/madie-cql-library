@@ -9,6 +9,7 @@ declare module "@madie/madie-util" {
     Acl,
     OwnershipType,
     ReviewStatus,
+    LibraryListDTO,
   } from "@madie/madie-models";
   import { AxiosResponse } from "axios";
 
@@ -163,6 +164,7 @@ declare module "@madie/madie-util" {
       sortInfo: any,
       signal: any
     ): Promise<any>;
+    fetchReviewLibraries(signal?: any): Promise<LibraryListDTO[]>;
     fetchCqlLibrary(id: string): Promise<CqlLibrary>;
     createCqlLibrary(cqlLibrary: CqlLibrary): Promise<void>;
     updateCqlLibrary(cqlLibrary: CqlLibrary): Promise<any>;

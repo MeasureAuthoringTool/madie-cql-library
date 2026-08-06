@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
-import { CqlLibrary, OwnershipType } from "@madie/madie-models";
+import { CqlLibrary, LibraryListDTO, OwnershipType } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import {
   useDocumentTitle,
-  useFeatureFlags,
   useCqlLibraryServiceApi,
+  useUserRoles,
 } from "@madie/madie-util";
 import {
   MadieSpinner,
@@ -19,7 +19,10 @@ import "styled-components/macro";
 import queryString from "query-string";
 import { useNavigate, useLocation } from "react-router-dom";
 import * as _ from "lodash";
-import { getTabStorageKey } from "./cqlLibraryLandingUtils";
+import {
+  getTabStorageKey,
+  sortReviewLibraries,
+} from "./cqlLibraryLandingUtils";
 import CqlLibraryHistoryDialog from "./CqlLibraryHistoryDialog";
 import StatusHandler, {
   INITIAL_STATUS_HANDLER,
@@ -29,6 +32,9 @@ const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
   cqlLibrary: null,
 };
+
+const REVIEWER_ROLE = "MADiE-Reviewer";
+const REVIEWS_TAB = 3;
 
 export interface LibrarySearchCriteria {
   searchField?: string;
@@ -49,6 +55,9 @@ function CqlLibraryLanding() {
 
   let navigate = useNavigate();
   const { search } = useLocation();
+
+  const userRoles = useUserRoles();
+  const isReviewer = userRoles?.roles?.includes(REVIEWER_ROLE) ?? false;
 
   const [cqlLibraryList, setCqlLibraryList] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -125,6 +134,8 @@ function CqlLibraryLanding() {
   const [ownedLibrariesCount, setOwnedLibrariesCount] = useState(0);
   const [sharedLibrariesCount, setSharedLibrariesCount] = useState(0);
   const [allLibrariesCount, setAllLibrariesCount] = useState(0);
+  // Count for the reviewer-only "All Reviews" tab; only populated for reviewers.
+  const [reviewLibrariesCount, setReviewLibrariesCount] = useState(0);
 
   // Toast state and handlers
   const [toastOpen, setToastOpen] = useState<boolean>(false);
@@ -167,14 +178,19 @@ function CqlLibraryLanding() {
       setOwnedLibrariesCount(ownedLibs?.totalElements || 0);
       setSharedLibrariesCount(sharedLibs?.totalElements || 0);
       setAllLibrariesCount(allLibs?.totalElements || 0);
+
+      if (isReviewer) {
+        const reviewLibs = await cqlLibraryServiceApi.fetchReviewLibraries();
+        setReviewLibrariesCount(reviewLibs?.length || 0);
+      }
     } catch (e) {
       console.error("Error fetching counts", e);
     }
-  }, [cqlLibraryServiceApi]);
+  }, [cqlLibraryServiceApi, isReviewer]);
 
   useEffect(() => {
     fetchTotalCounts();
-  }, []);
+  }, [fetchTotalCounts]);
 
   const retrieveLibraries = useCallback(
     async (tab, limit, page, searchCriteria, relevantSorting) => {
@@ -189,6 +205,33 @@ function CqlLibraryLanding() {
         optionalSearchProperties:
           firstParam && firstParam !== "-" ? [_.camelCase(firstParam)] : [],
       };
+
+      // The "All Reviews" tab has its own endpoint that returns the full,
+      // unpaginated list of LibraryListDTOs. Sorting is client-side and there is
+      // no pagination, so it gets dedicated handling here.
+      if (tab === REVIEWS_TAB) {
+        cqlLibraryServiceApi
+          .fetchReviewLibraries(abortController.current.signal)
+          .then((reviewLibraries: LibraryListDTO[]) => {
+            setReviewListProps(
+              sortReviewLibraries(reviewLibraries, relevantSorting)
+            );
+          })
+          .catch((error) => {
+            if (error.message != "canceled") {
+              setSnackBar({
+                message: "An error occurred while fetching the CQL Library!",
+                open: true,
+                severity: "error",
+              });
+            }
+          })
+          .finally(() => {
+            return setLoading(false);
+          });
+        return;
+      }
+
       cqlLibraryServiceApi
         .fetchCqlLibraries(
           ownershipTypeMap[tab] ?? OwnershipType.ALL,
@@ -234,6 +277,15 @@ function CqlLibraryLanding() {
       setCqlLibraryList(content);
       setOffset(pageable.offset);
     }
+  };
+
+  // The reviews list is unpaginated: everything renders on a single "page".
+  const setReviewListProps = (reviewLibraries: LibraryListDTO[]) => {
+    setTotalPages(1);
+    setTotalItems(reviewLibraries.length);
+    setVisibleItems(reviewLibraries.length);
+    setCqlLibraryList(reviewLibraries);
+    setOffset(0);
   };
 
   // sort logic
@@ -406,6 +458,13 @@ function CqlLibraryLanding() {
                 label={`All Libraries (${allLibrariesCount})`}
                 data-testid="all-libraries-tab"
               />
+              {isReviewer && (
+                <Tab
+                  type="B"
+                  label={`All Reviews (${reviewLibrariesCount})`}
+                  data-testid="all-reviews-tab"
+                />
+              )}
             </Tabs>
           </div>
           <span tw="flex-grow" />
