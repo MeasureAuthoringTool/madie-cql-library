@@ -101,6 +101,15 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     }
   }, [selectedLibraries, setReviewDialog]);
 
+  const PipeSeparator = () => (
+    <span
+      aria-hidden="true"
+      style={{ color: "#8C8C8C", display: "inline-flex", alignItems: "center" }}
+    >
+      |
+    </span>
+  );
+
   return (
     <div data-testid="action-center">
       <DeleteAction
@@ -116,6 +125,14 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         isSharedWithUser={isSharedWithUser}
         activeTab={activeTab}
       />
+      <TransferAction
+        libraries={selectedLibraries}
+        onClick={transferLibrary}
+        activeTab={activeTab}
+      />
+
+      <PipeSeparator />
+
       <VersionAction
         libraries={selectedLibraries}
         canEdit={canEdit}
@@ -127,25 +144,26 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         canEdit={canEdit}
         onClick={createDraft}
       />
+
+      <PipeSeparator />
+
       <HistoryAction
         libraries={selectedLibraries}
         onClick={openLibraryHistoryDialog}
-      />
-      <TransferAction
-        libraries={selectedLibraries}
-        onClick={transferLibrary}
-        activeTab={activeTab}
       />
       <CompareVersionsAction
         libraries={selectedLibraries}
         onClick={compareVersions}
       />
       {featureFlags?.LibraryReviewStatus && (
-        <ReviewAction
-          libraries={selectedLibraries}
-          onClick={reviewLibrary}
-          canEdit={canEdit}
-        />
+        <>
+          <PipeSeparator />
+          <ReviewAction
+            libraries={selectedLibraries}
+            onClick={reviewLibrary}
+            canEdit={canEdit}
+          />
+        </>
       )}
     </div>
   );

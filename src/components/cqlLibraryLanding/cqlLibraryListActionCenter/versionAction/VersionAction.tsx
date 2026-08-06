@@ -2,9 +2,8 @@ import React, { useCallback, useEffect, useState } from "react";
 import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary } from "@madie/madie-models";
-import AccountTreeOutlinedIcon from "@mui/icons-material/AccountTreeOutlined";
-import { useFeatureFlags } from "@madie/madie-util";
 import { grey, blue } from "@mui/material/colors";
+import { Network } from "lucide-react";
 
 interface PropTypes {
   libraries: CqlLibrary[];
@@ -21,7 +20,6 @@ export default function VersionAction(props: PropTypes) {
   const { libraries, canEdit, onClick } = props;
   const [disableVersionBtn, setDisableVersionBtn] = useState(true);
   const [tooltipMessage, setTooltipMessage] = useState(NOTHING_SELECTED);
-  const featureFlags = useFeatureFlags();
 
   const validateVersionActionState = useCallback(() => {
     // set button state to disabled by default
@@ -70,8 +68,10 @@ export default function VersionAction(props: PropTypes) {
           disabled={disableVersionBtn}
           data-testid="version-action-btn"
         >
-          <AccountTreeOutlinedIcon
-            sx={disableVersionBtn ? { color: grey[500] } : { color: blue[500] }}
+          <Network
+            size={20}
+            style={{ transform: "rotate(270deg)" }}
+            color={disableVersionBtn ? grey[500] : blue[500]}
           />
         </IconButton>
       </span>
