@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary } from "@madie/madie-models";
-import SwapVertOutlinedIcon from "@mui/icons-material/SwapVertOutlined";
 import { checkUserCanEdit, useUserRoles } from "@madie/madie-util";
+import { ArrowRightLeft } from "lucide-react";
 
 interface PropTypes {
   libraries: CqlLibrary[];
@@ -78,7 +78,7 @@ export default function TransferAction(props: PropTypes) {
           disabled={disableTransferBtn}
           data-testid="transfer-action-btn"
         >
-          <SwapVertOutlinedIcon style={{ transform: "rotate(90deg)" }} />
+          <ArrowRightLeft size={20} />
         </IconButton>
       </span>
     </Tooltip>

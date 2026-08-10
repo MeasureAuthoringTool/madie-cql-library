@@ -1,7 +1,7 @@
 import React from "react";
 import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import { Trash2 } from "lucide-react";
 import { checkUserCanDelete } from "@madie/madie-util";
 import { CqlLibrary } from "@madie/madie-models";
 
@@ -78,7 +78,7 @@ export default function DeleteAction(props: PropTypes) {
           data-testid="delete-action-btn"
           className="DeleteClass"
         >
-          <DeleteOutlinedIcon />
+          <Trash2 size={20} />
         </IconButton>
       </span>
     </Tooltip>

@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IconButton } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
 import { CqlLibrary, Model } from "@madie/madie-models";
-import EditCalendarOutlinedIcon from "@mui/icons-material/EditCalendarOutlined";
 import { Toast } from "@madie/madie-design-system/dist/react";
 import { useCqlLibraryServiceApi } from "@madie/madie-util";
+import { ClipboardPen } from "lucide-react";
 
 import { grey, blue } from "@mui/material/colors";
 import _ from "lodash";
@@ -117,11 +117,12 @@ export default function DraftAction(props: PropTypes) {
           disabled={disableDraftBtn || disableDraftHasQiCore600}
           data-testid="draft-action-btn"
         >
-          <EditCalendarOutlinedIcon
-            sx={
+          <ClipboardPen
+            size={20}
+            color={
               disableDraftBtn || disableDraftHasQiCore600
-                ? { color: grey[500] }
-                : { color: blue[500] }
+                ? grey[500]
+                : blue[500]
             }
           />
           <Toast

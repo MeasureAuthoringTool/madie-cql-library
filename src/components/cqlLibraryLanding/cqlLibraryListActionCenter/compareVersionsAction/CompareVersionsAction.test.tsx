@@ -196,13 +196,13 @@ describe("CompareVersionsAction component", () => {
     expect(screen.getByTestId("compare-versions-action-btn")).toBeDisabled();
   });
 
-  it("should render the SVG icon correctly", () => {
+  it("should render the compare icon correctly", () => {
     render(<CompareVersionsAction libraries={[]} onClick={() => {}} />);
     const button = screen.getByTestId("compare-versions-action-btn");
     const svg = button.querySelector("svg");
 
     expect(svg).toBeInTheDocument();
-    expect(svg).toHaveAttribute("width", "23");
-    expect(svg).toHaveAttribute("height", "22");
+    expect(svg).toHaveAttribute("width", "20");
+    expect(svg).toHaveAttribute("height", "20");
   });
 });
