@@ -602,7 +602,7 @@ export default function CqlLibraryList({
           },
         ]
       : []),
-    ...(activeTab !== 0
+    ...(activeTab === 1 || activeTab === 2
       ? [
           {
             sortDescFirst: false,
@@ -624,7 +624,8 @@ export default function CqlLibraryList({
         <p>{new Date(info.row.original.lastModifiedAt).toLocaleDateString()}</p>
       ),
     },
-    ...(featureFlags?.LibraryReviewStatus && activeTab !== 2
+    ...(activeTab === 3 ||
+    (featureFlags?.LibraryReviewStatus && activeTab !== 2)
       ? [
           {
             header: "Review",
@@ -1198,6 +1199,8 @@ export default function CqlLibraryList({
       </Popover>
       <div style={{ overflow: "auto", maxHeight: "703px" }}>
         <div
+          data-testid="library-toolbar"
+          aria-hidden={activeTab === 3}
           style={{
             display: "flex",
             flexDirection: "row",
@@ -1208,6 +1211,7 @@ export default function CqlLibraryList({
             position: "sticky",
             top: 0,
             zIndex: 20,
+            visibility: activeTab === 3 ? "hidden" : "visible",
           }}
         >
           <SearchAndFilter
@@ -1272,25 +1276,27 @@ export default function CqlLibraryList({
           }
         />
       </div>
-      <Pagination
-        totalItems={totalItems}
-        visibleItems={visibleItems}
-        limitOptions={[
-          10,
-          25,
-          50,
-          ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
-        ]}
-        offset={offset}
-        handlePageChange={handlePageChange}
-        handleLimitChange={handleLimitChange}
-        page={curPage}
-        limit={curLimit}
-        count={totalPages}
-        shape="rounded"
-        hideNextButton={!canGoNext}
-        hidePrevButton={!canGoPrev}
-      />
+      {activeTab !== 3 && (
+        <Pagination
+          totalItems={totalItems}
+          visibleItems={visibleItems}
+          limitOptions={[
+            10,
+            25,
+            50,
+            ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
+          ]}
+          offset={offset}
+          handlePageChange={handlePageChange}
+          handleLimitChange={handleLimitChange}
+          page={curPage}
+          limit={curLimit}
+          count={totalPages}
+          shape="rounded"
+          hideNextButton={!canGoNext}
+          hidePrevButton={!canGoPrev}
+        />
+      )}
     </div>
   );
 }
