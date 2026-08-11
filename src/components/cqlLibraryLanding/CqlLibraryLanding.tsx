@@ -100,6 +100,7 @@ function CqlLibraryLanding() {
     setLibraryHistoryDialogOpen(false);
   };
   const abortController = useRef<AbortController | null>(null);
+  const fetchCountsAbortController = useRef<AbortController | null>(null);
   const [selectedCQLLibrary, setSelectedCqlLibrary] =
     useState<CqlLibrary>(null);
 
@@ -148,6 +149,11 @@ function CqlLibraryLanding() {
   };
 
   const fetchTotalCounts = useCallback(async () => {
+    // Cancel any in-flight count fetch before starting a new one
+    fetchCountsAbortController.current?.abort();
+    fetchCountsAbortController.current = new AbortController();
+    const signal = fetchCountsAbortController.current.signal;
+
     try {
       const [ownedLibs, sharedLibs, allLibs] = await Promise.all([
         cqlLibraryServiceApi.fetchCqlLibraries(
@@ -156,7 +162,7 @@ function CqlLibraryLanding() {
           0,
           searchCriteria,
           null,
-          null
+          signal
         ),
         cqlLibraryServiceApi.fetchCqlLibraries(
           OwnershipType.SHARED,
@@ -164,7 +170,7 @@ function CqlLibraryLanding() {
           0,
           searchCriteria,
           null,
-          null
+          signal
         ),
         cqlLibraryServiceApi.fetchCqlLibraries(
           OwnershipType.ALL,
@@ -172,7 +178,7 @@ function CqlLibraryLanding() {
           0,
           searchCriteria,
           null,
-          null
+          signal
         ),
       ]);
       setOwnedLibrariesCount(ownedLibs?.totalElements || 0);
@@ -180,11 +186,15 @@ function CqlLibraryLanding() {
       setAllLibrariesCount(allLibs?.totalElements || 0);
 
       if (isReviewer) {
-        const reviewLibs = await cqlLibraryServiceApi.fetchReviewLibraries();
+        const reviewLibs = await cqlLibraryServiceApi.fetchReviewLibraries(
+          signal
+        );
         setReviewLibrariesCount(reviewLibs?.length || 0);
       }
     } catch (e) {
-      console.error("Error fetching counts", e);
+      if (e?.message !== "canceled") {
+        console.error("Error fetching counts", e);
+      }
     }
   }, [cqlLibraryServiceApi, isReviewer]);
 
