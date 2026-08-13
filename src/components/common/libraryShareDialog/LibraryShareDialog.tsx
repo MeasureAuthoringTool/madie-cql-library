@@ -21,6 +21,7 @@ import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { CqlLibrary } from "@madie/madie-models";
@@ -126,10 +127,6 @@ const LibraryShareDialog = ({
 
   const [libraryMap, setLibraryMap] = useState(new Map<string, CqlLibrary>());
   const [sharedLibraries, setSharedLibraries] = useState<SharedLibrary[]>([]);
-
-  const flattenedSharedLibraries = useMemo(() => {
-    return sharedLibraries.flatMap((library) => library.subRows ?? []);
-  }, [sharedLibraries]);
 
   const [sharedWithAllSelectedLibraries, setSharedWithAllSelectedLibraries] =
     useState<boolean>(false);
@@ -271,7 +268,7 @@ const LibraryShareDialog = ({
             subRows: [
               {
                 libraryId: library.libraryId,
-                cqlLibraryName: library.cqlLibraryName,
+                cqlLibraryName: "",
                 userId: harpId,
                 displayName: displayNameMap.get(harpId) ?? harpId,
                 dateShared: new Date().toLocaleString(),
@@ -341,7 +338,7 @@ const LibraryShareDialog = ({
           subRows: sharedLibraries[libraryId]
             .map((sharedUser: SharedUser) => ({
               libraryId,
-              cqlLibraryName: libraryMap.get(libraryId).cqlLibraryName,
+              cqlLibraryName: "",
               userId: sharedUser.userId,
               displayName: sharedUser.displayName,
               dateShared: sharedUser.performedAt
@@ -501,13 +498,14 @@ const LibraryShareDialog = ({
     } else if (option === "Unshare") {
       columnDefs.push({
         header: "Library",
-        cell: (info) => (
-          <TruncateText
-            text={info.row.original.cqlLibraryName}
-            maxLength={120}
-            dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
-          />
-        ),
+        cell: (info) =>
+          info.row.original.cqlLibraryName ? (
+            <TruncateText
+              text={info.row.original.cqlLibraryName}
+              maxLength={120}
+              dataTestId={`library-name-${info.row.original.cqlLibraryName}_${info.row.original.libraryId}`}
+            />
+          ) : null,
         accessorKey: "cqlLibraryName",
       });
     }
@@ -529,9 +527,9 @@ const LibraryShareDialog = ({
             <span>Shared With</span>
           </div>
         ),
-        cell: (info) => (
-          <div className="shared-with-cell">
-            {option === "Unshare" && (
+        cell: (info) =>
+          option === "Unshare" && !info.row.original.cqlLibraryName ? (
+            <div className="shared-with-cell">
               <Checkbox
                 icon={icon}
                 checkedIcon={checkedIcon}
@@ -539,14 +537,19 @@ const LibraryShareDialog = ({
                 onChange={info.row.getToggleSelectedHandler()}
                 data-testid={`unshare-checkbox-${info.row.original.userId}_${info.row.original.libraryId}`}
               />
-            )}
+              <TruncateText
+                text={info.row.original.displayName ?? info.row.original.userId}
+                maxLength={120}
+                dataTestId={`user-${info.row.original.userId}_${info.row.original.libraryId}`}
+              />
+            </div>
+          ) : (
             <TruncateText
-              text={info.row.original.displayName ?? info.row.original.userId}
+              text={info.row.original.displayName}
               maxLength={120}
               dataTestId={`user-${info.row.original.userId}_${info.row.original.libraryId}`}
             />
-          </div>
-        ),
+          ),
         accessorKey: "userId",
       },
       {
@@ -569,10 +572,10 @@ const LibraryShareDialog = ({
     ];
 
     return columnDefs;
-  }, [libraries]);
+  }, [libraries, option]);
 
   const table = useReactTable({
-    data: flattenedSharedLibraries,
+    data: sharedLibraries,
     getRowId: (row) => `${row.libraryId}${row.userId ? ` ${row.userId}` : ""}`,
     columns,
     defaultColumn: {
@@ -581,7 +584,12 @@ const LibraryShareDialog = ({
       maxSize: 500,
     },
     getCoreRowModel: getCoreRowModel(),
-    enableRowSelection: true,
+    getExpandedRowModel: getExpandedRowModel(),
+    getSubRows: (row) => row.subRows,
+    initialState: {
+      expanded: true,
+    },
+    enableRowSelection: (row) => !row.original.cqlLibraryName,
     onRowSelectionChange: setRowSelection,
     state: {
       rowSelection,
@@ -896,11 +904,16 @@ const LibraryShareDialog = ({
                     table.getRowModel().rows.map((row) => (
                       <tr
                         key={row.id}
-                        className="ml-tr"
+                        className={
+                          row.original.cqlLibraryName
+                            ? String.raw`ml-tr`
+                            : String.raw`ml-tr subtr`
+                        }
                         data-testid="row-item"
                         style={{
                           borderTop: "solid 1px #8c8c8c",
                           borderSpacing: "0 2em !important",
+                          height: "68px",
                         }}
                       >
                         {row.getVisibleCells().map((cell) => (
