@@ -18,6 +18,8 @@ import {
   useUserServiceApi,
   useCqlLibraryServiceApi,
   useTerminologyServiceApi,
+  useUserRoles,
+  ManageReviewDialog,
 } from "@madie/madie-util";
 
 import * as _ from "lodash";
@@ -96,6 +98,7 @@ const EditCqlLibrary = () => {
   const [reviewDialog, setReviewDialog] = useState({
     open: false,
   });
+  const userRoles = useUserRoles();
 
   // on unmount forget library state.
   useEffect(() => {
@@ -1160,11 +1163,20 @@ const EditCqlLibrary = () => {
             onClose={handleDialogClose}
             onSubmit={transferLibrary}
           />
-          <ReviewDialog
-            open={reviewDialog.open}
-            library={loadedCqlLibrary}
-            onClose={handleReviewDialogClose}
-          />
+          {userRoles?.isReviewer ? (
+            <ManageReviewDialog
+              open={reviewDialog.open}
+              entityType="library"
+              entityId={loadedCqlLibrary?.id}
+              onClose={handleReviewDialogClose}
+            />
+          ) : (
+            <ReviewDialog
+              open={reviewDialog.open}
+              library={loadedCqlLibrary}
+              onClose={handleReviewDialogClose}
+            />
+          )}
         </form>
       )}
       {libraryHistoryDialogOpen && (

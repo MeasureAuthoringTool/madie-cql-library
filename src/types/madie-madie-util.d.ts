@@ -95,6 +95,7 @@ declare module "@madie/madie-util" {
   export interface UserRoles {
     roles: string[];
     isAdmin: boolean;
+    isReviewer: boolean;
   }
 
   export function useFeatureFlags(): FeatureFlags;
@@ -219,4 +220,11 @@ declare module "@madie/madie-util" {
 
   export function useCqlLibraryServiceApi(): CqlLibraryServiceApi;
   export function useCqlLibraryReviewServiceApi(): CqlLibraryReviewServiceApi;
+
+  export function ManageReviewDialog(props: {
+    open: boolean;
+    onClose: () => void;
+    entityType: "measure" | "library";
+    entityId?: string;
+  }): React.ReactElement | null;
 }

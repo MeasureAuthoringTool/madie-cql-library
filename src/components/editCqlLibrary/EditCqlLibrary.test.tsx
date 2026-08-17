@@ -22,6 +22,7 @@ import {
   checkUserCanEdit,
   UserServiceApi,
   CqlLibraryServiceApi,
+  useUserRoles,
 } from "@madie/madie-util";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
 import {
@@ -90,6 +91,12 @@ jest.mock("@madie/madie-util", () => ({
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
   useCqlLibraryReviewServiceApi: jest.fn(() => mockCqlLibraryReviewServiceApi),
   useTerminologyServiceApi: jest.fn(() => mockTerminologyServiceApi),
+  ManageReviewDialog: ({ open, entityType, entityId }: any) =>
+    open ? (
+      <div data-testid="manage-review-dialog">
+        Manage Review Dialog {entityType} {entityId}
+      </div>
+    ) : null,
 }));
 
 const cqlLibrary = {
@@ -272,6 +279,11 @@ describe("Edit Cql Library Component", () => {
     mockCqlLibraryServiceApi.fetchCqlLibrary = jest
       .fn()
       .mockResolvedValue(cqlLibrary);
+    (useUserRoles as jest.Mock).mockReturnValue({
+      roles: [],
+      isAdmin: false,
+      isReviewer: false,
+    });
   });
 
   afterEach(() => {
@@ -647,6 +659,31 @@ describe("Edit Cql Library Component", () => {
         screen.queryByText("Mark Library Ready for Review")
       ).not.toBeVisible();
     });
+  });
+
+  it("should display the Manage Review dialog for reviewers when the event is triggered", async () => {
+    (useUserRoles as jest.Mock).mockReturnValue({
+      roles: ["MADiE-Reviewer"],
+      isAdmin: false,
+      isReviewer: true,
+    });
+    renderWithRouter();
+    expect(
+      await screen.findByRole("button", { name: "Save" })
+    ).toBeInTheDocument();
+
+    act(() => {
+      window.dispatchEvent(new Event("review-library"));
+    });
+
+    const manageReviewDialog = await screen.findByTestId(
+      "manage-review-dialog"
+    );
+    expect(manageReviewDialog).toHaveTextContent("library");
+    expect(manageReviewDialog).toHaveTextContent(cqlLibrary.id);
+    expect(
+      screen.queryByText("Mark Library Ready for Review")
+    ).not.toBeInTheDocument();
   });
 
   it("should display a delete dialog when the event is triggered and delete succeeds", async () => {
