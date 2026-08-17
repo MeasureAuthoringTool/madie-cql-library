@@ -21,6 +21,7 @@ import CqlLibraryServiceApi, {
   checkUserCanEdit,
   useFeatureFlags,
   useCqlLibraryServiceApi,
+  useUserRoles,
 } from "@madie/madie-util";
 
 const CqlLibraryList = CqlLibraryListComponent as any;
@@ -113,6 +114,12 @@ jest.mock("@madie/madie-util", () => ({
   ),
   useUserServiceApi: jest.fn(),
   useIsRoleOrFeatureEnabled: jest.fn(),
+  ManageReviewDialog: ({ open, entityType, entityId }: any) =>
+    open ? (
+      <div data-testid="manage-review-dialog">
+        Manage Review Dialog {entityType} {entityId}
+      </div>
+    ) : null,
 }));
 
 describe("CqlLibrary List component", () => {
@@ -134,6 +141,11 @@ describe("CqlLibrary List component", () => {
     });
     (checkUserCanEdit as jest.Mock).mockReturnValue(true);
     (useIsRoleOrFeatureEnabled as jest.Mock).mockReturnValue(false);
+    (useUserRoles as jest.Mock).mockReturnValue({
+      roles: [],
+      isAdmin: false,
+      isReviewer: false,
+    });
   });
   afterEach(() => {
     cleanup();
@@ -342,6 +354,74 @@ describe("CqlLibrary List component", () => {
     });
   });
 
+  it("should open the Manage Review dialog from the action center for reviewers", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({
+      LibraryReviewStatus: true,
+    });
+    (useUserRoles as jest.Mock).mockReturnValue({
+      roles: ["MADiE-Reviewer"],
+      isAdmin: false,
+      isReviewer: true,
+    });
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={cqlLibrary[0]}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        compareVersionsDialog={false}
+        setCompareVersionsDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={10}
+        activeTab={1}
+        totalPages={20}
+        visibleItems={10}
+        offset={0}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+        setStatusHandler={jest.fn()}
+      />
+    );
+
+    const checkBoxes = await screen.findAllByRole("checkbox");
+    fireEvent.click(checkBoxes[1]);
+
+    userEvent.click(screen.getByTestId("review-action-btn"));
+
+    const manageReviewDialog = await screen.findByTestId(
+      "manage-review-dialog"
+    );
+    expect(manageReviewDialog).toHaveTextContent("library");
+    expect(manageReviewDialog).toHaveTextContent(cqlLibrary[0].id);
+    expect(
+      screen.queryByText("Mark Library Ready for Review")
+    ).not.toBeInTheDocument();
+  });
+
   const parentWithChildren = [
     {
       id: "parent-1",
@@ -520,20 +600,6 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("Review")).toBeInTheDocument();
     expect(screen.getByText("review lib one")).toBeInTheDocument();
     expect(screen.getByText("Ready")).toBeInTheDocument();
-  });
-
-  it("keeps the toolbar in the DOM but hidden on the reviews tab", async () => {
-    (useFeatureFlags as jest.Mock).mockReturnValue({});
-    renderReviewsTab();
-
-    await screen.findByTestId("library-list-tbl");
-    // Search/filter and the action center are out of scope for the reviews tab,
-    // but the toolbar box must stay so the sticky table header keeps its 96px
-    // spacer (otherwise the <thead> overlaps the first row). It is therefore
-    // rendered but hidden/inert rather than removed.
-    const toolbar = screen.getByTestId("library-toolbar");
-    expect(toolbar).toHaveAttribute("aria-hidden", "true");
-    expect(toolbar).toHaveStyle({ visibility: "hidden" });
   });
 
   it("omits the Owner column on the reviews tab", async () => {

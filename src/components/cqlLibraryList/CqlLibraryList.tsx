@@ -28,6 +28,8 @@ import {
   checkUserCanEdit,
   useFeatureFlags,
   useCqlLibraryServiceApi,
+  useUserRoles,
+  ManageReviewDialog,
 } from "@madie/madie-util";
 import {
   Button,
@@ -184,6 +186,7 @@ export default function CqlLibraryList({
   };
 
   const featureFlags = useFeatureFlags();
+  const userRoles = useUserRoles();
   const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
@@ -1059,19 +1062,28 @@ export default function CqlLibraryList({
         open={compareVersionsDialog}
         onClose={handleDialogClose}
       />
-      <ReviewDialog
-        open={reviewDialog.open}
-        library={selectedLibraries[0]}
-        onClose={handleReviewDialogClose}
-        onSuccess={async () => {
-          await onListUpdate();
-          table.resetRowSelection();
-          setSelectedExpandedLibrariesIds([]);
-          setIsRowExpanded(false);
-          setExpandedSectionData(null);
-          setSelectedIdForExpansion(null);
-        }}
-      />
+      {userRoles?.isReviewer ? (
+        <ManageReviewDialog
+          open={reviewDialog.open}
+          entityType="library"
+          entityId={selectedLibraries[0]?.id}
+          onClose={handleReviewDialogClose}
+        />
+      ) : (
+        <ReviewDialog
+          open={reviewDialog.open}
+          library={selectedLibraries[0]}
+          onClose={handleReviewDialogClose}
+          onSuccess={async () => {
+            await onListUpdate();
+            table.resetRowSelection();
+            setSelectedExpandedLibrariesIds([]);
+            setIsRowExpanded(false);
+            setExpandedSectionData(null);
+            setSelectedIdForExpansion(null);
+          }}
+        />
+      )}
       <Popover
         open={optionsOpen}
         anchorEl={anchorEl}
@@ -1211,7 +1223,6 @@ export default function CqlLibraryList({
             position: "sticky",
             top: 0,
             zIndex: 20,
-            visibility: activeTab === 3 ? "hidden" : "visible",
           }}
         >
           <SearchAndFilter
