@@ -11,9 +11,12 @@ import {
   FeatureFlags,
   useFeatureFlags,
   useOktaTokens,
+  useUserRoles,
 } from "@madie/madie-util";
 import TransferAction from "./transferAction/TransferAction";
 import ReviewAction from "./reviewAction/ReviewAction";
+
+const ALL_REVIEWS_TAB = 3;
 
 interface PropTypes {
   selectedLibraries: CqlLibrary[];
@@ -47,6 +50,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
   const featureFlags: FeatureFlags = useFeatureFlags();
   const { getUserName } = useOktaTokens();
   const userName = getUserName();
+  const userRoles = useUserRoles();
   const canEdit = selectedLibraries
     ? checkUserCanEdit(
         selectedLibraries[0]?.librarySet?.owner,
@@ -100,6 +104,9 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
       });
     }
   }, [selectedLibraries, setReviewDialog]);
+
+  const canReview =
+    (activeTab === ALL_REVIEWS_TAB && !!userRoles?.isReviewer) || canEdit;
 
   const PipeSeparator = () => (
     <span
@@ -161,7 +168,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
           <ReviewAction
             libraries={selectedLibraries}
             onClick={reviewLibrary}
-            canEdit={canEdit}
+            canReview={canReview}
           />
         </>
       )}

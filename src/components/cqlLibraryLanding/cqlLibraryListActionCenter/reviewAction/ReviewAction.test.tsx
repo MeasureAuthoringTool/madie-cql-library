@@ -26,7 +26,9 @@ const library = {
 
 describe("ReviewAction", () => {
   it("disables the action when no libraries are selected", () => {
-    render(<ReviewAction libraries={[]} onClick={() => {}} canEdit={false} />);
+    render(
+      <ReviewAction libraries={[]} onClick={() => {}} canReview={false} />
+    );
 
     expect(screen.getByTestId("review-action-btn")).toBeDisabled();
     expect(screen.getByTestId("review-action-tooltip")).toHaveAttribute(
@@ -40,7 +42,7 @@ describe("ReviewAction", () => {
       <ReviewAction
         libraries={[library, { ...library, librarySetId: "2-3-4-5" }]}
         onClick={() => {}}
-        canEdit={true}
+        canReview={true}
       />
     );
 
@@ -51,9 +53,13 @@ describe("ReviewAction", () => {
     );
   });
 
-  it("disables the action when one library is selected but the user cannot edit it", () => {
+  it("disables the action when one library is selected but the user cannot review it", () => {
     render(
-      <ReviewAction libraries={[library]} onClick={() => {}} canEdit={false} />
+      <ReviewAction
+        libraries={[library]}
+        onClick={() => {}}
+        canReview={false}
+      />
     );
 
     expect(screen.getByTestId("review-action-btn")).toBeDisabled();
@@ -63,9 +69,9 @@ describe("ReviewAction", () => {
     );
   });
 
-  it("enables the action when one editable library is selected", () => {
+  it("enables the action when one reviewable library is selected", () => {
     render(
-      <ReviewAction libraries={[library]} onClick={() => {}} canEdit={true} />
+      <ReviewAction libraries={[library]} onClick={() => {}} canReview={true} />
     );
 
     expect(screen.getByTestId("review-action-btn")).toBeEnabled();
