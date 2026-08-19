@@ -7,7 +7,7 @@ import ReviewIcon from "../../../../icons/ReviewIcon";
 interface PropTypes {
   libraries: CqlLibrary[];
   onClick: () => void;
-  canEdit: boolean;
+  canReview: boolean;
 }
 
 export const SELECT_LIBRARY_TO_UPDATE_REVIEW_STATUS =
@@ -15,19 +15,19 @@ export const SELECT_LIBRARY_TO_UPDATE_REVIEW_STATUS =
 export const REVIEW = "Review";
 
 export default function ReviewAction(props: PropTypes) {
-  const { libraries, canEdit, onClick } = props;
+  const { libraries, canReview, onClick } = props;
   const [disableReviewBtn, setDisableReviewBtn] = useState(true);
   const [tooltipMessage, setTooltipMessage] = useState(
     SELECT_LIBRARY_TO_UPDATE_REVIEW_STATUS
   );
   const validateReviewActionState = useCallback(() => {
-    const shouldEnableReview = libraries?.length === 1 && canEdit;
+    const shouldEnableReview = libraries?.length === 1 && canReview;
 
     setDisableReviewBtn(!shouldEnableReview);
     setTooltipMessage(
       shouldEnableReview ? REVIEW : SELECT_LIBRARY_TO_UPDATE_REVIEW_STATUS
     );
-  }, [canEdit, libraries]);
+  }, [canReview, libraries]);
 
   useEffect(() => {
     validateReviewActionState();
