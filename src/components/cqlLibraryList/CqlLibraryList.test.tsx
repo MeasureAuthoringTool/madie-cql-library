@@ -451,7 +451,8 @@ describe("CqlLibrary List component", () => {
       version: "1.0.000",
       active: true,
       hasAssociatedLibraries: true,
-      reviewStatus: "READY_FOR_REVIEW",
+      // The list API projects the display label, not the ReviewStatus enum name.
+      reviewStatus: "Ready",
     },
     {
       id: "child-none",
@@ -542,7 +543,39 @@ describe("CqlLibrary List component", () => {
       version: "1.0.000",
       active: true,
       hasAssociatedLibraries: false,
-      reviewStatus: "READY_FOR_REVIEW",
+      reviewStatus: "Ready",
+    },
+    {
+      id: "review-lib-2",
+      librarySetId: "review-set-2",
+      cqlLibraryName: "review lib two",
+      model: Model.QICORE,
+      draft: false,
+      version: "1.0.000",
+      active: true,
+      hasAssociatedLibraries: false,
+      reviewStatus: "In Progress",
+    },
+    {
+      id: "review-lib-3",
+      librarySetId: "review-set-3",
+      cqlLibraryName: "review lib three",
+      model: Model.QICORE,
+      draft: false,
+      version: "1.0.000",
+      active: true,
+      hasAssociatedLibraries: false,
+      reviewStatus: "Complete",
+    },
+    {
+      id: "review-lib-4",
+      librarySetId: "review-set-4",
+      cqlLibraryName: "review lib four",
+      model: Model.QICORE,
+      draft: false,
+      version: "1.0.000",
+      active: true,
+      hasAssociatedLibraries: false,
     },
   ] as unknown as CqlLibrary[];
 
@@ -600,6 +633,42 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("Review")).toBeInTheDocument();
     expect(screen.getByText("review lib one")).toBeInTheDocument();
     expect(screen.getByText("Ready")).toBeInTheDocument();
+  });
+
+  it("displays each review status in the Review column", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+    renderReviewsTab();
+
+    await screen.findByTestId("library-list-tbl");
+    // Every status the API projects is shown as-is, not collapsed to "Ready".
+    expect(screen.getByText("Ready")).toBeInTheDocument();
+    expect(screen.getByText("In Progress")).toBeInTheDocument();
+    expect(screen.getByText("Complete")).toBeInTheDocument();
+    expect(screen.getByText("review lib four")).toBeInTheDocument();
+  });
+
+  it("renders the pagination control on the reviews tab", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+    renderReviewsTab();
+
+    await screen.findByTestId("library-list-tbl");
+    // The reviews tab is paged client-side, so it gets the same control as the
+    // other tabs rather than hiding it.
+    expect(screen.getAllByText(/Items per page/i).length).toBeGreaterThan(0);
+  });
+
+  it("offers the Review filter option on the reviews tab", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+    renderReviewsTab();
+
+    await screen.findByTestId("library-list-tbl");
+    const filterBy = screen.getByTestId("filter-by-select");
+    userEvent.click(within(filterBy).getByRole("combobox", { hidden: true }));
+
+    const options = await screen.findAllByRole("option");
+    // Review is filterable here even with the feature flag off, matching the
+    // Review column which the reviews tab always shows.
+    expect(options.map((option) => option.textContent)).toContain("Review");
   });
 
   it("omits the Owner column on the reviews tab", async () => {

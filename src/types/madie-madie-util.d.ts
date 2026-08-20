@@ -226,5 +226,7 @@ declare module "@madie/madie-util" {
     onClose: () => void;
     entityType: "measure" | "library";
     entityId?: string;
+    entitySetId?: string;
+    onSuccess?: () => void | Promise<void>;
   }): React.ReactElement | null;
 }
