@@ -165,7 +165,10 @@ declare module "@madie/madie-util" {
       sortInfo: any,
       signal: any
     ): Promise<any>;
-    fetchReviewLibraries(signal?: any): Promise<LibraryListDTO[]>;
+    fetchReviewLibraries(
+      ownershipType: OwnershipType,
+      signal?: any
+    ): Promise<LibraryListDTO[]>;
     fetchCqlLibrary(id: string): Promise<CqlLibrary>;
     createCqlLibrary(cqlLibrary: CqlLibrary): Promise<void>;
     updateCqlLibrary(cqlLibrary: CqlLibrary): Promise<any>;

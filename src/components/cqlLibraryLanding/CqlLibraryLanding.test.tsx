@@ -1283,7 +1283,73 @@ describe("Cql Library Page", () => {
       // Reviews tab pulls the full list from the dedicated endpoint.
       expect(
         mockCqlLibraryServiceApi.fetchReviewLibraries
-      ).toHaveBeenCalledWith(expect.any(AbortSignal));
+      ).toHaveBeenCalledWith(OwnershipType.ALL, expect.any(AbortSignal));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("ReviewLibrary1")).toBeInTheDocument();
+    });
+  });
+
+  test("does not show the My Reviews tab for non-reviewers", async () => {
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+      .fn()
+      .mockResolvedValue(mockPageableVal);
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(screen.getByText("TestCqlLibrary1")).toBeInTheDocument();
+    });
+
+    expect(screen.queryByTestId("owned-reviews-tab")).not.toBeInTheDocument();
+    // Reviewer-only data should never be requested for a non-reviewer.
+    expect(
+      mockCqlLibraryServiceApi.fetchReviewLibraries
+    ).not.toHaveBeenCalled();
+  });
+
+  test("shows the My Reviews tab with its count for reviewers", async () => {
+    (useUserRoles as jest.Mock).mockReturnValue({
+      roles: ["MADiE-Reviewer"],
+      isAdmin: false,
+    });
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+      .fn()
+      .mockResolvedValue(mockPageableVal);
+    mockCqlLibraryServiceApi.fetchReviewLibraries = jest
+      .fn()
+      .mockResolvedValue(mockReviewLibraries);
+
+    renderWithRouter();
+
+    const ownedReviewsTab = await screen.findByTestId("owned-reviews-tab");
+    expect(ownedReviewsTab).toBeInTheDocument();
+    // The count in parentheses is the length of the (unpaginated) review list.
+    expect(ownedReviewsTab).toHaveTextContent("My Reviews (3)");
+  });
+
+  test("loads reviewed libraries when the My Reviews tab is selected", async () => {
+    (useUserRoles as jest.Mock).mockReturnValue({
+      roles: ["MADiE-Reviewer"],
+      isAdmin: false,
+    });
+    mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+      .fn()
+      .mockResolvedValue(mockPageableVal);
+    mockCqlLibraryServiceApi.fetchReviewLibraries = jest
+      .fn()
+      .mockResolvedValue(mockReviewLibraries);
+
+    renderWithRouter();
+
+    const ownedReviewsTab = await screen.findByTestId("owned-reviews-tab");
+    await userEvent.click(ownedReviewsTab);
+
+    await waitFor(() => {
+      // Reviews tab pulls the full list from the dedicated endpoint.
+      expect(
+        mockCqlLibraryServiceApi.fetchReviewLibraries
+      ).toHaveBeenCalledWith(OwnershipType.OWNED, expect.any(AbortSignal));
     });
 
     await waitFor(() => {

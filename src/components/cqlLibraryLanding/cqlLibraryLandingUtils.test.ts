@@ -9,7 +9,8 @@ describe("getTabStorageKey", () => {
     expect(getTabStorageKey(0)).toBe("ownedCqlLibrariesPageOptions");
     expect(getTabStorageKey(1)).toBe("sharedCqlLibrariesPageOptions");
     expect(getTabStorageKey(2)).toBe("allCqlLibrariesPageOptions");
-    expect(getTabStorageKey(3)).toBe("reviewCqlLibrariesPageOptions");
+    expect(getTabStorageKey(3)).toBe("allReviewCqlLibrariesPageOptions");
+    expect(getTabStorageKey(4)).toBe("ownedReviewCqlLibrariesPageOptions");
   });
 });
 

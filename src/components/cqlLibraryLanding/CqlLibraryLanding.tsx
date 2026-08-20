@@ -3,21 +3,21 @@ import CqlLibraryList from "../cqlLibraryList/CqlLibraryList";
 import { CqlLibrary, LibraryListDTO, OwnershipType } from "@madie/madie-models";
 import CreateNewLibraryDialog from "../common/CreateNewLibraryDialog";
 import {
-  useDocumentTitle,
   useCqlLibraryServiceApi,
+  useDocumentTitle,
   useUserRoles,
 } from "@madie/madie-util";
 import {
   MadieSpinner,
-  Tabs,
   Tab,
+  Tabs,
   Toast,
 } from "@madie/madie-design-system/dist/react";
 import "./CqlLibraryLanding.scss";
 import "twin.macro";
 import "styled-components/macro";
 import queryString from "query-string";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import * as _ from "lodash";
 import {
   getTabStorageKey,
@@ -48,6 +48,8 @@ const ownershipTypeMap: Record<number, OwnershipType> = {
   0: OwnershipType.OWNED,
   1: OwnershipType.SHARED,
   2: OwnershipType.ALL,
+  3: OwnershipType.ALL,
+  4: OwnershipType.OWNED,
 };
 
 function CqlLibraryLanding() {
@@ -136,7 +138,8 @@ function CqlLibraryLanding() {
   const [sharedLibrariesCount, setSharedLibrariesCount] = useState(0);
   const [allLibrariesCount, setAllLibrariesCount] = useState(0);
   // Count for the reviewer-only "All Reviews" tab; only populated for reviewers.
-  const [reviewLibrariesCount, setReviewLibrariesCount] = useState(0);
+  const [ownedReviewLibrariesCount, setOwnedReviewLibrariesCount] = useState(0);
+  const [allReviewLibrariesCount, setAllReviewLibrariesCount] = useState(0);
 
   // Toast state and handlers
   const [toastOpen, setToastOpen] = useState<boolean>(false);
@@ -186,10 +189,15 @@ function CqlLibraryLanding() {
       setAllLibrariesCount(allLibs?.totalElements || 0);
 
       if (isReviewer) {
-        const reviewLibs = await cqlLibraryServiceApi.fetchReviewLibraries(
-          signal
-        );
-        setReviewLibrariesCount(reviewLibs?.length || 0);
+        const [ownedReviews, allReviews] = await Promise.all([
+          cqlLibraryServiceApi.fetchReviewLibraries(
+            OwnershipType.OWNED,
+            signal
+          ),
+          cqlLibraryServiceApi.fetchReviewLibraries(OwnershipType.ALL, signal),
+        ]);
+        setOwnedReviewLibrariesCount(ownedReviews?.length || 0);
+        setAllReviewLibrariesCount(allReviews?.length || 0);
       }
     } catch (e) {
       if (e?.message !== "canceled") {
@@ -219,9 +227,12 @@ function CqlLibraryLanding() {
       // The "All Reviews" tab has its own endpoint that returns the full,
       // unpaginated list of LibraryListDTOs. Sorting is client-side and there is
       // no pagination, so it gets dedicated handling here.
-      if (tab === REVIEWS_TAB) {
+      if (tab === 3 || tab === 4) {
         cqlLibraryServiceApi
-          .fetchReviewLibraries(abortController.current.signal)
+          .fetchReviewLibraries(
+            ownershipTypeMap[tab] ?? OwnershipType.ALL,
+            abortController.current.signal
+          )
           .then((reviewLibraries: LibraryListDTO[]) => {
             setReviewListProps(
               sortReviewLibraries(reviewLibraries, relevantSorting)
@@ -471,8 +482,15 @@ function CqlLibraryLanding() {
               {isReviewer && (
                 <Tab
                   type="B"
-                  label={`All Reviews (${reviewLibrariesCount})`}
+                  label={`All Reviews (${allReviewLibrariesCount})`}
                   data-testid="all-reviews-tab"
+                />
+              )}
+              {isReviewer && (
+                <Tab
+                  type="B"
+                  label={`My Reviews (${ownedReviewLibrariesCount})`}
+                  data-testid="owned-reviews-tab"
                 />
               )}
             </Tabs>
