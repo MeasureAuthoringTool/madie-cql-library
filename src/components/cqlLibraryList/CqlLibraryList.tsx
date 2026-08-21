@@ -195,7 +195,10 @@ export default function CqlLibraryList({
     "Library",
     "Version",
     "Model",
-    ...(featureFlags?.LibraryReviewStatus && activeTab !== 2 ? ["Review"] : []),
+    ...(activeTab === 3 ||
+    (featureFlags?.LibraryReviewStatus && activeTab !== 2)
+      ? ["Review"]
+      : []),
   ];
   const LIBRARY_FILTER_MAP: Record<string, string> = {
     Library: "library",
@@ -635,7 +638,11 @@ export default function CqlLibraryList({
             accessorKey: "reviewStatus",
             enableSorting: false,
             cell: (info) => (
-              <p>{info.row.original.reviewStatus ? "Ready" : "-"}</p>
+              <p>
+                {info.row.original.reviewStatus
+                  ? info.row.original.reviewStatus
+                  : "-"}
+              </p>
             ),
           },
         ]
@@ -1067,7 +1074,16 @@ export default function CqlLibraryList({
           open={reviewDialog.open}
           entityType="library"
           entityId={selectedLibraries[0]?.id}
+          entitySetId={selectedLibraries[0]?.librarySetId}
           onClose={handleReviewDialogClose}
+          onSuccess={async () => {
+            await onListUpdate();
+            table.resetRowSelection();
+            setSelectedExpandedLibrariesIds([]);
+            setIsRowExpanded(false);
+            setExpandedSectionData(null);
+            setSelectedIdForExpansion(null);
+          }}
         />
       ) : (
         <ReviewDialog
@@ -1287,27 +1303,25 @@ export default function CqlLibraryList({
           }
         />
       </div>
-      {activeTab !== 3 && (
-        <Pagination
-          totalItems={totalItems}
-          visibleItems={visibleItems}
-          limitOptions={[
-            10,
-            25,
-            50,
-            ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
-          ]}
-          offset={offset}
-          handlePageChange={handlePageChange}
-          handleLimitChange={handleLimitChange}
-          page={curPage}
-          limit={curLimit}
-          count={totalPages}
-          shape="rounded"
-          hideNextButton={!canGoNext}
-          hidePrevButton={!canGoPrev}
-        />
-      )}
+      <Pagination
+        totalItems={totalItems}
+        visibleItems={visibleItems}
+        limitOptions={[
+          10,
+          25,
+          50,
+          ...(totalItems > 50 && activeTab === 0 ? ["All"] : []),
+        ]}
+        offset={offset}
+        handlePageChange={handlePageChange}
+        handleLimitChange={handleLimitChange}
+        page={curPage}
+        limit={curLimit}
+        count={totalPages}
+        shape="rounded"
+        hideNextButton={!canGoNext}
+        hidePrevButton={!canGoPrev}
+      />
     </div>
   );
 }

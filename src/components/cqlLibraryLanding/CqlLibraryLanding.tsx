@@ -22,6 +22,8 @@ import * as _ from "lodash";
 import {
   getTabStorageKey,
   sortReviewLibraries,
+  filterReviewLibraries,
+  paginateReviewLibraries,
 } from "./cqlLibraryLandingUtils";
 import CqlLibraryHistoryDialog from "./CqlLibraryHistoryDialog";
 import StatusHandler, {
@@ -225,8 +227,8 @@ function CqlLibraryLanding() {
       };
 
       // The "All Reviews" tab has its own endpoint that returns the full,
-      // unpaginated list of LibraryListDTOs. Sorting is client-side and there is
-      // no pagination, so it gets dedicated handling here.
+      // unpaginated list of LibraryListDTOs, so searching, sorting and paging
+      // all happen client-side here.
       if (tab === 3 || tab === 4) {
         cqlLibraryServiceApi
           .fetchReviewLibraries(
@@ -234,8 +236,16 @@ function CqlLibraryLanding() {
             abortController.current.signal
           )
           .then((reviewLibraries: LibraryListDTO[]) => {
+            const matching = filterReviewLibraries(
+              reviewLibraries,
+              modifiedSearchCriteria
+            );
             setReviewListProps(
-              sortReviewLibraries(reviewLibraries, relevantSorting)
+              paginateReviewLibraries(
+                sortReviewLibraries(matching, relevantSorting),
+                limit,
+                page
+              )
             );
           })
           .catch((error) => {
@@ -300,13 +310,20 @@ function CqlLibraryLanding() {
     }
   };
 
-  // The reviews list is unpaginated: everything renders on a single "page".
-  const setReviewListProps = (reviewLibraries: LibraryListDTO[]) => {
-    setTotalPages(1);
-    setTotalItems(reviewLibraries.length);
-    setVisibleItems(reviewLibraries.length);
-    setCqlLibraryList(reviewLibraries);
-    setOffset(0);
+  // The reviews list is paged on the client, so it feeds the same counts the
+  // Pagination control gets from the backend on the other tabs.
+  const setReviewListProps = (paged: {
+    content: LibraryListDTO[];
+    totalPages: number;
+    totalItems: number;
+    visibleItems: number;
+    offset: number;
+  }) => {
+    setTotalPages(paged.totalPages);
+    setTotalItems(paged.totalItems);
+    setVisibleItems(paged.visibleItems);
+    setCqlLibraryList(paged.content);
+    setOffset(paged.offset);
   };
 
   // sort logic

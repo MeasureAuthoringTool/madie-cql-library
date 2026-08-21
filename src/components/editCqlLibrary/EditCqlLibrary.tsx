@@ -1168,6 +1168,7 @@ const EditCqlLibrary = () => {
               open={reviewDialog.open}
               entityType="library"
               entityId={loadedCqlLibrary?.id}
+              entitySetId={loadedCqlLibrary?.librarySetId}
               onClose={handleReviewDialogClose}
             />
           ) : (
