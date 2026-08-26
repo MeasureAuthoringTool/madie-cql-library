@@ -12,6 +12,7 @@ import { CqlLibraryListActionCenter } from "./CqlLibraryListActionCenter";
 import { useUserRoles } from "../../../__mocks__/@madie/madie-util";
 
 const ALL_REVIEWS_TAB = 3;
+const MY_REVIEWS_TAB = 4;
 
 const mockCheckUserCanEdit = jest.fn();
 
@@ -303,6 +304,56 @@ describe("CqlLibraryListActionCenter", () => {
         "aria-label",
         SELECT_LIBRARY_TO_UPDATE_REVIEW_STATUS
       );
+    });
+  });
+
+  describe.each([
+    ["All Reviews", ALL_REVIEWS_TAB],
+    ["My Reviews", MY_REVIEWS_TAB],
+  ])("%s tab", (_tabName, activeTab) => {
+    it("should only render the review action", async () => {
+      mockCheckUserCanEdit.mockReturnValue(true);
+      (useUserRoles as jest.Mock).mockReturnValue({
+        roles: ["MADiE-Reviewer"],
+        isAdmin: true,
+        isReviewer: true,
+      });
+
+      render(
+        <CqlLibraryListActionCenter {...defaultProps} activeTab={activeTab} />
+      );
+
+      expect(
+        await screen.findByTestId("review-action-btn")
+      ).toBeInTheDocument();
+      [
+        "delete-action-btn",
+        "share-action-btn",
+        "transfer-action-btn",
+        "version-action-btn",
+        "draft-action-btn",
+        "library-history-action-btn",
+        "compare-versions-action-btn",
+      ].forEach((testId) => {
+        expect(screen.queryByTestId(testId)).not.toBeInTheDocument();
+      });
+    });
+
+    it("should render no actions when the LibraryReviewStatus flag is disabled", () => {
+      (useFeatureFlags as jest.Mock).mockReturnValue({
+        LibraryReviewStatus: false,
+      });
+      (useUserRoles as jest.Mock).mockReturnValue({
+        roles: ["MADiE-Reviewer"],
+        isAdmin: false,
+        isReviewer: true,
+      });
+
+      render(
+        <CqlLibraryListActionCenter {...defaultProps} activeTab={activeTab} />
+      );
+
+      expect(screen.getByTestId("action-center")).toBeEmptyDOMElement();
     });
   });
 
