@@ -3,12 +3,12 @@ import DeleteAction from "./deleteAction/DeleteAction";
 import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";
 import ShareAction from "./shareAction/ShareAction";
-import HistoryAction from "./historyAction/HistoryAction";
-import CompareVersionsAction from "./compareVersionsAction/CompareVersionsAction";
 import { CqlLibrary } from "@madie/madie-models";
 import {
   checkUserCanEdit,
   FeatureFlags,
+  LibraryCompareVersionsAction,
+  LibraryHistoryAction,
   useFeatureFlags,
   useOktaTokens,
   useUserRoles,
@@ -154,11 +154,11 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
 
       <PipeSeparator />
 
-      <HistoryAction
+      <LibraryHistoryAction
         libraries={selectedLibraries}
         onClick={openLibraryHistoryDialog}
       />
-      <CompareVersionsAction
+      <LibraryCompareVersionsAction
         libraries={selectedLibraries}
         onClick={compareVersions}
       />

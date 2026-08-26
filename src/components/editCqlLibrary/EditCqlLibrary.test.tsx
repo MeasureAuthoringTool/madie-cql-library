@@ -1,3 +1,4 @@
+import * as mockLibraryActionStubs from "../../__mocks__/libraryActionStubs";
 import * as React from "react";
 import {
   fireEvent,
@@ -50,6 +51,7 @@ const mockCqlLibraryReviewServiceApi = {
     .mockResolvedValue({ id: "existing-review-id" }),
 };
 jest.mock("@madie/madie-util", () => ({
+  ...mockLibraryActionStubs,
   checkUserCanEdit: jest.fn(() => {
     return true;
   }),
@@ -1432,13 +1434,11 @@ describe("Edit Cql Library Component", () => {
       );
     });
   });
-  it("should render library history.", async () => {
+
+  it("opens the library history dialog on the history-library event", async () => {
     mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
       ...cqlLibrary,
     });
-    mockCqlLibraryServiceApi.getLibraryHistory.mockResolvedValue(
-      makeMockhistory(50)
-    );
 
     renderWithRouter();
     expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
@@ -1454,43 +1454,21 @@ describe("Edit Cql Library Component", () => {
     act(() => {
       window.dispatchEvent(new Event("history-library"));
     });
-    expect(await screen.findByText("Library History")).toBeInTheDocument();
-    const closeButton = screen.getByTestId("close-button");
-    act(() => {
-      userEvent.click(closeButton);
-    });
-    await waitFor(() =>
-      expect(screen.queryByTestId("close-button")).not.toBeInTheDocument()
-    );
-  });
-  it("should render library history with smaller items than page.", async () => {
-    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
-      ...cqlLibrary,
-    });
-    mockCqlLibraryServiceApi.getLibraryHistory.mockResolvedValue(
-      makeMockhistory(3)
-    );
-    renderWithRouter();
-    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
+
     expect(
-      await screen.findByRole("button", { name: "Save" })
+      await screen.findByTestId("library-history-dialog")
     ).toBeInTheDocument();
-    await waitFor(() => {
-      expect(
-        screen.getByTestId("cql-library-name-text-field-input")
-      ).not.toHaveAttribute("disabled");
-    });
+    expect(
+      screen.getByTestId("library-history-dialog-library")
+    ).toHaveTextContent(cqlLibrary.cqlLibraryName);
 
     act(() => {
-      window.dispatchEvent(new Event("history-library"));
-    });
-    expect(await screen.findByText("Library History")).toBeInTheDocument();
-    const closeButton = screen.getByTestId("close-button");
-    act(() => {
-      userEvent.click(closeButton);
+      userEvent.click(screen.getByTestId("library-history-dialog-close"));
     });
     await waitFor(() =>
-      expect(screen.queryByTestId("close-button")).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId("library-history-dialog")
+      ).not.toBeInTheDocument()
     );
   });
 

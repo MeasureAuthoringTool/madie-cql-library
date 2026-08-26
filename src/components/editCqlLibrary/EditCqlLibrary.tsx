@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import tw from "twin.macro";
 import "styled-components/macro";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
@@ -20,6 +26,7 @@ import {
   useTerminologyServiceApi,
   useUserRoles,
   ManageReviewDialog,
+  LibraryHistoryDialog,
 } from "@madie/madie-util";
 
 import * as _ from "lodash";
@@ -68,7 +75,6 @@ import {
   TRANSFER_LIBRARY_FAILURE,
   TRANSFER_LIBRARY_SUCCESS,
 } from "../cqlLibraryList/CqlLibraryList";
-import CqlLibraryHistoryDialog from "../cqlLibraryLanding/CqlLibraryHistoryDialog";
 import LibraryLockedPopup from "./libraryLockedPopup/LibraryLockedPopup";
 import useFhirElmTranslationServiceApi from "../../api/useFhirElmTranslationServiceApi";
 import useQdmElmTranslationServiceApi from "../../api/useQdmElmTranslationServiceApi";
@@ -250,16 +256,16 @@ const EditCqlLibrary = () => {
 
   const [libraryHistoryDialogOpen, setLibraryHistoryDialogOpen] =
     useState(false);
-  const [libraryHistoryLogs, setLibraryHistoryLogs] = useState([]);
+
+  const historyLibraries = useMemo(
+    () => [loadedCqlLibrary],
+    [loadedCqlLibrary]
+  );
 
   const openLibraryHistoryDialog = () => {
-    cqlLibraryServiceApi.getLibraryHistory(loadedCqlLibrary).then((data) => {
-      setLibraryHistoryLogs(data);
-      setLibraryHistoryDialogOpen(true);
-    });
+    setLibraryHistoryDialogOpen(true);
   };
   const closeLibraryHistoryDialog = () => {
-    setLibraryHistoryLogs([]);
     setLibraryHistoryDialogOpen(false);
   };
 
@@ -1181,9 +1187,8 @@ const EditCqlLibrary = () => {
         </form>
       )}
       {libraryHistoryDialogOpen && (
-        <CqlLibraryHistoryDialog
-          selectedCqlLibrary={loadedCqlLibrary}
-          libraryHistoryLogs={libraryHistoryLogs}
+        <LibraryHistoryDialog
+          libraries={historyLibraries}
           open={libraryHistoryDialogOpen}
           onClose={closeLibraryHistoryDialog}
         />

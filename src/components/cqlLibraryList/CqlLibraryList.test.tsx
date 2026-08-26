@@ -1,3 +1,4 @@
+import * as mockLibraryActionStubs from "../../__mocks__/libraryActionStubs";
 import * as React from "react";
 import {
   cleanup,
@@ -96,6 +97,7 @@ const mockCqlLibraryReviewServiceResolved = {
 };
 
 jest.mock("@madie/madie-util", () => ({
+  ...mockLibraryActionStubs,
   useOktaTokens: () => ({
     getAccessToken: () => "test.jwt",
     getUserName: () => "test user",

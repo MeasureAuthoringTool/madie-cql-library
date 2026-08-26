@@ -1,3 +1,4 @@
+import * as mockLibraryActionStubs from "../../../__mocks__/libraryActionStubs";
 import * as React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -17,6 +18,7 @@ const mockCheckUserCanEdit = jest.fn();
 
 jest.mock("@madie/madie-util", () => {
   return {
+    ...mockLibraryActionStubs,
     checkUserCanEdit: jest.fn(),
     checkUserCanDelete: jest.fn().mockReturnValue(true),
     useUserRoles: jest

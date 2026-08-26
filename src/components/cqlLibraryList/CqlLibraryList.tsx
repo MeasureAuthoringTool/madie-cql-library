@@ -30,6 +30,7 @@ import {
   useCqlLibraryServiceApi,
   useUserRoles,
   ManageReviewDialog,
+  LibraryCompareVersionsDialog,
 } from "@madie/madie-util";
 import {
   Button,
@@ -55,7 +56,6 @@ import TransferDialog, {
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import "./CqlLibraryList.scss";
 import { INITIAL_STATUS_HANDLER } from "../editCqlLibrary/statusHandler/StatusHandler";
-import CompareVersionsDialog from "../common/compareVersionsDialog/CompareVersionsDialog";
 import ReviewDialog from "../common/reviewDialog/ReviewDialog";
 
 export const TRANSFER_LIBRARY_SUCCESS =
@@ -1064,7 +1064,7 @@ export default function CqlLibraryList({
         onClose={handleDialogClose}
         onSubmit={transferLibraries}
       />
-      <CompareVersionsDialog
+      <LibraryCompareVersionsDialog
         libraries={selectedLibraries}
         open={compareVersionsDialog}
         onClose={handleDialogClose}
