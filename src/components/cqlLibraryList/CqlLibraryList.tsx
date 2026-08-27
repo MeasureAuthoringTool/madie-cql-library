@@ -63,6 +63,24 @@ export const TRANSFER_LIBRARY_SUCCESS =
 export const TRANSFER_LIBRARY_FAILURE =
   "Unable to transfer the selected library(s) to the harpId. If the error persists, please contact the help desk.";
 
+type ReviewableLibrary = CqlLibrary & {
+  reviewStatus?: string;
+  reviewers?: string[];
+};
+
+const REVIEW_TOOLTIP_STATUSES = new Set(["Ready", "In Progress", "Complete"]);
+
+const shouldShowReviewerTooltip = (
+  reviewStatus?: string,
+  reviewers?: string[]
+): boolean => {
+  return (
+    !!reviewStatus &&
+    REVIEW_TOOLTIP_STATUSES.has(reviewStatus) &&
+    !!reviewers?.length
+  );
+};
+
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
   ref
@@ -196,6 +214,7 @@ export default function CqlLibraryList({
     "Version",
     "Model",
     ...(activeTab === 3 ||
+    activeTab === 4 ||
     (featureFlags?.LibraryReviewStatus && activeTab !== 2)
       ? ["Review"]
       : []),
@@ -631,19 +650,42 @@ export default function CqlLibraryList({
       ),
     },
     ...(activeTab === 3 ||
+    activeTab === 4 ||
     (featureFlags?.LibraryReviewStatus && activeTab !== 2)
       ? [
           {
             header: "Review",
             accessorKey: "reviewStatus",
             enableSorting: false,
-            cell: (info) => (
-              <p>
-                {info.row.original.reviewStatus
-                  ? info.row.original.reviewStatus
-                  : "-"}
-              </p>
-            ),
+            cell: (info) => {
+              const reviewableLibrary = info.row.original as ReviewableLibrary;
+              const { reviewStatus, reviewers } = reviewableLibrary;
+
+              if (!reviewStatus) {
+                return <p>-</p>;
+              }
+
+              if (!shouldShowReviewerTooltip(reviewStatus, reviewers)) {
+                return <p>{reviewStatus}</p>;
+              }
+
+              return (
+                <Tooltip
+                  title={
+                    <div>
+                      {reviewers.map((reviewer, index) => (
+                        <div key={`${reviewableLibrary.id}-reviewer-${index}`}>
+                          {reviewer}
+                        </div>
+                      ))}
+                    </div>
+                  }
+                  arrow
+                >
+                  <span>{reviewStatus}</span>
+                </Tooltip>
+              );
+            },
           },
         ]
       : []),
