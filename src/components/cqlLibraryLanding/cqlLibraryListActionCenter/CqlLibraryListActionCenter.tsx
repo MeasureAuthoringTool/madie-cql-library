@@ -9,11 +9,11 @@ import {
   FeatureFlags,
   LibraryCompareVersionsAction,
   LibraryHistoryAction,
+  LibraryTransferAction,
   useFeatureFlags,
   useOktaTokens,
   useUserRoles,
 } from "@madie/madie-util";
-import TransferAction from "./transferAction/TransferAction";
 import ReviewAction from "./reviewAction/ReviewAction";
 
 const ALL_REVIEWS_TAB = 3;
@@ -132,7 +132,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
         isSharedWithUser={isSharedWithUser}
         activeTab={activeTab}
       />
-      <TransferAction
+      <LibraryTransferAction
         libraries={selectedLibraries}
         onClick={transferLibrary}
         activeTab={activeTab}

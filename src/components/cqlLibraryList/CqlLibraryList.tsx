@@ -31,6 +31,7 @@ import {
   useUserRoles,
   ManageReviewDialog,
   LibraryCompareVersionsDialog,
+  LibraryTransferDialog,
 } from "@madie/madie-util";
 import {
   Button,
@@ -50,18 +51,9 @@ import queryString from "query-string";
 import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 import * as _ from "lodash";
 import { Chip, Tooltip } from "@mui/material";
-import TransferDialog, {
-  INVALID_HARP_ID_MESSAGE,
-} from "../common/transferDialog/TransferDialog";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import "./CqlLibraryList.scss";
-import { INITIAL_STATUS_HANDLER } from "../editCqlLibrary/statusHandler/StatusHandler";
 import ReviewDialog from "../common/reviewDialog/ReviewDialog";
-
-export const TRANSFER_LIBRARY_SUCCESS =
-  "The library(s) were successfully transferred. If you chose to retain share access, you will still be able to edit the libraries.";
-export const TRANSFER_LIBRARY_FAILURE =
-  "Unable to transfer the selected library(s) to the harpId. If the error persists, please contact the help desk.";
 
 const Alert = forwardRef<HTMLDivElement, AlertProps>(function Alert(
   props,
@@ -310,7 +302,6 @@ export default function CqlLibraryList({
     });
     setCreateDraftDialog({ open: false, cqlLibrary: null });
     setDeleteDraftDialog({ ...INITIAL_DELETE_DRAFT_STATE });
-    setTransferDialog({ open: false, libraries: [] });
     setCompareVersionsDialog(false);
   };
 
@@ -456,56 +447,18 @@ export default function CqlLibraryList({
         }
       });
   };
-  const transferLibraries = async (
-    newOwner: string,
-    retainShareAccess: boolean
-  ) => {
-    setStatusHandler(INITIAL_STATUS_HANDLER);
 
-    const libraryIds = selectedLibraries.map((lib) => lib.id);
-
-    try {
-      const response = await cqlLibraryServiceApi.transferLibraries(
-        libraryIds,
-        newOwner,
-        retainShareAccess
-      );
-
-      if (response.status === 200) {
-        setToastOpen(true);
-        setToastType("success");
-        setToastMessage(TRANSFER_LIBRARY_SUCCESS);
-      } else if (response.status === 207) {
-        const failedLibraryIds: string[] = response.data;
-
-        const failedLibraryNames = selectedLibraries
-          .filter((lib) => failedLibraryIds.includes(lib.id))
-          .map((lib) => lib.cqlLibraryName);
-
-        setStatusHandler({
-          warning: {
-            status: true,
-            primaryMessage: `${failedLibraryNames?.length} Libraries could not be transferred. Please try again, or contact help desk if the issue persists.`,
-            secondaryMessages: failedLibraryNames,
-          },
-        });
-      }
+  const handleTransferDialogClose = ({
+    toastType = "danger",
+    toastMessage = "",
+    toastOpen = false,
+  } = {}) => {
+    setTransferDialog({ open: false, libraries: [] });
+    setToastType(toastType);
+    setToastMessage(toastMessage);
+    setToastOpen(toastOpen);
+    if (toastType === "success") {
       onListUpdate();
-      handleDialogClose();
-    } catch (error) {
-      console.error("TransferDialog: handleSave: error = ", error);
-
-      if (
-        error?.response?.status === 400 &&
-        error?.response?.data?.message === INVALID_HARP_ID_MESSAGE
-      ) {
-        throw error;
-      }
-
-      setToastOpen(true);
-      setToastType("danger");
-      setToastMessage(TRANSFER_LIBRARY_FAILURE);
-      handleDialogClose();
     }
   };
 
@@ -1058,11 +1011,11 @@ export default function CqlLibraryList({
         option={shareDialog.option}
         onClose={handleShareDialogClose}
       />
-      <TransferDialog
+      <LibraryTransferDialog
         libraries={selectedLibraries}
         open={transferDialog.open}
-        onClose={handleDialogClose}
-        onSubmit={transferLibraries}
+        onClose={handleTransferDialogClose}
+        setStatusHandler={setStatusHandler}
       />
       <LibraryCompareVersionsDialog
         libraries={selectedLibraries}
