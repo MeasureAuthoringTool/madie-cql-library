@@ -775,7 +775,6 @@ describe("Edit Cql Library Component", () => {
         return {
           cql: "library UpdateName version '1.0.000'",
           isLibraryStatementChanged: true,
-          isUsingStatementChanged: false,
           isValueSetChanged: false,
         };
       });
@@ -881,14 +880,13 @@ describe("Edit Cql Library Component", () => {
     });
   });
 
-  it("should update an existing cql library with the upated FhirHerlpers Alias and warn ", async () => {
+  it("should update an existing cql library with the updated FHIRHelpers Alias and warn ", async () => {
     (synchingEditorCqlContent as jest.Mock)
       .mockClear()
       .mockImplementation(() => {
         return {
           cql: "library UpdateName version '1.0.000' include FHIRHelers version '4.3.000' called Dummy",
           isLibraryStatementChanged: false,
-          isUsingStatementChanged: false,
           isFhirHelpersAliasChanged: true,
           isValueSetChanged: false,
         };
@@ -1504,7 +1502,6 @@ describe("Edit Cql Library Component", () => {
             "\n" +
             "using QICore version '4.1.1'\n",
           isLibraryStatementChanged: false,
-          isUsingStatementChanged: false,
           isValueSetChanged: false,
           isConceptRemoved: true,
         };

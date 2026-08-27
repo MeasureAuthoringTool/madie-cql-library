@@ -65,7 +65,6 @@ declare module "@madie/madie-editor" {
   export interface UpdatedCqlObject {
     cql: string;
     isLibraryStatementChanged?: boolean;
-    isUsingStatementChanged?: boolean;
     isValueSetChanged?: boolean;
     isFhirHelpersAliasChanged?: boolean;
     isConceptRemoved?: boolean;
