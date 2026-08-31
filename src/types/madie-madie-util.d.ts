@@ -251,4 +251,15 @@ declare module "@madie/madie-util" {
     open: boolean;
     onClose: () => void;
   }): React.ReactElement | null;
+  export function LibraryTransferAction(props: {
+    libraries: CqlLibrary[];
+    onClick: () => void;
+    activeTab: number;
+  }): React.ReactElement | null;
+  export function LibraryTransferDialog(props: {
+    libraries: CqlLibrary[];
+    open: boolean;
+    onClose: (...args: any[]) => void;
+    setStatusHandler: (...args: any[]) => void;
+  }): React.ReactElement | null;
 }
