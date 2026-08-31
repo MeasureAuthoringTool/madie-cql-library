@@ -8,7 +8,10 @@ export function getTabStorageKey(tab: number): string {
     return "sharedCqlLibrariesPageOptions";
   }
   if (tab === 3) {
-    return "reviewCqlLibrariesPageOptions";
+    return "allReviewCqlLibrariesPageOptions";
+  }
+  if (tab === 4) {
+    return "ownedReviewCqlLibrariesPageOptions";
   }
   return "allCqlLibrariesPageOptions";
 }
