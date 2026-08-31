@@ -16,7 +16,8 @@ import {
 } from "@madie/madie-util";
 import ReviewAction from "./reviewAction/ReviewAction";
 
-const ALL_REVIEWS_TAB = 3;
+export const ALL_REVIEWS_TAB = 3;
+export const MY_REVIEWS_TAB = 4;
 
 interface PropTypes {
   selectedLibraries: CqlLibrary[];
@@ -105,8 +106,10 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     }
   }, [selectedLibraries, setReviewDialog]);
 
-  const canReview =
-    (activeTab === ALL_REVIEWS_TAB && !!userRoles?.isReviewer) || canEdit;
+  const isReviewTab =
+    activeTab === ALL_REVIEWS_TAB || activeTab === MY_REVIEWS_TAB;
+
+  const canReview = (isReviewTab && !!userRoles?.isReviewer) || canEdit;
 
   const PipeSeparator = () => (
     <span
@@ -117,61 +120,67 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     </span>
   );
 
+  const reviewAction = featureFlags?.LibraryReviewStatus && (
+    <ReviewAction
+      libraries={selectedLibraries}
+      onClick={reviewLibrary}
+      canReview={canReview}
+    />
+  );
+
   return (
     <div data-testid="action-center">
-      <DeleteAction
-        onClick={deleteLibrary}
-        selectedLibraries={selectedLibraries}
-      />
-      <ShareAction
-        libraries={selectedLibraries}
-        canEdit={canEdit}
-        onClick={shareLibrary}
-        userName={userName}
-        owners={owners}
-        isSharedWithUser={isSharedWithUser}
-        activeTab={activeTab}
-      />
-      <LibraryTransferAction
-        libraries={selectedLibraries}
-        onClick={transferLibrary}
-        activeTab={activeTab}
-      />
-
-      <PipeSeparator />
-
-      <VersionAction
-        libraries={selectedLibraries}
-        canEdit={canEdit}
-        onClick={createVersion}
-      />
-
-      <DraftAction
-        libraries={selectedLibraries}
-        canEdit={canEdit}
-        onClick={createDraft}
-      />
-
-      <PipeSeparator />
-
-      <LibraryHistoryAction
-        libraries={selectedLibraries}
-        onClick={openLibraryHistoryDialog}
-      />
-      <LibraryCompareVersionsAction
-        libraries={selectedLibraries}
-        onClick={compareVersions}
-      />
-      {featureFlags?.LibraryReviewStatus && (
+      {!isReviewTab && (
         <>
-          <PipeSeparator />
-          <ReviewAction
-            libraries={selectedLibraries}
-            onClick={reviewLibrary}
-            canReview={canReview}
+          <DeleteAction
+            onClick={deleteLibrary}
+            selectedLibraries={selectedLibraries}
           />
+          <ShareAction
+            libraries={selectedLibraries}
+            canEdit={canEdit}
+            onClick={shareLibrary}
+            userName={userName}
+            owners={owners}
+            isSharedWithUser={isSharedWithUser}
+            activeTab={activeTab}
+          />
+          <LibraryTransferAction
+            libraries={selectedLibraries}
+            onClick={transferLibrary}
+            activeTab={activeTab}
+          />
+
+          <PipeSeparator />
+
+          <VersionAction
+            libraries={selectedLibraries}
+            canEdit={canEdit}
+            onClick={createVersion}
+          />
+
+          <DraftAction
+            libraries={selectedLibraries}
+            canEdit={canEdit}
+            onClick={createDraft}
+          />
+
+          <PipeSeparator />
+
+          <LibraryHistoryAction
+            libraries={selectedLibraries}
+            onClick={openLibraryHistoryDialog}
+          />
+          <LibraryCompareVersionsAction
+            libraries={selectedLibraries}
+            onClick={compareVersions}
+          />
+
+          {reviewAction && <PipeSeparator />}
         </>
       )}
+
+      {reviewAction}
     </div>
   );
 }

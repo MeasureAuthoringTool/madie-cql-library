@@ -927,6 +927,12 @@ export default function CqlLibraryList({
   };
 
   useEffect(() => {
+    setIsRowExpanded(false);
+    setExpandedSectionData(null);
+    setSelectedIdForExpansion(null);
+  }, [activeTab]);
+
+  useEffect(() => {
     setSelectedLibraries(selectedLibraries);
     const getAllOwners = async () => {
       const getOwners = async () => {

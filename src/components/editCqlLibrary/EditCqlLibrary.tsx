@@ -626,11 +626,6 @@ const EditCqlLibrary = () => {
               "FHIRHelpers was incorrectly aliased. MADiE has overwritten the alias with 'FHIRHelpers'."
             );
           }
-          if (updatedContent.isUsingStatementChanged) {
-            secondaryMessages.push(
-              "Incorrect using statement(s) detected. MADiE has corrected it."
-            );
-          }
           if (updatedContent.isValueSetChanged) {
             secondaryMessages.push(
               "MADiE does not currently support use of value set version directly in library at this time. Your value set versions have been removed. Please use the relevant manifest for value set expansion for testing."
