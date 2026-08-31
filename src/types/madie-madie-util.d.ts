@@ -232,4 +232,23 @@ declare module "@madie/madie-util" {
     entitySetId?: string;
     onSuccess?: () => void | Promise<void>;
   }): React.ReactElement | null;
+
+  export function LibraryHistoryAction(props: {
+    libraries: CqlLibrary[];
+    onClick: () => void;
+  }): React.ReactElement | null;
+  export function LibraryCompareVersionsAction(props: {
+    libraries: CqlLibrary[];
+    onClick: () => void;
+  }): React.ReactElement | null;
+  export function LibraryHistoryDialog(props: {
+    libraries: CqlLibrary[];
+    open: boolean;
+    onClose: () => void;
+  }): React.ReactElement | null;
+  export function LibraryCompareVersionsDialog(props: {
+    libraries: CqlLibrary[] | null | undefined;
+    open: boolean;
+    onClose: () => void;
+  }): React.ReactElement | null;
 }
