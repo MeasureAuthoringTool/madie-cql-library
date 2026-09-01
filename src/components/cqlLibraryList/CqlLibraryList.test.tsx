@@ -11,13 +11,13 @@ import {
 import { CqlLibrary, Model } from "@madie/madie-models";
 import CqlLibraryListComponent, { sortResults } from "./CqlLibraryList";
 import userEvent from "@testing-library/user-event";
-// @ts-ignore
 import CqlLibraryServiceApi, {
   useIsRoleOrFeatureEnabled,
   checkUserCanEdit,
   useFeatureFlags,
   useCqlLibraryServiceApi,
   useUserRoles,
+  // @ts-ignore
 } from "@madie/madie-util";
 
 const CqlLibraryList = CqlLibraryListComponent as any;
@@ -541,6 +541,7 @@ describe("CqlLibrary List component", () => {
       active: true,
       hasAssociatedLibraries: false,
       reviewStatus: "Ready",
+      reviewers: ["Ada Lovelace", "Grace Hopper"],
     },
     {
       id: "review-lib-2",
@@ -552,6 +553,7 @@ describe("CqlLibrary List component", () => {
       active: true,
       hasAssociatedLibraries: false,
       reviewStatus: "In Progress",
+      reviewers: ["Katherine Johnson"],
     },
     {
       id: "review-lib-3",
@@ -563,6 +565,7 @@ describe("CqlLibrary List component", () => {
       active: true,
       hasAssociatedLibraries: false,
       reviewStatus: "Complete",
+      reviewers: ["Margaret Hamilton"],
     },
     {
       id: "review-lib-4",
@@ -620,6 +623,50 @@ describe("CqlLibrary List component", () => {
       />
     );
 
+  const renderMyReviewsTab = () =>
+    render(
+      <CqlLibraryList
+        cqlLibraryList={reviewLibraries}
+        onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={reviewLibraries[0]}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        compareVersionsDialog={false}
+        setCompareVersionsDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={1}
+        activeTab={4}
+        totalPages={1}
+        visibleItems={1}
+        offset={0}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+        setStatusHandler={jest.fn()}
+      />
+    );
+
   it("renders the Review column on the reviews tab regardless of the feature flag", async () => {
     // Feature flag intentionally left off: the reviews tab must always show Review.
     (useFeatureFlags as jest.Mock).mockReturnValue({});
@@ -642,6 +689,139 @@ describe("CqlLibrary List component", () => {
     expect(screen.getByText("In Progress")).toBeInTheDocument();
     expect(screen.getByText("Complete")).toBeInTheDocument();
     expect(screen.getByText("review lib four")).toBeInTheDocument();
+  });
+
+  it("shows reviewer names in a tooltip for Ready, In Progress, and Complete review statuses", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+    renderReviewsTab();
+
+    await screen.findByTestId("library-list-tbl");
+
+    await userEvent.hover(screen.getByText("Ready"));
+    expect(await screen.findByText("Ada Lovelace")).toBeInTheDocument();
+    expect(screen.getByText("Grace Hopper")).toBeInTheDocument();
+
+    await userEvent.unhover(screen.getByText("Ready"));
+    await waitFor(() => {
+      expect(screen.queryByText("Ada Lovelace")).not.toBeInTheDocument();
+    });
+
+    await userEvent.hover(screen.getByText("In Progress"));
+    expect(await screen.findByText("Katherine Johnson")).toBeInTheDocument();
+
+    await userEvent.unhover(screen.getByText("In Progress"));
+    await waitFor(() => {
+      expect(screen.queryByText("Katherine Johnson")).not.toBeInTheDocument();
+    });
+
+    await userEvent.hover(screen.getByText("Complete"));
+    expect(await screen.findByText("Margaret Hamilton")).toBeInTheDocument();
+  });
+
+  it("does not show a tooltip when review status is blank or reviewers are missing", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={
+          [
+            {
+              id: "review-lib-no-reviewers",
+              librarySetId: "review-set-no-reviewers",
+              cqlLibraryName: "review lib without reviewers",
+              model: Model.QICORE,
+              draft: false,
+              version: "1.0.000",
+              active: true,
+              hasAssociatedLibraries: false,
+              reviewStatus: "Ready",
+              reviewers: [],
+            },
+            {
+              id: "review-lib-no-status",
+              librarySetId: "review-set-no-status",
+              cqlLibraryName: "review lib without status",
+              model: Model.QICORE,
+              draft: false,
+              version: "1.0.000",
+              active: true,
+              hasAssociatedLibraries: false,
+              reviewers: ["Hidden Reviewer"],
+            },
+          ] as unknown as CqlLibrary[]
+        }
+        onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={reviewLibraries[0]}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        compareVersionsDialog={false}
+        setCompareVersionsDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={2}
+        activeTab={3}
+        totalPages={1}
+        visibleItems={2}
+        offset={0}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+        setStatusHandler={jest.fn()}
+      />
+    );
+
+    const readyCell = screen.getByTestId("measure-name-0_reviewStatus");
+    await userEvent.hover(within(readyCell).getByText("Ready"));
+    await waitFor(() => {
+      expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+    });
+
+    const blankReviewCell = screen.getByTestId("measure-name-1_reviewStatus");
+    expect(blankReviewCell).toHaveTextContent("-");
+    await userEvent.hover(blankReviewCell);
+    await waitFor(() => {
+      expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+    });
+  });
+
+  it("renders Review column and tooltip behavior on My Reviews tab", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+    renderMyReviewsTab();
+
+    await screen.findByTestId("library-list-tbl");
+    expect(screen.getByText("Review")).toBeInTheDocument();
+
+    await userEvent.hover(screen.getByText("Ready"));
+    expect(await screen.findByText("Ada Lovelace")).toBeInTheDocument();
+    expect(screen.getByText("Grace Hopper")).toBeInTheDocument();
+
+    const blankReviewCell = screen.getByTestId("measure-name-3_reviewStatus");
+    expect(blankReviewCell).toHaveTextContent("-");
+    await userEvent.unhover(screen.getByText("Ready"));
+    await userEvent.hover(blankReviewCell);
+    await waitFor(() => {
+      expect(screen.queryByRole("tooltip")).not.toBeInTheDocument();
+    });
   });
 
   it("renders the pagination control on the reviews tab", async () => {
