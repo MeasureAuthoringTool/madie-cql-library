@@ -73,7 +73,7 @@
     "webpack-merge": "^5.8.0"
   },
   "dependencies": {
-    "@madie/madie-editor": "^1.0.3",
+    "@madie/madie-editor": "^1.0.4",
     "@mui/icons-material": "^6.1.0",
     "@mui/material": "^6.1.0",
     "@mui/styles": "^6.1.0",
@@ -90,7 +90,6 @@
     "file-saver": "^2.0.5",
     "formik": "^2.2.9",
     "lucide-react": "^0.542.0",
-    "moment": "^2.30.1",
     "node-polyfill-webpack-plugin": "^4.1.0",
     "query-string": "^7.1.1",
     "react-ace": "^13.0.0",

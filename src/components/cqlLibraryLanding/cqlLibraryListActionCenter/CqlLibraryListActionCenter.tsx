@@ -3,17 +3,17 @@ import DeleteAction from "./deleteAction/DeleteAction";
 import DraftAction from "./draftAction/DraftAction";
 import VersionAction from "./versionAction/VersionAction";
 import ShareAction from "./shareAction/ShareAction";
-import HistoryAction from "./historyAction/HistoryAction";
-import CompareVersionsAction from "./compareVersionsAction/CompareVersionsAction";
 import { CqlLibrary } from "@madie/madie-models";
 import {
   checkUserCanEdit,
   FeatureFlags,
+  LibraryCompareVersionsAction,
+  LibraryHistoryAction,
+  LibraryTransferAction,
   useFeatureFlags,
   useOktaTokens,
   useUserRoles,
 } from "@madie/madie-util";
-import TransferAction from "./transferAction/TransferAction";
 import ReviewAction from "./reviewAction/ReviewAction";
 
 export const ALL_REVIEWS_TAB = 3;
@@ -145,7 +145,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
             isSharedWithUser={isSharedWithUser}
             activeTab={activeTab}
           />
-          <TransferAction
+          <LibraryTransferAction
             libraries={selectedLibraries}
             onClick={transferLibrary}
             activeTab={activeTab}
@@ -167,11 +167,11 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
 
           <PipeSeparator />
 
-          <HistoryAction
+          <LibraryHistoryAction
             libraries={selectedLibraries}
             onClick={openLibraryHistoryDialog}
           />
-          <CompareVersionsAction
+          <LibraryCompareVersionsAction
             libraries={selectedLibraries}
             onClick={compareVersions}
           />

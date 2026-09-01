@@ -6,6 +6,7 @@ import {
   useCqlLibraryServiceApi,
   useDocumentTitle,
   useUserRoles,
+  LibraryHistoryDialog,
 } from "@madie/madie-util";
 import {
   MadieSpinner,
@@ -25,7 +26,6 @@ import {
   filterReviewLibraries,
   paginateReviewLibraries,
 } from "./cqlLibraryLandingUtils";
-import CqlLibraryHistoryDialog from "./CqlLibraryHistoryDialog";
 import StatusHandler, {
   INITIAL_STATUS_HANDLER,
 } from "../editCqlLibrary/statusHandler/StatusHandler";
@@ -87,20 +87,14 @@ function CqlLibraryLanding() {
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
   const [libraryHistoryDialogOpen, setLibraryHistoryDialogOpen] =
     useState(false);
-  const [libraryHistoryLogs, setLibraryHistoryLogs] = useState([]);
   const [statusHandler, setStatusHandler] = useState(INITIAL_STATUS_HANDLER);
 
   const openLibraryHistoryDialog = () => {
     if (selectedLibraries.length === 1) {
-      const selectedLibrary = selectedLibraries[0];
-      cqlLibraryServiceApi.getLibraryHistory(selectedLibrary).then((data) => {
-        setLibraryHistoryLogs(data);
-        setLibraryHistoryDialogOpen(true);
-      });
+      setLibraryHistoryDialogOpen(true);
     }
   };
   const closeLibraryHistoryDialog = () => {
-    setLibraryHistoryLogs([]);
     setLibraryHistoryDialogOpen(false);
   };
   const abortController = useRef<AbortController | null>(null);
@@ -570,9 +564,8 @@ function CqlLibraryLanding() {
           )}
         </div>
         {libraryHistoryDialogOpen && (
-          <CqlLibraryHistoryDialog
-            selectedCqlLibrary={selectedLibraries[0]}
-            libraryHistoryLogs={libraryHistoryLogs}
+          <LibraryHistoryDialog
+            libraries={selectedLibraries}
             open={libraryHistoryDialogOpen}
             onClose={closeLibraryHistoryDialog}
           />

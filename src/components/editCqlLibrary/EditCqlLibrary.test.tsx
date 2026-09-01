@@ -1,3 +1,4 @@
+import * as mockLibraryActionStubs from "../../__mocks__/libraryActionStubs";
 import * as React from "react";
 import {
   fireEvent,
@@ -25,11 +26,6 @@ import {
   useUserRoles,
 } from "@madie/madie-util";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
-import {
-  TRANSFER_LIBRARY_FAILURE,
-  TRANSFER_LIBRARY_SUCCESS,
-} from "../cqlLibraryList/CqlLibraryList";
-import { INVALID_HARP_ID_MESSAGE } from "../common/transferDialog/TransferDialog";
 
 const { getByTestId, queryByTestId, queryByText } = screen;
 
@@ -50,6 +46,7 @@ const mockCqlLibraryReviewServiceApi = {
     .mockResolvedValue({ id: "existing-review-id" }),
 };
 jest.mock("@madie/madie-util", () => ({
+  ...mockLibraryActionStubs,
   checkUserCanEdit: jest.fn(() => {
     return true;
   }),
@@ -775,7 +772,6 @@ describe("Edit Cql Library Component", () => {
         return {
           cql: "library UpdateName version '1.0.000'",
           isLibraryStatementChanged: true,
-          isUsingStatementChanged: false,
           isValueSetChanged: false,
         };
       });
@@ -881,14 +877,13 @@ describe("Edit Cql Library Component", () => {
     });
   });
 
-  it("should update an existing cql library with the upated FhirHerlpers Alias and warn ", async () => {
+  it("should update an existing cql library with the updated FHIRHelpers Alias and warn ", async () => {
     (synchingEditorCqlContent as jest.Mock)
       .mockClear()
       .mockImplementation(() => {
         return {
           cql: "library UpdateName version '1.0.000' include FHIRHelers version '4.3.000' called Dummy",
           isLibraryStatementChanged: false,
-          isUsingStatementChanged: false,
           isFhirHelpersAliasChanged: true,
           isValueSetChanged: false,
         };
@@ -1432,13 +1427,11 @@ describe("Edit Cql Library Component", () => {
       );
     });
   });
-  it("should render library history.", async () => {
+
+  it("opens the library history dialog on the history-library event", async () => {
     mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
       ...cqlLibrary,
     });
-    mockCqlLibraryServiceApi.getLibraryHistory.mockResolvedValue(
-      makeMockhistory(50)
-    );
 
     renderWithRouter();
     expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
@@ -1454,43 +1447,21 @@ describe("Edit Cql Library Component", () => {
     act(() => {
       window.dispatchEvent(new Event("history-library"));
     });
-    expect(await screen.findByText("Library History")).toBeInTheDocument();
-    const closeButton = screen.getByTestId("close-button");
-    act(() => {
-      userEvent.click(closeButton);
-    });
-    await waitFor(() =>
-      expect(screen.queryByTestId("close-button")).not.toBeInTheDocument()
-    );
-  });
-  it("should render library history with smaller items than page.", async () => {
-    mockCqlLibraryServiceApi.fetchCqlLibrary.mockResolvedValue({
-      ...cqlLibrary,
-    });
-    mockCqlLibraryServiceApi.getLibraryHistory.mockResolvedValue(
-      makeMockhistory(3)
-    );
-    renderWithRouter();
-    expect(mockCqlLibraryServiceApi.fetchCqlLibrary).toHaveBeenCalled();
+
     expect(
-      await screen.findByRole("button", { name: "Save" })
+      await screen.findByTestId("library-history-dialog")
     ).toBeInTheDocument();
-    await waitFor(() => {
-      expect(
-        screen.getByTestId("cql-library-name-text-field-input")
-      ).not.toHaveAttribute("disabled");
-    });
+    expect(
+      screen.getByTestId("library-history-dialog-library")
+    ).toHaveTextContent(cqlLibrary.cqlLibraryName);
 
     act(() => {
-      window.dispatchEvent(new Event("history-library"));
-    });
-    expect(await screen.findByText("Library History")).toBeInTheDocument();
-    const closeButton = screen.getByTestId("close-button");
-    act(() => {
-      userEvent.click(closeButton);
+      userEvent.click(screen.getByTestId("library-history-dialog-close"));
     });
     await waitFor(() =>
-      expect(screen.queryByTestId("close-button")).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId("library-history-dialog")
+      ).not.toBeInTheDocument()
     );
   });
 
@@ -1504,7 +1475,6 @@ describe("Edit Cql Library Component", () => {
             "\n" +
             "using QICore version '4.1.1'\n",
           isLibraryStatementChanged: false,
-          isUsingStatementChanged: false,
           isValueSetChanged: false,
           isConceptRemoved: true,
         };
@@ -1886,12 +1856,8 @@ describe("Edit Cql Library Component", () => {
     });
   });
 
-  it("should open transfer dialog and show success message when transferring library", async () => {
-    mockCqlLibraryServiceApi.transferLibraries.mockResolvedValueOnce({
-      status: 200,
-      data: [],
-    });
-
+  it("toasts and returns to the library list after a successful transfer", async () => {
+    jest.useFakeTimers();
     renderWithRouter();
 
     expect(
@@ -1902,46 +1868,26 @@ describe("Edit Cql Library Component", () => {
       window.dispatchEvent(new Event("transfer-library"));
     });
 
-    const transferDialog = await screen.findByTestId("transfer-dialog");
-    expect(transferDialog).toBeInTheDocument();
+    expect(await screen.findByTestId("transfer-dialog")).toBeInTheDocument();
+    expect(getByTestId("transfer-dialog-count")).toHaveTextContent("1");
 
-    const transferSaveButton = screen.getByTestId("transfer-save-button");
-    expect(transferSaveButton).toBeDisabled();
-
-    const newHarpIdInput = screen.getByTestId("harp-id-input");
-    fireEvent.change(newHarpIdInput, { target: { value: "newUser" } });
-
-    expect(transferSaveButton).toBeEnabled();
-
-    fireEvent.click(transferSaveButton);
+    fireEvent.click(getByTestId("transfer-dialog-success"));
 
     await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledTimes(
-        1
-      );
+      expect(
+        screen.getByText("Library Successfully Transferred")
+      ).toBeInTheDocument();
     });
+    expect(queryByTestId("transfer-dialog")).not.toBeInTheDocument();
 
-    expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledWith(
-      ["cql-lib-1234"],
-      "newUser",
-      false
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText(TRANSFER_LIBRARY_SUCCESS)).toBeInTheDocument();
+    act(() => {
+      jest.advanceTimersByTime(1000);
     });
-
-    await waitFor(() => {
-      expect(screen.queryByTestId("transfer-dialog")).not.toBeInTheDocument();
-    });
+    expect(mockPush).toHaveBeenCalledWith("/cql-libraries");
+    jest.useRealTimers();
   });
 
-  it("should show warning message when transfer returns 207 with failed libraries", async () => {
-    mockCqlLibraryServiceApi.transferLibraries.mockResolvedValueOnce({
-      status: 207,
-      data: ["cql-lib-1234"],
-    });
-
+  it("shows a warning banner when the library could not be transferred", async () => {
     renderWithRouter();
 
     expect(
@@ -1952,117 +1898,16 @@ describe("Edit Cql Library Component", () => {
       window.dispatchEvent(new Event("transfer-library"));
     });
 
-    const transferDialog = await screen.findByTestId("transfer-dialog");
-    expect(transferDialog).toBeInTheDocument();
-
-    const harpInput = screen.getByTestId("harp-id-input");
-    fireEvent.change(harpInput, { target: { value: "newUser" } });
-
-    const transferButton = screen.getByTestId("transfer-save-button");
-    fireEvent.click(transferButton);
-
-    await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledTimes(
-        1
-      );
-      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledWith(
-        ["cql-lib-1234"],
-        "newUser",
-        false
-      );
-    });
+    fireEvent.click(await screen.findByTestId("transfer-dialog-partial"));
 
     const warningHeader = await screen.findByTestId(
       "generic-warning-text-header"
     );
-    expect(warningHeader).toBeInTheDocument();
     expect(warningHeader).toHaveTextContent(
-      "This Library could not be transferred. Please try again, or contact help desk if the issue persists."
+      "1 library could not be transferred."
     );
-
-    const failedLibrary = screen.getByTestId("library-warning");
-    expect(failedLibrary).toHaveTextContent("Library1");
-
-    await waitFor(() => {
-      expect(screen.queryByTestId("transfer-dialog")).not.toBeInTheDocument();
-    });
-  });
-
-  it("should show error toast when transfer fails", async () => {
-    mockCqlLibraryServiceApi.transferLibraries.mockRejectedValueOnce(
-      new Error("Network Error")
-    );
-
-    renderWithRouter();
-
-    expect(
-      await screen.findByRole("button", { name: "Save" })
-    ).toBeInTheDocument();
-
-    act(() => {
-      window.dispatchEvent(new Event("transfer-library"));
-    });
-
-    const transferDialog = await screen.findByTestId("transfer-dialog");
-    expect(transferDialog).toBeInTheDocument();
-
-    const harpInput = screen.getByTestId("harp-id-input");
-    fireEvent.change(harpInput, { target: { value: "newUser" } });
-
-    const transferButton = screen.getByTestId("transfer-save-button");
-    fireEvent.click(transferButton);
-
-    await waitFor(() => {
-      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledTimes(
-        1
-      );
-      expect(mockCqlLibraryServiceApi.transferLibraries).toHaveBeenCalledWith(
-        ["cql-lib-1234"],
-        "newUser",
-        false
-      );
-    });
-
-    await waitFor(() => {
-      expect(screen.getByText(TRANSFER_LIBRARY_FAILURE)).toBeInTheDocument();
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByTestId("transfer-dialog")).not.toBeInTheDocument();
-    });
-  });
-
-  it("should display field-level error and not close dialog when transfer returns 400 with invalid HARP ID", async () => {
-    mockCqlLibraryServiceApi.transferLibraries.mockRejectedValueOnce({
-      response: {
-        status: 400,
-        data: { message: INVALID_HARP_ID_MESSAGE },
-      },
-    });
-
-    renderWithRouter();
-
-    expect(
-      await screen.findByRole("button", { name: "Save" })
-    ).toBeInTheDocument();
-
-    act(() => {
-      window.dispatchEvent(new Event("transfer-library"));
-    });
-
-    const transferDialog = await screen.findByTestId("transfer-dialog");
-    expect(transferDialog).toBeInTheDocument();
-
-    const harpInput = screen.getByTestId("harp-id-input");
-    fireEvent.change(harpInput, { target: { value: "invalidUser" } });
-
-    const transferButton = screen.getByTestId("transfer-save-button");
-    fireEvent.click(transferButton);
-
-    await waitFor(() => {
-      expect(screen.getByText(INVALID_HARP_ID_MESSAGE)).toBeInTheDocument();
-      expect(screen.getByTestId("transfer-dialog")).toBeInTheDocument();
-    });
+    expect(screen.getByTestId("library-warning")).toHaveTextContent("Library1");
+    expect(queryByTestId("transfer-dialog")).not.toBeInTheDocument();
   });
 
   it("should render all fields in read-only mode if the CQL Library is locked by another user", async () => {
