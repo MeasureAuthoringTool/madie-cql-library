@@ -49,13 +49,8 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   let modelOptions = Object.keys(Model);
   const featureFlags = useFeatureFlags();
   const hiddenModels = new Set<string>();
-  if (featureFlags?.usQualityCore) {
-    hiddenModels.add("QICORE");
-  } else {
-    hiddenModels.add("FHIR_4_0_1");
-    hiddenModels.add("US_CORE_6_1_0");
-    hiddenModels.add("US_QUALITY_0_5_0");
-  }
+  // 4.1.1 support is discontinued now that US Quality Core is available
+  hiddenModels.add("QICORE");
   if (!featureFlags?.qiCore7) {
     hiddenModels.add("QICORE_7_0_2");
   }
