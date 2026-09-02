@@ -35,35 +35,20 @@ const CreateDraftDialog = ({
       return opts;
     }
     if (model === Model.US_CORE_6_1_0) {
-      if (!featureFlags.usQualityCore) {
-        return ["US_CORE_6_1_0"];
-      }
       const opts = ["US_CORE_6_1_0", "QICORE_6_0_0"];
       if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
       opts.push("US_QUALITY_0_5_0");
       return opts;
     }
-    if (model === Model.QICORE) {
-      if (featureFlags.usQualityCore) {
-        const opts = ["QICORE_6_0_0"];
-        if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
-        opts.push("US_QUALITY_0_5_0");
-        return opts;
-      }
-      const opts = ["QICORE", "QICORE_6_0_0"];
-      if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
-      return opts;
-    }
-    if (model === Model.QICORE_6_0_0) {
+    // v4.1.1 libraries are drafted forward to v6.0.0, so both offer the same options
+    if (model === Model.QICORE || model === Model.QICORE_6_0_0) {
       const opts = ["QICORE_6_0_0"];
       if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
-      if (featureFlags.usQualityCore) opts.push("US_QUALITY_0_5_0");
+      opts.push("US_QUALITY_0_5_0");
       return opts;
     }
     if (model === Model.QICORE_7_0_2) {
-      const opts = ["QICORE_7_0_2"];
-      if (featureFlags.usQualityCore) opts.push("US_QUALITY_0_5_0");
-      return opts;
+      return ["QICORE_7_0_2", "US_QUALITY_0_5_0"];
     }
     if (model === Model.US_QUALITY_0_5_0) {
       return ["US_QUALITY_0_5_0"];
@@ -71,12 +56,10 @@ const CreateDraftDialog = ({
     return [];
   };
 
-  // QI-Core v4.1.1 libraries default the dropdown to QI-Core v6.0.0
-  // when usQualityCore is on, since 4.1.1 itself isn't offered then.
+  // QI-Core v4.1.1 libraries default the dropdown to QI-Core v6.0.0,
+  // since v4.1.1 itself is no longer offered.
   const defaultModel =
-    cqlLibrary?.model === Model.QICORE && featureFlags.usQualityCore
-      ? Model.QICORE_6_0_0
-      : cqlLibrary?.model;
+    cqlLibrary?.model === Model.QICORE ? Model.QICORE_6_0_0 : cqlLibrary?.model;
 
   const formik = useFormik({
     initialValues: {

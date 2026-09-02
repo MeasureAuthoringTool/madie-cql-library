@@ -72,7 +72,6 @@ jest.mock("@madie/madie-util", () => ({
     return {
       qiCore6: false,
       qiCore7: false,
-      usQualityCore: false,
     };
   }),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
@@ -198,7 +197,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(5);
     userEvent.click(screen.getByRole("option", { name: Model.QDM_5_6 }));
     expect(
       (
@@ -274,15 +273,15 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
-    userEvent.click(screen.getByRole("option", { name: Model.QICORE }));
+    expect(options.length).toEqual(5);
+    userEvent.click(screen.getByRole("option", { name: Model.QICORE_6_0_0 }));
     expect(
       (
         within(modelSelect).getByRole("textbox", {
           hidden: true,
         }) as HTMLInputElement
       ).value
-    ).toEqual(Model.QICORE);
+    ).toEqual(Model.QICORE_6_0_0);
 
     const publisherSelect = screen.getByRole("combobox", { name: "Publisher" });
     userEvent.click(publisherSelect);
@@ -302,7 +301,6 @@ describe("Library Dialog", () => {
       return {
         qiCore6: true,
         qiCore7: false,
-        usQualityCore: false,
       };
     });
     render(
@@ -320,7 +318,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(5);
     userEvent.click(screen.getByRole("option", { name: Model.QICORE_6_0_0 }));
     expect(
       (
@@ -335,7 +333,6 @@ describe("Library Dialog", () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
       return {
         qiCore7: true,
-        usQualityCore: false,
       };
     });
     render(
@@ -353,7 +350,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(4);
+    expect(options.length).toEqual(6);
     userEvent.click(screen.getByRole("option", { name: Model.QICORE_7_0_2 }));
     expect(
       (
@@ -368,7 +365,6 @@ describe("Library Dialog", () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
       return {
         qiCore7: false,
-        usQualityCore: false,
       };
     });
     render(
@@ -386,7 +382,7 @@ describe("Library Dialog", () => {
     const modelSelectComboBox = within(modelSelect).getByRole("combobox");
     userEvent.click(modelSelectComboBox);
     const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(3);
+    expect(options.length).toEqual(5);
     userEvent.click(screen.getByRole("option", { name: Model.QICORE_6_0_0 }));
     expect(
       (
@@ -397,11 +393,10 @@ describe("Library Dialog", () => {
     ).toEqual("QI-Core v6.0.0");
   }, 20000);
 
-  test("US Quality Core is enabled", async () => {
+  test("US Quality Core can be selected", async () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
       return {
         qiCore7: false,
-        usQualityCore: true,
       };
     });
     render(
