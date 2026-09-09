@@ -164,4 +164,14 @@
   .minimized-alert {
     top: 162px !important;
   }
+
+  .review-comments-link {
+    top: 162px;
+    right: 2rem;
+  }
+
+  &:has(.minimized-alert) .review-comments-link {
+    right: 13rem;
+    border-right: #7f7f7f solid 1px;
+  }
 }

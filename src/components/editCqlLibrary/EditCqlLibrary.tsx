@@ -21,13 +21,17 @@ import {
   routeHandlerStore,
   checkUserCanEdit,
   useFeatureFlags,
+  useOktaTokens,
   useUserServiceApi,
   useCqlLibraryServiceApi,
+  useCqlLibraryReviewServiceApi,
   useTerminologyServiceApi,
   useUserRoles,
   ManageReviewDialog,
   LibraryHistoryDialog,
   LibraryTransferDialog,
+  shouldShowReviewCommentLink,
+  ReviewCommentLink,
 } from "@madie/madie-util";
 
 import * as _ from "lodash";
@@ -74,6 +78,11 @@ import useFhirElmTranslationServiceApi from "../../api/useFhirElmTranslationServ
 import useQdmElmTranslationServiceApi from "../../api/useQdmElmTranslationServiceApi";
 import ReviewDialog from "../common/reviewDialog/ReviewDialog";
 
+type CqlLibraryReviewWithReviewers = {
+  status?: string | null;
+  reviewers?: string[];
+};
+
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
   const navigate = useNavigate();
@@ -98,7 +107,11 @@ const EditCqlLibrary = () => {
   const [reviewDialog, setReviewDialog] = useState({
     open: false,
   });
+  const [libraryReview, setLibraryReview] =
+    useState<CqlLibraryReviewWithReviewers>(null);
   const userRoles = useUserRoles();
+  const { getUserName } = useOktaTokens();
+  const userName = getUserName();
 
   // on unmount forget library state.
   useEffect(() => {
@@ -288,6 +301,9 @@ const EditCqlLibrary = () => {
   const [outboundAnnotations, setOutboundAnnotations] = useState([]);
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
+  const cqlLibraryReviewServiceApi = useRef(
+    useCqlLibraryReviewServiceApi()
+  ).current;
   const organizationApi = useRef(useOrganizationApi()).current;
   const userServiceApi = useRef(useUserServiceApi()).current;
   const terminologyServiceApi = useTerminologyServiceApi();
@@ -738,6 +754,59 @@ const EditCqlLibrary = () => {
     window.dispatchEvent(event);
   };
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchReview = async () => {
+      if (!loadedCqlLibrary?.id) {
+        setLibraryReview(null);
+        return;
+      }
+
+      try {
+        const review = await cqlLibraryReviewServiceApi.getCqlLibraryReview(
+          loadedCqlLibrary.id
+        );
+        if (isMounted) {
+          setLibraryReview(review as CqlLibraryReviewWithReviewers);
+        }
+      } catch {
+        if (isMounted) {
+          setLibraryReview(null);
+        }
+      }
+    };
+
+    fetchReview();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [loadedCqlLibrary?.id, cqlLibraryReviewServiceApi]);
+
+  useEffect(() => {
+    const handleReviewSaved = (event: Event) => {
+      const savedReview = (event as CustomEvent<CqlLibraryReviewWithReviewers>)
+        ?.detail;
+      setLibraryReview(savedReview ?? null);
+    };
+
+    window.addEventListener("review-library-saved", handleReviewSaved);
+    return () => {
+      window.removeEventListener("review-library-saved", handleReviewSaved);
+    };
+  }, []);
+
+  const showReviewCommentLink = shouldShowReviewCommentLink({
+    commentingEnabled: Boolean(featureFlags?.Commenting),
+    currentUser: userName,
+    owner: loadedCqlLibrary?.librarySet?.owner,
+    acls: loadedCqlLibrary?.librarySet?.acls,
+    reviewStatus: libraryReview?.status,
+    hasReviewerRole: Boolean(userRoles?.isReviewer),
+    assignedReviewers: libraryReview?.reviewers,
+  });
+
   const handleShareDialogClose = useCallback(
     (type, message) => {
       setShareDialog({
@@ -793,6 +862,11 @@ const EditCqlLibrary = () => {
           data-testId="edit-library-form"
           onSubmit={formik.handleSubmit}
         >
+          {showReviewCommentLink && (
+            <div className="review-comments-link">
+              <ReviewCommentLink />
+            </div>
+          )}
           <StatusHandler
             error={error}
             errorMessage={errorMessage}
