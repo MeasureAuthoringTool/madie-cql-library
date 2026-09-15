@@ -23,6 +23,7 @@ import {
   checkUserCanEdit,
   UserServiceApi,
   CqlLibraryServiceApi,
+  shouldShowReviewCommentLink,
   useUserRoles,
 } from "@madie/madie-util";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
@@ -87,6 +88,18 @@ jest.mock("@madie/madie-util", () => ({
 
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
   useCqlLibraryReviewServiceApi: jest.fn(() => mockCqlLibraryReviewServiceApi),
+  shouldShowReviewCommentLink: jest.fn(() => false),
+  ReviewCommentLink: ({ onClick, className, style, dataTestId }: any) => (
+    <button
+      type="button"
+      data-testid={dataTestId || "review-comments-link"}
+      className={className}
+      style={style}
+      onClick={onClick}
+    >
+      Comments
+    </button>
+  ),
   useTerminologyServiceApi: jest.fn(() => mockTerminologyServiceApi),
   ManageReviewDialog: ({ open, entityType, entityId }: any) =>
     open ? (
@@ -254,6 +267,7 @@ const renderWithRouter = (
 
 describe("Edit Cql Library Component", () => {
   beforeEach(() => {
+    (shouldShowReviewCommentLink as jest.Mock).mockReturnValue(false);
     mockCqlLibraryServiceApi.createDraft = jest
       .fn()
       .mockResolvedValue(draftedLibrary);
@@ -285,6 +299,26 @@ describe("Edit Cql Library Component", () => {
 
   afterEach(() => {
     jest.clearAllMocks();
+  });
+
+  it("hides Comments link when shared visibility helper returns false", async () => {
+    (shouldShowReviewCommentLink as jest.Mock).mockReturnValue(false);
+
+    renderWithRouter();
+
+    await waitFor(() => {
+      expect(queryByTestId("review-comments-link")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows Comments link when shared visibility helper returns true", async () => {
+    (shouldShowReviewCommentLink as jest.Mock).mockReturnValue(true);
+
+    renderWithRouter();
+
+    expect(
+      await screen.findByTestId("review-comments-link")
+    ).toBeInTheDocument();
   });
 
   it("should render form and cql library editor", () => {
