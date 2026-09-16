@@ -182,8 +182,8 @@ describe("Library Dialog", () => {
     const libraryName = screen.getByRole("textbox", {
       name: "Library Name",
     }) as HTMLInputElement;
-    userEvent.type(libraryName, "QdmLibrary_1");
-    await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary_1"));
+    userEvent.type(libraryName, "QdmLibrary1");
+    await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary1"));
 
     const libraryDescription = screen.getByRole("textbox", {
       name: "Description",
@@ -224,7 +224,83 @@ describe("Library Dialog", () => {
     ).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.createCqlLibrary).toHaveBeenCalledWith(
       expect.objectContaining({
-        cqlLibraryName: "QdmLibrary_1",
+        cqlLibraryName: "QdmLibrary1",
+        model: "QDM v5.6",
+        cql: "",
+        draft: true,
+        description: "QDM Library Description",
+        publisher: "Org2",
+      })
+    );
+  }, 20000);
+
+  test("Allows creation of a QDM library with underscore in name", async () => {
+    render(
+      <ApiContextProvider value={serviceConfig}>
+        <div>
+          <button data-testId="open-button" onClick={onFormSubmit}>
+            I open the dialog
+          </button>
+          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
+        </div>
+      </ApiContextProvider>
+    );
+
+    const cancelButton = await findByTestId("cql-library-cancel-button");
+
+    expect(cancelButton).toBeInTheDocument();
+    expect(cancelButton).toBeEnabled();
+
+    const submitButton = await findByTestId("continue-button");
+    expect(submitButton).toBeInTheDocument();
+    expect(submitButton).toBeDisabled();
+
+    const libraryName = screen.getByRole("textbox", {
+      name: "Library Name",
+    }) as HTMLInputElement;
+    userEvent.type(libraryName, "Qdm_Library_1");
+    await waitFor(() => expect(libraryName.value).toEqual("Qdm_Library_1"));
+
+    const libraryDescription = screen.getByRole("textbox", {
+      name: "Description",
+    }) as HTMLInputElement;
+    userEvent.type(libraryDescription, "QDM Library Description");
+    await waitFor(() =>
+      expect(libraryDescription.value).toEqual("QDM Library Description")
+    );
+
+    const modelSelect = getByTestId("cql-library-model-select");
+    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
+    userEvent.click(modelSelectComboBox);
+    const options = await screen.findAllByRole("option");
+    expect(options.length).toEqual(5);
+    userEvent.click(screen.getByRole("option", { name: Model.QDM_5_6 }));
+    expect(
+      (
+        within(modelSelect).getByRole("textbox", {
+          hidden: true,
+        }) as HTMLInputElement
+      ).value
+    ).toEqual("QDM v5.6");
+
+    const publisherSelect = screen.getByRole("combobox", { name: "Publisher" });
+    userEvent.click(publisherSelect);
+    const publisherListbox = screen.getByRole("listbox", { name: "Publisher" });
+    const publisherOptions = await within(publisherListbox).findAllByRole(
+      "option"
+    );
+    expect(publisherOptions.length).toEqual(2);
+    userEvent.click(publisherOptions[1]);
+    await waitFor(() => expect(publisherSelect).toHaveValue("Org2"));
+
+    await waitFor(() => expect(submitButton).not.toBeDisabled());
+    userEvent.click(submitButton);
+    expect(
+      await screen.findByText("Cql Library successfully created")
+    ).toBeInTheDocument();
+    expect(mockCqlLibraryServiceApi.createCqlLibrary).toHaveBeenCalledWith(
+      expect.objectContaining({
+        cqlLibraryName: "Qdm_Library_1",
         model: "QDM v5.6",
         cql: "",
         draft: true,
@@ -458,8 +534,8 @@ describe("Library Dialog", () => {
     const libraryName = screen.getByRole("textbox", {
       name: "Library Name",
     }) as HTMLInputElement;
-    userEvent.type(libraryName, "QdmLibrary_1");
-    await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary_1"));
+    userEvent.type(libraryName, "QdmLibrary1");
+    await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary1"));
 
     const libraryDescription = screen.getByRole("textbox", {
       name: "Description",
@@ -502,7 +578,7 @@ describe("Library Dialog", () => {
     ).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.createCqlLibrary).toHaveBeenCalledWith(
       expect.objectContaining({
-        cqlLibraryName: "QdmLibrary_1",
+        cqlLibraryName: "QdmLibrary1",
         model: "QDM v5.6",
         cql: "",
         draft: true,
@@ -546,8 +622,8 @@ describe("Library Dialog", () => {
     const libraryName = screen.getByRole("textbox", {
       name: "Library Name",
     }) as HTMLInputElement;
-    userEvent.type(libraryName, "QdmLibrary_1");
-    await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary_1"));
+    userEvent.type(libraryName, "QdmLibrary1");
+    await waitFor(() => expect(libraryName.value).toEqual("QdmLibrary1"));
 
     const libraryDescription = screen.getByRole("textbox", {
       name: "Description",
@@ -588,7 +664,7 @@ describe("Library Dialog", () => {
     ).toBeInTheDocument();
     expect(mockCqlLibraryServiceApi.createCqlLibrary).toHaveBeenCalledWith(
       expect.objectContaining({
-        cqlLibraryName: "QdmLibrary_1",
+        cqlLibraryName: "QdmLibrary1",
         model: "QDM v5.6",
         cql: "",
         draft: true,
