@@ -13,6 +13,7 @@ import { act, Simulate } from "react-dom/test-utils";
 import userEvent from "@testing-library/user-event";
 import CreateNewLibraryDialog from "./CreateNewLibraryDialog";
 import { Model } from "@madie/madie-models";
+import { CQL_LIBRARY_NAME_RECOMMENDATION } from "../../validators/CqlLibrarySchemaValidator";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
 import { useFeatureFlags, CqlLibraryServiceApi } from "@madie/madie-util";
 
@@ -135,6 +136,10 @@ describe("Library Dialog", () => {
 
       expect(cancelButton).toBeInTheDocument();
       expect(cancelButton).toBeEnabled();
+
+      expect(
+        await screen.findByText(CQL_LIBRARY_NAME_RECOMMENDATION)
+      ).toBeInTheDocument();
 
       const submitButton = await findByTestId("continue-button");
       expect(submitButton).toBeInTheDocument();
