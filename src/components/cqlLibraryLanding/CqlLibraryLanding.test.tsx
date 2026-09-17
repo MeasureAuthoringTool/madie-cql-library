@@ -531,7 +531,7 @@ describe("Cql Library Page", () => {
     userEvent.click(deleteButton);
 
     expect(
-      await screen.findByText("This Action cannot be undone.")
+      await screen.findByText("This action cannot be undone.")
     ).toBeInTheDocument();
 
     userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
@@ -566,7 +566,7 @@ describe("Cql Library Page", () => {
     userEvent.click(deleteButton);
 
     expect(
-      await screen.findByText("This Action cannot be undone.")
+      await screen.findByText("This action cannot be undone.")
     ).toBeInTheDocument();
 
     userEvent.click(screen.getByRole("button", { name: "Cancel" }));
@@ -617,7 +617,7 @@ describe("Cql Library Page", () => {
 
     userEvent.click(deleteButton);
     expect(
-      await screen.findByText("This Action cannot be undone.")
+      await screen.findByText("This action cannot be undone.")
     ).toBeInTheDocument();
 
     userEvent.click(screen.getByRole("button", { name: "Yes, Delete" }));
@@ -668,7 +668,7 @@ describe("Cql Library Page", () => {
     userEvent.click(deleteButton);
 
     expect(
-      await screen.findByText("This Action cannot be undone.")
+      await screen.findByText("This action cannot be undone.")
     ).toBeInTheDocument();
 
     expect(
