@@ -5,11 +5,7 @@ import {
   ReviewStatus,
   CqlLibraryReview,
 } from "@madie/madie-models";
-import {
-  MadieDialog,
-  RichTextEditor,
-  Toast,
-} from "@madie/madie-design-system/dist/react";
+import { MadieDialog, Toast } from "@madie/madie-design-system/dist/react";
 import { Divider, FormControlLabel, Switch } from "@mui/material";
 import { useCqlLibraryReviewServiceApi } from "@madie/madie-util";
 
@@ -47,9 +43,8 @@ export default function ReviewDialog({
   const initialValues = useMemo(
     () => ({
       markAsReady: review?.status === ReviewStatus.READY_FOR_REVIEW,
-      comments: review?.comment ?? EMPTY_REVIEW_COMMENT,
     }),
-    [review?.status, review?.comment]
+    [review?.status]
   );
 
   useEffect(() => {
@@ -102,7 +97,7 @@ export default function ReviewDialog({
         status: values.markAsReady
           ? ReviewStatus.READY_FOR_REVIEW
           : ReviewStatus.NOT_READY_FOR_REVIEW,
-        comment: values.comments || EMPTY_REVIEW_COMMENT,
+        comment: EMPTY_REVIEW_COMMENT,
       };
 
       try {
@@ -207,17 +202,6 @@ export default function ReviewDialog({
               },
             }}
           />
-          <div style={{ marginTop: 16 }}>
-            <RichTextEditor
-              id="review-comments"
-              name="reviewComments"
-              label="Comments"
-              content={formik.values.comments}
-              onChange={(value: string) =>
-                formik.setFieldValue("comments", value)
-              }
-            />
-          </div>
           <Divider sx={{ mt: 2 }} />
         </div>
       </MadieDialog>
