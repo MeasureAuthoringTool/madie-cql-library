@@ -321,6 +321,22 @@ describe("Edit Cql Library Component", () => {
     ).toBeInTheDocument();
   });
 
+  it("opens and closes CommentsFlyoutPanel from the Comments link", async () => {
+    (shouldShowReviewCommentLink as jest.Mock).mockReturnValue(true);
+
+    renderWithRouter();
+
+    userEvent.click(await screen.findByTestId("review-comments-link"));
+    expect(screen.getByTestId("comments-flyout")).toBeInTheDocument();
+    expect(screen.getByText("General")).toBeInTheDocument();
+    expect(screen.getByText("Add a comment to Library")).toBeInTheDocument();
+
+    userEvent.click(screen.getByTestId("comments-flyout-close"));
+    await waitFor(() => {
+      expect(screen.queryByTestId("comments-flyout")).not.toBeInTheDocument();
+    });
+  });
+
   it("should render form and cql library editor", () => {
     renderWithRouter();
     const cqlLibraryEditor = screen.getByTestId("cql-library-editor-component");
