@@ -133,7 +133,7 @@ describe("Create Draft Dialog component", () => {
     });
   });
 
-  it("should generate field level error for underscore in cql library name", async () => {
+  it("should generate field level error for underscore in cql library name for QI-Core", async () => {
     render(
       <CreateDraftDialog
         open={true}
@@ -153,6 +153,28 @@ describe("Create Draft Dialog component", () => {
       ).toHaveTextContent(
         "Library name must start with an upper case letter, followed by alpha-numeric character(s) and must not contain spaces or other special characters."
       );
+    });
+  });
+
+  it("should allow underscore in cql library name for qdm", async () => {
+    const qdmLibrary = Object.assign({}, cqlLibrary);
+    qdmLibrary.model = Model.QDM_5_6;
+    render(
+      <CreateDraftDialog
+        open={true}
+        onClose={jest.fn()}
+        onSubmit={jest.fn()}
+        cqlLibrary={qdmLibrary}
+      />
+    );
+    const cqlLibraryNameInput = screen.getByRole("textbox", {
+      name: "CQL Library Name",
+    });
+    userEvent.clear(cqlLibraryNameInput);
+    userEvent.type(cqlLibraryNameInput, "Testing_libraryName12");
+    await waitFor(() => {
+      expect(screen.queryByTestId("cqlLibraryName-helper-text")).toBe(null);
+      expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
     });
   });
 

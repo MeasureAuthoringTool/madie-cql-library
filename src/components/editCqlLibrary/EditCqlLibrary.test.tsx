@@ -11,6 +11,7 @@ import { CqlLibrary, Model } from "@madie/madie-models";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
+import { CQL_LIBRARY_NAME_RECOMMENDATION } from "../../validators/CqlLibrarySchemaValidator";
 import { act, Simulate } from "react-dom/test-utils";
 import {
   ElmTranslationExternalError,
@@ -600,6 +601,11 @@ describe("Edit Cql Library Component", () => {
         screen.getByTestId("cql-library-name-text-field-input")
       ).not.toHaveAttribute("disabled");
     });
+
+    expect(
+      screen.getByText(CQL_LIBRARY_NAME_RECOMMENDATION)
+    ).toBeInTheDocument();
+
     const input = (await screen.getByTestId(
       "cql-library-name-text-field-input"
     )) as HTMLInputElement;
