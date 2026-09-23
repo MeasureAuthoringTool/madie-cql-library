@@ -128,7 +128,7 @@ describe("ReviewDialog", () => {
     await waitFor(() => {
       expect(dispatchEventSpy).toHaveBeenCalledWith(
         expect.objectContaining({
-          type: "review-library-saved",
+          type: "review-cql-library-saved",
           detail: { id: "new-review-id" },
         })
       );
@@ -216,6 +216,8 @@ describe("ReviewDialog", () => {
     });
     userEvent.click(screen.getByTestId("review-dialog-save-button"));
 
+    expect(screen.queryByText("Are you sure?")).not.toBeInTheDocument();
+
     await waitFor(() => {
       expect(mockUpdateCqlLibraryReview).toHaveBeenCalledWith(
         "library-1",
@@ -230,6 +232,167 @@ describe("ReviewDialog", () => {
     });
 
     expect(mockCreateCqlLibraryReview).not.toHaveBeenCalled();
+  });
+
+  it("defaults Mark as Ready to ON for IN_PROGRESS and COMPLETE statuses", async () => {
+    mockGetCqlLibraryReview.mockResolvedValueOnce({
+      id: "review-in-progress",
+      libraryId: "library-1",
+      librarySetId: "set-1",
+      status: ReviewStatus.IN_PROGRESS,
+      comment: "<p>in progress</p>",
+    });
+
+    const { rerender } = render(
+      <ReviewDialog open={true} library={library} onClose={jest.fn()} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mark as Ready")).toBeChecked();
+    });
+
+    mockGetCqlLibraryReview.mockResolvedValueOnce({
+      id: "review-complete",
+      libraryId: "library-1",
+      librarySetId: "set-1",
+      status: ReviewStatus.COMPLETE,
+      comment: "<p>complete</p>",
+    });
+
+    rerender(
+      <ReviewDialog open={false} library={library} onClose={jest.fn()} />
+    );
+    rerender(
+      <ReviewDialog open={true} library={library} onClose={jest.fn()} />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mark as Ready")).toBeChecked();
+    });
+  });
+
+  it("shows confirmation before removing IN_PROGRESS review status", async () => {
+    const onClose = jest.fn();
+    const existingReview: CqlLibraryReview = {
+      id: "existing-review-id",
+      libraryId: "library-1",
+      librarySetId: "set-1",
+      status: ReviewStatus.IN_PROGRESS,
+      comment: "<p>in progress</p>",
+    };
+    mockGetCqlLibraryReview.mockResolvedValueOnce(existingReview);
+
+    render(<ReviewDialog open={true} library={library} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mark as Ready")).toBeChecked();
+    });
+
+    userEvent.click(screen.getByTestId("review-dialog-mark-ready-switch"));
+    userEvent.click(screen.getByTestId("review-dialog-save-button"));
+
+    expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
+    expect(screen.getByText(/already In Progress\./)).toBeInTheDocument();
+    expect(mockUpdateCqlLibraryReview).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("still shows confirmation when IN_PROGRESS review payload has no id", async () => {
+    mockGetCqlLibraryReview.mockResolvedValueOnce({
+      id: "",
+      libraryId: "library-1",
+      librarySetId: "set-1",
+      status: ReviewStatus.IN_PROGRESS,
+      comment: "<p>in progress</p>",
+    } as CqlLibraryReview);
+
+    render(<ReviewDialog open={true} library={library} onClose={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mark as Ready")).toBeChecked();
+    });
+
+    userEvent.click(screen.getByTestId("review-dialog-mark-ready-switch"));
+    userEvent.click(screen.getByTestId("review-dialog-save-button"));
+
+    expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
+    expect(mockCreateCqlLibraryReview).not.toHaveBeenCalled();
+    expect(mockUpdateCqlLibraryReview).not.toHaveBeenCalled();
+  });
+
+  it("closes confirmation and keeps dialog open when cancel is clicked", async () => {
+    mockGetCqlLibraryReview.mockResolvedValueOnce({
+      id: "existing-review-id",
+      libraryId: "library-1",
+      librarySetId: "set-1",
+      status: ReviewStatus.COMPLETE,
+      comment: "<p>complete</p>",
+    });
+
+    render(<ReviewDialog open={true} library={library} onClose={jest.fn()} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mark as Ready")).toBeChecked();
+    });
+
+    userEvent.click(screen.getByTestId("review-dialog-mark-ready-switch"));
+    userEvent.click(screen.getByTestId("review-dialog-save-button"));
+
+    expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
+
+    userEvent.click(
+      screen.getByTestId("review-dialog-remove-confirmation-cancel-button")
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText("Are you sure?")).not.toBeInTheDocument();
+    });
+    expect(
+      screen.getByText("Mark Library Ready for Review")
+    ).toBeInTheDocument();
+    expect(mockUpdateCqlLibraryReview).not.toHaveBeenCalled();
+  });
+
+  it("continues removal after confirmation for COMPLETE review status", async () => {
+    const onClose = jest.fn();
+    const existingReview: CqlLibraryReview = {
+      id: "existing-review-id",
+      libraryId: "library-1",
+      librarySetId: "set-1",
+      status: ReviewStatus.COMPLETE,
+      comment: "<p>complete</p>",
+    };
+    mockGetCqlLibraryReview.mockResolvedValueOnce(existingReview);
+
+    render(<ReviewDialog open={true} library={library} onClose={onClose} />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText("Mark as Ready")).toBeChecked();
+    });
+
+    userEvent.click(screen.getByTestId("review-dialog-mark-ready-switch"));
+    userEvent.click(screen.getByTestId("review-dialog-save-button"));
+
+    expect(await screen.findByText("Are you sure?")).toBeInTheDocument();
+
+    userEvent.click(
+      screen.getByTestId("review-dialog-remove-confirmation-continue-button")
+    );
+
+    await waitFor(() => {
+      expect(mockUpdateCqlLibraryReview).toHaveBeenCalledWith(
+        "library-1",
+        expect.objectContaining({
+          id: "existing-review-id",
+          status: ReviewStatus.NOT_READY_FOR_REVIEW,
+          comment: "<p>complete</p>",
+        })
+      );
+    });
+
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
   });
 
   it("shows an error toast when saving a review fails", async () => {
