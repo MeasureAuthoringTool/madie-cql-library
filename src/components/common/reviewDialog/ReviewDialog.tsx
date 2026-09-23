@@ -171,49 +171,6 @@ export default function ReviewDialog({
         setIsRemoveConfirmationOpen(true);
         return;
       }
-
-      // const reviewPayload: CqlLibraryReview = {
-      //   id: review?.id ?? "",
-      //   libraryId: library.id,
-      //   librarySetId: library.librarySetId,
-      //   status: values.markAsReady
-      //     ? ReviewStatus.READY_FOR_REVIEW
-      //     : ReviewStatus.NOT_READY_FOR_REVIEW,
-      //   comment: values.comments || EMPTY_REVIEW_COMMENT,
-      // };
-      //
-      // try {
-      //   const savedReview = review?.id
-      //     ? await cqlLibraryReviewServiceApi.updateCqlLibraryReview(
-      //         library.id,
-      //         reviewPayload
-      //       )
-      //     : await cqlLibraryReviewServiceApi.createCqlLibraryReview(
-      //         library.id,
-      //         reviewPayload
-      //       );
-      //
-      //   setReview(savedReview);
-      //   setToast({
-      //     toastOpen: true,
-      //     toastType: "success",
-      //     toastMessage: "Review information has been saved successfully.",
-      //   });
-      //   // The review status also surfaces in the PageHeader (madie-layout).
-      //   // Broadcast the persisted review so that the PageHeader can update its display accordingly.
-      //   window.dispatchEvent(
-      //     new CustomEvent("review-library-saved", { detail: savedReview })
-      //   );
-      //   await onSuccess?.();
-      //   onClose();
-      // } catch (error) {
-      //   setToast({
-      //     toastOpen: true,
-      //     toastType: "danger",
-      //     toastMessage:
-      //       "An error occurred while saving the review. Please try again.",
-      //   });
-      // }
       await saveReview(values);
     },
   });
