@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { CqlLibrary, Model } from "@madie/madie-models";
-import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
+import {
+  CQL_LIBRARY_NAME_RECOMMENDATION,
+  CqlLibrarySchemaValidator,
+} from "../../validators/CqlLibrarySchemaValidator";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import {
   MadieDialog,
@@ -231,6 +234,7 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
                 onBlur("cqlLibraryName");
               }}
               maxLength={64}
+              recommendation={CQL_LIBRARY_NAME_RECOMMENDATION}
             />
           </Box>
           <Box sx={formRowGapped}>

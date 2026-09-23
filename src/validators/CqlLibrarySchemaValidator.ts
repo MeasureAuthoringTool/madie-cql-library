@@ -1,6 +1,9 @@
 import * as Yup from "yup";
 import { Model } from "@madie/madie-models";
 
+export const CQL_LIBRARY_NAME_RECOMMENDATION =
+  "It is strongly recommended that your library name remain under 30 characters";
+
 export const CqlLibrarySchemaValidator = Yup.object().shape({
   cqlLibraryName: Yup.string()
     .max(64, "Library name cannot be more than 64 characters.")

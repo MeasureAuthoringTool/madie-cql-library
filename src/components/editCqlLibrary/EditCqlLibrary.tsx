@@ -10,7 +10,10 @@ import "styled-components/macro";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useFormik } from "formik";
 import { CqlLibrary, CqlLibraryLock } from "@madie/madie-models";
-import { CqlLibrarySchemaValidator } from "../../validators/CqlLibrarySchemaValidator";
+import {
+  CqlLibrarySchemaValidator,
+  CQL_LIBRARY_NAME_RECOMMENDATION,
+} from "../../validators/CqlLibrarySchemaValidator";
 import queryString from "query-string";
 import { Allotment } from "allotment";
 import "allotment/dist/style.css";
@@ -1004,6 +1007,7 @@ const EditCqlLibrary = () => {
                               )}
                               placeholder="Enter a Cql Library Name"
                               maxLength={64}
+                              recommendation={CQL_LIBRARY_NAME_RECOMMENDATION}
                             />
                           </div>
 
