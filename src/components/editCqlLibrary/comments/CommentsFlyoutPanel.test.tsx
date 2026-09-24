@@ -43,6 +43,27 @@ describe("CommentsFlyoutPanel", () => {
     expect(screen.getByTestId("comments-flyout-add")).toBeEnabled();
   });
 
+  it("expands a collapsed section header on click", () => {
+    render(
+      <CommentsFlyoutPanel open onClose={jest.fn()} sectionName="Library" />
+    );
+
+    const generalHeader = screen.getByText("General").closest("button");
+    const expandIcon = generalHeader.querySelector(
+      ".MuiAccordionSummary-expandIconWrapper"
+    );
+
+    expect(generalHeader).toHaveAttribute("aria-expanded", "false");
+    expect(expandIcon.querySelector(".lucide-chevron-right")).toBeTruthy();
+    expect(expandIcon).not.toHaveClass("Mui-expanded");
+
+    userEvent.click(generalHeader);
+
+    expect(generalHeader).toHaveAttribute("aria-expanded", "true");
+    // the .Mui-expanded rule is what rotates the chevron 90 degrees
+    expect(expandIcon).toHaveClass("Mui-expanded");
+  });
+
   it("clears the draft on cancel and closes from the close button", () => {
     const onClose = jest.fn();
     render(
