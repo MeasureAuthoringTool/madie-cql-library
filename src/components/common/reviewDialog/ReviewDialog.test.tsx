@@ -10,21 +10,6 @@ import {
 import { useCqlLibraryReviewServiceApi } from "@madie/madie-util";
 import ReviewDialog from "./ReviewDialog";
 
-jest.mock("@madie/madie-design-system/dist/react", () => {
-  const actual = jest.requireActual("@madie/madie-design-system/dist/react");
-  return {
-    ...actual,
-    RichTextEditor: ({ label, content, onChange }: any) => (
-      <textarea
-        aria-label={label}
-        data-testid="review-comments-textarea"
-        value={content}
-        onChange={(event) => onChange(event.target.value)}
-      />
-    ),
-  };
-});
-
 jest.mock("@madie/madie-util", () => ({
   useCqlLibraryReviewServiceApi: jest.fn(),
 }));
@@ -84,7 +69,7 @@ describe("ReviewDialog", () => {
       screen.getByText("Mark Library Ready for Review")
     ).toBeInTheDocument();
     expect(screen.getByLabelText("Mark as Ready")).toBeInTheDocument();
-    expect(screen.getByLabelText("Comments")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Comments")).not.toBeInTheDocument();
     expect(screen.getByTestId("review-dialog-save-button")).toBeDisabled();
 
     await waitFor(() => {
@@ -148,43 +133,6 @@ describe("ReviewDialog", () => {
     });
   });
 
-  it("uses default empty comment when comments are cleared", async () => {
-    const onClose = jest.fn();
-    render(<ReviewDialog open={true} library={library} onClose={onClose} />);
-
-    const commentEditor = screen.getByTestId("review-comments-textarea");
-    userEvent.clear(commentEditor);
-    userEvent.click(screen.getByTestId("review-dialog-mark-ready-switch"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("review-dialog-save-button")).toBeEnabled();
-    });
-
-    userEvent.click(screen.getByTestId("review-dialog-save-button"));
-
-    await waitFor(() => {
-      expect(mockCreateCqlLibraryReview).toHaveBeenCalledWith(
-        "library-1",
-        expect.objectContaining({
-          comment: "<p></p>",
-        })
-      );
-    });
-  });
-
-  it("enables Save when comments are modified", async () => {
-    render(<ReviewDialog open={true} library={library} onClose={jest.fn()} />);
-
-    expect(screen.getByTestId("review-dialog-save-button")).toBeDisabled();
-
-    const commentEditor = screen.getByTestId("review-comments-textarea");
-    userEvent.type(commentEditor, "Needs one more pass");
-
-    await waitFor(() => {
-      expect(screen.getByTestId("review-dialog-save-button")).toBeEnabled();
-    });
-  });
-
   it("invokes onClose when cancel is clicked", async () => {
     const onClose = jest.fn();
     render(<ReviewDialog open={true} library={library} onClose={onClose} />);
@@ -226,7 +174,7 @@ describe("ReviewDialog", () => {
           libraryId: "library-1",
           librarySetId: "set-1",
           status: ReviewStatus.NOT_READY_FOR_REVIEW,
-          comment: "Previously reviewed",
+          comment: "<p></p>",
         })
       );
     });
@@ -385,7 +333,7 @@ describe("ReviewDialog", () => {
         expect.objectContaining({
           id: "existing-review-id",
           status: ReviewStatus.NOT_READY_FOR_REVIEW,
-          comment: "<p>complete</p>",
+          comment: "<p></p>",
         })
       );
     });
@@ -526,7 +474,7 @@ describe("ReviewDialog", () => {
     });
 
     expect(screen.getByLabelText("Mark as Ready")).not.toBeChecked();
-    expect(screen.getByLabelText("Comments")).toHaveValue("<p></p>");
+    expect(screen.queryByLabelText("Comments")).not.toBeInTheDocument();
     expect(screen.getByTestId("review-dialog-save-button")).toBeDisabled();
   });
 

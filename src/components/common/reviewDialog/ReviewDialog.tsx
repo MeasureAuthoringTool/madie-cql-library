@@ -5,11 +5,7 @@ import {
   ReviewStatus,
   CqlLibraryReview,
 } from "@madie/madie-models";
-import {
-  MadieDialog,
-  RichTextEditor,
-  Toast,
-} from "@madie/madie-design-system/dist/react";
+import { MadieDialog, Toast } from "@madie/madie-design-system/dist/react";
 import { Divider, FormControlLabel, Switch } from "@mui/material";
 import { useCqlLibraryReviewServiceApi } from "@madie/madie-util";
 
@@ -67,9 +63,9 @@ export default function ReviewDialog({
       markAsReady: review?.status
         ? REVIEW_ACTIVE_STATUSES.has(review.status)
         : false,
-      comments: review?.comment ?? EMPTY_REVIEW_COMMENT,
+      comments: EMPTY_REVIEW_COMMENT,
     }),
-    [review?.status, review?.comment]
+    [review?.status]
   );
 
   const shouldConfirmRemoval =
@@ -171,49 +167,6 @@ export default function ReviewDialog({
         setIsRemoveConfirmationOpen(true);
         return;
       }
-
-      // const reviewPayload: CqlLibraryReview = {
-      //   id: review?.id ?? "",
-      //   libraryId: library.id,
-      //   librarySetId: library.librarySetId,
-      //   status: values.markAsReady
-      //     ? ReviewStatus.READY_FOR_REVIEW
-      //     : ReviewStatus.NOT_READY_FOR_REVIEW,
-      //   comment: values.comments || EMPTY_REVIEW_COMMENT,
-      // };
-      //
-      // try {
-      //   const savedReview = review?.id
-      //     ? await cqlLibraryReviewServiceApi.updateCqlLibraryReview(
-      //         library.id,
-      //         reviewPayload
-      //       )
-      //     : await cqlLibraryReviewServiceApi.createCqlLibraryReview(
-      //         library.id,
-      //         reviewPayload
-      //       );
-      //
-      //   setReview(savedReview);
-      //   setToast({
-      //     toastOpen: true,
-      //     toastType: "success",
-      //     toastMessage: "Review information has been saved successfully.",
-      //   });
-      //   // The review status also surfaces in the PageHeader (madie-layout).
-      //   // Broadcast the persisted review so that the PageHeader can update its display accordingly.
-      //   window.dispatchEvent(
-      //     new CustomEvent("review-library-saved", { detail: savedReview })
-      //   );
-      //   await onSuccess?.();
-      //   onClose();
-      // } catch (error) {
-      //   setToast({
-      //     toastOpen: true,
-      //     toastType: "danger",
-      //     toastMessage:
-      //       "An error occurred while saving the review. Please try again.",
-      //   });
-      // }
       await saveReview(values);
     },
   });
@@ -287,17 +240,6 @@ export default function ReviewDialog({
               },
             }}
           />
-          <div style={{ marginTop: 16 }}>
-            <RichTextEditor
-              id="review-comments"
-              name="reviewComments"
-              label="Comments"
-              content={formik.values.comments}
-              onChange={(value: string) =>
-                formik.setFieldValue("comments", value)
-              }
-            />
-          </div>
           <Divider sx={{ mt: 2 }} />
         </div>
       </MadieDialog>

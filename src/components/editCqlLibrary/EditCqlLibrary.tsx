@@ -80,6 +80,7 @@ import LibraryLockedPopup from "./libraryLockedPopup/LibraryLockedPopup";
 import useFhirElmTranslationServiceApi from "../../api/useFhirElmTranslationServiceApi";
 import useQdmElmTranslationServiceApi from "../../api/useQdmElmTranslationServiceApi";
 import ReviewDialog from "../common/reviewDialog/ReviewDialog";
+import CommentsFlyoutPanel from "./comments/CommentsFlyoutPanel";
 
 type CqlLibraryReviewWithReviewers = {
   status?: string | null;
@@ -95,6 +96,7 @@ const EditCqlLibrary = () => {
   // @ts-ignore
   const { id } = useParams();
   const [loadedCqlLibrary, setLoadedCqlLibrary] = useState<CqlLibrary>(null);
+  const [commentsPanelOpen, setCommentsPanelOpen] = useState<boolean>(false);
   const [openDeleteDraftDialog, setOpenDeleteDraftDialog] =
     useState<boolean>(false);
   const [openCreateVersionDialog, setOpenCreateVersionDialog] =
@@ -867,7 +869,7 @@ const EditCqlLibrary = () => {
         >
           {showReviewCommentLink && (
             <div className="review-comments-link">
-              <ReviewCommentLink />
+              <ReviewCommentLink onClick={() => setCommentsPanelOpen(true)} />
             </div>
           )}
           <StatusHandler
@@ -1233,6 +1235,11 @@ const EditCqlLibrary = () => {
             setLockedLibraryPopupOpen={setLockedLibraryPopupOpen}
           />
         )}
+      <CommentsFlyoutPanel
+        open={commentsPanelOpen}
+        onClose={() => setCommentsPanelOpen(false)}
+        sectionName="Library"
+      />
     </div>
   );
 };
