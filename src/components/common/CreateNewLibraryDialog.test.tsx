@@ -72,7 +72,6 @@ jest.mock("@madie/madie-util", () => ({
   useFeatureFlags: jest.fn(() => {
     return {
       qiCore6: false,
-      qiCore7: false,
     };
   }),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
@@ -381,71 +380,6 @@ describe("Library Dialog", () => {
     (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
       return {
         qiCore6: true,
-        qiCore7: false,
-      };
-    });
-    render(
-      <ApiContextProvider value={serviceConfig}>
-        <div>
-          <button data-testId="open-button" onClick={onFormSubmit}>
-            I open the dialog
-          </button>
-          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
-        </div>
-      </ApiContextProvider>
-    );
-
-    const modelSelect = getByTestId("cql-library-model-select");
-    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
-    userEvent.click(modelSelectComboBox);
-    const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(5);
-    userEvent.click(screen.getByRole("option", { name: Model.QICORE_6_0_0 }));
-    expect(
-      (
-        within(modelSelect).getByRole("textbox", {
-          hidden: true,
-        }) as HTMLInputElement
-      ).value
-    ).toEqual("QI-Core v6.0.0");
-  }, 20000);
-
-  test("QI-Core 7 is enabled", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
-      return {
-        qiCore7: true,
-      };
-    });
-    render(
-      <ApiContextProvider value={serviceConfig}>
-        <div>
-          <button data-testId="open-button" onClick={onFormSubmit}>
-            I open the dialog
-          </button>
-          <CreateNewLibraryDialog open={true} onClose={onFormCancel} />
-        </div>
-      </ApiContextProvider>
-    );
-
-    const modelSelect = getByTestId("cql-library-model-select");
-    const modelSelectComboBox = within(modelSelect).getByRole("combobox");
-    userEvent.click(modelSelectComboBox);
-    const options = await screen.findAllByRole("option");
-    expect(options.length).toEqual(6);
-    userEvent.click(screen.getByRole("option", { name: Model.QICORE_7_0_2 }));
-    expect(
-      (
-        within(modelSelect).getByRole("textbox", {
-          hidden: true,
-        }) as HTMLInputElement
-      ).value
-    ).toEqual("QI-Core v7.0.2");
-  }, 20000);
-
-  test("QI-Core 7 is not enabled", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
-      return {
-        qiCore7: false,
       };
     });
     render(
@@ -475,11 +409,6 @@ describe("Library Dialog", () => {
   }, 20000);
 
   test("US Quality Core can be selected", async () => {
-    (useFeatureFlags as jest.Mock).mockClear().mockImplementation(() => {
-      return {
-        qiCore7: false,
-      };
-    });
     render(
       <ApiContextProvider value={serviceConfig}>
         <div>

@@ -88,7 +88,6 @@ declare module "@madie/madie-util" {
 
   interface FeatureFlags {
     MinimizeAlerts: boolean;
-    qiCore7: boolean;
     LibraryReviewStatus: boolean;
     Commenting?: boolean;
   }
