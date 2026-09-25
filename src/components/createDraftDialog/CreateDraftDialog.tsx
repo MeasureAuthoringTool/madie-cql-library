@@ -30,25 +30,19 @@ const CreateDraftDialog = ({
   const getModelOptions = (model) => {
     if (model === Model.FHIR_4_0_1) {
       const opts = ["FHIR_4_0_1", "US_CORE_6_1_0", "QICORE_6_0_0"];
-      if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
       opts.push("US_QUALITY_0_5_0");
       return opts;
     }
     if (model === Model.US_CORE_6_1_0) {
       const opts = ["US_CORE_6_1_0", "QICORE_6_0_0"];
-      if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
       opts.push("US_QUALITY_0_5_0");
       return opts;
     }
     // v4.1.1 libraries are drafted forward to v6.0.0, so both offer the same options
     if (model === Model.QICORE || model === Model.QICORE_6_0_0) {
       const opts = ["QICORE_6_0_0"];
-      if (featureFlags.qiCore7) opts.push("QICORE_7_0_2");
       opts.push("US_QUALITY_0_5_0");
       return opts;
-    }
-    if (model === Model.QICORE_7_0_2) {
-      return ["QICORE_7_0_2", "US_QUALITY_0_5_0"];
     }
     if (model === Model.US_QUALITY_0_5_0) {
       return ["US_QUALITY_0_5_0"];
