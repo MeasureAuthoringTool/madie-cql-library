@@ -21,7 +21,7 @@ export interface CqlLibraryEditorProps {
   setOutboundAnnotations: any;
 }
 
-export const mapElmErrorsToAceAnnotations = (
+export const mapElmErrorsToMonacoAnnotations = (
   errors: ElmTranslationError[]
 ): EditorAnnotation[] => {
   let annotations: EditorAnnotation[] = [];
