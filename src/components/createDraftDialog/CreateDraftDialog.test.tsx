@@ -312,6 +312,97 @@ describe("Create Draft Dialog component", () => {
   });
 
   describe("Test model version options for US Quality Core", () => {
+    it("should display all model version options for QI-Core", async () => {
+      cqlLibrary.model = Model.QICORE;
+      render(
+        <CreateDraftDialog
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+          cqlLibrary={cqlLibrary}
+        />
+      );
+      const cqlLibraryName = (await screen.findByRole("textbox", {
+        name: "CQL Library Name",
+      })) as HTMLInputElement;
+      expect(cqlLibraryName.value).toEqual(cqlLibrary.cqlLibraryName);
+      expect(await screen.findByText("Create Draft")).toBeInTheDocument();
+      expect(
+        await screen.findByText("Update Model Version")
+      ).toBeInTheDocument();
+      expect(await screen.findByText("QI-Core v6.0.0")).toBeInTheDocument();
+
+      const modelSelect = screen.getByTestId("cql-library-model-select");
+      const modelSelectComboBox = within(modelSelect).getByRole("combobox");
+      userEvent.click(modelSelectComboBox);
+      const options = await screen.findAllByRole("option");
+      expect(options.length).toEqual(2);
+      userEvent.click(options[0]);
+      expect(
+        (
+          within(modelSelect).getByRole("textbox", {
+            hidden: true,
+          }) as HTMLInputElement
+        ).value
+      ).toEqual("QI-Core v6.0.0");
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
+        ).toBeInTheDocument();
+        expect(
+          screen.getByTestId("cql-library-model-option-US Quality Core v0.5.0")
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByTestId("cql-library-model-option-QI-Core v4.1.1")
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByTestId("cql-library-model-option-QDM 5.6")
+        ).not.toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId("create-draft-continue-button")).toBeEnabled();
+    });
+
+    it("should display US-Core, QI-Core v6.0.0, US Quality Core v0.5.0 for US-Core library", async () => {
+      cqlLibrary.model = Model.US_CORE_6_1_0;
+      render(
+        <CreateDraftDialog
+          open={true}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+          cqlLibrary={cqlLibrary}
+        />
+      );
+      expect(
+        await screen.findByText("Update Model Version")
+      ).toBeInTheDocument();
+      expect(
+        await screen.findByText("US Core v6.1.0-derived")
+      ).toBeInTheDocument();
+
+      const modelSelect = screen.getByTestId("cql-library-model-select");
+      const modelSelectComboBox = within(modelSelect).getByRole("combobox");
+      userEvent.click(modelSelectComboBox);
+      const options = await screen.findAllByRole("option");
+      expect(options.length).toEqual(3);
+
+      await waitFor(() => {
+        expect(
+          screen.getByTestId("cql-library-model-option-US Core v6.1.0-derived")
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByTestId("cql-library-model-option-US Core v6.1.0")
+        ).not.toBeInTheDocument();
+        expect(
+          screen.getByTestId("cql-library-model-option-QI-Core v6.0.0")
+        ).toBeInTheDocument();
+        expect(
+          screen.getByTestId("cql-library-model-option-US Quality Core v0.5.0")
+        ).toBeInTheDocument();
+      });
+    });
+
     it("should include US Quality Core v0.5.0 for QI-Core v6.0.0 library", async () => {
       cqlLibrary.model = Model.QICORE_6_0_0;
       render(
