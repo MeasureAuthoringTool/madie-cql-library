@@ -54,9 +54,6 @@ const CreateNewLibraryDialog: React.FC<TestProps> = ({
   const hiddenModels = new Set<string>();
   // 4.1.1 support is discontinued now that US Quality Core is available
   hiddenModels.add("QICORE");
-  if (!featureFlags?.qiCore7) {
-    hiddenModels.add("QICORE_7_0_2");
-  }
   modelOptions = modelOptions.filter((model) => !hiddenModels.has(model));
 
   // fetch organizations DB using measure service and sorts alphabetically
