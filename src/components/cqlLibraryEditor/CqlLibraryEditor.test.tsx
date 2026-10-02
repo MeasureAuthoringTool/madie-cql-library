@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import * as React from "react";
 import CqlLibraryEditor, {
-  mapElmErrorsToAceAnnotations,
+  mapElmErrorsToMonacoAnnotations,
 } from "./CqlLibraryEditor";
 
 import { ApiContextProvider, ServiceConfig } from "../../api/ServiceContext";
@@ -218,37 +218,37 @@ describe("Create New Cql Library Component", () => {
   });
 });
 
-describe("mapping Elm Errors to Ace Annotations", () => {
+describe("mapping Elm Errors to Monaco Annotations", () => {
   it("should return an empty array for null input", () => {
     const translationErrors = null;
-    const output = mapElmErrorsToAceAnnotations(translationErrors);
+    const output = mapElmErrorsToMonacoAnnotations(translationErrors);
     expect(output).toBeDefined();
     expect(output.length).toEqual(0);
   });
 
   it("should return an empty array for undefined input", () => {
     const translationErrors = undefined;
-    const output = mapElmErrorsToAceAnnotations(translationErrors);
+    const output = mapElmErrorsToMonacoAnnotations(translationErrors);
     expect(output).toBeDefined();
     expect(output.length).toEqual(0);
   });
 
   it("should return an empty array for empty array input", () => {
     const translationErrors = [];
-    const output = mapElmErrorsToAceAnnotations(translationErrors);
+    const output = mapElmErrorsToMonacoAnnotations(translationErrors);
     expect(output).toBeDefined();
     expect(output.length).toEqual(0);
   });
 
   it("should return an empty array for non-array input", () => {
     const translationErrors: any = { field: "value" };
-    const output = mapElmErrorsToAceAnnotations(translationErrors);
+    const output = mapElmErrorsToMonacoAnnotations(translationErrors);
     expect(output).toBeDefined();
     expect(output.length).toEqual(0);
   });
 
   it("should return an array of mapped elements", () => {
-    const output = mapElmErrorsToAceAnnotations(translationErrors);
+    const output = mapElmErrorsToMonacoAnnotations(translationErrors);
     expect(output).toBeDefined();
     expect(output.length).toEqual(2);
     expect(output[0]).toEqual({

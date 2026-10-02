@@ -39,7 +39,7 @@ import {
 
 import * as _ from "lodash";
 import CqlLibraryEditor, {
-  mapElmErrorsToAceAnnotations,
+  mapElmErrorsToMonacoAnnotations,
 } from "../cqlLibraryEditor/CqlLibraryEditor";
 import {
   EditorAnnotation,
@@ -743,7 +743,7 @@ const EditCqlLibrary = () => {
         );
       }
       externalErrors && setErrorMessage(externalErrors[0]?.message);
-      setElmAnnotations(mapElmErrorsToAceAnnotations(errors));
+      setElmAnnotations(mapElmErrorsToMonacoAnnotations(errors));
       return result;
     } else {
       setElmAnnotations([]);
