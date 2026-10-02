@@ -1,6 +1,6 @@
 import React from "react";
 import "styled-components/macro";
-import { EditorAnnotation, MadieEditor } from "@madie/madie-editor";
+import { EditorAnnotation, MadieCqlEditor } from "@madie/madie-editor";
 import * as _ from "lodash";
 import { ElmTranslationError } from "./editorUtil";
 import tw from "twin.macro";
@@ -47,7 +47,7 @@ const CqlLibraryEditor = ({
   const serviceConfig = useServiceConfig();
   return (
     <>
-      <MadieEditor
+      <MadieCqlEditor
         serviceConfig={serviceConfig}
         onChange={onChange}
         value={value}
