@@ -7,7 +7,7 @@ export const validateContent = jest
 export const synchingEditorCqlContent = jest.fn();
 export const isUsingEmpty = jest.fn();
 
-export function MadieEditor({
+export function MadieCqlEditor({
   onChange,
   value,
   inboundAnnotations,
