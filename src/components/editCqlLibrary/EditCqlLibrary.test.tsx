@@ -90,6 +90,7 @@ jest.mock("@madie/madie-util", () => ({
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
   useCqlLibraryReviewServiceApi: jest.fn(() => mockCqlLibraryReviewServiceApi),
   shouldShowReviewCommentLink: jest.fn(() => false),
+  ReviewSubSection: () => <div data-testid="comments-review-subsection" />,
   ReviewCommentLink: ({ onClick, className, style, dataTestId }: any) => (
     <button
       type="button"

@@ -85,6 +85,8 @@ import CommentsFlyoutPanel from "./comments/CommentsFlyoutPanel";
 type CqlLibraryReviewWithReviewers = {
   status?: string | null;
   reviewers?: string[];
+  readyForReviewBy?: string;
+  readyForReviewAt?: string;
 };
 
 const EditCqlLibrary = () => {
@@ -1239,6 +1241,8 @@ const EditCqlLibrary = () => {
         open={commentsPanelOpen}
         onClose={() => setCommentsPanelOpen(false)}
         sectionName="Library"
+        readyForReviewBy={libraryReview?.readyForReviewBy}
+        readyForReviewAt={libraryReview?.readyForReviewAt}
       />
     </div>
   );
