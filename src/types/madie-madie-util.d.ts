@@ -4,6 +4,7 @@ declare module "@madie/madie-util" {
 
   import {
     CqlLibrary,
+    CqlLibraryReview as CqlLibraryReviewModel,
     Measure,
     Organization,
     Acl,
@@ -13,14 +14,7 @@ declare module "@madie/madie-util" {
   } from "@madie/madie-models";
   import { AxiosResponse } from "axios";
 
-  export interface CqlLibraryReview {
-    id: string;
-    libraryId: string;
-    librarySetId: string;
-    status: ReviewStatus;
-    comment: string;
-    reviewers?: string[];
-  }
+  export type CqlLibraryReview = CqlLibraryReviewModel;
 
   import { ValidationResult } from "@madie/madie-editor";
   export function validateContent(
@@ -277,5 +271,14 @@ declare module "@madie/madie-util" {
     className?: string;
     style?: React.CSSProperties;
     dataTestId?: string;
+  }): React.ReactElement;
+  export function formatReviewCommentDate(value?: string): string;
+  export function getReadyForReviewMessage(
+    entityType: "measure" | "library"
+  ): string;
+  export function ReviewSubSection(props: {
+    entityType: "measure" | "library";
+    readyForReviewBy?: string;
+    readyForReviewAt?: string;
   }): React.ReactElement;
 }
