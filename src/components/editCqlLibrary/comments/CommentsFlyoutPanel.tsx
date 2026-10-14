@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { MessageSquare, X, ChevronRight } from "lucide-react";
 import { Button, RichTextEditor } from "@madie/madie-design-system/dist/react";
+import { ReviewSubSection } from "@madie/madie-util";
 import "./CommentsFlyoutPanel.scss";
 
 const COMMENT_SECTIONS = ["General", "Library"];
@@ -18,12 +19,16 @@ interface CommentsFlyoutPanelProps {
   open: boolean;
   onClose: () => void;
   sectionName: string;
+  readyForReviewBy?: string;
+  readyForReviewAt?: string;
 }
 
 const CommentsFlyoutPanel = ({
   open,
   onClose,
   sectionName,
+  readyForReviewBy,
+  readyForReviewAt,
 }: CommentsFlyoutPanelProps) => {
   const [comment, setComment] = useState("");
   const hasComment =
@@ -81,8 +86,22 @@ const CommentsFlyoutPanel = ({
                   {section}
                 </Typography>
               </AccordionSummary>
-              <AccordionDetails>
-                <div>-</div>
+              <AccordionDetails
+                className={
+                  section === "General"
+                    ? "comments-flyout-panel-general-details"
+                    : undefined
+                }
+              >
+                {section === "General" ? (
+                  <ReviewSubSection
+                    entityType="library"
+                    readyForReviewBy={readyForReviewBy}
+                    readyForReviewAt={readyForReviewAt}
+                  />
+                ) : (
+                  <div>-</div>
+                )}
               </AccordionDetails>
             </Accordion>
           ))}

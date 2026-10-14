@@ -16,7 +16,6 @@ interface ReviewDialogProps {
   onSuccess?: () => void | Promise<void>;
 }
 
-const EMPTY_REVIEW_COMMENT = "<p></p>";
 const REVIEW_ACTIVE_STATUSES = new Set<ReviewStatus>([
   ReviewStatus.READY_FOR_REVIEW,
   ReviewStatus.IN_PROGRESS,
@@ -45,7 +44,6 @@ export default function ReviewDialog({
     useState(false);
   const [pendingValues, setPendingValues] = useState<{
     markAsReady: boolean;
-    comments: string;
   } | null>(null);
   const [toast, setToast] = useState<{
     toastOpen: boolean;
@@ -63,7 +61,6 @@ export default function ReviewDialog({
       markAsReady: review?.status
         ? REVIEW_ACTIVE_STATUSES.has(review.status)
         : false,
-      comments: EMPTY_REVIEW_COMMENT,
     }),
     [review?.status]
   );
@@ -72,10 +69,7 @@ export default function ReviewDialog({
     review?.status === ReviewStatus.IN_PROGRESS ||
     review?.status === ReviewStatus.COMPLETE;
 
-  const saveReview = async (values: {
-    markAsReady: boolean;
-    comments: string;
-  }) => {
+  const saveReview = async (values: { markAsReady: boolean }) => {
     if (!library?.id) {
       return;
     }
@@ -87,7 +81,7 @@ export default function ReviewDialog({
       status: values.markAsReady
         ? ReviewStatus.READY_FOR_REVIEW
         : ReviewStatus.NOT_READY_FOR_REVIEW,
-      comment: values.comments || EMPTY_REVIEW_COMMENT,
+      comment: [],
     };
 
     try {

@@ -97,7 +97,7 @@ describe("ReviewDialog", () => {
           libraryId: "library-1",
           librarySetId: "set-1",
           status: ReviewStatus.READY_FOR_REVIEW,
-          comment: "<p></p>",
+          comment: [],
         })
       );
     });
@@ -174,7 +174,7 @@ describe("ReviewDialog", () => {
           libraryId: "library-1",
           librarySetId: "set-1",
           status: ReviewStatus.NOT_READY_FOR_REVIEW,
-          comment: "<p></p>",
+          comment: [],
         })
       );
     });
@@ -333,7 +333,7 @@ describe("ReviewDialog", () => {
         expect.objectContaining({
           id: "existing-review-id",
           status: ReviewStatus.NOT_READY_FOR_REVIEW,
-          comment: "<p></p>",
+          comment: [],
         })
       );
     });
