@@ -81,6 +81,10 @@ import useFhirElmTranslationServiceApi from "../../api/useFhirElmTranslationServ
 import useQdmElmTranslationServiceApi from "../../api/useQdmElmTranslationServiceApi";
 import ReviewDialog from "../common/reviewDialog/ReviewDialog";
 import CommentsFlyoutPanel from "./comments/CommentsFlyoutPanel";
+import {
+  getCommentSectionLocation,
+  getCommentSections,
+} from "./comments/getCommentSectionName";
 
 type CqlLibraryReviewWithReviewers = {
   status?: string | null;
@@ -92,7 +96,9 @@ type CqlLibraryReviewWithReviewers = {
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
   const navigate = useNavigate();
-  const { search } = useLocation();
+  const { search, pathname } = useLocation();
+  const commentSection = getCommentSectionLocation(pathname);
+  const commentSections = getCommentSections();
   const values = queryString.parse(search);
   const activeTab: string = (values.tab && values.tab.toString()) || "details";
   // @ts-ignore
@@ -1240,7 +1246,9 @@ const EditCqlLibrary = () => {
       <CommentsFlyoutPanel
         open={commentsPanelOpen}
         onClose={() => setCommentsPanelOpen(false)}
-        sectionName="Library"
+        sections={commentSections}
+        sectionName={commentSection.subSectionName}
+        mainSection={commentSection.mainSection}
         readyForReviewBy={libraryReview?.readyForReviewBy}
         readyForReviewAt={libraryReview?.readyForReviewAt}
       />
