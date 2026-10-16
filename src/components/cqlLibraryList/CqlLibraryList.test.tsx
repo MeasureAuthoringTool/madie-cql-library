@@ -667,6 +667,79 @@ describe("CqlLibrary List component", () => {
       />
     );
 
+  it("marks HL7 IG libraries with the external status chip and external version", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({});
+
+    render(
+      <CqlLibraryList
+        cqlLibraryList={
+          [
+            {
+              id: "external-lib-1",
+              librarySetId: "external-set-1",
+              cqlLibraryName: "external lib",
+              model: Model.QICORE,
+              draft: false,
+              version: "9.9.999",
+              externalLibrary: true,
+              externalVersion: "4.3.2",
+              active: true,
+              hasAssociatedLibraries: false,
+            },
+          ] as unknown as CqlLibrary[]
+        }
+        onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={jest.fn()}
+        setDeleteDraftDialog={jest.fn()}
+        selectedCQLLibrary={null}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={jest.fn()}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={jest.fn()}
+        shareDialog={jest.fn()}
+        setShareDialog={jest.fn()}
+        transferDialog={jest.fn()}
+        setTransferDialog={jest.fn()}
+        compareVersionsDialog={false}
+        setCompareVersionsDialog={jest.fn()}
+        setCreateDraftDialog={jest.fn()}
+        setOwners={jest.fn()}
+        setSnackBar={jest.fn()}
+        snackBar={jest.fn()}
+        totalItems={1}
+        activeTab={0}
+        totalPages={1}
+        visibleItems={1}
+        offset={0}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+        setStatusHandler={jest.fn()}
+      />
+    );
+
+    await screen.findByTestId("library-list-tbl");
+    expect(screen.getByText("From HL7 IG")).toBeInTheDocument();
+    expect(screen.getByText("4.3.2")).toBeInTheDocument();
+
+    await userEvent.hover(screen.getByText("From HL7 IG"));
+    expect(
+      await screen.findByText(
+        "These libraries are created and stored in NPM and cannot be edited in MADiE"
+      )
+    ).toBeInTheDocument();
+  });
+
   it("renders the Review column on the reviews tab regardless of the feature flag", async () => {
     // Feature flag intentionally left off: the reviews tab must always show Review.
     (useFeatureFlags as jest.Mock).mockReturnValue({});

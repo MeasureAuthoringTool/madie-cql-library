@@ -537,7 +537,11 @@ export default function CqlLibraryList({
       accessorKey: "version",
       cell: (info) => (
         <TruncateText
-          text={info.row.original.version}
+          text={
+            info.row.original.externalLibrary
+              ? info.row.original.externalVersion
+              : info.row.original.version
+          }
           maxLength={60}
           dataTestId={`cqlLibrary-button-${info.row.original.id}-version`}
         />
@@ -548,9 +552,37 @@ export default function CqlLibraryList({
       header: "Status",
       accessorKey: "draft",
       cell: (info) => (
-        <div>
+        <div
+          style={{ display: "inline-flex", gap: 4, flexWrap: "wrap" }}
+          aria-label="Library status"
+        >
           {info.row.original.draft && (
-            <Chip className="chip-draft" label="Draft" />
+            <Chip className="chip-draft" label="Draft" aria-label="Draft" />
+          )}
+          {info.row.original.externalLibrary && (
+            <Tooltip
+              title="These libraries are created and stored in NPM and cannot be edited in MADiE"
+              id={`external-library-tooltip`}
+              placement="bottom"
+              arrow
+              slotProps={{
+                tooltip: {
+                  sx: {
+                    zIndex: 99,
+                    backgroundColor: "#333",
+                    "& .MuiTooltip-arrow": {
+                      color: "#333",
+                    },
+                  },
+                },
+              }}
+            >
+              <Chip
+                className="chip-external"
+                label="From HL7 IG"
+                aria-label="External"
+              />
+            </Tooltip>
           )}
         </div>
       ),
