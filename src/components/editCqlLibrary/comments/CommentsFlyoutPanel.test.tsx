@@ -30,10 +30,30 @@ jest.mock("@madie/madie-util", () => ({
     </div>
   ),
 }));
+const sections = [{ name: "Library", subSections: ["Library"] }];
+
+const titlesIn = (container: Element) =>
+  Array.from(
+    container.querySelectorAll(".comments-flyout-subsection-title")
+  ).map((title) => title.textContent);
+
+const rowFor = (title: string) =>
+  screen
+    .getByText(title, { selector: ".comments-flyout-subsection-title" })
+    .closest(".comments-flyout-subsection");
+
+const isHighlighted = (row: Element) =>
+  row.classList.contains("comments-flyout-subsection--current");
+
 describe("CommentsFlyoutPanel", () => {
   it("renders the sections and keeps actions disabled until text is entered", () => {
     render(
-      <CommentsFlyoutPanel open onClose={jest.fn()} sectionName="Library" />
+      <CommentsFlyoutPanel
+        sections={sections}
+        open
+        onClose={jest.fn()}
+        sectionName="Library"
+      />
     );
 
     expect(
@@ -58,7 +78,12 @@ describe("CommentsFlyoutPanel", () => {
 
   it("expands a collapsed section header on click", () => {
     render(
-      <CommentsFlyoutPanel open onClose={jest.fn()} sectionName="Library" />
+      <CommentsFlyoutPanel
+        sections={sections}
+        open
+        onClose={jest.fn()}
+        sectionName="Library"
+      />
     );
 
     const generalHeader = screen.getByText("General").closest("button");
@@ -80,7 +105,12 @@ describe("CommentsFlyoutPanel", () => {
   it("clears the draft on cancel and closes from the close button", () => {
     const onClose = jest.fn();
     render(
-      <CommentsFlyoutPanel open onClose={onClose} sectionName="Library" />
+      <CommentsFlyoutPanel
+        sections={sections}
+        open
+        onClose={onClose}
+        sectionName="Library"
+      />
     );
 
     const input = screen.getByTestId("comments-flyout-input");
@@ -94,7 +124,12 @@ describe("CommentsFlyoutPanel", () => {
 
   it("renders the Review sub-section under General", () => {
     render(
-      <CommentsFlyoutPanel open onClose={jest.fn()} sectionName="Library" />
+      <CommentsFlyoutPanel
+        sections={sections}
+        open
+        onClose={jest.fn()}
+        sectionName="Library"
+      />
     );
     expect(
       screen.getByTestId("comments-review-subsection")
@@ -107,6 +142,7 @@ describe("CommentsFlyoutPanel", () => {
   it("passes the ready for review details through to the sub-section", () => {
     render(
       <CommentsFlyoutPanel
+        sections={sections}
         open
         onClose={jest.fn()}
         sectionName="Library"
@@ -118,5 +154,107 @@ describe("CommentsFlyoutPanel", () => {
     expect(screen.getByTestId("review-ready-at")).toHaveTextContent(
       "2026-08-12T09:00:00"
     );
+  });
+
+  it("shows the Library sub-section, highlighted and expanded, for the details screen", () => {
+    render(
+      <CommentsFlyoutPanel
+        sections={sections}
+        open
+        onClose={jest.fn()}
+        sectionName="Library"
+        mainSection="Library"
+      />
+    );
+
+    const subSection = screen.getByTestId("comments-current-subsection");
+    expect(subSection).toHaveTextContent("Library");
+    expect(isHighlighted(subSection)).toBe(true);
+
+    const libraryHeader = screen
+      .getByText("Library", {
+        selector: ".comments-flyout-panel-section-title",
+      })
+      .closest(".MuiAccordion-root");
+    expect(libraryHeader).toHaveClass("Mui-expanded");
+    expect(titlesIn(libraryHeader)).toEqual(["Library"]);
+  });
+
+  it("collapses and expands both the main header and the sub-section", () => {
+    render(
+      <CommentsFlyoutPanel
+        sections={sections}
+        open
+        onClose={jest.fn()}
+        sectionName="Library"
+        mainSection="Library"
+      />
+    );
+
+    const header = screen.getByText("Library", {
+      selector: ".comments-flyout-panel-section-title",
+    });
+    const headerAccordion = header.closest(".MuiAccordion-root");
+    expect(headerAccordion).toHaveClass("Mui-expanded");
+
+    userEvent.click(header);
+    expect(headerAccordion).not.toHaveClass("Mui-expanded");
+    userEvent.click(header);
+    expect(headerAccordion).toHaveClass("Mui-expanded");
+
+    // the sub-section collapses on its own and stays selected
+    const subSection = rowFor("Library");
+    expect(subSection).toHaveClass("Mui-expanded");
+    userEvent.click(
+      screen.getByText("Library", {
+        selector: ".comments-flyout-subsection-title",
+      })
+    );
+    expect(rowFor("Library")).not.toHaveClass("Mui-expanded");
+    expect(isHighlighted(rowFor("Library"))).toBe(true);
+  });
+
+  it("shows no sub-section for a route that cannot be commented on", () => {
+    render(
+      <CommentsFlyoutPanel
+        sections={sections}
+        open
+        onClose={jest.fn()}
+        sectionName="Current section"
+      />
+    );
+
+    expect(
+      screen.queryByTestId("comments-current-subsection")
+    ).not.toBeInTheDocument();
+    expect(
+      screen
+        .getByText("Library", {
+          selector: ".comments-flyout-panel-section-title",
+        })
+        .closest(".comments-flyout-panel-accordion")
+        .querySelectorAll(".comments-flyout-subsection-title").length
+    ).toBe(0);
+  });
+
+  it("keeps the Review sub-section under General", () => {
+    render(
+      <CommentsFlyoutPanel
+        sections={sections}
+        open
+        onClose={jest.fn()}
+        sectionName="Library"
+        mainSection="Library"
+        readyForReviewBy="jjones"
+        readyForReviewAt="2026-08-12T09:00:00"
+      />
+    );
+
+    expect(screen.getByTestId("review-entity-type")).toHaveTextContent(
+      "library"
+    );
+    expect(
+      screen.getByText("General").closest(".comments-flyout-panel-accordion")
+    ).toContainElement(screen.getByTestId("comments-review-subsection"));
   });
 });
