@@ -34,16 +34,16 @@ const sections = [{ name: "Library", subSections: ["Library"] }];
 
 const titlesIn = (container: Element) =>
   Array.from(
-    container.querySelectorAll(".comments-flyout-subsection-title")
+    container.querySelectorAll(".comments-flyout-panel-subsection-title")
   ).map((title) => title.textContent);
 
 const rowFor = (title: string) =>
   screen
-    .getByText(title, { selector: ".comments-flyout-subsection-title" })
-    .closest(".comments-flyout-subsection");
+    .getByText(title, { selector: ".comments-flyout-panel-subsection-title" })
+    .closest(".comments-flyout-panel-subsection");
 
 const isHighlighted = (row: Element) =>
-  row.classList.contains("comments-flyout-subsection--current");
+  row.classList.contains("comments-flyout-panel-subsection--current");
 
 describe("CommentsFlyoutPanel", () => {
   it("renders the sections and keeps actions disabled until text is entered", () => {
@@ -207,7 +207,7 @@ describe("CommentsFlyoutPanel", () => {
     expect(subSection).toHaveClass("Mui-expanded");
     userEvent.click(
       screen.getByText("Library", {
-        selector: ".comments-flyout-subsection-title",
+        selector: ".comments-flyout-panel-subsection-title",
       })
     );
     expect(rowFor("Library")).not.toHaveClass("Mui-expanded");
@@ -233,7 +233,7 @@ describe("CommentsFlyoutPanel", () => {
           selector: ".comments-flyout-panel-section-title",
         })
         .closest(".comments-flyout-panel-accordion")
-        .querySelectorAll(".comments-flyout-subsection-title").length
+        .querySelectorAll(".comments-flyout-panel-subsection-title").length
     ).toBe(0);
   });
 

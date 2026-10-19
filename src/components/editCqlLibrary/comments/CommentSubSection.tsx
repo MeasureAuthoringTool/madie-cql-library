@@ -39,20 +39,20 @@ const CommentSubSection = ({
           ? (event, isExpanded: boolean) => onToggle(isExpanded)
           : undefined
       }
-      className={`comments-flyout-subsection${
-        highlighted ? " comments-flyout-subsection--current" : ""
+      className={`comments-flyout-panel-subsection${
+        highlighted ? " comments-flyout-panel-subsection--current" : ""
       }`}
       data-testid={dataTestId}
     >
       <AccordionSummary
         expandIcon={<ChevronRight size={18} />}
-        className="comments-flyout-subsection-summary"
+        className="comments-flyout-panel-subsection-summary"
       >
-        <Typography className="comments-flyout-subsection-title">
+        <Typography className="comments-flyout-panel-subsection-title">
           {title}
         </Typography>
       </AccordionSummary>
-      <AccordionDetails className="comments-flyout-subsection-details">
+      <AccordionDetails className="comments-flyout-panel-subsection-details">
         {children}
       </AccordionDetails>
     </Accordion>
