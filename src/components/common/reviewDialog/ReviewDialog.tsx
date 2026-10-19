@@ -61,7 +61,6 @@ export default function ReviewDialog({
       markAsReady: review?.status
         ? REVIEW_ACTIVE_STATUSES.has(review.status)
         : false,
-      comments: [],
     }),
     [review?.status]
   );
@@ -70,9 +69,7 @@ export default function ReviewDialog({
     review?.status === ReviewStatus.IN_PROGRESS ||
     review?.status === ReviewStatus.COMPLETE;
 
-  const saveReview = async (values: {
-    markAsReady: boolean;
-  }) => {
+  const saveReview = async (values: { markAsReady: boolean }) => {
     if (!library?.id) {
       return;
     }
