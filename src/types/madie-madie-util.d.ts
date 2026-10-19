@@ -13,15 +13,6 @@ declare module "@madie/madie-util" {
   } from "@madie/madie-models";
   import { AxiosResponse } from "axios";
 
-  export interface CqlLibraryReview {
-    id: string;
-    libraryId: string;
-    librarySetId: string;
-    status: ReviewStatus;
-    comment: string;
-    reviewers?: string[];
-  }
-
   import { ValidationResult } from "@madie/madie-editor";
   export function validateContent(
     content: string,
