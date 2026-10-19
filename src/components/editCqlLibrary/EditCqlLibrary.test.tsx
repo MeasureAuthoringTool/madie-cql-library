@@ -91,6 +91,15 @@ jest.mock("@madie/madie-util", () => ({
   useCqlLibraryReviewServiceApi: jest.fn(() => mockCqlLibraryReviewServiceApi),
   shouldShowReviewCommentLink: jest.fn(() => false),
   ReviewSubSection: () => <div data-testid="comments-review-subsection" />,
+  CommentsFlyoutPanel: ({ open, onClose, sectionName }: any) =>
+    open ? (
+      <div data-testid="comments-flyout">
+        <span>{`Add a comment to ${sectionName}`}</span>
+        <button data-testid="comments-flyout-close" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    ) : null,
   ReviewCommentLink: ({ onClick, className, style, dataTestId }: any) => (
     <button
       type="button"

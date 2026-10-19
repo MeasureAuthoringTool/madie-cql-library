@@ -35,6 +35,7 @@ import {
   LibraryTransferDialog,
   shouldShowReviewCommentLink,
   ReviewCommentLink,
+  CommentsFlyoutPanel,
 } from "@madie/madie-util";
 
 import * as _ from "lodash";
@@ -80,7 +81,6 @@ import LibraryLockedPopup from "./libraryLockedPopup/LibraryLockedPopup";
 import useFhirElmTranslationServiceApi from "../../api/useFhirElmTranslationServiceApi";
 import useQdmElmTranslationServiceApi from "../../api/useQdmElmTranslationServiceApi";
 import ReviewDialog from "../common/reviewDialog/ReviewDialog";
-import CommentsFlyoutPanel from "./comments/CommentsFlyoutPanel";
 import {
   getCommentSectionLocation,
   getCommentSections,
@@ -1246,6 +1246,7 @@ const EditCqlLibrary = () => {
       <CommentsFlyoutPanel
         open={commentsPanelOpen}
         onClose={() => setCommentsPanelOpen(false)}
+        entityType="library"
         sections={commentSections}
         sectionName={commentSection.subSectionName}
         mainSection={commentSection.mainSection}

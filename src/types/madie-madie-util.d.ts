@@ -281,4 +281,15 @@ declare module "@madie/madie-util" {
     readyForReviewBy?: string;
     readyForReviewAt?: string;
   }): React.ReactElement;
+  export function CommentsFlyoutPanel(props: {
+    open: boolean;
+    onClose: () => void;
+    entityType: "measure" | "library";
+    sections: { name: string; subSections: string[] }[];
+    sectionName: string;
+    mainSection?: string;
+    commentedSubSections?: string[];
+    readyForReviewBy?: string;
+    readyForReviewAt?: string;
+  }): React.ReactElement;
 }
