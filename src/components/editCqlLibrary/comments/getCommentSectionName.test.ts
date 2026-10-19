@@ -24,6 +24,12 @@ describe("getCommentSectionLocation", () => {
     });
   });
 
+  it("does not throw when the route is not known yet", () => {
+    expect(getCommentSectionLocation(undefined)).toEqual({
+      subSectionName: "Current section",
+    });
+  });
+
   it.each([
     "/cql-libraries/library-id/edit/unknown",
     "/cql-libraries/library-id/details",
