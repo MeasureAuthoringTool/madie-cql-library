@@ -1588,7 +1588,7 @@ describe("Edit Cql Library Component", () => {
       "Concept Constructs are not supported in MADiE. It has been removed."
     );
     expect(warningMessage).toHaveTextContent(
-      "MADiE does not currently support use of value set version directly in measures at this time. Your value set versions have been removed. Please use the relevant manifest for value set expansion for testing."
+      "MADiE does not currently support use of value set version directly in CQL at this time. Your value set versions have been removed. Please use the relevant manifest for value set expansion for testing."
     );
   });
 
