@@ -60,7 +60,7 @@ async function checkStyles() {
     "text-green-800": ["color", "var(--cl-color-green-800)"],
     "text-red-550": ["color", "var(--cl-color-red-550)"],
     "text-red-800": ["color", "var(--cl-color-red-800)"],
-    capitalize: ["text-transform", "capitalize"],
+    capitalize: ["text-transform", "capitalize"], // #nosec: CSS fixture, not an API credential.
   };
   for (const [utility, [property, value]] of Object.entries(expected)) {
     const selector = "." + ("cl:" + utility).replace(/[:!]/g, "\\$&");
