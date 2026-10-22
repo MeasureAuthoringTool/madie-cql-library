@@ -90,7 +90,14 @@ jest.mock("@madie/madie-util", () => ({
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
   useCqlLibraryReviewServiceApi: jest.fn(() => mockCqlLibraryReviewServiceApi),
   shouldShowReviewCommentLink: jest.fn(() => false),
-  ReviewSubSection: () => <div data-testid="comments-review-subsection" />,
+  useOwnerName: jest.fn(() => "Jonathan Jones"),
+  useReviewComments: jest.fn(() => ({
+    review: null,
+    comments: [],
+    addComment: jest.fn(),
+    updateComment: jest.fn(),
+    deleteComment: jest.fn(),
+  })),
   CommentsFlyoutPanel: ({ open, onClose, sections, sectionName }: any) =>
     open ? (
       <div data-testid="comments-flyout">

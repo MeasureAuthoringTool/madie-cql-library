@@ -27,9 +27,10 @@ import {
   useOktaTokens,
   useUserServiceApi,
   useCqlLibraryServiceApi,
-  useCqlLibraryReviewServiceApi,
   useTerminologyServiceApi,
   useUserRoles,
+  useOwnerName,
+  useReviewComments,
   ManageReviewDialog,
   LibraryHistoryDialog,
   LibraryTransferDialog,
@@ -86,13 +87,6 @@ import {
   getCommentSections,
 } from "./comments/getCommentSectionName";
 
-type CqlLibraryReviewWithReviewers = {
-  status?: string | null;
-  reviewers?: string[];
-  readyForReviewBy?: string;
-  readyForReviewAt?: string;
-};
-
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
   const navigate = useNavigate();
@@ -120,11 +114,11 @@ const EditCqlLibrary = () => {
   const [reviewDialog, setReviewDialog] = useState({
     open: false,
   });
-  const [libraryReview, setLibraryReview] =
-    useState<CqlLibraryReviewWithReviewers>(null);
   const userRoles = useUserRoles();
   const { getUserName } = useOktaTokens();
   const userName = getUserName();
+  // "First Last" when the user service knows the HARP id, else the HARP id
+  const commentAuthorName = useOwnerName(userName);
 
   // on unmount forget library state.
   useEffect(() => {
@@ -314,9 +308,6 @@ const EditCqlLibrary = () => {
   const [outboundAnnotations, setOutboundAnnotations] = useState([]);
 
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
-  const cqlLibraryReviewServiceApi = useRef(
-    useCqlLibraryReviewServiceApi()
-  ).current;
   const organizationApi = useRef(useOrganizationApi()).current;
   const userServiceApi = useRef(useUserServiceApi()).current;
   const terminologyServiceApi = useTerminologyServiceApi();
@@ -337,6 +328,19 @@ const EditCqlLibrary = () => {
   const [discardDialogOpen, setDiscardDialogOpen] = useState<boolean>(false);
   const { updateRouteHandlerState } = routeHandlerStore;
   const featureFlags = useFeatureFlags();
+  const showErrorToast = (message: string) => {
+    setToastType("danger");
+    setToastMessage(message);
+    setToastOpen(true);
+  };
+  // the review document and the comment writes against it
+  const {
+    review: libraryReview,
+    comments: reviewComments,
+    addComment,
+    updateComment,
+    deleteComment,
+  } = useReviewComments("library", loadedCqlLibrary?.id, showErrorToast);
   const canEdit =
     checkUserCanEdit(
       loadedCqlLibrary?.librarySet?.owner,
@@ -766,49 +770,6 @@ const EditCqlLibrary = () => {
     const event = new CustomEvent("toggleEditorSearchBox");
     window.dispatchEvent(event);
   };
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const fetchReview = async () => {
-      if (!loadedCqlLibrary?.id) {
-        setLibraryReview(null);
-        return;
-      }
-
-      try {
-        const review = await cqlLibraryReviewServiceApi.getCqlLibraryReview(
-          loadedCqlLibrary.id
-        );
-        if (isMounted) {
-          setLibraryReview(review as CqlLibraryReviewWithReviewers);
-        }
-      } catch {
-        if (isMounted) {
-          setLibraryReview(null);
-        }
-      }
-    };
-
-    fetchReview();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [loadedCqlLibrary?.id, cqlLibraryReviewServiceApi]);
-
-  useEffect(() => {
-    const handleReviewSaved = (event: Event) => {
-      const savedReview = (event as CustomEvent<CqlLibraryReviewWithReviewers>)
-        ?.detail;
-      setLibraryReview(savedReview ?? null);
-    };
-
-    window.addEventListener("review-library-saved", handleReviewSaved);
-    return () => {
-      window.removeEventListener("review-library-saved", handleReviewSaved);
-    };
-  }, []);
 
   const showReviewCommentLink = shouldShowReviewCommentLink({
     commentingEnabled: Boolean(featureFlags?.Commenting),
@@ -1250,6 +1211,12 @@ const EditCqlLibrary = () => {
         sections={commentSections}
         sectionName={commentSection.subSectionName}
         mainSection={commentSection.mainSection}
+        comments={reviewComments}
+        currentUserName={commentAuthorName}
+        currentUserId={userName}
+        onAddComment={addComment}
+        onUpdateComment={updateComment}
+        onDeleteComment={deleteComment}
         readyForReviewBy={libraryReview?.readyForReviewBy}
         readyForReviewAt={libraryReview?.readyForReviewAt}
       />

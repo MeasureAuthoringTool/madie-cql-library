@@ -1,3 +1,5 @@
+import type { CommentSection } from "@madie/madie-util";
+
 export const COMMENT_MAIN_SECTIONS = {
   LIBRARY: "Library",
 } as const;
@@ -10,11 +12,6 @@ export const FALLBACK_SECTION_NAME = "Current section";
 export interface CommentSectionLocation {
   mainSection?: CommentMainSection;
   subSectionName: string;
-}
-
-export interface CommentSection {
-  name: CommentMainSection;
-  subSections: string[];
 }
 
 const UNKNOWN_SECTION: CommentSectionLocation = {
