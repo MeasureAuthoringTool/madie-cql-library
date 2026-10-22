@@ -13,6 +13,7 @@ interface PropTypes {
   owners: string[];
   isSharedWithUser: boolean;
   activeTab: number;
+  checkExternal: boolean;
 }
 
 export const NOTHING_SELECTED = "Select a library to share/unshare";
@@ -25,6 +26,8 @@ export const SHARED_TAB_NOTHING_SELECTED = "Select a library to unshare";
 export const SHARED_TAB_INVALID_UNSHARE_LIBRARY =
   "You cannot unshare a library that you do not have shared access to";
 export const SHARED_TAB_UNSHARE = "Unshare";
+export const EXTERNAL_SELECTED =
+  "External Libraries cannot be shared or unshared";
 
 export enum SharedOptions {
   SHARE_WITH = "Share With",
@@ -32,7 +35,14 @@ export enum SharedOptions {
 }
 
 export default function ShareAction(props: PropTypes) {
-  const { libraries, canEdit, userName, isSharedWithUser, activeTab } = props;
+  const {
+    libraries,
+    canEdit,
+    userName,
+    isSharedWithUser,
+    activeTab,
+    checkExternal,
+  } = props;
   const [disableShareBtn, setDisableShareBtn] = useState(true);
   const [tooltipMessage, setTooltipMessage] = useState(
     activeTab === 1 ? SHARED_TAB_NOTHING_SELECTED : NOTHING_SELECTED
@@ -61,6 +71,8 @@ export default function ShareAction(props: PropTypes) {
     } else if (activeTab === 0 || activeTab === 2) {
       if (libraries?.length === 0) {
         setTooltipMessage(NOTHING_SELECTED);
+      } else if (checkExternal) {
+        setTooltipMessage(EXTERNAL_SELECTED);
       } else if (
         // either all libraries are owned by the user or admin share library feature is enabled
         (props.owners?.length > 0 &&

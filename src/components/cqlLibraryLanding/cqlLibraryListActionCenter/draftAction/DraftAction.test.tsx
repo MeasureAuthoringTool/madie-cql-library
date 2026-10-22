@@ -4,6 +4,7 @@ import DraftAction, {
   DRAFT_LIBRARY,
   NOTHING_SELECTED,
   CANNOT_DRAFT_LIBRARY_WITH_600,
+  EXTERNAL_SELECTED,
 } from "./DraftAction";
 import { CqlLibrary, Model } from "@madie/madie-models";
 
@@ -171,6 +172,25 @@ describe("DraftAction", () => {
       expect(screen.getByTestId("draft-action-tooltip")).toHaveAttribute(
         "aria-label",
         CANNOT_DRAFT_LIBRARY_WITH_600
+      );
+    });
+  });
+
+  it("should disable drafting and show external-library message when selected library is external", async () => {
+    render(
+      <DraftAction
+        libraries={[libraryVersion]}
+        onClick={() => {}}
+        canEdit={true}
+        checkExternal={true}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("draft-action-btn")).toBeDisabled();
+      expect(screen.getByTestId("draft-action-tooltip")).toHaveAttribute(
+        "aria-label",
+        EXTERNAL_SELECTED
       );
     });
   });
