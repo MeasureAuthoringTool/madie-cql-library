@@ -1,6 +1,5 @@
 module.exports = {
   roots: ["<rootDir>"],
-  testPathIgnorePatterns: ["/node_modules/", "<rootDir>/scripts/"],
   modulePathIgnorePatterns: ["<rootDir>/dist/"],
   testEnvironment: "jsdom",
   transform: {
