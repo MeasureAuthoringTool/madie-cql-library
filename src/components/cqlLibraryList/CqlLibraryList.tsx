@@ -16,7 +16,6 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import Popover from "@mui/material/Popover";
-import "twin.macro";
 import "styled-components/macro";
 import { CqlLibrary } from "@madie/madie-models";
 import CreatVersionDialog from "../createVersionDialog/CreateVersionDialog";

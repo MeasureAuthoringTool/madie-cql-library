@@ -18,7 +18,6 @@ import classNames from "classnames";
 import { makeStyles } from "@mui/styles";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import tw from "twin.macro";
 import { Button } from "@madie/madie-design-system/dist/react";
 
 const useStyles = makeStyles({
@@ -78,9 +77,6 @@ const useStyles = makeStyles({
 interface VersionType {
   type: string;
 }
-
-const MessageText = tw.p`text-sm font-medium`;
-const ErrorText = tw(MessageText)`text-red-800`;
 
 const CreatVersionDialog = ({
   open,
@@ -177,21 +173,26 @@ const CreatVersionDialog = ({
             </RadioGroup>
             {(formik.touched["type"] || focusedField === "type") &&
               cqlLibraryError && (
-                <ErrorText
+                <p
+                  className="cl:text-sm cl:font-medium cl:text-red-800"
                   data-testid="create-version-error-message"
                   id="create-version-helper"
                   aria-live="polite"
                 >
                   Versioning cannot be done as the Cql has errors in it
-                </ErrorText>
+                </p>
               )}
 
             {(formik.touched["type"] || focusedField === "type") &&
               !isCqlPresent && (
-                <ErrorText id="create-version-helper" aria-live="polite">
+                <p
+                  className="cl:text-sm cl:font-medium cl:text-red-800"
+                  id="create-version-helper"
+                  aria-live="polite"
+                >
                   Versioning cannot be done as there is no associated Cql with
                   this library
-                </ErrorText>
+                </p>
               )}
           </div>
         </DialogContent>
