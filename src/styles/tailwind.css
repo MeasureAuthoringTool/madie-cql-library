@@ -1,0 +1,13 @@
+@import "tailwindcss/theme.css" layer(theme) prefix(cl);
+@import "tailwindcss/utilities.css" prefix(cl) source(none);
+
+@source "../components";
+@source "../root.component.tsx";
+
+@theme {
+  --color-blue-900: #0b347a;
+  --color-red-550: #d92f2f;
+  --color-red-800: #930e2b;
+  --color-green-800: #097c53;
+  --color-slate: #ededed;
+}
