@@ -415,7 +415,7 @@ describe("Cql Library Page", () => {
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
-        "",
+        "librarySet.acls,false",
         expect.any(AbortSignal)
       );
     });
@@ -429,7 +429,7 @@ describe("Cql Library Page", () => {
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
-        "",
+        "librarySet.acls,true",
         expect.any(AbortSignal)
       );
     });
