@@ -84,7 +84,7 @@ import ReviewDialog from "../common/reviewDialog/ReviewDialog";
 import {
   getCommentSectionLocation,
   getCommentSections,
-} from "./comments/getCommentSectionName";
+} from "./comments/CommentUtils";
 
 type CqlLibraryReviewWithReviewers = {
   status?: string | null;

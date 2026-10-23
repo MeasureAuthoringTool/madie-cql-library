@@ -3,7 +3,7 @@ import {
   getCommentSectionLocation,
   getCommentSectionName,
   getCommentSections,
-} from "./getCommentSectionName";
+} from "./CommentUtils";
 
 describe("getCommentSectionLocation", () => {
   it("places the library details screen under the Library header", () => {
