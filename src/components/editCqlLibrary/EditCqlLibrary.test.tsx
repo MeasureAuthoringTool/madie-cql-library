@@ -1539,7 +1539,7 @@ describe("Edit Cql Library Component", () => {
     );
   });
 
-  it("should remove concept successfully", async () => {
+  it("should remove concept and value set versions successfully", async () => {
     (synchingEditorCqlContent as jest.Mock)
       .mockClear()
       .mockImplementation(() => {
@@ -1549,7 +1549,7 @@ describe("Edit Cql Library Component", () => {
             "\n" +
             "using QICore version '4.1.1'\n",
           isLibraryStatementChanged: false,
-          isValueSetChanged: false,
+          isValueSetChanged: true,
           isConceptRemoved: true,
         };
       });
@@ -1601,8 +1601,11 @@ describe("Edit Cql Library Component", () => {
       );
     });
     const warningMessage = screen.getByTestId("library-warning");
-    expect(warningMessage.textContent).toEqual(
+    expect(warningMessage).toHaveTextContent(
       "Concept Constructs are not supported in MADiE. It has been removed."
+    );
+    expect(warningMessage).toHaveTextContent(
+      "MADiE does not currently support use of value set version directly in CQL at this time. Your value set versions have been removed. Please use the relevant manifest for value set expansion for testing."
     );
   });
 
