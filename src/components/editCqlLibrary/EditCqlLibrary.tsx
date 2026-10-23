@@ -1248,7 +1248,7 @@ const EditCqlLibrary = () => {
         onClose={() => setCommentsPanelOpen(false)}
         entityType="library"
         sections={commentSections}
-        activeSections={commentLocation}
+        activeSection={commentLocation}
         readyForReviewBy={libraryReview?.readyForReviewBy}
         readyForReviewAt={libraryReview?.readyForReviewAt}
       />
