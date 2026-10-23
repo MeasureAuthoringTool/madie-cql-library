@@ -10,8 +10,8 @@ describe("getCommentSectionLocation", () => {
     expect(
       getCommentSectionLocation("/cql-libraries/library-id/edit/details")
     ).toEqual({
-      mainSection: COMMENT_MAIN_SECTIONS.LIBRARY,
-      subSectionName: "Library",
+      activeMainSection: COMMENT_MAIN_SECTIONS.LIBRARY,
+      activeSubSection: "Library",
     });
   });
 
@@ -19,14 +19,14 @@ describe("getCommentSectionLocation", () => {
     expect(
       getCommentSectionLocation("/cql-libraries/library-id/edit/details/")
     ).toEqual({
-      mainSection: COMMENT_MAIN_SECTIONS.LIBRARY,
-      subSectionName: "Library",
+      activeMainSection: COMMENT_MAIN_SECTIONS.LIBRARY,
+      activeSubSection: "Library",
     });
   });
 
   it("does not throw when the route is not known yet", () => {
     expect(getCommentSectionLocation(undefined)).toEqual({
-      subSectionName: "Current section",
+      activeSubSection: "Current section",
     });
   });
 
@@ -37,7 +37,7 @@ describe("getCommentSectionLocation", () => {
     "",
   ])("has no main section for %s", (pathname) => {
     expect(getCommentSectionLocation(pathname)).toEqual({
-      subSectionName: "Current section",
+      activeSubSection: "Current section",
     });
   });
 });
