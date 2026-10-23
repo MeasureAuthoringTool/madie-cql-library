@@ -98,14 +98,14 @@ jest.mock("@madie/madie-util", () => ({
     updateComment: jest.fn(),
     deleteComment: jest.fn(),
   })),
-  CommentsFlyoutPanel: ({ open, onClose, sections, sectionName }: any) =>
+  CommentsFlyoutPanel: ({ open, onClose, sections, subSection }: any) =>
     open ? (
       <div data-testid="comments-flyout">
         <span>General</span>
         {sections?.map((section: any) => (
           <span key={section.name}>{section.name}</span>
         ))}
-        <span>{`Add a comment to ${sectionName}`}</span>
+        <span>{`Add a comment to ${subSection}`}</span>
         <button data-testid="comments-flyout-close" onClick={onClose}>
           Close
         </button>

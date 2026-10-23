@@ -91,7 +91,7 @@ const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
   const navigate = useNavigate();
   const { search, pathname } = useLocation();
-  const commentSection = getCommentSectionLocation(pathname);
+  const commentLocation = getCommentSectionLocation(pathname);
   const commentSections = getCommentSections();
   const values = queryString.parse(search);
   const activeTab: string = (values.tab && values.tab.toString()) || "details";
@@ -1209,8 +1209,8 @@ const EditCqlLibrary = () => {
         onClose={() => setCommentsPanelOpen(false)}
         entityType="library"
         sections={commentSections}
-        sectionName={commentSection.subSectionName}
-        mainSection={commentSection.mainSection}
+        subSection={commentLocation.subSectionName}
+        mainSection={commentLocation.mainSection}
         comments={reviewComments}
         currentUserName={commentAuthorName}
         currentUserId={userName}
