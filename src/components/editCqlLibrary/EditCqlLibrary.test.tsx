@@ -90,7 +90,27 @@ jest.mock("@madie/madie-util", () => ({
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceApi),
   useCqlLibraryReviewServiceApi: jest.fn(() => mockCqlLibraryReviewServiceApi),
   shouldShowReviewCommentLink: jest.fn(() => false),
-  ReviewSubSection: () => <div data-testid="comments-review-subsection" />,
+  useOwnerName: jest.fn(() => "Jonathan Jones"),
+  useReviewComments: jest.fn(() => ({
+    review: null,
+    comments: [],
+    addComment: jest.fn(),
+    updateComment: jest.fn(),
+    deleteComment: jest.fn(),
+  })),
+  CommentsFlyoutPanel: ({ open, onClose, sections, subSection }: any) =>
+    open ? (
+      <div data-testid="comments-flyout">
+        <span>General</span>
+        {sections?.map((section: any) => (
+          <span key={section.name}>{section.name}</span>
+        ))}
+        <span>{`Add a comment to ${subSection}`}</span>
+        <button data-testid="comments-flyout-close" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    ) : null,
   ReviewCommentLink: ({ onClick, className, style, dataTestId }: any) => (
     <button
       type="button"
@@ -200,7 +220,11 @@ const mockCqlLibraryServiceApi = {
   deleteCqlLibrary: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
 
-const mockLocation = jest.fn();
+// useLocation must return a location: the page reads pathname and search
+const mockLocation = {
+  pathname: "/cql-libraries/cql-library-id/edit/details",
+  search: "",
+};
 const mockPush = jest.fn();
 jest.mock("react-router-dom", () => ({
   ...(jest.requireActual("react-router-dom") as any),

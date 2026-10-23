@@ -12,6 +12,11 @@ import ReviewDialog from "./ReviewDialog";
 
 jest.mock("@madie/madie-util", () => ({
   useCqlLibraryReviewServiceApi: jest.fn(),
+  REVIEW_ACTIVE_STATUSES: new Set([
+    "READY_FOR_REVIEW",
+    "IN_PROGRESS",
+    "COMPLETE",
+  ]),
 }));
 
 describe("ReviewDialog", () => {
