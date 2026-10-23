@@ -13,6 +13,7 @@ interface PropTypes {
   libraries: CqlLibrary[];
   onClick: () => void;
   canEdit: boolean;
+  checkExternal: boolean;
 }
 
 export const NOTHING_SELECTED = "Select library to draft";
@@ -20,9 +21,10 @@ export const DRAFT_LIBRARY = "Draft library";
 export const LOOKUP_ERROR = "There was an error checking draftability. ";
 export const CANNOT_DRAFT_LIBRARY_WITH_600 =
   "You cannot draft a 4.1.1 library when a 6.0.0 version is available";
+export const EXTERNAL_SELECTED = "External Libraries cannot be Drafted";
 
 export default function DraftAction(props: PropTypes) {
-  const { libraries, canEdit } = props;
+  const { libraries, canEdit, checkExternal } = props;
   const [disableDraftBtn, setDisableDraftBtn] = useState(true);
   const [tooltipMessage, setTooltipMessage] = useState(NOTHING_SELECTED);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
@@ -81,7 +83,9 @@ export default function DraftAction(props: PropTypes) {
     setDisableDraftBtn(true);
     setTooltipMessage(NOTHING_SELECTED);
 
-    if (libraries?.length === 1 && !libraries[0]?.draft && canEdit) {
+    if (checkExternal) {
+      setTooltipMessage(EXTERNAL_SELECTED);
+    } else if (libraries?.length === 1 && !libraries[0]?.draft && canEdit) {
       setDisableDraftBtn(false);
       setTooltipMessage(DRAFT_LIBRARY);
     } else if (toastMessage) {

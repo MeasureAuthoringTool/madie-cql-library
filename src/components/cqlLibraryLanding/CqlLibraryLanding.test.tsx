@@ -189,6 +189,7 @@ jest.mock("@madie/madie-util", () => ({
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(mockOrganizations),
   })),
+  checkExternalLibrary: jest.fn(() => false),
   useFeatureFlags: jest.fn().mockReturnValue({
     qdm: false,
   }),
@@ -415,7 +416,7 @@ describe("Cql Library Page", () => {
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
-        "",
+        "librarySet.acls,false",
         expect.any(AbortSignal)
       );
     });
@@ -429,7 +430,7 @@ describe("Cql Library Page", () => {
         10,
         0,
         { optionalSearchProperties: [], searchField: "" },
-        "",
+        "librarySet.acls,true",
         expect.any(AbortSignal)
       );
     });
