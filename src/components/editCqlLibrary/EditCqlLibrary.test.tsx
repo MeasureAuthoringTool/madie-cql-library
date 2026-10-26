@@ -91,6 +91,19 @@ jest.mock("@madie/madie-util", () => ({
   useCqlLibraryReviewServiceApi: jest.fn(() => mockCqlLibraryReviewServiceApi),
   shouldShowReviewCommentLink: jest.fn(() => false),
   ReviewSubSection: () => <div data-testid="comments-review-subsection" />,
+  CommentsFlyoutPanel: ({ open, onClose, sections, activeSection }: any) =>
+    open ? (
+      <div data-testid="comments-flyout">
+        <span>General</span>
+        {sections?.map((section: any) => (
+          <span key={section.name}>{section.name}</span>
+        ))}
+        <span>{`Add a comment to ${activeSection.activeSubSection}`}</span>
+        <button data-testid="comments-flyout-close" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    ) : null,
   ReviewCommentLink: ({ onClick, className, style, dataTestId }: any) => (
     <button
       type="button"
@@ -200,7 +213,11 @@ const mockCqlLibraryServiceApi = {
   deleteCqlLibrary: jest.fn().mockResolvedValue({}),
 } as unknown as CqlLibraryServiceApi;
 
-const mockLocation = jest.fn();
+// useLocation must return a location: the page reads pathname and search
+const mockLocation = {
+  pathname: "/cql-libraries/cql-library-id/edit/details",
+  search: "",
+};
 const mockPush = jest.fn();
 jest.mock("react-router-dom", () => ({
   ...(jest.requireActual("react-router-dom") as any),
@@ -1522,7 +1539,7 @@ describe("Edit Cql Library Component", () => {
     );
   });
 
-  it("should remove concept successfully", async () => {
+  it("should remove concept and value set versions successfully", async () => {
     (synchingEditorCqlContent as jest.Mock)
       .mockClear()
       .mockImplementation(() => {
@@ -1532,7 +1549,7 @@ describe("Edit Cql Library Component", () => {
             "\n" +
             "using QICore version '4.1.1'\n",
           isLibraryStatementChanged: false,
-          isValueSetChanged: false,
+          isValueSetChanged: true,
           isConceptRemoved: true,
         };
       });
@@ -1584,8 +1601,11 @@ describe("Edit Cql Library Component", () => {
       );
     });
     const warningMessage = screen.getByTestId("library-warning");
-    expect(warningMessage.textContent).toEqual(
+    expect(warningMessage).toHaveTextContent(
       "Concept Constructs are not supported in MADiE. It has been removed."
+    );
+    expect(warningMessage).toHaveTextContent(
+      "MADiE does not currently support use of value set version directly in CQL at this time. Your value set versions have been removed. Please use the relevant manifest for value set expansion for testing."
     );
   });
 
