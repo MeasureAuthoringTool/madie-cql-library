@@ -296,13 +296,19 @@ declare module "@madie/madie-util" {
     onError?: (message: string) => void
   ): ReviewComments;
 
+  // where the user is in the editor; activeMainSection is undefined on screens
+  // that cannot be commented on
+  export interface CommentSectionLocation {
+    activeMainSection?: string;
+    activeSubSection: string;
+  }
+
   export function CommentsFlyoutPanel(props: {
     open: boolean;
     onClose: () => void;
     entityType: "measure" | "library";
     sections: CommentSection[];
-    subSection: string;
-    mainSection?: string;
+    activeSection: CommentSectionLocation;
     comments?: Comment[];
     currentUserName?: string;
     currentUserId?: string;

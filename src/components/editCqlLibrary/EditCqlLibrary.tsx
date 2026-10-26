@@ -85,7 +85,7 @@ import ReviewDialog from "../common/reviewDialog/ReviewDialog";
 import {
   getCommentSectionLocation,
   getCommentSections,
-} from "./comments/getCommentSectionName";
+} from "./comments/CommentUtils";
 
 const EditCqlLibrary = () => {
   useDocumentTitle("MADiE Edit Library");
@@ -1209,8 +1209,7 @@ const EditCqlLibrary = () => {
         onClose={() => setCommentsPanelOpen(false)}
         entityType="library"
         sections={commentSections}
-        subSection={commentLocation.subSectionName}
-        mainSection={commentLocation.mainSection}
+        activeSection={commentLocation}
         comments={reviewComments}
         currentUserName={commentAuthorName}
         currentUserId={userName}

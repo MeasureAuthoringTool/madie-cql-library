@@ -10,12 +10,12 @@ export type CommentMainSection =
 export const FALLBACK_SECTION_NAME = "Current section";
 
 export interface CommentSectionLocation {
-  mainSection?: CommentMainSection;
-  subSectionName: string;
+  activeMainSection?: CommentMainSection;
+  activeSubSection: string;
 }
 
 const UNKNOWN_SECTION: CommentSectionLocation = {
-  subSectionName: FALLBACK_SECTION_NAME,
+  activeSubSection: FALLBACK_SECTION_NAME,
 };
 
 const LIBRARY_SUB_SECTIONS: Record<string, string> = {
@@ -37,11 +37,11 @@ export const getCommentSectionLocation = (
   const editPath = editIndex >= 0 ? path.slice(editIndex + 6) : "";
   const [section] = editPath.split("/").filter(Boolean);
 
-  const subSectionName = LIBRARY_SUB_SECTIONS[section];
-  return subSectionName
-    ? { mainSection: COMMENT_MAIN_SECTIONS.LIBRARY, subSectionName }
+  const activeSubSection = LIBRARY_SUB_SECTIONS[section];
+  return activeSubSection
+    ? { activeMainSection: COMMENT_MAIN_SECTIONS.LIBRARY, activeSubSection }
     : UNKNOWN_SECTION;
 };
 
 export const getCommentSectionName = (pathname: string): string =>
-  getCommentSectionLocation(pathname).subSectionName;
+  getCommentSectionLocation(pathname).activeSubSection;
