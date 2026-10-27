@@ -285,9 +285,9 @@ declare module "@madie/madie-util" {
   export interface ReviewComments {
     review: CqlLibraryReview | null;
     comments: Comment[];
-    addComment: (comment: Comment) => Promise<void>;
-    updateComment: (comment: Comment) => Promise<void>;
-    deleteComment: (comment: Comment) => Promise<void>;
+    addComment: (comment: Comment) => Promise<boolean>;
+    updateComment: (comment: Comment) => Promise<boolean>;
+    deleteComment: (comment: Comment) => Promise<boolean>;
   }
   // loads the review for the entity and owns the comment writes against it
   export function useReviewComments(
@@ -314,7 +314,7 @@ declare module "@madie/madie-util" {
     currentUserId?: string;
     onAddComment?: (comment: Comment) => void;
     onUpdateComment?: (comment: Comment) => void;
-    onDeleteComment?: (comment: Comment) => void;
+    onDeleteComment?: (comment: Comment) => void | Promise<boolean | void>;
     readyForReviewBy?: string;
     readyForReviewAt?: string;
   }): React.ReactElement;
