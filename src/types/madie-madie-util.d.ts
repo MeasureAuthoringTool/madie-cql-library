@@ -315,7 +315,7 @@ declare module "@madie/madie-util" {
     onAddComment?: (comment: Comment) => void;
     onUpdateComment?: (comment: Comment) => void;
     onDeleteComment?: (comment: Comment) => void | Promise<boolean | void>;
-    readyForReviewBy?: string;
-    readyForReviewAt?: string;
+    markedForReviewBy?: string;
+    markedForReviewAt?: string;
   }): React.ReactElement;
 }

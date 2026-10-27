@@ -1216,8 +1216,8 @@ const EditCqlLibrary = () => {
         onAddComment={addComment}
         onUpdateComment={updateComment}
         onDeleteComment={deleteComment}
-        readyForReviewBy={libraryReview?.readyForReviewBy}
-        readyForReviewAt={libraryReview?.readyForReviewAt}
+        markedForReviewBy={libraryReview?.markedForReviewBy}
+        markedForReviewAt={libraryReview?.markedForReviewAt}
       />
     </div>
   );
