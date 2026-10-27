@@ -7,6 +7,7 @@ import ShareAction, {
   SHARED_TAB_NOTHING_SELECTED,
   SHARED_TAB_INVALID_UNSHARE_LIBRARY,
   SHARED_TAB_UNSHARE,
+  EXTERNAL_SELECTED,
 } from "./ShareAction";
 import userEvent from "@testing-library/user-event";
 import { useUserRoles } from "@madie/madie-util";
@@ -79,6 +80,27 @@ describe("ShareAction", () => {
     expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
       "aria-label",
       INVALID_SHARE_LIBRARY
+    );
+  });
+
+  it("Should disable share action and show external-library message when selection is external", () => {
+    render(
+      <ShareAction
+        libraries={[mockLibrary]}
+        onClick={() => {}}
+        canEdit={true}
+        isSharedWithUser={false}
+        activeTab={0}
+        userName={"test user"}
+        owners={["test user"]}
+        checkExternal={true}
+      />
+    );
+
+    expect(screen.getByTestId("share-action-btn")).toBeDisabled();
+    expect(screen.getByTestId("share-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      EXTERNAL_SELECTED
     );
   });
 

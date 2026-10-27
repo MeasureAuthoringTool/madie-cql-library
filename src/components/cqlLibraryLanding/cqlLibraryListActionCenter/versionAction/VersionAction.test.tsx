@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import VersionAction, {
   VERSION_LIBRARY,
   NOTHING_SELECTED,
+  EXTERNAL_SELECTED,
 } from "./VersionAction";
 import { CqlLibrary, Model } from "@madie/madie-models";
 import { useFeatureFlags } from "@madie/madie-util";
@@ -131,6 +132,23 @@ describe("VersionAction", () => {
     expect(screen.getByTestId("version-action-tooltip")).toHaveAttribute(
       "aria-label",
       VERSION_LIBRARY
+    );
+  });
+
+  it("Should disable versioning and show external-library message when selected library is external", () => {
+    render(
+      <VersionAction
+        libraries={[libraryDraft]}
+        onClick={() => {}}
+        canEdit={true}
+        checkExternal={true}
+      />
+    );
+
+    expect(screen.getByTestId("version-action-btn")).toBeDisabled();
+    expect(screen.getByTestId("version-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      EXTERNAL_SELECTED
     );
   });
 });

@@ -103,6 +103,7 @@ jest.mock("@madie/madie-util", () => ({
   checkUserCanDelete: jest.fn(() => {
     return true;
   }),
+  checkExternalLibrary: jest.fn(() => false),
   useFeatureFlags: jest.fn().mockReturnValue({}),
   useUserRoles: jest.fn(() => ({})),
   useCqlLibraryServiceApi: jest.fn(() => mockCqlLibraryServiceResolved),

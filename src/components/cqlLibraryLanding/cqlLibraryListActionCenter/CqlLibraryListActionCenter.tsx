@@ -32,6 +32,7 @@ interface PropTypes {
   openLibraryHistoryDialog: () => void;
   setCompareVersionsDialog: any;
   setReviewDialog: (value: any) => void;
+  checkExternal: boolean;
 }
 
 export function CqlLibraryListActionCenter(props: PropTypes) {
@@ -47,6 +48,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     setTransferDialog,
     setCompareVersionsDialog,
     setReviewDialog,
+    checkExternal,
   } = props;
   const featureFlags: FeatureFlags = useFeatureFlags();
   const { getUserName } = useOktaTokens();
@@ -135,6 +137,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
           <DeleteAction
             onClick={deleteLibrary}
             selectedLibraries={selectedLibraries}
+            checkExternal={checkExternal}
           />
           <ShareAction
             libraries={selectedLibraries}
@@ -144,11 +147,13 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
             owners={owners}
             isSharedWithUser={isSharedWithUser}
             activeTab={activeTab}
+            checkExternal={checkExternal}
           />
           <LibraryTransferAction
             libraries={selectedLibraries}
             onClick={transferLibrary}
             activeTab={activeTab}
+            checkExternal={checkExternal}
           />
 
           <PipeSeparator />
@@ -157,12 +162,14 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
             libraries={selectedLibraries}
             canEdit={canEdit}
             onClick={createVersion}
+            checkExternal={checkExternal}
           />
 
           <DraftAction
             libraries={selectedLibraries}
             canEdit={canEdit}
             onClick={createDraft}
+            checkExternal={checkExternal}
           />
 
           <PipeSeparator />
@@ -170,10 +177,12 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
           <LibraryHistoryAction
             libraries={selectedLibraries}
             onClick={openLibraryHistoryDialog}
+            checkExternal={checkExternal}
           />
           <LibraryCompareVersionsAction
             libraries={selectedLibraries}
             onClick={compareVersions}
+            checkExternal={checkExternal}
           />
 
           {reviewAction && <PipeSeparator />}
