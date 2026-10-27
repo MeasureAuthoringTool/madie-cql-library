@@ -5,7 +5,6 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import tw from "twin.macro";
 import "styled-components/macro";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useFormik } from "formik";
@@ -893,7 +892,7 @@ const EditCqlLibrary = () => {
           >
             <Allotment>
               <Allotment.Pane>
-                <div className="left-panel" tw="flex-grow">
+                <div className="left-panel cl:grow">
                   <IconButton
                     data-testid="editor-search-button"
                     aria-label="search button"
@@ -1120,7 +1119,7 @@ const EditCqlLibrary = () => {
           <div id="sticky-footer">
             <Button
               variant="outline"
-              tw="mx-2"
+              className="cl:mx-2"
               disabled={!formik.dirty || !canEdit}
               data-testid="cql-library-cancel-button"
               onClick={(e) => {
@@ -1131,7 +1130,7 @@ const EditCqlLibrary = () => {
               Discard Changes
             </Button>
             <Button
-              tw="!mt-0 mx-2"
+              className="cl:mt-0! cl:mx-2"
               data-testid="cql-library-save-button"
               role="button"
               variant="cyan"
