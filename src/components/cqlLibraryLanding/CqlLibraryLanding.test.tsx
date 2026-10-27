@@ -404,7 +404,7 @@ describe("Cql Library Page", () => {
       );
     });
 
-    aclHeader.focus();
+    screen.getByTestId("header-librarySet.acls").focus();
 
     // Press Enter
     await userEvent.keyboard("{Enter}");
