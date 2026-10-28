@@ -3,14 +3,10 @@ import "styled-components/macro";
 import { EditorAnnotation, MadieCqlEditor } from "@madie/madie-editor";
 import * as _ from "lodash";
 import { ElmTranslationError } from "./editorUtil";
-import tw from "twin.macro";
 import { IconButton } from "@mui/material";
 import Search from "@mui/icons-material/Search";
 import useServiceConfig from "../../api/useServiceConfig";
 
-const MessageText = tw.p`text-sm font-medium`;
-const SuccessText = tw(MessageText)`text-green-800`;
-const ErrorText = tw(MessageText)`text-red-800`;
 export interface CqlLibraryEditorProps {
   valuesetMsg: string;
   inboundAnnotations: any;
@@ -57,10 +53,20 @@ const CqlLibraryEditor = ({
         setOutboundAnnotations={setOutboundAnnotations}
       />
       {!valuesetSuccess && (
-        <ErrorText data-testid="valueset-error">{valuesetMsg}</ErrorText>
+        <p
+          className="cl:text-sm cl:font-medium cl:text-red-800"
+          data-testid="valueset-error"
+        >
+          {valuesetMsg}
+        </p>
       )}
       {valuesetSuccess && (
-        <SuccessText data-testid="valueset-success">{valuesetMsg}</SuccessText>
+        <p
+          className="cl:text-sm cl:font-medium cl:text-green-800"
+          data-testid="valueset-success"
+        >
+          {valuesetMsg}
+        </p>
       )}
     </>
   );

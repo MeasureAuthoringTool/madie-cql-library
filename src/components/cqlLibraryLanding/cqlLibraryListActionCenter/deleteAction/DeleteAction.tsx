@@ -8,6 +8,7 @@ import { CqlLibrary } from "@madie/madie-models";
 interface PropTypes {
   onClick: () => void;
   selectedLibraries?: CqlLibrary[];
+  checkExternal: boolean;
 }
 
 export const NOTHING_SELECTED = "Select library to delete";
@@ -16,9 +17,10 @@ export const LOCKED_LIBRARY_PREFIX =
   "Unable to delete library.  Locked while being edited by ";
 export const PERMISSION_DENIED =
   "You do not have permissions to delete this library";
+export const EXTERNAL_SELECTED = "External Libraries cannot be Deleted";
 
 export default function DeleteAction(props: PropTypes) {
-  const { selectedLibraries } = props;
+  const { selectedLibraries, checkExternal } = props;
 
   const exactlyOneSelected = selectedLibraries?.length === 1;
   const selectedLibrary = exactlyOneSelected
@@ -33,7 +35,11 @@ export default function DeleteAction(props: PropTypes) {
       selectedLibrary?.draft
     );
   const canDelete =
-    !!selectedLibrary && exactlyOneSelected && hasPermission && !isLocked;
+    !!selectedLibrary &&
+    exactlyOneSelected &&
+    hasPermission &&
+    !isLocked &&
+    !checkExternal;
 
   // tooltip precedence:
   // 1. Nothing selected (none or multiple)
@@ -42,7 +48,9 @@ export default function DeleteAction(props: PropTypes) {
   // 4. Deletable
   let tooltipMessage = NOTHING_SELECTED;
   if (exactlyOneSelected) {
-    if (!hasPermission) {
+    if (checkExternal) {
+      tooltipMessage = EXTERNAL_SELECTED;
+    } else if (!hasPermission) {
       tooltipMessage = PERMISSION_DENIED;
     } else if (isLocked) {
       tooltipMessage = `${LOCKED_LIBRARY_PREFIX}${lockedBy}`;

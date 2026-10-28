@@ -16,7 +16,6 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import Popover from "@mui/material/Popover";
-import "twin.macro";
 import "styled-components/macro";
 import { CqlLibrary } from "@madie/madie-models";
 import CreatVersionDialog from "../createVersionDialog/CreateVersionDialog";
@@ -32,6 +31,7 @@ import {
   ManageReviewDialog,
   LibraryCompareVersionsDialog,
   LibraryTransferDialog,
+  checkExternalLibrary,
 } from "@madie/madie-util";
 import {
   Button,
@@ -970,6 +970,14 @@ export default function CqlLibraryList({
           ),
         ];
 
+  const checkExternal = checkExternalLibrary(
+    selectedLibraries.map(
+      (selectedLibrary) =>
+        cqlLibraryList.find((library) => library.id === selectedLibrary.id) ??
+        selectedLibrary
+    )
+  );
+
   const handleRowClick = async (actions) => {
     if (!isRowExpanded || selectedIdForExpansion !== actions?.librarySetId) {
       setSelectedIdForExpansion(actions?.librarySetId);
@@ -1303,6 +1311,7 @@ export default function CqlLibraryList({
               setTransferDialog={setTransferDialog}
               setCompareVersionsDialog={setCompareVersionsDialog}
               setReviewDialog={setReviewDialog}
+              checkExternal={checkExternal}
             />
           </div>
         </div>

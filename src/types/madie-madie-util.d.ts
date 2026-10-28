@@ -143,6 +143,10 @@ declare module "@madie/madie-util" {
     draft?: boolean
   ): boolean;
 
+  export function checkExternalLibrary(
+    libraries: Array<LibraryListDTO>
+  ): boolean;
+
   export function wafIntercept(): void;
 
   export function useOwnerName(harpId: string): string;
@@ -241,10 +245,12 @@ declare module "@madie/madie-util" {
   export function LibraryHistoryAction(props: {
     libraries: CqlLibrary[];
     onClick: () => void;
+    checkExternal: boolean;
   }): React.ReactElement | null;
   export function LibraryCompareVersionsAction(props: {
     libraries: CqlLibrary[];
     onClick: () => void;
+    checkExternal: boolean;
   }): React.ReactElement | null;
   export function LibraryHistoryDialog(props: {
     libraries: CqlLibrary[];
@@ -260,6 +266,7 @@ declare module "@madie/madie-util" {
     libraries: CqlLibrary[];
     onClick: () => void;
     activeTab: number;
+    checkExternal: boolean;
   }): React.ReactElement | null;
   export function LibraryTransferDialog(props: {
     libraries: CqlLibrary[];

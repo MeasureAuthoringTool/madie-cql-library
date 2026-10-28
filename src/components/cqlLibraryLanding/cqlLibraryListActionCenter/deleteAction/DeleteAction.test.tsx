@@ -5,6 +5,7 @@ import DeleteAction, {
   NOTHING_SELECTED,
   LOCKED_LIBRARY_PREFIX,
   PERMISSION_DENIED,
+  EXTERNAL_SELECTED,
 } from "./DeleteAction";
 import { CqlLibrary } from "@madie/madie-models";
 
@@ -105,6 +106,23 @@ describe("DeleteAction (CQL Library)", () => {
     expect(screen.getByTestId("delete-action-tooltip")).toHaveAttribute(
       "aria-label",
       PERMISSION_DENIED
+    );
+  });
+
+  it("Should disable deletion and show external-library message when selected library is external", () => {
+    mockCheckUserCanDelete.mockReturnValue(true);
+    render(
+      <DeleteAction
+        selectedLibraries={[baseLibrary]}
+        onClick={() => {}}
+        checkExternal={true}
+      />
+    );
+
+    expect(screen.getByTestId("delete-action-btn")).toBeDisabled();
+    expect(screen.getByTestId("delete-action-tooltip")).toHaveAttribute(
+      "aria-label",
+      EXTERNAL_SELECTED
     );
   });
 });
