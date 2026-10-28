@@ -773,8 +773,7 @@ const EditCqlLibrary = () => {
   const showReviewCommentLink = shouldShowReviewCommentLink({
     commentingEnabled: Boolean(featureFlags?.Commenting),
     currentUser: userName,
-    owner: loadedCqlLibrary?.librarySet?.owner,
-    acls: loadedCqlLibrary?.librarySet?.acls,
+    canEdit: canEdit,
     reviewStatus: libraryReview?.status,
     hasReviewerRole: Boolean(userRoles?.isReviewer),
     assignedReviewers: libraryReview?.reviewers,
