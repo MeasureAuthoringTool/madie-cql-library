@@ -282,9 +282,14 @@ declare module "@madie/madie-util" {
   // statuses in which a library is part of the review process
   export const REVIEW_ACTIVE_STATUSES: ReadonlySet<ReviewStatus>;
 
+  export interface CommentSubSectionItem {
+    id?: string;
+    name: string;
+  }
+
   export interface CommentSection {
     name: string;
-    subSections: string[];
+    subSections: Array<string | CommentSubSectionItem>;
   }
 
   export interface ReviewComments {
@@ -306,6 +311,7 @@ declare module "@madie/madie-util" {
   export interface CommentSectionLocation {
     activeMainSection?: string;
     activeSubSection: string;
+    activeSubSectionId?: string;
   }
 
   export function CommentsFlyoutPanel(props: {
