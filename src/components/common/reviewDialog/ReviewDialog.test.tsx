@@ -102,7 +102,7 @@ describe("ReviewDialog", () => {
           libraryId: "library-1",
           librarySetId: "set-1",
           status: ReviewStatus.READY_FOR_REVIEW,
-          comment: [],
+          comments: [],
         })
       );
     });
@@ -153,7 +153,7 @@ describe("ReviewDialog", () => {
       libraryId: "library-1",
       librarySetId: "set-1",
       status: ReviewStatus.READY_FOR_REVIEW,
-      comment: "Previously reviewed",
+      comments: [{ id: "c1", content: "<p>Previously reviewed</p>" }],
     };
     mockGetCqlLibraryReview.mockResolvedValueOnce(existingReview);
 
@@ -179,7 +179,7 @@ describe("ReviewDialog", () => {
           libraryId: "library-1",
           librarySetId: "set-1",
           status: ReviewStatus.NOT_READY_FOR_REVIEW,
-          comment: [],
+          comments: [{ id: "c1", content: "<p>Previously reviewed</p>" }],
         })
       );
     });
@@ -193,7 +193,7 @@ describe("ReviewDialog", () => {
       libraryId: "library-1",
       librarySetId: "set-1",
       status: ReviewStatus.IN_PROGRESS,
-      comment: "<p>in progress</p>",
+      comments: [],
     });
 
     const { rerender } = render(
@@ -209,7 +209,7 @@ describe("ReviewDialog", () => {
       libraryId: "library-1",
       librarySetId: "set-1",
       status: ReviewStatus.COMPLETE,
-      comment: "<p>complete</p>",
+      comments: [],
     });
 
     rerender(
@@ -231,7 +231,7 @@ describe("ReviewDialog", () => {
       libraryId: "library-1",
       librarySetId: "set-1",
       status: ReviewStatus.IN_PROGRESS,
-      comment: "<p>in progress</p>",
+      comments: [],
     };
     mockGetCqlLibraryReview.mockResolvedValueOnce(existingReview);
 
@@ -256,7 +256,7 @@ describe("ReviewDialog", () => {
       libraryId: "library-1",
       librarySetId: "set-1",
       status: ReviewStatus.IN_PROGRESS,
-      comment: "<p>in progress</p>",
+      comments: [],
     } as CqlLibraryReview);
 
     render(<ReviewDialog open={true} library={library} onClose={jest.fn()} />);
@@ -279,7 +279,7 @@ describe("ReviewDialog", () => {
       libraryId: "library-1",
       librarySetId: "set-1",
       status: ReviewStatus.COMPLETE,
-      comment: "<p>complete</p>",
+      comments: [],
     });
 
     render(<ReviewDialog open={true} library={library} onClose={jest.fn()} />);
@@ -313,7 +313,7 @@ describe("ReviewDialog", () => {
       libraryId: "library-1",
       librarySetId: "set-1",
       status: ReviewStatus.COMPLETE,
-      comment: "<p>complete</p>",
+      comments: [{ id: "c1", content: "<p>Previously reviewed</p>" }],
     };
     mockGetCqlLibraryReview.mockResolvedValueOnce(existingReview);
 
@@ -338,7 +338,7 @@ describe("ReviewDialog", () => {
         expect.objectContaining({
           id: "existing-review-id",
           status: ReviewStatus.NOT_READY_FOR_REVIEW,
-          comment: [],
+          comments: [{ id: "c1", content: "<p>Previously reviewed</p>" }],
         })
       );
     });
@@ -404,7 +404,7 @@ describe("ReviewDialog", () => {
       libraryId: "library-1",
       librarySetId: "set-1",
       status: ReviewStatus.READY_FOR_REVIEW,
-      comment: "Previously reviewed",
+      comments: [{ id: "c1", content: "<p>Previously reviewed</p>" }],
     };
     mockGetCqlLibraryReview.mockResolvedValueOnce(existingReview);
 
