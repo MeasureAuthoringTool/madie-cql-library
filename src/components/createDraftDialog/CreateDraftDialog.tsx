@@ -1,5 +1,4 @@
 import React from "react";
-import "twin.macro";
 import "styled-components/macro";
 import { DialogContent, Box, MenuItem, Typography } from "@mui/material";
 import { useFormik } from "formik";
@@ -119,9 +118,9 @@ const CreateDraftDialog = ({
       }}
     >
       <DialogContent>
-        <div tw="flex flex-row justify-end">
-          <Typography tw="text-sm font-light">
-            <span tw="text-red-550 mr-1">*</span>
+        <div className="cl:flex cl:flex-row cl:justify-end">
+          <Typography className="cl:text-sm cl:font-light">
+            <span className="cl:text-red-550 cl:mr-1">*</span>
             Required field
           </Typography>
         </div>

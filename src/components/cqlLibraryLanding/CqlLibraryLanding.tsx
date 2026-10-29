@@ -15,7 +15,6 @@ import {
   Toast,
 } from "@madie/madie-design-system/dist/react";
 import "./CqlLibraryLanding.scss";
-import "twin.macro";
 import "styled-components/macro";
 import queryString from "query-string";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -471,7 +470,7 @@ function CqlLibraryLanding() {
       />
       <div className="cql-library-table">
         <section
-          tw="flex flex-row"
+          className="cl:flex cl:flex-row"
           style={{ borderBottom: "solid 1px #8c8c8c" }}
         >
           <div>
@@ -507,7 +506,7 @@ function CqlLibraryLanding() {
               )}
             </Tabs>
           </div>
-          <span tw="flex-grow" />
+          <span className="cl:grow" />
         </section>
 
         <div>

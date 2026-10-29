@@ -27,7 +27,6 @@ import {
 import { CqlLibrary } from "@madie/madie-models";
 import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@mui/icons-material/CheckBox";
-import tw from "twin.macro";
 import "styled-components/macro";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -72,7 +71,6 @@ export interface SharedUser {
   performedAt: Date;
 }
 
-const TH = tw.th`p-3 text-left text-sm font-bold capitalize`;
 const icon = <CheckBoxOutlineBlankIcon fontSize="large" />;
 const checkedIcon = <CheckBoxIcon fontSize="large" />;
 
@@ -867,29 +865,28 @@ const LibraryShareDialog = ({
             <div className="table" style={{ overflow: "auto" }}>
               {/* split table view between unshare and share views as MAT-9636 only asks for the update of unshare view. */}
               <table
-                tw="min-w-full"
                 data-testid="share-library-tbl"
-                className="ml-table"
+                className="ml-table cl:min-w-full"
                 style={{
                   borderSpacing: "0 2em !important",
                   borderBottom: "1px solid rgb(140, 140, 140)",
                 }}
               >
-                <thead tw="bg-slate">
+                <thead className="cl:bg-slate">
                   {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>
                       {headerGroup.headers.map((header) => {
                         return (
-                          <TH
+                          <th
                             key={header.id}
                             scope="col"
-                            className="header-cell"
+                            className="header-cell cl:p-3 cl:text-left cl:text-sm cl:font-bold cl:capitalize"
                           >
                             {flexRender(
                               header.column.columnDef.header,
                               header.getContext()
                             )}
-                          </TH>
+                          </th>
                         );
                       })}
                     </tr>

@@ -190,6 +190,7 @@ jest.mock("@madie/madie-util", () => ({
   useOrganizationApi: jest.fn(() => ({
     getAllOrganizations: jest.fn().mockResolvedValue(mockOrganizations),
   })),
+  checkExternalLibrary: jest.fn(() => false),
   useFeatureFlags: jest.fn().mockReturnValue({
     qdm: false,
   }),
