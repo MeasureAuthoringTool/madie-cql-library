@@ -279,7 +279,6 @@ declare module "@madie/madie-util" {
     style?: React.CSSProperties;
     dataTestId?: string;
   }): React.ReactElement;
-  // statuses in which a library is part of the review process
   export const REVIEW_ACTIVE_STATUSES: ReadonlySet<ReviewStatus>;
 
   export interface CommentSubSectionItem {
@@ -299,15 +298,13 @@ declare module "@madie/madie-util" {
     updateComment: (comment: Comment) => Promise<boolean>;
     deleteComment: (comment: Comment) => Promise<boolean>;
   }
-  // loads the review for the entity and owns the comment writes against it
+
   export function useReviewComments(
     entityType: "measure" | "library",
     entityId: string | undefined,
     onError?: (message: string) => void
   ): ReviewComments;
 
-  // where the user is in the editor; activeMainSection is undefined on screens
-  // that cannot be commented on
   export interface CommentSectionLocation {
     activeMainSection?: string;
     activeSubSection: string;

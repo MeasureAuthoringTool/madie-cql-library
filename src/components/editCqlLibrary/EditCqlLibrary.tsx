@@ -116,7 +116,6 @@ const EditCqlLibrary = () => {
   const userRoles = useUserRoles();
   const { getUserName } = useOktaTokens();
   const userName = getUserName();
-  // "First Last" when the user service knows the HARP id, else the HARP id
   const commentAuthorName = useOwnerName(userName);
 
   // on unmount forget library state.
@@ -332,7 +331,6 @@ const EditCqlLibrary = () => {
     setToastMessage(message);
     setToastOpen(true);
   };
-  // the review document and the comment writes against it
   const {
     review: libraryReview,
     comments: reviewComments,
