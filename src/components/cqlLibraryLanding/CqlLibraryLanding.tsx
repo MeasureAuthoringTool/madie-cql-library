@@ -19,7 +19,11 @@ import "twin.macro";
 import "styled-components/macro";
 import queryString from "query-string";
 import { useLocation, useNavigate } from "react-router-dom";
-import * as _ from "lodash";
+import {
+  getLibrarySearchCriteria,
+  LibrarySearchCriteria,
+  LibrarySource,
+} from "./librarySearch";
 import {
   getTabStorageKey,
   sortReviewLibraries,
@@ -30,6 +34,8 @@ import StatusHandler, {
   INITIAL_STATUS_HANDLER,
 } from "../editCqlLibrary/statusHandler/StatusHandler";
 
+export type { LibrarySearchCriteria } from "./librarySearch";
+
 const INITIAL_DELETE_DRAFT_STATE = {
   open: false,
   cqlLibrary: null,
@@ -37,13 +43,6 @@ const INITIAL_DELETE_DRAFT_STATE = {
 
 const REVIEWER_ROLE = "MADiE-Reviewer";
 const REVIEWS_TAB = 3;
-
-export interface LibrarySearchCriteria {
-  searchField?: string;
-  optionalSearchProperties?: string[]; // can be ["LibraryName", "version"] ..etc
-  model?: string;
-  draft?: boolean;
-}
 
 // Maps tab indices to OwnershipType enums
 const ownershipTypeMap: Record<number, OwnershipType> = {
@@ -82,6 +81,7 @@ function CqlLibraryLanding() {
     searchField: "",
     optionalSearchProperties: [],
   });
+  const [librarySource, setLibrarySource] = useState(LibrarySource.ALL);
 
   const [selectedLibraries, setSelectedLibraries] = useState<CqlLibrary[]>([]);
   const cqlLibraryServiceApi = useRef(useCqlLibraryServiceApi()).current;
@@ -152,6 +152,7 @@ function CqlLibraryLanding() {
     fetchCountsAbortController.current?.abort();
     fetchCountsAbortController.current = new AbortController();
     const signal = fetchCountsAbortController.current.signal;
+    const countCriteria = { searchField: "", optionalSearchProperties: [] };
 
     try {
       const [ownedLibs, sharedLibs, allLibs] = await Promise.all([
@@ -159,7 +160,7 @@ function CqlLibraryLanding() {
           OwnershipType.OWNED,
           1,
           0,
-          searchCriteria,
+          countCriteria,
           null,
           signal
         ),
@@ -167,7 +168,7 @@ function CqlLibraryLanding() {
           OwnershipType.SHARED,
           1,
           0,
-          searchCriteria,
+          countCriteria,
           null,
           signal
         ),
@@ -175,7 +176,7 @@ function CqlLibraryLanding() {
           OwnershipType.ALL,
           1,
           0,
-          searchCriteria,
+          countCriteria,
           null,
           signal
         ),
@@ -209,16 +210,14 @@ function CqlLibraryLanding() {
   const retrieveLibraries = useCallback(
     async (tab, limit, page, searchCriteria, relevantSorting) => {
       setLoading(true);
-      abortController.current = new AbortController();
-
-      const optionalParams = searchCriteria?.optionalSearchProperties ?? [];
-      const firstParam = _.trim(optionalParams[0]);
-
-      const modifiedSearchCriteria = {
-        ...searchCriteria,
-        optionalSearchProperties:
-          firstParam && firstParam !== "-" ? [_.camelCase(firstParam)] : [],
-      };
+      abortController.current?.abort();
+      const controller = new AbortController();
+      abortController.current = controller;
+      const modifiedSearchCriteria = getLibrarySearchCriteria(
+        searchCriteria,
+        tab,
+        librarySource
+      );
 
       // The "All Reviews" tab has its own endpoint that returns the full,
       // unpaginated list of LibraryListDTOs, so searching, sorting and paging
@@ -227,9 +226,10 @@ function CqlLibraryLanding() {
         cqlLibraryServiceApi
           .fetchReviewLibraries(
             ownershipTypeMap[tab] ?? OwnershipType.ALL,
-            abortController.current.signal
+            controller.signal
           )
           .then((reviewLibraries: LibraryListDTO[]) => {
+            if (controller.signal.aborted) return;
             const matching = filterReviewLibraries(
               reviewLibraries,
               modifiedSearchCriteria
@@ -243,7 +243,7 @@ function CqlLibraryLanding() {
             );
           })
           .catch((error) => {
-            if (error.message != "canceled") {
+            if (!controller.signal.aborted && error.message != "canceled") {
               setSnackBar({
                 message: "An error occurred while fetching the CQL Library!",
                 open: true,
@@ -252,7 +252,7 @@ function CqlLibraryLanding() {
             }
           })
           .finally(() => {
-            return setLoading(false);
+            if (!controller.signal.aborted) setLoading(false);
           });
         return;
       }
@@ -264,9 +264,10 @@ function CqlLibraryLanding() {
           page,
           modifiedSearchCriteria,
           relevantSorting,
-          abortController.current.signal
+          controller.signal
         )
         .then((data) => {
+          if (controller.signal.aborted) return;
           if (limit === "All") {
             const updatedLimit = data.totalElements > 50 ? limit : 50;
             navigate(`?tab=${tab}&page=1&limit=${updatedLimit}`, {
@@ -277,7 +278,7 @@ function CqlLibraryLanding() {
           setPageProps(data);
         })
         .catch((error) => {
-          if (error.message != "canceled") {
+          if (!controller.signal.aborted && error.message != "canceled") {
             setSnackBar({
               message: "An error occurred while fetching the CQL Library!",
               open: true,
@@ -286,10 +287,10 @@ function CqlLibraryLanding() {
           }
         })
         .finally(() => {
-          return setLoading(false);
+          if (!controller.signal.aborted) setLoading(false);
         });
     },
-    [cqlLibraryServiceApi, navigate]
+    [cqlLibraryServiceApi, navigate, librarySource]
   );
 
   const setPageProps = (data) => {
@@ -551,6 +552,8 @@ function CqlLibraryLanding() {
               setSearchCriteria={setSearchCriteria}
               handlePageChange={handlePageChange}
               searchCriteria={searchCriteria}
+              librarySource={librarySource}
+              setLibrarySource={setLibrarySource}
               setToastOpen={setToastOpen}
               setToastMessage={setToastMessage}
               setToastType={setToastType}
