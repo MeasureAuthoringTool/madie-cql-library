@@ -1,5 +1,16 @@
 @use "sass:color";
 
+.library-search-controls {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  .library-source-filter {
+    min-width: 190px;
+  }
+}
+
 #libraryListTable {
   overflow: visible;
 

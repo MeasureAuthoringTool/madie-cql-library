@@ -38,10 +38,8 @@ import {
   MadieDeleteDialog,
   MadieTable,
   Pagination,
-  SearchAndFilter,
   TruncateText,
   MadieTooltipIcon,
-  useFilterSearch,
 } from "@madie/madie-design-system/dist/react";
 import LibraryShareDialog from "../common/libraryShareDialog/LibraryShareDialog";
 import { CqlLibraryListActionCenter } from "../cqlLibraryLanding/cqlLibraryListActionCenter/CqlLibraryListActionCenter";
@@ -51,7 +49,12 @@ import queryString from "query-string";
 import { CollapseIcon, ExpandIcon } from "./LibraryListTableRightArrowIcons";
 import * as _ from "lodash";
 import { Chip, Tooltip } from "@mui/material";
+import {
+  getLibrarySearchCriteria,
+  LibrarySource,
+} from "../cqlLibraryLanding/librarySearch";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import LibrarySearchToolbar from "./LibrarySearchToolbar";
 import "./CqlLibraryList.scss";
 import ReviewDialog from "../common/reviewDialog/ReviewDialog";
 
@@ -176,6 +179,8 @@ export default function CqlLibraryList({
   curLimit,
   curPage,
   searchCriteria,
+  librarySource = LibrarySource.ALL,
+  setLibrarySource,
   setToastOpen,
   setToastMessage,
   setToastType,
@@ -205,51 +210,6 @@ export default function CqlLibraryList({
   const navigate = useNavigate();
   const { search } = useLocation();
   const values = queryString.parse(search);
-
-  const LIBRARY_FILTER_OPTIONS = [
-    "Library",
-    "Version",
-    "Model",
-    ...(activeTab === 3 ||
-    activeTab === 4 ||
-    (featureFlags?.LibraryReviewStatus && activeTab !== 2)
-      ? ["Review"]
-      : []),
-  ];
-  const LIBRARY_FILTER_MAP: Record<string, string> = {
-    Library: "library",
-    Version: "version",
-    Model: "model",
-    Review: "review",
-  };
-
-  const {
-    filterBy,
-    searchField,
-    handleFilter,
-    handleSearch,
-    finalizeSearchCriteria,
-    blankSearchCriteria,
-  } = useFilterSearch();
-
-  const handleSearchTrigger = () => {
-    finalizeSearchCriteria();
-    const optionalSearchProperties: string[] = [];
-    if (filterBy && LIBRARY_FILTER_MAP[filterBy]) {
-      optionalSearchProperties.push(LIBRARY_FILTER_MAP[filterBy]);
-    } else if (!filterBy && searchField) {
-      LIBRARY_FILTER_OPTIONS.forEach((opt) =>
-        optionalSearchProperties.push(LIBRARY_FILTER_MAP[opt])
-      );
-    }
-    setSearchCriteria({ searchField, optionalSearchProperties });
-    handlePageChange(null, 1);
-  };
-
-  const handleSearchClear = () => {
-    blankSearchCriteria();
-    setSearchCriteria({ searchField: "", optionalSearchProperties: [] });
-  };
 
   const openCreateVersionDialog = async () => {
     await cqlLibraryServiceApi
@@ -898,6 +858,10 @@ export default function CqlLibraryList({
     isRowExpanded,
     activeTab,
     featureFlags,
+    librarySource,
+    searchCriteria,
+    currentSort,
+    currentDirection,
   ]);
 
   const expandedColumns = useMemo<ColumnDef<CqlLibrary>[]>(() => {
@@ -981,14 +945,11 @@ export default function CqlLibraryList({
   const handleRowClick = async (actions) => {
     if (!isRowExpanded || selectedIdForExpansion !== actions?.librarySetId) {
       setSelectedIdForExpansion(actions?.librarySetId);
-      const optionalParams = searchCriteria?.optionalSearchProperties ?? [];
-      const firstParam = _.trim(optionalParams[0]);
-
-      const modifiedSearchCriteria = {
-        ...searchCriteria,
-        optionalSearchProperties:
-          firstParam && firstParam !== "-" ? [_.camelCase(firstParam)] : [],
-      };
+      const modifiedSearchCriteria = getLibrarySearchCriteria(
+        searchCriteria,
+        activeTab,
+        librarySource
+      );
       const results = await cqlLibraryServiceApi.getLibrariesByLibrarySetId(
         actions?.librarySetId,
         true,
@@ -1014,10 +975,12 @@ export default function CqlLibraryList({
   };
 
   useEffect(() => {
+    table.resetRowSelection();
     setIsRowExpanded(false);
     setExpandedSectionData(null);
     setSelectedIdForExpansion(null);
-  }, [activeTab]);
+    setSelectedExpandedLibrariesIds([]);
+  }, [activeTab, librarySource, table]);
 
   useEffect(() => {
     setSelectedLibraries(selectedLibraries);
@@ -1287,15 +1250,13 @@ export default function CqlLibraryList({
             zIndex: 20,
           }}
         >
-          <SearchAndFilter
-            filterBy={filterBy}
-            searchField={searchField}
-            onFilterChange={handleFilter}
-            onSearchChange={handleSearch}
-            onSearchTrigger={handleSearchTrigger}
-            onSearchClear={handleSearchClear}
-            filterByOpts={LIBRARY_FILTER_OPTIONS}
-            textFieldID="library"
+          <LibrarySearchToolbar
+            activeTab={activeTab}
+            librarySource={librarySource}
+            setLibrarySource={setLibrarySource}
+            searchCriteria={searchCriteria}
+            setSearchCriteria={setSearchCriteria}
+            handlePageChange={handlePageChange}
           />
           <div>
             <CqlLibraryListActionCenter

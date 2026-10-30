@@ -25,6 +25,7 @@ import {
 } from "react-router-dom";
 import { AxiosError, AxiosResponse } from "axios";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
+import { LibrarySearchCriteria, LibrarySource } from "./librarySearch";
 
 const abortController = new AbortController();
 
@@ -316,7 +317,11 @@ describe("Cql Library Page", () => {
       OwnershipType.ALL,
       10,
       0,
-      { optionalSearchProperties: [], searchField: "" },
+      {
+        optionalSearchProperties: [],
+        searchField: "",
+        librarySource: "ALL",
+      },
       "",
       expect.any(AbortSignal)
     );
@@ -1319,6 +1324,496 @@ describe("Cql Library Page", () => {
 
     await waitFor(() => {
       expect(screen.getByText("ReviewLibrary1")).toBeInTheDocument();
+    });
+  });
+
+  describe("Library Source", () => {
+    const madieLibrary = {
+      id: "madie-library",
+      librarySetId: "madie-set",
+      cqlLibraryName: "MadieExample",
+      model: Model.QICORE,
+      version: "1.0.000",
+      draft: false,
+      hasAssociatedLibraries: false,
+      lastModifiedAt: "2026-01-01T00:00:00Z",
+    };
+    const externalLibrary = {
+      ...madieLibrary,
+      id: "external-library",
+      librarySetId: "external-set",
+      cqlLibraryName: "hl7.ExternalExample",
+      externalLibrary: true,
+      externalVersion: "4.1.010",
+    };
+    const makeSourcePage = (content: any[]) => ({
+      content,
+      totalPages: 3,
+      totalElements: 30,
+      numberOfElements: content.length,
+      pageable: { offset: 0 },
+    });
+
+    beforeEach(() => {
+      (useUserRoles as jest.Mock).mockReturnValue({
+        roles: ["MADiE-Reviewer"],
+        isAdmin: false,
+      });
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+        .fn()
+        .mockImplementation(
+          (
+            ownership: OwnershipType,
+            _limit: number,
+            _page: number,
+            criteria: LibrarySearchCriteria
+          ) => {
+            let content = [madieLibrary, externalLibrary];
+            if (
+              ownership !== OwnershipType.ALL ||
+              criteria.librarySource === LibrarySource.MADIE
+            ) {
+              content = [madieLibrary];
+            } else if (criteria.librarySource === LibrarySource.EXTERNAL) {
+              content = [externalLibrary];
+            }
+            return Promise.resolve(makeSourcePage(content));
+          }
+        );
+      mockCqlLibraryServiceApi.fetchReviewLibraries = jest
+        .fn()
+        .mockResolvedValue(mockReviewLibraries);
+      mockCqlLibraryServiceApi.getLibrariesByLibrarySetId = jest
+        .fn()
+        .mockResolvedValue([]);
+    });
+
+    const renderAllLibraries = async (page = 1) => {
+      localStorage.setItem("cqlLibraryPageTab", "2");
+      localStorage.setItem(
+        "allCqlLibrariesPageOptions",
+        JSON.stringify({ page, limit: 10 })
+      );
+      renderWithRouter();
+      await waitFor(() => {
+        expect(screen.getByTestId("library-list-tbl")).toBeVisible();
+      });
+    };
+
+    const selectSource = async (label: string) => {
+      await userEvent.click(
+        await screen.findByRole("combobox", { name: "Library Source" })
+      );
+      await userEvent.click(await screen.findByRole("option", { name: label }));
+      await waitFor(() => {
+        expect(
+          screen.getByRole("combobox", { name: "Library Source" })
+        ).toHaveTextContent(label);
+      });
+    };
+
+    const selectFilter = async (label: string) => {
+      await userEvent.click(
+        screen.getByRole("combobox", { name: /Filter By/ })
+      );
+      await userEvent.click(await screen.findByRole("option", { name: label }));
+    };
+
+    const expectAllLibrariesCriteria = async (
+      criteria: LibrarySearchCriteria,
+      page = 0,
+      sorting = ""
+    ) => {
+      await waitFor(() => {
+        expect(
+          mockCqlLibraryServiceApi.fetchCqlLibraries
+        ).toHaveBeenLastCalledWith(
+          OwnershipType.ALL,
+          10,
+          page,
+          criteria,
+          sorting,
+          expect.any(AbortSignal)
+        );
+      });
+    };
+
+    test("defaults to All Libraries and offers all three options in order", async () => {
+      await renderAllLibraries();
+      const sourceSelect = screen.getByRole("combobox", {
+        name: "Library Source",
+      });
+      expect(sourceSelect).toHaveTextContent("All Libraries");
+
+      await userEvent.click(sourceSelect);
+      const options = await screen.findAllByRole("option");
+      expect(options.map((option) => option.textContent)).toEqual([
+        "All Libraries",
+        "External Libraries",
+        "MADiE Libraries",
+      ]);
+      await expectAllLibrariesCriteria({
+        searchField: "",
+        optionalSearchProperties: [],
+        librarySource: LibrarySource.ALL,
+      });
+    });
+
+    test("switches between combined, external-only, and MADiE-only results", async () => {
+      await renderAllLibraries();
+      expect(screen.getByText("MadieExample")).toBeVisible();
+      expect(screen.getByText("hl7.ExternalExample")).toBeVisible();
+
+      await selectSource("External Libraries");
+      await expectAllLibrariesCriteria({
+        searchField: "",
+        optionalSearchProperties: [],
+        librarySource: LibrarySource.EXTERNAL,
+      });
+      expect(screen.queryByText("MadieExample")).not.toBeInTheDocument();
+      expect(screen.getByText("hl7.ExternalExample")).toBeVisible();
+
+      await selectSource("MADiE Libraries");
+      await expectAllLibrariesCriteria({
+        searchField: "",
+        optionalSearchProperties: [],
+        librarySource: LibrarySource.MADIE,
+      });
+      expect(screen.getByText("MadieExample")).toBeVisible();
+      expect(screen.queryByText("hl7.ExternalExample")).not.toBeInTheDocument();
+
+      await selectSource("All Libraries");
+      await waitFor(() => {
+        expect(screen.getByText("hl7.ExternalExample")).toBeVisible();
+      });
+      expect(screen.getByText("MadieExample")).toBeVisible();
+    });
+
+    test("hides Model for External Libraries and restores it for other sources", async () => {
+      await renderAllLibraries();
+
+      for (const source of ["All Libraries", "MADiE Libraries"]) {
+        await selectSource("External Libraries");
+        await userEvent.click(
+          screen.getByRole("combobox", { name: /Filter By/ })
+        );
+        const options = await screen.findAllByRole("option");
+        expect(options.map((option) => option.textContent)).toEqual([
+          "-",
+          "Library",
+          "Version",
+        ]);
+        await userEvent.click(screen.getByRole("option", { name: "-" }));
+
+        await selectSource(source);
+        await userEvent.click(
+          screen.getByRole("combobox", { name: /Filter By/ })
+        );
+        expect(
+          await screen.findByRole("option", { name: "Model" })
+        ).toBeVisible();
+        await userEvent.click(screen.getByRole("option", { name: "-" }));
+      }
+    });
+
+    test("clears an applied Model filter without losing search text", async () => {
+      await renderAllLibraries();
+      await selectFilter("Model");
+      userEvent.type(
+        screen.getByTestId("library-list-search-input"),
+        "QI-Core"
+      );
+      await userEvent.click(screen.getByTestId("library-trigger-search"));
+      await expectAllLibrariesCriteria({
+        searchField: "QI-Core",
+        optionalSearchProperties: ["model"],
+        librarySource: LibrarySource.ALL,
+      });
+
+      await selectSource("External Libraries");
+      expect(screen.getByTestId("library-list-search-input")).toHaveValue(
+        "QI-Core"
+      );
+      expect(
+        screen.getByRole("combobox", { name: /Filter By/ })
+      ).not.toHaveTextContent("Model");
+      await expectAllLibrariesCriteria({
+        searchField: "QI-Core",
+        optionalSearchProperties: ["library", "version"],
+        librarySource: LibrarySource.EXTERNAL,
+      });
+    });
+
+    test("combines search text with the source and keeps the source when clearing", async () => {
+      await renderAllLibraries();
+      await selectSource("External Libraries");
+      userEvent.type(screen.getByTestId("library-list-search-input"), "4.1");
+      await userEvent.click(screen.getByTestId("library-trigger-search"));
+      await expectAllLibrariesCriteria({
+        searchField: "4.1",
+        optionalSearchProperties: ["library", "version"],
+        librarySource: LibrarySource.EXTERNAL,
+      });
+
+      await selectSource("All Libraries");
+      await expectAllLibrariesCriteria({
+        searchField: "4.1",
+        optionalSearchProperties: [],
+        librarySource: LibrarySource.ALL,
+      });
+
+      await selectSource("External Libraries");
+      await userEvent.click(screen.getByTestId("library-clear-search"));
+      expect(screen.getByTestId("library-list-search-input")).toHaveValue("");
+      await expectAllLibrariesCriteria({
+        searchField: "",
+        optionalSearchProperties: [],
+        librarySource: LibrarySource.EXTERNAL,
+      });
+    });
+
+    test("preserves explicit Library and Version filters when changing sources", async () => {
+      await renderAllLibraries();
+
+      for (const filter of ["Library", "Version"]) {
+        await selectFilter(filter);
+        userEvent.clear(screen.getByTestId("library-list-search-input"));
+        userEvent.type(screen.getByTestId("library-list-search-input"), "4");
+        await userEvent.click(screen.getByTestId("library-trigger-search"));
+
+        await selectSource("MADiE Libraries");
+        await expectAllLibrariesCriteria({
+          searchField: "4",
+          optionalSearchProperties: [filter.toLowerCase()],
+          librarySource: LibrarySource.MADIE,
+        });
+
+        await selectSource("External Libraries");
+        await expectAllLibrariesCriteria({
+          searchField: "4",
+          optionalSearchProperties: [filter.toLowerCase()],
+          librarySource: LibrarySource.EXTERNAL,
+        });
+      }
+    });
+
+    test("resets to the first page when the source changes", async () => {
+      await renderAllLibraries(3);
+      await selectSource("External Libraries");
+      expect(mockNavigate).toHaveBeenCalledWith("?tab=2&page=1&limit=10");
+    });
+
+    test("keeps the source while sorting, paging, and clearing the search", async () => {
+      await renderAllLibraries();
+      await selectSource("External Libraries");
+      const criteria = {
+        searchField: "",
+        optionalSearchProperties: [],
+        librarySource: LibrarySource.EXTERNAL,
+      };
+      await expectAllLibrariesCriteria(criteria);
+
+      fireEvent.click(screen.getByTestId("header-version"));
+      await expectAllLibrariesCriteria(criteria, 0, "version,false");
+
+      await userEvent.click(
+        await screen.findByRole("button", { name: /Go to next page/i })
+      );
+      expect(mockNavigate).toHaveBeenLastCalledWith("?tab=2&page=2&limit=10");
+
+      await userEvent.click(screen.getByTestId("library-clear-search"));
+      await expectAllLibrariesCriteria(criteria, 0, "version,false");
+    });
+
+    test("does not render the source dropdown or send a source on other tabs", async () => {
+      await renderAllLibraries();
+      await selectSource("External Libraries");
+
+      await userEvent.click(screen.getByTestId("owned-libraries-tab"));
+      await waitFor(() => {
+        expect(
+          mockCqlLibraryServiceApi.fetchCqlLibraries
+        ).toHaveBeenLastCalledWith(
+          OwnershipType.OWNED,
+          10,
+          0,
+          { searchField: "", optionalSearchProperties: [] },
+          "",
+          expect.any(AbortSignal)
+        );
+      });
+      expect(
+        screen.queryByTestId("library-source-select")
+      ).not.toBeInTheDocument();
+      await selectFilter("Model");
+
+      await userEvent.click(screen.getByTestId("shared-libraries-tab"));
+      await waitFor(() => {
+        expect(
+          mockCqlLibraryServiceApi.fetchCqlLibraries
+        ).toHaveBeenLastCalledWith(
+          OwnershipType.SHARED,
+          10,
+          0,
+          { searchField: "", optionalSearchProperties: [] },
+          "",
+          expect.any(AbortSignal)
+        );
+      });
+      expect(
+        screen.queryByTestId("library-source-select")
+      ).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByTestId("all-reviews-tab"));
+      await waitFor(() => {
+        expect(
+          mockCqlLibraryServiceApi.fetchReviewLibraries
+        ).toHaveBeenCalledWith(OwnershipType.ALL, expect.any(AbortSignal));
+      });
+      expect(
+        screen.queryByTestId("library-source-select")
+      ).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByTestId("owned-reviews-tab"));
+      await waitFor(() => {
+        expect(
+          mockCqlLibraryServiceApi.fetchReviewLibraries
+        ).toHaveBeenCalledWith(OwnershipType.OWNED, expect.any(AbortSignal));
+      });
+      expect(
+        screen.queryByTestId("library-source-select")
+      ).not.toBeInTheDocument();
+
+      await userEvent.click(screen.getByTestId("all-libraries-tab"));
+      await waitFor(() => {
+        expect(
+          screen.getByRole("combobox", { name: "Library Source" })
+        ).toHaveTextContent("External Libraries");
+      });
+      expect(
+        screen.getByRole("combobox", { name: /Filter By/ })
+      ).not.toHaveTextContent("Model");
+    });
+
+    test("includes the source and search properties in expansion requests", async () => {
+      mockCqlLibraryServiceApi.fetchCqlLibraries = jest
+        .fn()
+        .mockResolvedValue(
+          makeSourcePage([{ ...externalLibrary, hasAssociatedLibraries: true }])
+        );
+      await renderAllLibraries();
+      await selectSource("External Libraries");
+      userEvent.type(screen.getByTestId("library-list-search-input"), "4.1");
+      await userEvent.click(screen.getByTestId("library-trigger-search"));
+      await expectAllLibrariesCriteria({
+        searchField: "4.1",
+        optionalSearchProperties: ["library", "version"],
+        librarySource: LibrarySource.EXTERNAL,
+      });
+
+      await userEvent.click(
+        within(screen.getByTestId("measure-name-0_expandArrow")).getByRole(
+          "button"
+        )
+      );
+      await waitFor(() => {
+        expect(
+          mockCqlLibraryServiceApi.getLibrariesByLibrarySetId
+        ).toHaveBeenCalledWith("external-set", true, {
+          searchField: "4.1",
+          optionalSearchProperties: ["library", "version"],
+          librarySource: LibrarySource.EXTERNAL,
+        });
+      });
+    });
+
+    test("clears selected rows when the source changes", async () => {
+      await renderAllLibraries();
+      await userEvent.click(screen.getAllByRole("checkbox")[1]);
+      expect(screen.getByTestId("library-history-action-btn")).toBeEnabled();
+
+      await selectSource("External Libraries");
+      expect(screen.getByTestId("library-history-action-btn")).toBeDisabled();
+      screen.getAllByRole("checkbox").forEach((checkbox) => {
+        expect(checkbox).not.toBeChecked();
+      });
+    });
+
+    test("keeps tab totals unfiltered when changing sources", async () => {
+      await renderAllLibraries();
+      const fetchCqlLibraries =
+        mockCqlLibraryServiceApi.fetchCqlLibraries as jest.Mock;
+      const callsBeforeSourceChange = fetchCqlLibraries.mock.calls.length;
+
+      await selectSource("External Libraries");
+      expect(fetchCqlLibraries).toHaveBeenCalledTimes(
+        callsBeforeSourceChange + 1
+      );
+      expect(screen.getByTestId("all-libraries-tab")).toHaveTextContent(
+        "All Libraries (30)"
+      );
+      const countCalls = fetchCqlLibraries.mock.calls.filter(
+        ([, limit]) => limit === 1
+      );
+      expect(countCalls).toHaveLength(3);
+      countCalls.forEach(([, , , criteria]) => {
+        expect(criteria).toEqual({
+          searchField: "",
+          optionalSearchProperties: [],
+        });
+      });
+    });
+
+    test("shows an error when a source search fails", async () => {
+      await renderAllLibraries();
+      (
+        mockCqlLibraryServiceApi.fetchCqlLibraries as jest.Mock
+      ).mockRejectedValueOnce(new Error("Service unavailable"));
+
+      await selectSource("External Libraries");
+      expect(
+        await screen.findByText(
+          "An error occurred while fetching the CQL Library!"
+        )
+      ).toBeVisible();
+      expect(
+        screen.getByRole("combobox", { name: "Library Source" })
+      ).toHaveTextContent("External Libraries");
+    });
+
+    test("does not let a stale source response overwrite the latest results", async () => {
+      await renderAllLibraries();
+      let resolveExternal: (page: ReturnType<typeof makeSourcePage>) => void;
+      (
+        mockCqlLibraryServiceApi.fetchCqlLibraries as jest.Mock
+      ).mockImplementationOnce(
+        () =>
+          new Promise((resolve) => {
+            resolveExternal = resolve;
+          })
+      );
+
+      await userEvent.click(
+        screen.getByRole("combobox", { name: "Library Source" })
+      );
+      await userEvent.click(
+        await screen.findByRole("option", { name: "External Libraries" })
+      );
+      await userEvent.click(
+        screen.getByRole("combobox", { name: "Library Source", hidden: true })
+      );
+      await userEvent.click(
+        await screen.findByRole("option", { name: "MADiE Libraries" })
+      );
+      await waitFor(() => {
+        expect(screen.getByText("MadieExample")).toBeVisible();
+      });
+
+      await act(async () => {
+        resolveExternal(makeSourcePage([externalLibrary]));
+      });
+      expect(screen.getByText("MadieExample")).toBeVisible();
+      expect(screen.queryByText("hl7.ExternalExample")).not.toBeInTheDocument();
     });
   });
 });
