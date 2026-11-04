@@ -775,6 +775,7 @@ const EditCqlLibrary = () => {
     reviewStatus: libraryReview?.status,
     hasReviewerRole: Boolean(userRoles?.isReviewer),
     assignedReviewers: libraryReview?.reviewers,
+    hasComments: reviewComments.length > 0,
   });
 
   const handleShareDialogClose = useCallback(

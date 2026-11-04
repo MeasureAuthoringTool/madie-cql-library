@@ -25,6 +25,7 @@ import {
   UserServiceApi,
   CqlLibraryServiceApi,
   shouldShowReviewCommentLink,
+  useReviewComments,
   useUserRoles,
 } from "@madie/madie-util";
 import { routesConfig } from "../cqlLibraryRoutes/CqlLibraryRoutes";
@@ -345,6 +346,37 @@ describe("Edit Cql Library Component", () => {
     expect(
       await screen.findByTestId("review-comments-link")
     ).toBeInTheDocument();
+  });
+
+  it("tells the visibility helper when the review already has comments", async () => {
+    (useReviewComments as jest.Mock).mockReturnValue({
+      review: { status: "NOT_READY_FOR_REVIEW", comments: [{ id: "c1" }] },
+      comments: [{ id: "c1" }],
+      addComment: jest.fn(),
+      updateComment: jest.fn(),
+      deleteComment: jest.fn(),
+    });
+    (shouldShowReviewCommentLink as jest.Mock).mockReturnValue(true);
+
+    renderWithRouter();
+
+    expect(
+      await screen.findByTestId("review-comments-link")
+    ).toBeInTheDocument();
+    expect(shouldShowReviewCommentLink).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reviewStatus: "NOT_READY_FOR_REVIEW",
+        hasComments: true,
+      })
+    );
+    // clearAllMocks keeps return values, so put the default back for later tests
+    (useReviewComments as jest.Mock).mockReturnValue({
+      review: null,
+      comments: [],
+      addComment: jest.fn(),
+      updateComment: jest.fn(),
+      deleteComment: jest.fn(),
+    });
   });
 
   it("opens and closes CommentsFlyoutPanel from the Comments link", async () => {
