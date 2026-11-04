@@ -7,7 +7,10 @@ import {
 } from "@madie/madie-models";
 import { MadieDialog, Toast } from "@madie/madie-design-system/dist/react";
 import { Divider, FormControlLabel, Switch } from "@mui/material";
-import { useCqlLibraryReviewServiceApi } from "@madie/madie-util";
+import {
+  REVIEW_ACTIVE_STATUSES,
+  useCqlLibraryReviewServiceApi,
+} from "@madie/madie-util";
 
 interface ReviewDialogProps {
   open: boolean;
@@ -15,12 +18,6 @@ interface ReviewDialogProps {
   onClose: () => void;
   onSuccess?: () => void | Promise<void>;
 }
-
-const REVIEW_ACTIVE_STATUSES = new Set<ReviewStatus>([
-  ReviewStatus.READY_FOR_REVIEW,
-  ReviewStatus.IN_PROGRESS,
-  ReviewStatus.COMPLETE,
-]);
 
 const STATUS_DISPLAY_TEXT: Record<ReviewStatus, string> = {
   [ReviewStatus.READY_FOR_REVIEW]: "Ready for Review",
@@ -81,7 +78,7 @@ export default function ReviewDialog({
       status: values.markAsReady
         ? ReviewStatus.READY_FOR_REVIEW
         : ReviewStatus.NOT_READY_FOR_REVIEW,
-      comment: [],
+      comments: review?.comments ?? [],
     };
 
     try {
