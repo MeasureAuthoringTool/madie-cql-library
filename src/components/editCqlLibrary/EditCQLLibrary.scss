@@ -160,18 +160,31 @@
       }
     }
   }
+}
 
-  .minimized-alert {
-    top: 162px !important;
-  }
+.edit-library-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  color: #fff;
 
   .review-comments-link {
-    top: 162px;
-    right: 2rem;
+    color: inherit;
   }
 
-  &:has(.minimized-alert) .review-comments-link {
-    right: 13rem;
-    border-right: #7f7f7f solid 1px;
+  > :focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  &:empty {
+    display: none;
+  }
+
+  > :not(:first-child) {
+    padding-left: 0.8rem;
+    border-left: #ffffffd1 solid 1px;
   }
 }
