@@ -337,6 +337,10 @@ const EditCqlLibrary = () => {
     addComment,
     updateComment,
     deleteComment,
+    addReply,
+    updateReply,
+    deleteReply,
+    reloadReview,
   } = useReviewComments("library", loadedCqlLibrary?.id, showErrorToast);
   const canEdit =
     checkUserCanEdit(
@@ -1213,6 +1217,10 @@ const EditCqlLibrary = () => {
         onAddComment={addComment}
         onUpdateComment={updateComment}
         onDeleteComment={deleteComment}
+        onAddReply={addReply}
+        onOpen={reloadReview}
+        onUpdateReply={updateReply}
+        onDeleteReply={deleteReply}
         markedForReviewBy={libraryReview?.markedForReviewBy}
         markedForReviewAt={libraryReview?.markedForReviewAt}
       />
