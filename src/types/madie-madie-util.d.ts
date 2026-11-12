@@ -1,5 +1,10 @@
 //madie-madie-util.d.ts
 declare module "@madie/madie-util" {
+  export const MadieAlert: React.ComponentType<any>;
+  export const MinimizedAlertsProvider: React.ComponentType<{
+    children: React.ReactNode;
+  }>;
+  export const MinimizedAlertsControl: React.ComponentType;
   import { LifeCycleFn } from "single-spa";
 
   import {
