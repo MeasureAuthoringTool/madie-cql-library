@@ -8,6 +8,7 @@ import {
   checkUserCanEdit,
   FeatureFlags,
   LibraryCompareVersionsAction,
+  LibraryChangeVersionAction,
   LibraryHistoryAction,
   LibraryTransferAction,
   useFeatureFlags,
@@ -26,6 +27,7 @@ interface PropTypes {
   setCreateDraftDialog: (value: any) => void;
   setShareDialog: (value: any) => void;
   createVersion: () => void;
+  openChangeVersionDialog: () => void;
   owners: string[];
   activeTab: number;
   setTransferDialog: (value: any) => void;
@@ -41,6 +43,7 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
     setDeleteDraftDialog,
     setCreateDraftDialog,
     createVersion,
+    openChangeVersionDialog,
     owners,
     openLibraryHistoryDialog,
     activeTab,
@@ -164,6 +167,14 @@ export function CqlLibraryListActionCenter(props: PropTypes) {
             onClick={createVersion}
             checkExternal={checkExternal}
           />
+
+          {featureFlags?.LibraryChangeVersion && (
+            <LibraryChangeVersionAction
+              libraries={selectedLibraries}
+              canEdit={canEdit}
+              onClick={openChangeVersionDialog}
+            />
+          )}
 
           <DraftAction
             libraries={selectedLibraries}

@@ -75,6 +75,7 @@ const defaultProps = {
   setCreateDraftDialog: jest.fn(),
   setShareDialog: jest.fn(),
   createVersion: jest.fn(),
+  openChangeVersionDialog: jest.fn(),
   owners: ["test-user"],
   activeTab: 0,
   setTransferDialog: jest.fn(),
@@ -99,6 +100,44 @@ describe("CqlLibraryListActionCenter", () => {
     render(<CqlLibraryListActionCenter {...defaultProps} />);
 
     expect(screen.getByTestId("review-action-btn")).toBeInTheDocument();
+  });
+
+  it.each([0, 1, 2])(
+    "shows Change Version after Version on tab %s when enabled",
+    (activeTab) => {
+      (useFeatureFlags as jest.Mock).mockReturnValue({
+        LibraryChangeVersion: true,
+      });
+      const openChangeVersionDialog = jest.fn();
+      render(
+        <CqlLibraryListActionCenter
+          {...defaultProps}
+          activeTab={activeTab}
+          openChangeVersionDialog={openChangeVersionDialog}
+        />
+      );
+      const version = screen.getByTestId("version-action-btn");
+      const changeVersion = screen.getByTestId("change-version-action-btn");
+      expect(version.parentElement.nextElementSibling).toBe(changeVersion);
+      userEvent.click(changeVersion);
+      expect(openChangeVersionDialog).toHaveBeenCalled();
+    }
+  );
+
+  it("hides Change Version when the flag is disabled", () => {
+    render(<CqlLibraryListActionCenter {...defaultProps} />);
+    expect(
+      screen.queryByTestId("change-version-action-btn")
+    ).not.toBeInTheDocument();
+  });
+
+  it("disables Change Version when the user cannot edit", () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({
+      LibraryChangeVersion: true,
+    });
+    mockCheckUserCanEdit.mockReturnValue(false);
+    render(<CqlLibraryListActionCenter {...defaultProps} />);
+    expect(screen.getByTestId("change-version-action-btn")).toBeDisabled();
   });
 
   it("does not render ReviewAction when LibraryReviewStatus feature flag is disabled", () => {

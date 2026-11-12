@@ -1,5 +1,30 @@
 import * as React from "react";
 
+export const LibraryChangeVersionAction = ({
+  libraries,
+  canEdit,
+  onClick,
+}: any) => (
+  <button
+    type="button"
+    data-testid="change-version-action-btn"
+    disabled={libraries?.length !== 1 || !canEdit}
+    onClick={onClick}
+  >
+    Change Version #
+  </button>
+);
+
+export const LibraryChangeVersionDialog = ({ libraries, open, onClose }: any) =>
+  open ? (
+    <div data-testid="change-version-dialog">
+      <span>{libraries?.[0]?.cqlLibraryName}</span>
+      <button type="button" onClick={onClose}>
+        Cancel
+      </button>
+    </div>
+  ) : null;
+
 /*
   Stubs for the shared library action-center icons and dialogs that live in
   @madie/madie-util (their real behavior is unit-tested there). Spread into a
