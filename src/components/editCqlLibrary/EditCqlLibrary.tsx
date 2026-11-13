@@ -36,6 +36,7 @@ import {
   shouldShowReviewCommentLink,
   ReviewCommentLink,
   CommentsFlyoutPanel,
+  countComments,
 } from "@madie/madie-util";
 
 import * as _ from "lodash";
@@ -839,7 +840,10 @@ const EditCqlLibrary = () => {
         >
           {showReviewCommentLink && (
             <div className="review-comments-link">
-              <ReviewCommentLink onClick={() => setCommentsPanelOpen(true)} />
+              <ReviewCommentLink
+                onClick={() => setCommentsPanelOpen(true)}
+                commentCount={countComments(reviewComments)}
+              />
             </div>
           )}
           <StatusHandler
