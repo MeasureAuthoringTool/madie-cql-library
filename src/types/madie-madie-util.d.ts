@@ -89,8 +89,21 @@ declare module "@madie/madie-util" {
   interface FeatureFlags {
     MinimizeAlerts: boolean;
     LibraryReviewStatus: boolean;
+    LibraryChangeVersion?: boolean;
     Commenting?: boolean;
   }
+
+  export function LibraryChangeVersionAction(props: {
+    libraries: CqlLibrary[];
+    canEdit?: boolean;
+    onClick: () => void;
+  }): JSX.Element;
+
+  export function LibraryChangeVersionDialog(props: {
+    libraries: CqlLibrary[];
+    open: boolean;
+    onClose: () => void;
+  }): JSX.Element;
 
   export function shouldShowReviewCommentLink(args: {
     commentingEnabled?: boolean;
