@@ -49,6 +49,9 @@ const mockCqlLibraryReviewServiceApi = {
     .mockResolvedValue({ id: "existing-review-id" }),
 };
 jest.mock("@madie/madie-util", () => ({
+  MadieAlert: require("@madie/madie-design-system/dist/react").MadieAlert,
+  MinimizedAlertsProvider: ({ children }) => children,
+  MinimizedAlertsControl: () => <span data-testid="minimized-alert-control" />,
   ...mockLibraryActionStubs,
   checkUserCanEdit: jest.fn(() => {
     return true;
@@ -305,7 +308,15 @@ const renderWithRouter = (
 };
 
 describe("Edit Cql Library Component", () => {
+  let ribbon: HTMLElement;
+
   beforeEach(() => {
+    ribbon = document.createElement("header");
+    ribbon.id = "page-header";
+    const actions = document.createElement("div");
+    actions.id = "library-header-actions";
+    ribbon.appendChild(actions);
+    document.body.appendChild(ribbon);
     (shouldShowReviewCommentLink as jest.Mock).mockReturnValue(false);
     mockCqlLibraryServiceApi.createDraft = jest
       .fn()
@@ -337,7 +348,18 @@ describe("Edit Cql Library Component", () => {
   });
 
   afterEach(() => {
+    ribbon.remove();
     jest.clearAllMocks();
+  });
+
+  it("renders the minimized-alert control in the ribbon instead of the library form", async () => {
+    renderWithRouter();
+
+    const control = await screen.findByTestId("minimized-alert-control");
+    expect(ribbon).toContainElement(control);
+    expect(document.getElementById("edit-library-page")).not.toContainElement(
+      control
+    );
   });
 
   it("hides Comments link when shared visibility helper returns false", async () => {
@@ -358,6 +380,10 @@ describe("Edit Cql Library Component", () => {
     expect(
       await screen.findByTestId("review-comments-link")
     ).toBeInTheDocument();
+    expect(screen.getByTestId("review-comments-link").parentElement).toBe(
+      screen.getByTestId("minimized-alert-control").parentElement
+    );
+    expect(ribbon).toContainElement(screen.getByTestId("review-comments-link"));
     expect(
       screen.getByRole("button", { name: "Comments (0)" })
     ).toBeInTheDocument();

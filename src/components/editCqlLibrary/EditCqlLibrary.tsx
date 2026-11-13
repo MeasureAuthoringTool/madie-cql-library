@@ -5,6 +5,7 @@ import React, {
   useState,
   useCallback,
 } from "react";
+import { createPortal } from "react-dom";
 import "styled-components/macro";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { useFormik } from "formik";
@@ -37,6 +38,8 @@ import {
   ReviewCommentLink,
   CommentsFlyoutPanel,
   countComments,
+  MinimizedAlertsProvider,
+  MinimizedAlertsControl,
 } from "@madie/madie-util";
 
 import * as _ from "lodash";
@@ -88,6 +91,15 @@ import {
 } from "./comments/CommentUtils";
 
 const EditCqlLibrary = () => {
+  const { id } = useParams();
+  return (
+    <MinimizedAlertsProvider key={id}>
+      <EditCqlLibraryContent />
+    </MinimizedAlertsProvider>
+  );
+};
+
+const EditCqlLibraryContent = () => {
   useDocumentTitle("MADiE Edit Library");
   const navigate = useNavigate();
   const { search, pathname } = useLocation();
@@ -817,6 +829,10 @@ const EditCqlLibrary = () => {
     }
   };
 
+  const headerActionsContainer = document.getElementById(
+    "library-header-actions"
+  );
+
   return (
     <div>
       {activeSpinner ? (
@@ -838,14 +854,19 @@ const EditCqlLibrary = () => {
           data-testId="edit-library-form"
           onSubmit={formik.handleSubmit}
         >
-          {showReviewCommentLink && (
-            <div className="review-comments-link">
-              <ReviewCommentLink
-                onClick={() => setCommentsPanelOpen(true)}
-                commentCount={countComments(reviewComments)}
-              />
-            </div>
-          )}
+          {headerActionsContainer &&
+            createPortal(
+              <div className="edit-library-header-actions">
+                {showReviewCommentLink && (
+                  <ReviewCommentLink
+                    onClick={() => setCommentsPanelOpen(true)}
+                    commentCount={countComments(reviewComments)}
+                  />
+                )}
+                <MinimizedAlertsControl />
+              </div>,
+              headerActionsContainer
+            )}
           <StatusHandler
             error={error}
             errorMessage={errorMessage}
