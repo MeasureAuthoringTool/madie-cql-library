@@ -37,6 +37,7 @@ import {
   shouldShowReviewCommentLink,
   ReviewCommentLink,
   CommentsFlyoutPanel,
+  countComments,
   MinimizedAlertsProvider,
   MinimizedAlertsControl,
 } from "@madie/madie-util";
@@ -859,6 +860,7 @@ const EditCqlLibraryContent = () => {
                 {showReviewCommentLink && (
                   <ReviewCommentLink
                     onClick={() => setCommentsPanelOpen(true)}
+                    commentCount={countComments(reviewComments)}
                   />
                 )}
                 <MinimizedAlertsControl />
