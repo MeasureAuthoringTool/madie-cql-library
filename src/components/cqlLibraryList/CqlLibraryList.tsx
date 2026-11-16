@@ -30,6 +30,7 @@ import {
   useUserRoles,
   ManageReviewDialog,
   LibraryCompareVersionsDialog,
+  LibraryChangeVersionDialog,
   LibraryTransferDialog,
   checkExternalLibrary,
 } from "@madie/madie-util";
@@ -197,6 +198,7 @@ export default function CqlLibraryList({
     open: false,
     measureId: "",
   });
+  const [changeVersionDialogOpen, setChangeVersionDialogOpen] = useState(false);
 
   const handleReviewDialogClose = () => {
     setReviewDialog({
@@ -1078,6 +1080,13 @@ export default function CqlLibraryList({
         open={compareVersionsDialog}
         onClose={handleDialogClose}
       />
+      {featureFlags?.LibraryChangeVersion && (
+        <LibraryChangeVersionDialog
+          libraries={selectedLibraries}
+          open={changeVersionDialogOpen}
+          onClose={() => setChangeVersionDialogOpen(false)}
+        />
+      )}
       {userRoles?.isReviewer ? (
         <ManageReviewDialog
           open={reviewDialog.open}
@@ -1267,6 +1276,7 @@ export default function CqlLibraryList({
               setCreateDraftDialog={setCreateDraftDialog}
               setShareDialog={setShareDialog}
               createVersion={openCreateVersionDialog}
+              openChangeVersionDialog={() => setChangeVersionDialogOpen(true)}
               owners={owners}
               activeTab={activeTab}
               setTransferDialog={setTransferDialog}

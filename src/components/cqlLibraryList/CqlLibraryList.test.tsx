@@ -286,6 +286,59 @@ describe("CqlLibrary List component", () => {
     fireEvent.click(checkBoxes[1]);
   });
 
+  it("opens and cancels Change Version for the selected library", async () => {
+    (useFeatureFlags as jest.Mock).mockReturnValue({
+      LibraryChangeVersion: true,
+    });
+    render(
+      <CqlLibraryList
+        cqlLibraryList={cqlLibrary}
+        onListUpdate={loadCqlLibraries}
+        setSelectedLibraries={jest.fn()}
+        deleteDraftDialog={{}}
+        setDeleteDraftDialog={jest.fn()}
+        setSelectedCqlLibrary={jest.fn()}
+        createVersionDialog={{}}
+        setCreateVersionDialog={jest.fn()}
+        createDraftDialog={{}}
+        setCreateDraftDialog={jest.fn()}
+        shareDialog={{}}
+        setShareDialog={jest.fn()}
+        transferDialog={{}}
+        setTransferDialog={jest.fn()}
+        setOwners={jest.fn()}
+        snackBar={{}}
+        setSnackBar={jest.fn()}
+        activeTab={0}
+        totalItems={2}
+        totalPages={1}
+        visibleItems={2}
+        offset={0}
+        currentSort=""
+        currentDirection=""
+        setCurrentSort={jest.fn()}
+        setCurrentDirection={jest.fn()}
+        setSearchCriteria={jest.fn()}
+        handlePageChange={jest.fn()}
+        curLimit={10}
+        curPage={1}
+        searchCriteria={mockSearchCriteria}
+        setToastOpen={jest.fn()}
+        setToastMessage={jest.fn()}
+        setToastType={jest.fn()}
+      />
+    );
+    expect(screen.getByTestId("change-version-action-btn")).toBeDisabled();
+    fireEvent.click((await screen.findAllByRole("checkbox"))[1]);
+    userEvent.click(screen.getByTestId("change-version-action-btn"));
+    const dialog = screen.getByTestId("change-version-dialog");
+    expect(within(dialog).getByText("testing1")).toBeInTheDocument();
+    userEvent.click(within(dialog).getByText("Cancel"));
+    expect(
+      screen.queryByTestId("change-version-dialog")
+    ).not.toBeInTheDocument();
+  });
+
   it("should open and close review dialog from action center", async () => {
     (useFeatureFlags as jest.Mock).mockReturnValue({
       LibraryReviewStatus: true,
