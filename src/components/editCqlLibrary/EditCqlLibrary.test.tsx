@@ -132,11 +132,11 @@ jest.mock("@madie/madie-util", () => ({
       {commentCount === undefined ? "Comments" : `Comments (${commentCount})`}
     </button>
   ),
-  countComments: (comments: any[]) =>
+  countComments: (comments: any[], hasReviewNote?: boolean) =>
     (comments ?? []).reduce(
       (total: number, comment: any) =>
         total + 1 + (comment.replies?.length ?? 0),
-      0
+      hasReviewNote ? 1 : 0
     ),
   useTerminologyServiceApi: jest.fn(() => mockTerminologyServiceApi),
   ManageReviewDialog: ({ open, entityType, entityId }: any) =>
@@ -387,6 +387,36 @@ describe("Edit Cql Library Component", () => {
     expect(
       screen.getByRole("button", { name: "Comments (0)" })
     ).toBeInTheDocument();
+  });
+
+  it("counts the ready-for-review note in the Comments link", async () => {
+    (useReviewComments as jest.Mock).mockReturnValue({
+      review: {
+        status: "READY_FOR_REVIEW",
+        markedForReviewBy: "test user",
+        markedForReviewAt: "2026-08-12T09:00:00",
+      },
+      comments: [],
+      addComment: jest.fn(),
+      updateComment: jest.fn(),
+      deleteComment: jest.fn(),
+    });
+    (shouldShowReviewCommentLink as jest.Mock).mockReturnValue(true);
+
+    renderWithRouter();
+
+    // no real comments yet, but General > Review holds the ready-for-review note
+    expect(
+      await screen.findByRole("button", { name: "Comments (1)" })
+    ).toBeInTheDocument();
+    // clearAllMocks keeps return values, so put the default back for later tests
+    (useReviewComments as jest.Mock).mockReturnValue({
+      review: null,
+      comments: [],
+      addComment: jest.fn(),
+      updateComment: jest.fn(),
+      deleteComment: jest.fn(),
+    });
   });
 
   it("shows the total of comments and replies in the Comments link", async () => {
