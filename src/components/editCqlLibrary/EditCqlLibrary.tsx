@@ -37,6 +37,7 @@ import {
   shouldShowReviewCommentLink,
   ReviewCommentLink,
   CommentsFlyoutPanel,
+  countComments,
   MinimizedAlertsProvider,
   MinimizedAlertsControl,
 } from "@madie/madie-util";
@@ -793,6 +794,8 @@ const EditCqlLibraryContent = () => {
     assignedReviewers: libraryReview?.reviewers,
     hasComments: reviewComments.length > 0,
   });
+  // General > Review carries a ready-for-review note once the library is marked
+  const hasReviewNote = Boolean(libraryReview?.markedForReviewAt);
 
   const handleShareDialogClose = useCallback(
     (type, message) => {
@@ -859,6 +862,7 @@ const EditCqlLibraryContent = () => {
                 {showReviewCommentLink && (
                   <ReviewCommentLink
                     onClick={() => setCommentsPanelOpen(true)}
+                    commentCount={countComments(reviewComments, hasReviewNote)}
                   />
                 )}
                 <MinimizedAlertsControl />
